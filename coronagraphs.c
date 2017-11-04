@@ -9,7 +9,7 @@
 
 #include <sys/stat.h>
 
-#include "CLIcore.h"
+#include "CommandLineInterface/CLIcore.h"
 #include "00CORE/00CORE.h"
 #include "COREMOD_memory/COREMOD_memory.h"
 #include "COREMOD_iofits/COREMOD_iofits.h"
