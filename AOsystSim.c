@@ -171,6 +171,14 @@ int_fast8_t AOsystSim_FPWFS_sensitivityAnalysis_cli(){
 
 
 
+
+void __attribute__ ((constructor)) libinit_AOsystSim()
+{
+	init_AOsystSim();
+	printf(" ...... Loading module %s\n", __FILE__);
+}
+
+
 int init_AOsystSim()
 {
     strcpy(data.module[data.NBmodule].name, __FILE__);
@@ -1040,11 +1048,11 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
 
     // initialization
     exaosimconf[0].lambda0 = 0.55e-6;
-    exaosimconf[0].lambdai = 1.6e-6;
+    exaosimconf[0].lambdai = 1.63e-6;
     exaosimconf[0].lambdawfs = 0.8e-6;
-    exaosimconf[0].D = 8.0;
+    exaosimconf[0].D = 30.0;
     exaosimconf[0].r0 = 0.15;
-    exaosimconf[0].windspeed = 8.0;
+    exaosimconf[0].windspeed = 10.0;
     exaosimconf[0].betapWFS = sqrt(2.0);
     exaosimconf[0].betaaWFS = sqrt(2.0);
     exaosimconf[0].betapWFSsci = 2.0;
@@ -1072,6 +1080,22 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
     exaosimconf[0].CN2layer_coeff[4] = 0.3350;
     exaosimconf[0].CN2layer_h[5] = 16000.0;
     exaosimconf[0].CN2layer_coeff[5] = 0.1360;
+
+
+// 8-m telescope
+    sourcemag_wfs = 8.0;
+    sourcemag_sci = 6.0;
+	exaosimconf[0].D = 8.0;
+	exaosimconf[0].windspeed = 8.0;
+	WFStlim = 0.002;
+
+// 30-m telescope
+	// M4 star at 5pc
+    sourcemag_wfs = 8.46;
+    sourcemag_sci = 6.33;
+	exaosimconf[0].D = 30.0;
+	exaosimconf[0].windspeed = 10.0;
+	WFStlim = 0.0002;
 
 
 		// refraction
@@ -1107,8 +1131,7 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
     zeroptWFSsci = zeropt_H;
     exaosimconf[0].lambdai = lambda_H;
 
-    sourcemag_wfs = 8.0;
-    sourcemag_sci = 6.0;
+
     exaosimconf[0].Fwfs = zeroptWFS*1.0e6*(exaosimconf[0].lambdawfs*lambdaBwfs)*pow(100.0, -0.2*sourcemag_wfs)*lambdaBwfs*systemEfficiency;
     exaosimconf[0].Fsci = zeroptWFSsci*1.0e6*(exaosimconf[0].lambdai*lambdaBsci)*pow(100.0, -0.2*sourcemag_sci)*lambdaBsci*systemEfficiency;
 
