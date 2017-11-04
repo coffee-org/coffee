@@ -53,6 +53,19 @@ extern DATA data;
 
 
 
+
+
+void __attribute__ ((constructor)) libinit_OptSystProp()
+{
+	init_OptSystProp();
+	printf(" ...... Loading module %s\n", __FILE__);
+}
+
+
+
+
+
+
 int_fast8_t init_OptSystProp()
 {
     strcpy(data.module[data.NBmodule].name, __FILE__);
