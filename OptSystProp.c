@@ -58,7 +58,7 @@ extern DATA data;
 void __attribute__ ((constructor)) libinit_OptSystProp()
 {
 	init_OptSystProp();
-	printf(" ...... Loading module %s\n", __FILE__);
+//	printf(" ...... Loading module %s\n", __FILE__);
 }
 
 
