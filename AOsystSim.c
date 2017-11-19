@@ -182,7 +182,7 @@ void __attribute__ ((constructor)) libinit_AOsystSim()
 int init_AOsystSim()
 {
     strcpy(data.module[data.NBmodule].name, __FILE__);
-    strcpy(data.module[data.NBmodule].info, "falcon  - AO system simulation");
+    strcpy(data.module[data.NBmodule].info, "coffee  - AO system simulation");
     data.NBmodule++;
 
     strcpy(data.cmd[data.NBcmd].key,"AOsimfilt");
