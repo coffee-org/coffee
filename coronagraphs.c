@@ -303,7 +303,7 @@ void __attribute__ ((constructor)) libinit_coronagraphs()
 int_fast8_t init_coronagraphs()
 {
   strcpy(data.module[data.NBmodule].name, __FILE__);
-  strcpy(data.module[data.NBmodule].info, "coronagraph routines");
+  strcpy(data.module[data.NBmodule].info, "falcon  - coronagraph routines");
   data.NBmodule++;
 
   strcpy(data.cmd[data.NBcmd].key,"cormk2Dprolate");
