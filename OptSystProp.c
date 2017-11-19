@@ -69,7 +69,7 @@ void __attribute__ ((constructor)) libinit_OptSystProp()
 int_fast8_t init_OptSystProp()
 {
     strcpy(data.module[data.NBmodule].name, __FILE__);
-    strcpy(data.module[data.NBmodule].info, "falcon  - Optical propagation through system");
+    strcpy(data.module[data.NBmodule].info, "coffee  - Optical propagation through system");
     data.NBmodule++;
 
 
