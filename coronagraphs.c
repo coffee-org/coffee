@@ -40,7 +40,7 @@
 extern DATA data;
 
 
-#define CORONAGRAPHSDATALOCAL "/CfitsDev/data/coronagraphs"
+#define CORONAGRAPHSDATALOCAL "/data/tmp/coronagraphs"
 
 static int useDFT = 1;
 static double DFTZFACTOR = 8.0; // zoom factor for DFTs of focal plane masks
@@ -303,7 +303,7 @@ void __attribute__ ((constructor)) libinit_coronagraphs()
 int_fast8_t init_coronagraphs()
 {
   strcpy(data.module[data.NBmodule].name, __FILE__);
-  strcpy(data.module[data.NBmodule].info, "falcon  - coronagraph routines");
+  strcpy(data.module[data.NBmodule].info, "coffee  - coronagraph routines");
   data.NBmodule++;
 
   strcpy(data.cmd[data.NBcmd].key,"cormk2Dprolate");
