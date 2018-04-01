@@ -25,7 +25,6 @@
 
 #include "OptSystProp/OptSystProp.h"
 
-extern DATA data;
 
 
 
@@ -33,7 +32,16 @@ extern DATA data;
 
 
 
-int OptSystProp_propagateCube(OPTSYST *optsyst, long index, const char *IDin_amp_name, const char *IDin_pha_name, const char *IDout_amp_name, const char *IDout_pha_name, double zprop, int sharedmem)
+int OptSystProp_propagateCube(
+		OPTSYST *optsyst, 
+		long index, 
+		const char *IDin_amp_name, 
+		const char *IDin_pha_name, 
+		const char *IDout_amp_name, 
+		const char *IDout_pha_name, 
+		double zprop, 
+		int sharedmem
+		)
 {
     int kl;
     long ii;

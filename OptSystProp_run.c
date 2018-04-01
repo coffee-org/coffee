@@ -33,7 +33,6 @@
 #include "OptSystProp/OptSystProp.h"
 
 
-extern DATA data;   // datatype DATA defined in CommandLineInterface/CLIcore.h
 
 
 
@@ -51,7 +50,14 @@ extern DATA data;   // datatype DATA defined in CommandLineInterface/CLIcore.h
  * optsyst.elemkeepmem	1 if element complex amplitude should be kept in memory after use
  */
 
-int OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long elemend, const char *savedir, int sharedmem)
+int OptSystProp_run(
+		OPTSYST *optsyst, 
+		long index, 
+		long elemstart, 
+		long elemend, 
+		const char *savedir, 
+		int sharedmem
+		)
 {
     char command[500];
     char imname[200];

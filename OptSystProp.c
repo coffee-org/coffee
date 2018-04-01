@@ -23,7 +23,6 @@
 
 
 
-extern DATA data;
 
 #define SBUFFERSIZE 2000
 
