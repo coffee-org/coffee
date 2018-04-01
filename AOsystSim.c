@@ -50,7 +50,6 @@
 #include "OptSystProp/OptSystProp.h"
 #include "AOsystSim/AOsystSim.h"
 
-extern DATA data;
 
 
 
