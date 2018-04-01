@@ -37,8 +37,6 @@
 
 
 
-extern DATA data;
-
 
 #define CORONAGRAPHSDATALOCAL "/data/tmp/coronagraphs"
 
