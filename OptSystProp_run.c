@@ -3,14 +3,13 @@
  * @brief   Optical propagation execution
  * 
  *  
- * @author  O. Guyon
- * @date    24 nov 2017
  *
  * 
- * | date        |  Code Change                                       |
- * |-------------|----------------------------------------------------|
- * | 2017-11-24  | File creation (broken off from original main .c)   |
  * 
+ * ## Change log
+ * - 20171124  Guyon   File creation (broken off from original main .c)
+ * 
+ * @author  O. Guyon
  * 
  * @bug No known bugs.
  * 
@@ -50,13 +49,12 @@
  * optsyst.elemkeepmem	1 if element complex amplitude should be kept in memory after use
  */
 
-int OptSystProp_run(
-		OPTSYST *optsyst, 
-		long index, 
-		long elemstart, 
-		long elemend, 
-		const char *savedir, 
-		int sharedmem
+int OptSystProp_run(      OPTSYST * optsyst, 
+					      long      index,
+					      long      elemstart, 
+					      long      elemend, 
+					const char *    savedir, 
+					      int       sharedmem
 		)
 {
     char command[500];
