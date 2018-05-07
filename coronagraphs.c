@@ -31,6 +31,9 @@
 #include <gsl/gsl_multimin.h>
 
 
+static int INITSTATUS_coronagraphs = 0;
+
+
 
 #define SWAP(x,y)  tmp=(x);x=(y);y=tmp;
 #define PI 3.14159265358979323846264338328
@@ -291,8 +294,12 @@ int_fast8_t CORONAGRAPHS_scanPIAACMC_centObs_perf_cli()
 
 void __attribute__ ((constructor)) libinit_coronagraphs()
 {
-	init_coronagraphs();
-//	printf(" ...... Loading module %s\n", __FILE__);
+	if ( INITSTATUS_coronagraphs == 0 )
+	{
+		init_coronagraphs();
+		RegisterModule(__FILE__, "coffee", "Coronagraph routines");
+		INITSTATUS_coronagraphs = 1; 
+	}
 }
 
 
@@ -300,11 +307,6 @@ void __attribute__ ((constructor)) libinit_coronagraphs()
 
 int_fast8_t init_coronagraphs()
 {
-  strcpy(data.module[data.NBmodule].name, __FILE__);
-  strcpy(data.module[data.NBmodule].package, "coffee");
-  strcpy(data.module[data.NBmodule].info, "Coronagraph routines");
-  data.NBmodule++;
-
   strcpy(data.cmd[data.NBcmd].key,"cormk2Dprolate");
   strcpy(data.cmd[data.NBcmd].module,__FILE__);
   data.cmd[data.NBcmd].fp = coronagraph_make_2Dprolate_cli;
