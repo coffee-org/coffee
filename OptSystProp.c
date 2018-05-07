@@ -26,7 +26,7 @@
 
 #define SBUFFERSIZE 2000
 
-
+static int INITSTATUS_OptSystProp = 0;
 
 
 
@@ -45,8 +45,12 @@
 
 void __attribute__ ((constructor)) libinit_OptSystProp()
 {
-	init_OptSystProp();
-//	printf(" ...... Loading module %s\n", __FILE__);
+	if ( INITSTATUS_OptSystProp == 0 )
+	{
+		init_OptSystProp();
+		RegisterModule(__FILE__, "coffee", "Optical propagation through system");
+		INITSTATUS_OptSystProp = 1; 
+	}
 }
 
 
@@ -56,12 +60,6 @@ void __attribute__ ((constructor)) libinit_OptSystProp()
 
 int_fast8_t init_OptSystProp()
 {
-    strcpy(data.module[data.NBmodule].name, __FILE__);
-    strcpy(data.module[data.NBmodule].package, "coffee"); 
-    strcpy(data.module[data.NBmodule].info, "Optical propagation through system");
-    data.NBmodule++;
-
-
     // add atexit functions here
    
 
