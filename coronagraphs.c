@@ -393,7 +393,7 @@ double coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double ce
     double x,y,r2;
     long IDr,IDi,IDrcp,IDicp; //,ID1,ID2;
     long IDprolr,IDproli,IDprolp;
-    char fname[200];
+    char fname[1500];
 	long IDpupmask;
 
     int CentralObstructionFlag = 0;
@@ -728,7 +728,7 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
     double x,y,r2;
     long IDr,IDi,IDrcp,IDicp; //,ID1,ID2;
     long IDprolr,IDproli,IDprolp;
-    char fname[200];
+    char fname[600];
     char vname[200];
 	long IDpupmask;
 	
