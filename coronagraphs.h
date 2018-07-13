@@ -1,11 +1,13 @@
-#if !defined(CORONAGRAPHS_H)
-#define CORONAGRAPHS_H
 
-
+#ifndef _CORONAGRAPHS_H
+#define _CORONAGRAPHS_H
 
 #define CORONAGRAPHS_ARRAYSIZE 4096
 
+/** @brief Initialize module. */
+void __attribute__ ((constructor)) libinit_coronagraphs();
 
+/** @brief Initialize command line interface. */
 int_fast8_t init_coronagraphs();
 
 

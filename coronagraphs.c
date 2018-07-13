@@ -1,3 +1,26 @@
+/**
+ * @file    coronagraphs.c
+ * @brief   Simulation of coronagraphs
+ * 
+ * Coronagraphs simulation tools
+ *  
+ * @author  O. Guyon
+ * @date    12 Jul 2018
+ *
+ * 
+ * @bug No known bugs.
+ * 
+ */
+
+#define _GNU_SOURCE
+
+
+/* =============================================================================================== */
+/* =============================================================================================== */
+/*                                        HEADER FILES                                             */
+/* =============================================================================================== */
+/* =============================================================================================== */
+
 #include <stdint.h>
 #include <string.h>
 #include <malloc.h>
@@ -8,6 +31,8 @@
 
 
 #include <sys/stat.h>
+
+
 
 #include "CommandLineInterface/CLIcore.h"
 #include "00CORE/00CORE.h"
@@ -31,21 +56,18 @@
 #include <gsl/gsl_multimin.h>
 
 
-static int INITSTATUS_coronagraphs = 0;
 
 
+
+/* =============================================================================================== */
+/* =============================================================================================== */
+/*                                      DEFINES, MACROS                                            */
+/* =============================================================================================== */
+/* =============================================================================================== */
 
 #define SWAP(x,y)  tmp=(x);x=(y);y=tmp;
 #define PI 3.14159265358979323846264338328
-
-
-
-
 #define CORONAGRAPHSDATALOCAL "/data/tmp/coronagraphs"
-
-static int useDFT = 1;
-static double DFTZFACTOR = 8.0; // zoom factor for DFTs of focal plane masks
-
 
 
 #define CORONAGRAPHS_PSCALE 0.006 //0.05 /* pupil scale [m per pixel] */
@@ -54,6 +76,24 @@ static double DFTZFACTOR = 8.0; // zoom factor for DFTs of focal plane masks
 
 #define CORONAGRAPHS_TDIAM 2.4 /* telescope diameter, in meter */
 #define CORONAGRAPHS_LAMBDA 0.0000005 /* m */
+
+
+
+
+
+/* =============================================================================================== */
+/* =============================================================================================== */
+/*                                  GLOBAL DATA DECLARATION                                        */
+/* =============================================================================================== */
+/* =============================================================================================== */
+
+
+static int INITSTATUS_coronagraphs = 0;
+
+static int useDFT = 1;
+static double DFTZFACTOR = 8.0; // zoom factor for DFTs of focal plane masks
+
+
 
 
 double CORONAGRAPHS_PIXSCALE = CORONAGRAPHS_TDIAM/CORONAGRAPHS_PSCALE/CORONAGRAPHS_ARRAYSIZE; // l/d per pixel
@@ -615,11 +655,19 @@ double coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double ce
         // col 2 is fraction of light going through FPmask
         // col 3 is prolate throughput if not done by PIAA
         // col 4 is peak
-        // ideal complex transmission for FPM is  MASKCAMULT = -(1.0-peak)/peak;
+        // col 5 is central obstruction
+        //
+        // Ideal complex transmission for FPM is MASKCAMULT = -(1.0-peak)/peak;
+        //
         printf("------- MASK SIZE = %f l/D ------\n", MASKSIZELD);
         sprintf(fname, "%s/APLCapo.%.3f.%.3f.info", data.SAVEDIR, MASKSIZELD, centralObs);
         fp = fopen(fname, "w");
         fprintf(fp,"%f %.18f %.18f %.18f %.18f\n", MASKSIZELD, (double) (total/total2), (double) transm, peak, centralObs);
+		fprintf(fp, "# col 1 : Mask size in SYSTEM l/D\n");
+        fprintf(fp, "# col 2 : Fraction of light going through FPmask\n");
+        fprintf(fp, "# col 3 : Prolate throughput if not done by PIAA\n");
+        fprintf(fp, "# col 4 : Peak\n");
+        fprintf(fp, "# col 5 : Central obstruction");
         fclose(fp);
         printf("IDEAL COMPLEX TRANSMISSION = %g\n", -(1.0-peak)/peak);
 
@@ -705,6 +753,8 @@ double coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double ce
 
     return(transm);
 }
+
+
 
 
 
@@ -1018,11 +1068,18 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
         // col 2 is fraction of light going through FPmask
         // col 3 is prolate throughput if not done by PIAA
         // col 4 is peak
-        // ideal complex transmission for FPM is  MASKCAMULT = -(1.0-peak)/peak;
+        // ideal complex transmission for FPM is MASKCAMULT = -(1.0-peak)/peak;
         printf("------- MASK SIZE = %f l/D ------\n", MASKSIZELD);
         sprintf(fname, "%s/APLCapo.%.3f.%.3f.info", data.SAVEDIR, MASKSIZELD, centralObs);
+
         fp = fopen(fname, "w");
         fprintf(fp,"%f %.18f %.18f %.18f\n", MASKSIZELD, (double) (total/total2), (double) transm, peak);
+        fprintf(fp, "# Created by %s line %d\n", __FILE__, __LINE__);
+        fprintf(fp, "# col 1: Mask size in SYSTEM l/D\n");
+        fprintf(fp, "# col 2: Fraction of light going through FPmask\n");
+        fprintf(fp, "# col 3: Prolate throughput if not done by PIAA\n");
+        fprintf(fp, "# col 4: Peak\n");
+        fprintf(fp, "# ideal complex transmission for FPM is MASKCAMULT = %.18f\n", -(1.0-peak)/peak);
         fclose(fp);
         printf("IDEAL COMPLEX TRANSMISSION = %g\n",-(1.0-peak)/peak);
 
@@ -1079,13 +1136,10 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
             //	  exit(0);
         }
 
-
-
         delete_image_ID("pc1");
         delete_image_ID("pc3");
         delete_image_ID("pr2");
         delete_image_ID("pi2");
-
     }
 
     for(ii=0; ii<size2; ii++)
@@ -1107,6 +1161,11 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
     delete_image_ID("prolp");
     delete_image_ID("pupp0m");
 
+
+	printf("Gentle stop ...\n");//TEST
+	sleep(10000.0);
+	fflush(stdout);
+	
     return(transm);
 }
 
