@@ -1000,27 +1000,29 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
     double tmpv1, tmpv2, tmpv3, tmpv4;
     double tmpC;
 
-/*    double lambda_V = 0.545e-6;
+    double lambda_V = 0.545e-6;
     double zeropt_V = 9.9690e10;
 
     double lambda_R = 0.638e-6;
     double zeropt_R = 7.2384e10;
-*/
+
     double lambda_I = 0.797e-6;
     double zeropt_I = 4.5825e10;
-/*
+
     double lambda_J = 1.22e-6;
     double zeropt_J = 1.9422e10;
-*/
+
     double lambda_H = 1.63e-6;
     double zeropt_H = 9.4440e9;
-/*
+
     double lambda_K = 2.19e-6;
     double zeropt_K = 4.3829e9;
 
     double lambda_L = 3.45e-6;
     double zeropt_L = 1.2292e9;
-*/
+
+
+
     double zeroptWFS;
     double zeroptWFSsci;
 
@@ -1047,14 +1049,14 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
     exaosimconf = (EXAOSIMCONF*) malloc(sizeof(EXAOSIMCONF));
 
     // initialization
-    exaosimconf[0].lambda0 = 0.55e-6;
-    exaosimconf[0].lambdai = 1.63e-6;
-    exaosimconf[0].lambdawfs = 0.8e-6;
-    exaosimconf[0].D = 30.0;
-    exaosimconf[0].r0 = 0.15;
-    exaosimconf[0].windspeed = 10.0;
-    exaosimconf[0].betapWFS = sqrt(2.0);
-    exaosimconf[0].betaaWFS = sqrt(2.0);
+    exaosimconf[0].lambda0     = 0.55e-6;
+    exaosimconf[0].lambdai     = 1.63e-6;
+    exaosimconf[0].lambdawfs   = 0.8e-6;
+    exaosimconf[0].D           = 30.0;
+    exaosimconf[0].r0          = 0.15;
+    exaosimconf[0].windspeed   = 10.0;
+    exaosimconf[0].betapWFS    = sqrt(2.0);
+    exaosimconf[0].betaaWFS    = sqrt(2.0);
     exaosimconf[0].betapWFSsci = 2.0;
     exaosimconf[0].betaaWFSsci = 2.0;
     exaosimconf[0].framedelayMult = 1.0; // multiplicative factor on sampling time 
@@ -1093,9 +1095,20 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
 	// M4 star at 5pc
     sourcemag_wfs = 8.46;
     sourcemag_sci = 6.33;
+    // Ross 128
+    sourcemag_wfs = 8.184; // I band
+    sourcemag_wfs = 6.505; // H band
+    
 	exaosimconf[0].D = 30.0;
 	exaosimconf[0].windspeed = 10.0;
 	WFStlim = 0.0002;
+
+
+    zeroptWFS = zeropt_I;
+    exaosimconf[0].lambdawfs = lambda_I;
+
+    zeroptWFSsci = zeropt_J;
+    exaosimconf[0].lambdai = lambda_J;
 
 
 		// refraction
@@ -1125,11 +1138,7 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
     }
 
 
-    zeroptWFS = zeropt_I;
-    exaosimconf[0].lambdawfs = lambda_I;
 
-    zeroptWFSsci = zeropt_H;
-    exaosimconf[0].lambdai = lambda_H;
 
 
     exaosimconf[0].Fwfs = zeroptWFS*1.0e6*(exaosimconf[0].lambdawfs*lambdaBwfs)*pow(100.0, -0.2*sourcemag_wfs)*lambdaBwfs*systemEfficiency;
