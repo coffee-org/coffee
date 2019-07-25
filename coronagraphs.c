@@ -4,9 +4,6 @@
  * 
  * Coronagraphs simulation tools
  *  
- * @author  O. Guyon
- * @date    12 Jul 2018
- *
  * 
  * @bug No known bugs.
  * 
@@ -762,7 +759,14 @@ double coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double ce
 // High definition prolate computation
 // Uses DFT
 //
-double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, double centralObs, const char *outname, long size, const char *pupmask_name)
+double coronagraph_make_2Dprolate_DFT(
+    double fpmradpix,
+    double beamradpix,
+    double centralObs,
+    const char *outname,
+    long size,
+    const char *pupmask_name
+)
 {
     FILE *fp;
     long size2;
@@ -780,8 +784,8 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
     long IDprolr,IDproli,IDprolp;
     char fname[600];
     char vname[200];
-	long IDpupmask;
-	
+    long IDpupmask;
+
     int CentralObstructionFlag = 0;
     long IDpupa0co;
 
@@ -901,7 +905,7 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
     {
         //      printf("Creating pupil, radius = %f\n", beamradpix);
         IDpupa0 = make_disk("pupa0", size, size, size/2, size/2, beamradpix);
-        
+
         if(CentralObstructionFlag == 1)
         {
             //  printf("Central obstruction = %f\n", beamradpix*centralObs);
@@ -910,23 +914,23 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
                 data.image[IDpupa0].array.F[ii] -= data.image[IDpupa0co].array.F[ii];
             delete_image_ID("pupa0co");
         }
-        
-     //   save_fits("pupa0", "!test_pupa00.fits"); //TEST
+
+        //   save_fits("pupa0", "!test_pupa00.fits"); //TEST
         IDpupmask = image_ID(pupmask_name);
         if(IDpupmask != -1)
-			{
-				for(ii=0; ii<size*size; ii++)
-					data.image[IDpupa0].array.F[ii] *= data.image[IDpupmask].array.F[ii];
-			}
-      //  save_fits("pupa0", "!test_pupa0.fits"); //TEST
-    //    save_fits(pupmask_name, "!test_pupamask.fits");//TEST
-	//printf("Test wait\n");
-	//list_image_ID();
-	//	sleep(100.0); // TEST
+        {
+            for(ii=0; ii<size*size; ii++)
+                data.image[IDpupa0].array.F[ii] *= data.image[IDpupmask].array.F[ii];
+        }
+        //  save_fits("pupa0", "!test_pupa0.fits"); //TEST
+        //    save_fits(pupmask_name, "!test_pupamask.fits");//TEST
+        //printf("Test wait\n");
+        //list_image_ID();
+        //	sleep(100.0); // TEST
     }
-	//else
-	//	 save_fits("pupa0", "!test__pupa0.fits");//TEST
-		
+    //else
+    //	 save_fits("pupa0", "!test__pupa0.fits");//TEST
+
     //  save_fl_fits("pupa0", "!pupa00.fits");
 
     total0 = 0.0;
@@ -996,8 +1000,8 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
         }
 
         mk_complex_from_amph("pupa0m", "pupp0", "pc1", 0);
-	//	save_fits("pupa0m", "!test_pupa0m.fits");//TEST
-	//	sleep(100.0);//TEST
+        //	save_fits("pupa0m", "!test_pupa0m.fits");//TEST
+        //	sleep(100.0);//TEST
 
         //
         // insert focal plane mask
@@ -1162,10 +1166,6 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
     delete_image_ID("pupp0m");
 
 
-	printf("Gentle stop ...\n");//TEST
-	sleep(10000.0);
-	fflush(stdout);
-	
     return(transm);
 }
 
