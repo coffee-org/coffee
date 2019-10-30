@@ -28,6 +28,7 @@
 int init_AOsystSim();
 
 
+void __attribute__ ((constructor)) libinit_AOsystSim();
 
 
 /** @brief Run AO system simulation
