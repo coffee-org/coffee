@@ -1030,9 +1030,9 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
 
     double sourcemag_wfs;
     double sourcemag_sci;
-    double lambdaBwfs = 0.4; // dlambda/lambda
-    double lambdaBsci = 0.4; // dlambda/lambda
-    double systemEfficiency = 0.3;
+    double lambdaBwfs = 0.2; // dlambda/lambda
+    double lambdaBsci = 0.2; // dlambda/lambda
+    double systemEfficiency = 0.2;
 
     double coeff;
     FILE *fp;
@@ -1055,16 +1055,18 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
 
     // TARGET
     // Ross 128
-    sourcemag_wfs = 8.184; // I band
-    sourcemag_sci = 6.505; // H band
+
 
 
     // WAVELENGTH
 
     zeroptWFS = zeropt_I;
     exaosimconf[0].lambdawfs = lambda_I;
+	sourcemag_wfs = 9.0; // I band, M4 star at 5pc
+
     zeroptWFSsci = zeropt_J;
     exaosimconf[0].lambdai = lambda_J;
+	sourcemag_sci = 7.3; // J band, M4 star at 5pc
 
 
     // ATMOSPHERE
@@ -1091,17 +1093,17 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
 
 
     // WFS
-    WFStlim = 0.0001;      // WFS min effective exposure time
+    WFStlim = 0.001; //33333;      // WFS min effective exposure time
     exaosimconf[0].lambda0     = 0.55e-6;
     exaosimconf[0].betapWFS    = sqrt(2.0);
     exaosimconf[0].betaaWFS    = sqrt(2.0);
     exaosimconf[0].betapWFSsci = 2.0;
     exaosimconf[0].betaaWFSsci = 2.0;
-    sciWFStlim = 0.0000; // sci WFS min exposure time
+    sciWFStlim = 0.001; // sci WFS min exposure time
 
 
 
-    exaosimconf[0].framedelayMult = 1.0; // multiplicative factor on sampling time
+    exaosimconf[0].framedelayMult = 2.0; // multiplicative factor on sampling time
     nwfs = OPTICSMATERIALS_n( OPTICSMATERIALS_code("Air"), exaosimconf[0].lambdawfs);
     nsci = OPTICSMATERIALS_n( OPTICSMATERIALS_code("Air"), exaosimconf[0].lambdai);
 
@@ -1156,9 +1158,9 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
     fflush(stdout);
 
 
-    fp = fopen("result.out.txt", "w");
+    fp = fopen("ContrastTerms.out.txt", "w");
 
-
+    int initprint = 0;
     for(exaosimconf[0].alpha_arcsec=0.010; exaosimconf[0].alpha_arcsec<2.0; exaosimconf[0].alpha_arcsec+=0.001)
     {
         double tmpA, tmpB;
@@ -1188,7 +1190,7 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
         // exaosimconf[0].f is the spatial frequency that will create speckle at alpha_arcsec at lambdasci
 
 
-        if(0) // SHWFS
+        if(1) // SHWFS
         {
             dsa=0.15;
             exaosimconf[0].betapWFS = 1.48/(exaosimconf[0].f*dsa)*sqrt(1.0+(dsa*dsa/exaosimconf[0].r0/exaosimconf[0].r0));
@@ -1287,7 +1289,7 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
         exaosimconf[0].CC_OMUL = exaosimconf[0].CP_UOPD * (nwfs-nsci)/(nwfs-1.0) * (nwfs-nsci)/(nwfs-1.0);
         exaosimconf[0].CC_AMUL = exaosimconf[0].CP_UAMP * (nwfs-nsci)/(nwfs-1.0) * (nwfs-nsci)/(nwfs-1.0);
 
-        // cromatic propagation
+        // chromatic propagation
         exaosimconf[0].CC_OPRO = exaosimconf[0].CP_UOPD * exaosimconf[0].dX;
         exaosimconf[0].CC_APRO = exaosimconf[0].CP_UAMP * exaosimconf[0].dY;
 
@@ -1311,16 +1313,16 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
 
 
         // CONTRAST TERM CORRECTED PHASE AT WFS
-        exaosimconf[0].C2_wfs = exaosimconf[0].C2 * pow( exaosimconf[0].lambdai/exaosimconf[0].lambdawfs,2.0);
+        //exaosimconf[0].C2_wfs = exaosimconf[0].C2 * pow( exaosimconf[0].lambdai/exaosimconf[0].lambdawfs,2.0);
 
         //
         exaosimconf[0].twfs_opt_amp = exaosimconf[0].twfs_opt*pow(exaosimconf[0].X/exaosimconf[0].Y, 1.0/3.0)*pow(exaosimconf[0].betaaWFS/exaosimconf[0].betapWFS,2.0/3.0);
-        exaosimconf[0].C3 = exaosimconf[0].C2*pow(exaosimconf[0].Y/exaosimconf[0].X, 1.0/3.0)*pow(exaosimconf[0].betaaWFS/exaosimconf[0].betapWFS,4.0/3.0);
+        //exaosimconf[0].C3 = exaosimconf[0].C2*pow(exaosimconf[0].Y/exaosimconf[0].X, 1.0/3.0)*pow(exaosimconf[0].betaaWFS/exaosimconf[0].betapWFS,4.0/3.0);
 
-        exaosimconf[0].C4 = exaosimconf[0].CP_UOPD*exaosimconf[0].dX;
-        exaosimconf[0].C5 = exaosimconf[0].CP_UAMP*exaosimconf[0].dY;
+        //exaosimconf[0].C4 = exaosimconf[0].CP_UOPD*exaosimconf[0].dX;
+        //exaosimconf[0].C5 = exaosimconf[0].CP_UAMP*exaosimconf[0].dY;
 
-        exaosimconf[0].C6 = exaosimconf[0].CP_UOPD * pow((nwfs-nsci)/(1.0-0.5*(nwfs+nsci)), 2.0);
+        //exaosimconf[0].C6 = exaosimconf[0].CP_UOPD * pow((nwfs-nsci)/(1.0-0.5*(nwfs+nsci)), 2.0);
 
 
 
@@ -1337,25 +1339,25 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
         crosstime = exaosimconf[0].D/exaosimconf[0].windspeed;
         printf("CP_OPD contrast = %20g\n", exaosimconf[0].CP_UOPD);
         printf("CP_AMP contrast = %20g\n", exaosimconf[0].CP_UAMP);
-        printf("C2 contrast = %20g \n", exaosimconf[0].C2);
+        //printf("C2 contrast = %20g \n", exaosimconf[0].C2);
         printf("   WFS  lag = %20g    %20g\n", pow(M_PI*exaosimconf[0].hfca/exaosimconf[0].lambdai, 2.0), pow(M_PI*exaosimconf[0].hfca/exaosimconf[0].lambdai, 2.0)/sqrt(tobs/crosstime)*2.0);
         printf("   WFS noise= %20g    %20g\n", pow(M_PI*exaosimconf[0].hfcb/exaosimconf[0].lambdai, 2.0), pow(M_PI*exaosimconf[0].hfcb/exaosimconf[0].lambdai, 2.0)/sqrt(tobs/exaosimconf[0].twfs)*2.0);
-        printf("C3 contrast = %20g    %20g\n", exaosimconf[0].C3, exaosimconf[0].C3/sqrt(tobs/crosstime)*2.0);
-        printf("C4 contrast = %20g    %20g\n", exaosimconf[0].C4, exaosimconf[0].C4/sqrt(tobs/crosstime)*2.0);
-        printf("C5 contrast = %20g    %20g\n", exaosimconf[0].C5, exaosimconf[0].C5/sqrt(tobs/crosstime)*2.0);
-        printf("C6 contrast = %20g    %20g\n", exaosimconf[0].C6, exaosimconf[0].C6/sqrt(tobs/crosstime)*2.0);
-        exaosimconf[0].Csum = exaosimconf[0].C2+exaosimconf[0].C3+exaosimconf[0].C4+exaosimconf[0].C5+exaosimconf[0].C6;
-        exaosimconf[0].Csum_detection = pow(M_PI*exaosimconf[0].hfca/exaosimconf[0].lambdai, 2.0)/sqrt(tobs/crosstime)*2.0 + pow(M_PI*exaosimconf[0].hfcb/exaosimconf[0].lambdai, 2.0)/sqrt(tobs/exaosimconf[0].twfs)*2.0 + exaosimconf[0].C3/sqrt(tobs/crosstime)*2.0 + exaosimconf[0].C4/sqrt(tobs/crosstime)*2.0 + exaosimconf[0].C5/sqrt(tobs/crosstime)*2.0+exaosimconf[0].C6/sqrt(tobs/crosstime)*2.0;
-        printf("TOTAL CONTRAST = %20g   %20g\n", exaosimconf[0].Csum, exaosimconf[0].Csum_detection);
-        printf("WFS speckle  contrast = %g    ph per WFS speckle per frame = %g\n", exaosimconf[0].C2_wfs, exaosimconf[0].C2_wfs*exaosimconf[0].twfs_opt*exaosimconf[0].Fwfs*exaosimconf[0].D*exaosimconf[0].D/4.0);
-        printf("Time lag speckle lifetime = %.4f sec (intensity), %.4f sec (complex amplitude)\n", exaosimconf[0].D/exaosimconf[0].windspeed, (1.0/exaosimconf[0].f)/exaosimconf[0].windspeed/2.0/M_PI);
+        //printf("C3 contrast = %20g    %20g\n", exaosimconf[0].C3, exaosimconf[0].C3/sqrt(tobs/crosstime)*2.0);
+        //printf("C4 contrast = %20g    %20g\n", exaosimconf[0].C4, exaosimconf[0].C4/sqrt(tobs/crosstime)*2.0);
+        //printf("C5 contrast = %20g    %20g\n", exaosimconf[0].C5, exaosimconf[0].C5/sqrt(tobs/crosstime)*2.0);
+        //printf("C6 contrast = %20g    %20g\n", exaosimconf[0].C6, exaosimconf[0].C6/sqrt(tobs/crosstime)*2.0);
+        //exaosimconf[0].Csum = exaosimconf[0].C2+exaosimconf[0].C3+exaosimconf[0].C4+exaosimconf[0].C5+exaosimconf[0].C6;
+        //exaosimconf[0].Csum_detection = pow(M_PI*exaosimconf[0].hfca/exaosimconf[0].lambdai, 2.0)/sqrt(tobs/crosstime)*2.0 + pow(M_PI*exaosimconf[0].hfcb/exaosimconf[0].lambdai, 2.0)/sqrt(tobs/exaosimconf[0].twfs)*2.0 + exaosimconf[0].C3/sqrt(tobs/crosstime)*2.0 + exaosimconf[0].C4/sqrt(tobs/crosstime)*2.0 + exaosimconf[0].C5/sqrt(tobs/crosstime)*2.0+exaosimconf[0].C6/sqrt(tobs/crosstime)*2.0;
+        //printf("TOTAL CONTRAST = %20g   %20g\n", exaosimconf[0].Csum, exaosimconf[0].Csum_detection);
+        //printf("WFS speckle  contrast = %g    ph per WFS speckle per frame = %g\n", exaosimconf[0].C2_wfs, exaosimconf[0].C2_wfs*exaosimconf[0].twfs_opt*exaosimconf[0].Fwfs*exaosimconf[0].D*exaosimconf[0].D/4.0);
+        //printf("Time lag speckle lifetime = %.4f sec (intensity), %.4f sec (complex amplitude)\n", exaosimconf[0].D/exaosimconf[0].windspeed, (1.0/exaosimconf[0].f)/exaosimconf[0].windspeed/2.0/M_PI);
 
 
         // NEAR-IR LOOP
 
 
         // time lag attenuation
-        tmpA = 2.0*M_PI*exaosimconf[0].hfca*exaosimconf[0].windspeed*exaosimconf[0].f*exaosimconf[0].framedelayMult;
+        /*tmpA = 2.0*M_PI*exaosimconf[0].hfca*exaosimconf[0].windspeed*exaosimconf[0].f*exaosimconf[0].framedelayMult;
         tmpB = exaosimconf[0].lambdai/M_PI * exaosimconf[0].betapWFSsci / sqrt(exaosimconf[0].Fsci * M_PI) / exaosimconf[0].D;
         exaosimconf[0].twfssci_opt = pow(0.5*tmpB/tmpA*tmpB/tmpA, 1.0/3.0);
         exaosimconf[0].twfssci = exaosimconf[0].twfssci_opt;
@@ -1372,9 +1374,10 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
 
         exaosimconf[0].C9 = att2*exaosimconf[0].C4;
         exaosimconf[0].C10 = att2*exaosimconf[0].C5;
-
+*/
 
         // refractive index chromaticity attenuation
+        /*
         tmpA = 2.0*M_PI*exaosimconf[0].hf*(nwfs-nsci)/(1.0-0.5*(nwfs+nsci))*exaosimconf[0].windspeed*exaosimconf[0].f*exaosimconf[0].framedelayMult;
         tmpB = exaosimconf[0].lambdai/M_PI * exaosimconf[0].betapWFSsci / sqrt(exaosimconf[0].Fsci * M_PI) / exaosimconf[0].D;
         exaosimconf[0].twfssci_opt = pow(0.5*tmpB/tmpA*tmpB/tmpA, 1.0/3.0);
@@ -1398,69 +1401,83 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
         exaosimconf[0].Csum2ave += pow(M_PI*exaosimconf[0].hfcb/exaosimconf[0].lambdai, 2.0)/sqrt(tobs/exaosimconf[0].twfs)*2.0;
         exaosimconf[0].Csum2ave += exaosimconf[0].C8/sqrt(tobs/exaosimconf[0].twfssci)*2.0;
         exaosimconf[0].Csum2ave += exaosimconf[0].C9/sqrt(tobs/exaosimconf[0].twfssci)*2.0;
-        // #1 : arcsec
-        // #2 : f [m-1]
-        // #3 : CP_UOPD  uncorrected OPD
-        // #4 : CP_UAMP  uncorrected amplitude
+*/
 
-        // #5 : X
-        // #6 : Y
-        // #7 : Xwfs
-        // #8 : Ywfs
+        if(initprint==0)
+        {
+            fprintf(fp, "# col # 1 : arcsec\n");
 
-        // #9 : dX
-        // #10 : dY
+            fprintf(fp, "# col # 2 : f [m-1]\n");
+            fprintf(fp, "# col # 3 : CP_UOPD  uncorrected OPD\n");
+            fprintf(fp, "# col # 4 : CP_UAMP  uncorrected amplitude\n");
 
-        // #11 : CP_OPHN
-        // #12 : CP_OTEM
-        // #13 : exaosimconf[0].twfs_opt Optimal effective WFS exposure time for OPD correction
+            fprintf(fp, "# col # 5 : X\n");
+            fprintf(fp, "# col # 6 : Y\n");
+            fprintf(fp, "# col # 7 : Xwfs\n");
+            fprintf(fp, "# col # 8 : Ywfs\n");
 
-        // #14 : CP_APHN
-        // #15 : CP_ATEM
-        // #16 : exaosimconf[0].twfs_Aopt Optimal effective WFS exposure time for AMP correction
+            fprintf(fp, "# col # 9 : dX\n");
+            fprintf(fp, "# col #10 : dY\n");
+            
+            fprintf(fp, "# col #11 : betaaWFS\n");
+            fprintf(fp, "# col #12 : betapWFS\n");
 
-        // ----------------------------------
-        // #17 : CC_OMUL
-        // #18 : CC_AMUL
-        //
-        // #19 : CC_OPRO
-        // #20 : CC_APRO
-        //
-        // #21 : CC_ORPA
-        // #22 : CC_ARPA
-        //
+            fprintf(fp, "# col #13 : CR_OPHN (log10)\n");
+            fprintf(fp, "# col #14 : CR_OTEM (log10)\n");
+            fprintf(fp, "# col #15 : exaosimconf[0].twfs_opt Optimal effective WFS exposure time for OPD correction\n");
 
-        // #9 : Csum
-        // #10 : Csum_detection [5 sig]
-        // #11 : wfs etime
-        // #12 : ph/frame
+            fprintf(fp, "# col #16 : CR_APHN (log10)\n");
+            fprintf(fp, "# col #17 : CR_ATEM (log10)\n");
+            fprintf(fp, "# col #18 : exaosimconf[0].twfs_Aopt Optimal effective WFS exposure time for AMP correction\n");
 
-        // #13 : C7  time lag correction residual (C2 ->)
-        // #14 : C8 (C3->)
-        // #15 : C9 (C4->)
-        // #16 : C10 (C5->)
-        // #17 : C11 (C6->)
-        // #18 : RAW CONTRAST
-        // #19 : Detection limit [5 sig]
-        // #20 : Photon noise limit 1hr [5 sig]
-        // #21 : wfs etime
-        // #22 : near-IR ph/speckle/frame
+            fprintf(fp, "# col #19 : CC_OMUL (log10)\n");
+            fprintf(fp, "# col #20 : CC_AMUL (log10)\n");
 
-        // #23 : photon noise limit loop 1
+            fprintf(fp, "# col #21 : CC_OPRO (log10)\n");
+            fprintf(fp, "# col #22 : CC_APRO (log10)\n");
+
+            fprintf(fp, "# col #23 : CC_ORPA (log10)\n");
+            fprintf(fp, "# col #24 : CC_ARPA (log10)\n");
 
 
-        fprintf(fp, "%10f  %10f    %15g %15g   %10.8f %10.8f %10.8f %10.8f   %10.8f %10.8f    %15g %15g   %10.8f   %15g %15g   %10.8g   %15g %15g   %15g %15g   %15g %15g\n",
-                exaosimconf[0].alpha_arcsec, exaosimconf[0].f,
-                log10(exaosimconf[0].CP_UOPD), log10(exaosimconf[0].CP_UAMP),
-                exaosimconf[0].X, exaosimconf[0].Y, exaosimconf[0].Xwfs, exaosimconf[0].Ywfs,
-                exaosimconf[0].dX, exaosimconf[0].dY,
-                log10(exaosimconf[0].CP_OPHN), log10(exaosimconf[0].CP_OTEM),
-                exaosimconf[0].twfs_opt,
-                log10(exaosimconf[0].CP_APHN), log10(exaosimconf[0].CP_ATEM),
-                exaosimconf[0].twfs_Aopt,
-                log10(exaosimconf[0].CC_OMUL), log10(exaosimconf[0].CC_AMUL),
-                log10(exaosimconf[0].CC_OPRO), log10(exaosimconf[0].CC_APRO),
-                log10(exaosimconf[0].CC_ORPA), log10(exaosimconf[0].CC_ARPA));
+
+            fprintf(fp, "\n");
+            initprint = 1;
+        }
+
+        /*        printf(fp," col #9 : Csum\n");
+                printf(fp," col #10 : Csum_detection [5 sig]\n");
+                printf(fp," col #11 : wfs etime\n");
+                printf(fp," col #12 : ph/frame\n");
+
+                printf(fp," col #13 : C7  time lag correction residual (C2 ->)\n");
+                printf(fp," col #14 : C8 (C3->)\n");
+                printf(fp," col #15 : C9 (C4->)\n");
+                printf(fp," col #16 : C10 (C5->)\n");
+                printf(fp," col #17 : C11 (C6->)\n");
+                printf(fp," col #18 : RAW CONTRAST\n");
+                printf(fp," col #19 : Detection limit [5 sig]\n");
+                printf(fp," col #20 : Photon noise limit 1hr [5 sig]\n");
+                printf(fp," col #21 : wfs etime\n");
+                printf(fp," col #22 : near-IR ph/speckle/frame\n");
+
+                printf(fp," col #23 : photon noise limit loop 1\n");*/
+       
+
+        fprintf(fp, "%10f  %10f    ", exaosimconf[0].alpha_arcsec, exaosimconf[0].f);
+        fprintf(fp, " %15g %15g   ", log10(exaosimconf[0].CP_UOPD), log10(exaosimconf[0].CP_UAMP));
+        fprintf(fp, "%10.8f %10.8f %10.8f %10.8f   ", exaosimconf[0].X, exaosimconf[0].Y, exaosimconf[0].Xwfs, exaosimconf[0].Ywfs);
+        fprintf(fp, "%10.8f %10.8f    ", exaosimconf[0].dX, exaosimconf[0].dY);
+        fprintf(fp, "%10.8f %10.8f    ", exaosimconf[0].betaaWFS, exaosimconf[0].betapWFS);
+        fprintf(fp, "%15g %15g   ", log10(exaosimconf[0].CP_OPHN), log10(exaosimconf[0].CP_OTEM));
+        fprintf(fp, "%10.8f   ", exaosimconf[0].twfs_opt);
+        fprintf(fp, "%15g %15g   ", log10(exaosimconf[0].CP_APHN), log10(exaosimconf[0].CP_ATEM));
+        fprintf(fp, "%10.8g   ", exaosimconf[0].twfs_Aopt);
+        fprintf(fp, "%15g %15g   ", log10(exaosimconf[0].CC_OMUL), log10(exaosimconf[0].CC_AMUL));
+        fprintf(fp, "%15g %15g   ", log10(exaosimconf[0].CC_OPRO), log10(exaosimconf[0].CC_APRO));
+        fprintf(fp, "%15g %15g   ", log10(exaosimconf[0].CC_ORPA), log10(exaosimconf[0].CC_ARPA));
+        fprintf(fp, "\n");
+     
 
         //        exaosimconf[0].twfs, exaosimconf[0].twfs*exaosimconf[0].Fwfs*exaosimconf[0].D*exaosimconf[0].D/4.0, log10(exaosimconf[0].C7), log10(exaosimconf[0].C8), log10(exaosimconf[0].C9), log10(exaosimconf[0].C10), log10(exaosimconf[0].C11), log10(exaosimconf[0].Csum2), log10(exaosimconf[0].Csum2ave*5), log10(5.0*exaosimconf[0].Csum2/sqrt(tobs*exaosimconf[0].Fsci*exaosimconf[0].D*exaosimconf[0].D/4.0*exaosimconf[0].Csum2)), exaosimconf[0].twfssci, exaosimconf[0].twfssci*exaosimconf[0].Fsci*exaosimconf[0].D*exaosimconf[0].D/4.0*exaosimconf[0].Csum2, log10(5.0*exaosimconf[0].Csum/sqrt(tobs*exaosimconf[0].Fsci*exaosimconf[0].D*exaosimconf[0].D/4.0*exaosimconf[0].Csum)));
         //      printf("Nphoton Sci = %g\n",tobs*exaosimconf[0].Fsci*exaosimconf[0].D*exaosimconf[0].D/4.0*exaosimconf[0].Csum2);
@@ -1469,13 +1486,30 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
     fclose(fp);
 
     fp = fopen("printcmd", "w");
+    fprintf(fp, "# gnuplot script\n");
+    fprintf(fp, "gnuplot << EOF\n");
+    fprintf(fp, "set term pngcairo size 1024,768\n");
+    fprintf(fp, "set out \"ContrastTerms.png\"\n");
+
+	fprintf(fp, "set grid\n");
+	fprintf(fp, "set size 1,1\n");
+	fprintf(fp, "set xlabel \"Angular Separation [arcsec]\"\n");
+	fprintf(fp, "set ylabel \"Raw Contrast [10-base log]\"\n");
+	
+    fprintf(fp, "plot [0:0.3][-11:0] \"ContrastTerms.out.txt\" u 1:13 lw 3 w l title \"Residual OPD correction error - WFS photon noise [CR_{OPHN}]\"");
+    fprintf(fp, ", \"ContrastTerms.out.txt\" u 1:14 lw 3 w l title \"Residual OPD correction error - Temporal lag [CR_{OTEM}]\"");
+    fprintf(fp, ", \"ContrastTerms.out.txt\" u 1:4 lw 3 w l title \"Residual Amplitude - Scintillation [CR_{UAMP}]\"");
+    fprintf(fp, ", \"ContrastTerms.out.txt\" u 1:16 lw 3 w l title \"Residual Amplitude correction error - WFS photon noise [CR_{APHN}]\"");
+    fprintf(fp, ", \"ContrastTerms.out.txt\" u 1:17 lw 3 w l title \"Residual Amplitude correction error - Temporal lag [CR_{ATEM}]\"");
+    fprintf(fp, ", \"ContrastTerms.out.txt\" u 1:19 lw 3 w l title \"Chromatic OPD - Multiplicative refractivity [CC_{OMUL}]\"");
+    fprintf(fp, ", \"ContrastTerms.out.txt\" u 1:20 lw 3 w l title \"Chromatic Amplitude - Multiplicative refractivity [CC_{AMUL}]\"");
+    fprintf(fp, ", \"ContrastTerms.out.txt\" u 1:21 lw 3 w l title \"Chromatic OPD - Fresnel propagation [CC_{OPRO}]\"");
+    fprintf(fp, ", \"ContrastTerms.out.txt\" u 1:22 lw 3 w l title \"Chromatic Amplitude - Fresnel propagation [CC_{APRO}]\"");
+    fprintf(fp, ", \"ContrastTerms.out.txt\" u 1:23 lw 3 w l title \"Chromatic OPD - Refractive Light Path [CC_{OPRA}]\"");
+    fprintf(fp, ", \"ContrastTerms.out.txt\" u 1:24 lw 3 w l title \"Chromatic Amplitude - Refractive Light Path [CC_{APRA}]\"");
     fprintf(fp, "\n");
-    fprintf(fp, "\n");
-    fprintf(fp, "\n");
-    fprintf(fp, "\n");
-    fprintf(fp, "\n");
-    fprintf(fp, "\n");
-    fprintf(fp, "\n");
+    fprintf(fp, "exit\n");
+    fprintf(fp, "EOF\n");
     fprintf(fp, "\n");
     fclose(fp);
 
