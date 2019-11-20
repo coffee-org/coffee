@@ -75,7 +75,7 @@
 	url = https://github.com/milk-org/image_basic
 [submodule "src/WFpropagate"]
 	path = src/WFpropagate
-	url = https://github.com/AtmoTurbu/WFpropagate
+	url = https://github.com/cacao-org/WFpropagate
 [submodule "src/OpticsMaterials"]
 	path = src/OpticsMaterials
 	url = https://github.com/AtmoTurbu/OpticsMaterials

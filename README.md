@@ -26,22 +26,60 @@ coffee uses [milk](https://github.com/milk-org/milk)
 ---
 
 
-## Downloading and Installing 
+
+### Install steps
 
 
-The coffee package follows the standard git clone steps and GNU build process :
+```bash
+git clone --recursive https://github.com/coffee-org/coffee coffee
+cd coffee
+mkdir _build
+cd _build
+cmake ..
+# If you use NVIDIA GPUs, install cuda and magma libraries, and use "cmake .. -DUSE_MAGMA=ON"
+make
+sudo make install
+```
 
-	git clone --recursive https://github.com/coffee-org/coffee
-	cd coffee
-	autoreconf -vif
-	./configure
-	make
-	make install
 
-Note: On OS X you need to use gcc-mp-5 for openMP:
 
-	./configure "CC=/opt/local/bin/gcc-mp-5" CPPFLAGS="-I/usr/include/malloc/ -I/opt/local/include/readline" LDFLAGS="-L/opt/local/lib/"
-(Replace "/opt/local/" is the location of your installed libraries. )
+### Post-installation 
+
+You may need to add /usr/local/lib to LD_LIBRARY_PATH environment variable:
+```bash
+echo "/usr/local/lib" > usrlocal.conf
+sudo mv usrlocal.conf /etc/ld.so.conf.d/
+sudo ldconfig -v
+```
+
+
+Unless you have a separate install of milk on your system, a symbolic link to milk is required for milk scripts that are included in cacao:
+
+```bash
+sudo ln -s /usr/local/bin/coffee /usr/local/bin/milk
+```
+
+Create local bin directory and sym links to all cacao- scripts:
+```bash
+mkdir bin
+cd bin
+find /home/scexao/src/coffee/ -executable -type f -name "milk-*" -print0 | xargs -0 -I {} ln -s {} .
+find /home/scexao/src/coffee/ -executable -type f -name "cacao-*" -print0 | xargs -0 -I {} ln -s {} .
+```
+
+Add milk and cacao executable scripts to PATH environment variable. Add this line to the .bashrc file (change source code location as needed):
+```bash
+export PATH=$PATH:/home/myname/src/coffee/bin
+export PATH=$PATH:/home/myname/src/coffee/src/CommandLineInterface/scripts
+```
+
+OPTIONAL: Create tmpfs disk for high performance I/O:
+```bash
+echo "tmpfs /milk/shm tmpfs rw,nosuid,nodev" | sudo tee -a /etc/fstab
+sudo mkdir -p /milk/shm
+sudo mount /milk/shm
+```
+
 
 
 ---
@@ -71,8 +109,6 @@ See [coding standards]( https://coffee-org.github.io/coffee/page_coding_standard
 
 The following libraries are used:
 
-- libtool
-- automake
 - readline, for reading the command line input
 - ncurses-dev
 - flex, for parsing the command line input
@@ -88,9 +124,7 @@ If you use NVIDIA GPUs, install cuda and magma libraries, and add "--enable-cuda
 
 ## Getting Started
 
-All functions are accessible from the command line interface (CLI). Enter the CLI and type "help" for instructions.
-
-		./bin/coffee
+All functions are accessible from the command line interface (CLI). Enter the CLI by typing "coffee" and type "help" for instructions.
 
 
 ## LICENCE
