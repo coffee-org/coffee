@@ -8,8 +8,17 @@
 # sudo make install
 #
 
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 3.5)
 project (coffee C)
+
+
+# Version number
+set ( VERSION_MAJOR 0 )
+set ( VERSION_MINOR 1 )
+set ( VERSION_PATCH 00 )
+set ( VERSION_OPTION "-dev" )
+
+
 
 
 
