@@ -1,78 +1,15 @@
-[submodule "src/image_filter"]
-	path = src/image_filter
-	url = https://github.com/milk-org/image_filter
-[submodule "src/image_format"]
-	path = src/image_format
-	url = https://github.com/milk-org/image_format
-[submodule "src/image_gen"]
-	path = src/image_gen
-	url = https://github.com/milk-org/image_gen
-[submodule "src/img_reduce"]
-	path = src/img_reduce
-	url = https://github.com/milk-org/img_reduce
-[submodule "src/00CORE"]
-	path = src/00CORE
-	url = https://github.com/milk-org/00CORE
-[submodule "src/COREMOD_arith"]
-	path = src/COREMOD_arith
-	url = https://github.com/milk-org/COREMOD_arith
-[submodule "src/COREMOD_iofits"]
-	path = src/COREMOD_iofits
-	url = https://github.com/milk-org/COREMOD_iofits
-[submodule "src/COREMOD_memory"]
-	path = src/COREMOD_memory
-	url = https://github.com/milk-org/COREMOD_memory
-[submodule "src/COREMOD_tools"]
-	path = src/COREMOD_tools
-	url = https://github.com/milk-org/COREMOD_tools
-[submodule "src/linopt_imtools"]
-	path = src/linopt_imtools
-	url = https://github.com/milk-org/linopt_imtools
-[submodule "src/fft"]
-	path = src/fft
-	url = https://github.com/milk-org/fft
-[submodule "src/linARfilterPred"]
-	path = src/linARfilterPred
-	url = https://github.com/milk-org/linARfilterPred
-[submodule "src/ImageStreamIO"]
-	path = src/ImageStreamIO
-	url = https://github.com/milk-org/ImageStreamIO
-[submodule "src/statistic"]
-	path = src/statistic
-	url = https://github.com/milk-org/statistic
-[submodule "src/ZernikePolyn"]
-	path = src/ZernikePolyn
-	url = https://github.com/milk-org/ZernikePolyn
-[submodule "src/psf"]
-	path = src/psf
-	url = https://github.com/milk-org/psf
 [submodule "src/PIAACMCsimul"]
 	path = src/PIAACMCsimul
 	url = https://github.com/coffee-org/PIAACMCsimul
 [submodule "src/coronagraphs"]
 	path = src/coronagraphs
 	url = https://github.com/coffee-org/coronagraphs
-[submodule "src/cudacomp"]
-	path = src/cudacomp
-	url = https://github.com/milk-org/cudacomp
-[submodule "src/info"]
-	path = src/info
-	url = https://github.com/milk-org/info
 [submodule "src/OptSystProp"]
 	path = src/OptSystProp
 	url = https://github.com/coffee-org/OptSystProp
 [submodule "src/AOsystSim"]
 	path = src/AOsystSim
 	url = https://github.com/coffee-org/AOsystSim
-[submodule "src/kdtree"]
-	path = src/kdtree
-	url = https://github.com/milk-org/kdtree
-[submodule "src/CommandLineInterface"]
-	path = src/CommandLineInterface
-	url = https://github.com/milk-org/CommandLineInterface
-[submodule "src/image_basic"]
-	path = src/image_basic
-	url = https://github.com/milk-org/image_basic
 [submodule "src/WFpropagate"]
 	path = src/WFpropagate
 	url = https://github.com/cacao-org/WFpropagate
