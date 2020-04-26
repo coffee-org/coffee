@@ -5,14 +5,6 @@
  *  
  *
  * 
- * 
- * ## Change log
- * - 20171124  Guyon   File creation (broken off from original main .c)
- * 
- * @author  O. Guyon
- * 
- * @bug No known bugs.
- * 
  */
 
 
@@ -22,7 +14,6 @@
 
 
 #include "CommandLineInterface/CLIcore.h"
-#include "00CORE/00CORE.h"
 #include "COREMOD_memory/COREMOD_memory.h"
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_arith/COREMOD_arith.h"

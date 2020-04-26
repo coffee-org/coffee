@@ -3,12 +3,7 @@
  * @brief   Optical system propagation
  * 
  * Propagate beam through optical systsm
- *  
- * @author  O. Guyon
- * @date    7 Jul 2017
  *
- * 
- * @bug No known bugs.
  * 
  */
 
@@ -42,7 +37,7 @@ static int INITSTATUS_OptSystProp = 0;
 
 
 
-
+/*
 void __attribute__ ((constructor)) libinit_OptSystProp()
 {
 	if ( INITSTATUS_OptSystProp == 0 )
@@ -52,7 +47,7 @@ void __attribute__ ((constructor)) libinit_OptSystProp()
 		INITSTATUS_OptSystProp = 1; 
 	}
 }
-
+*/
 
 
 
