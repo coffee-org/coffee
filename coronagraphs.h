@@ -20,7 +20,7 @@ int coronagraph_update_2Dprolate(double masksizeld, double beamradpix, double ce
 
 int coronagraph_make_2Dprolate_CS(double masksize, double centralObs, const char *outname);
 
-int_fast8_t coronagraph_APLCapo_compile();
+errno_t coronagraph_APLCapo_compile();
 
 int coronagraph_init_PIAA();
 

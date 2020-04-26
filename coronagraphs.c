@@ -5,18 +5,40 @@
  * Coronagraphs simulation tools
  *  
  * 
- * @bug No known bugs.
  * 
  */
 
+
+
+/* ================================================================== */
+/* ================================================================== */
+/*            MODULE INFO                                             */
+/* ================================================================== */
+/* ================================================================== */
+
+// module default short name
+// all CLI calls to this module functions will be <shortname>.<funcname>
+// if set to "", then calls use <funcname>
+#define MODULE_SHORTNAME_DEFAULT "coro"
+
+// Module short description
+#define MODULE_DESCRIPTION       "Coronagraph simulation tools"
+
+
+
+
+
+
+
+/* ================================================================== */
+/* ================================================================== */
+/*            DEPENDANCIES                                            */
+/* ================================================================== */
+/* ================================================================== */
+
+
+
 #define _GNU_SOURCE
-
-
-/* =============================================================================================== */
-/* =============================================================================================== */
-/*                                        HEADER FILES                                             */
-/* =============================================================================================== */
-/* =============================================================================================== */
 
 #include <stdint.h>
 #include <string.h>
@@ -32,7 +54,6 @@
 
 
 #include "CommandLineInterface/CLIcore.h"
-#include "00CORE/00CORE.h"
 #include "COREMOD_memory/COREMOD_memory.h"
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_arith/COREMOD_arith.h"
@@ -54,22 +75,17 @@
 
 
 
-
-
-/* =============================================================================================== */
-/* =============================================================================================== */
-/*                                      DEFINES, MACROS                                            */
-/* =============================================================================================== */
-/* =============================================================================================== */
+/* ================================================================== */
+/* ================================================================== */
+/*           MACROS, DEFINES                                          */
+/* ================================================================== */
+/* ================================================================== */
 
 #define SWAP(x,y)  tmp=(x);x=(y);y=tmp;
 #define PI 3.14159265358979323846264338328
 #define CORONAGRAPHSDATALOCAL "/data/tmp/coronagraphs"
 
-
 #define CORONAGRAPHS_PSCALE 0.006 //0.05 /* pupil scale [m per pixel] */
-
-
 
 #define CORONAGRAPHS_TDIAM 2.4 /* telescope diameter, in meter */
 #define CORONAGRAPHS_LAMBDA 0.0000005 /* m */
@@ -78,14 +94,11 @@
 
 
 
-/* =============================================================================================== */
-/* =============================================================================================== */
-/*                                  GLOBAL DATA DECLARATION                                        */
-/* =============================================================================================== */
-/* =============================================================================================== */
-
-
-static int INITSTATUS_coronagraphs = 0;
+/* ================================================================== */
+/* ================================================================== */
+/*            GLOBAL VARIABLES                                        */
+/* ================================================================== */
+/* ================================================================== */
 
 static int useDFT = 1;
 static double DFTZFACTOR = 8.0; // zoom factor for DFTs of focal plane masks
@@ -257,202 +270,297 @@ static double APLCapo_FPMRAD_STEP = 0.001;
 
 
 
+/* ================================================================== */
+/* ================================================================== */
+/*            INITIALIZE LIBRARY                                      */
+/* ================================================================== */
+/* ================================================================== */
 
-
-// CLI commands
+// Module initialization macro in CLIcore.h
+// macro argument defines module name for bindings
 //
-// function CLI_checkarg used to check arguments
-// 1: float
-// 2: long
-// 3: string
-// 4: existing image
-//
+INIT_MODULE_LIB(coronagraphs)
 
-int_fast8_t coronagraph_make_2Dprolate_cli()
+
+
+
+
+/* ================================================================== */
+/* ================================================================== */
+/*            COMMAND LINE INTERFACE (CLI) FUNCTIONS                  */
+/* ================================================================== */
+/* ================================================================== */
+
+
+
+static errno_t coronagraph_make_2Dprolate__cli()
 {
-  if(CLI_checkarg(1,1)+CLI_checkarg(2,1)+CLI_checkarg(3,1)+CLI_checkarg(4,3)+CLI_checkarg(5,2)==0)
+    if(0
+            + CLI_checkarg(1, CLIARG_FLOAT)
+            + CLI_checkarg(2, CLIARG_FLOAT)
+            + CLI_checkarg(3, CLIARG_FLOAT)
+            + CLI_checkarg(4, CLIARG_STR_NOT_IMG)
+            + CLI_checkarg(5, CLIARG_LONG)
+            == 0)
     {
-      coronagraph_make_2Dprolate(data.cmdargtoken[1].val.numf, data.cmdargtoken[2].val.numf, data.cmdargtoken[3].val.numf, data.cmdargtoken[4].val.string, data.cmdargtoken[5].val.numl, "NULLim");
-      return 0;
-    }
-  else
-    return 1;
-}
+        coronagraph_make_2Dprolate(
+            data.cmdargtoken[1].val.numf,
+            data.cmdargtoken[2].val.numf,
+            data.cmdargtoken[3].val.numf,
+            data.cmdargtoken[4].val.string,
+            data.cmdargtoken[5].val.numl,
+            "NULLim");
 
-int_fast8_t coronagraph_make_2Dprolateld_cli()
-{
-  if(CLI_checkarg(1,1)+CLI_checkarg(2,1)+CLI_checkarg(3,1)+CLI_checkarg(4,3)+CLI_checkarg(5,2)==0)
+        return CLICMD_SUCCESS;
+    }
+    else
     {
-      coronagraph_make_2Dprolateld(data.cmdargtoken[1].val.numf, data.cmdargtoken[2].val.numf, data.cmdargtoken[3].val.numf, data.cmdargtoken[4].val.string, data.cmdargtoken[5].val.numl, "NULL");
-      return 0;
+        return CLICMD_INVALID_ARG;
     }
-  else
-    return 1;
 }
 
-int_fast8_t coronagraph_update_2Dprolate_cli()
+
+static errno_t coronagraph_make_2Dprolateld__cli()
 {
-  if(CLI_checkarg(1,1)+CLI_checkarg(2,1)+CLI_checkarg(3,1)+CLI_checkarg(4,1)==0)
+    if(0
+            + CLI_checkarg(1, CLIARG_FLOAT)
+            + CLI_checkarg(2, CLIARG_FLOAT)
+            + CLI_checkarg(3, CLIARG_FLOAT)
+            + CLI_checkarg(4, CLIARG_STR_NOT_IMG)
+            + CLI_checkarg(5, CLIARG_LONG)
+            == 0)
     {
-      coronagraph_update_2Dprolate(data.cmdargtoken[1].val.numf, data.cmdargtoken[2].val.numf, data.cmdargtoken[3].val.numf, data.cmdargtoken[4].val.numf);
-      return 0;
+        coronagraph_make_2Dprolateld(
+            data.cmdargtoken[1].val.numf,
+            data.cmdargtoken[2].val.numf,
+            data.cmdargtoken[3].val.numf,
+            data.cmdargtoken[4].val.string,
+            data.cmdargtoken[5].val.numl,
+            "NULL");
+
+        return CLICMD_SUCCESS;
     }
-  else
-    return 1;
-}
-
-
-int_fast8_t  coronagraph_simulPSF_cli()
-{
-  if(CLI_checkarg(1,1)+CLI_checkarg(2,1)+CLI_checkarg(3,3)+CLI_checkarg(4,2)==0)
+    else
     {
-      coronagraph_simulPSF(data.cmdargtoken[1].val.numf, data.cmdargtoken[2].val.numf, data.cmdargtoken[3].val.string, data.cmdargtoken[4].val.numl, "");
-      return 0;
+        return CLICMD_INVALID_ARG;
     }
-  else
-    return 1;
 }
 
 
-int_fast8_t CORONAGRAPHS_scanPIAACMC_centObs_perf_cli()
+static errno_t coronagraph_update_2Dprolate__cli()
 {
-  if(CLI_checkarg(1,1)==0)
+    if(0
+            + CLI_checkarg(1, CLIARG_FLOAT)
+            + CLI_checkarg(2, CLIARG_FLOAT)
+            + CLI_checkarg(3, CLIARG_FLOAT)
+            + CLI_checkarg(4, CLIARG_FLOAT)
+            == 0)
     {
-      CORONAGRAPHS_scanPIAACMC_centObs_perf(data.cmdargtoken[1].val.numf);
-      return 0;
+        coronagraph_update_2Dprolate(
+            data.cmdargtoken[1].val.numf,
+            data.cmdargtoken[2].val.numf,
+            data.cmdargtoken[3].val.numf,
+            data.cmdargtoken[4].val.numf);
+            
+        return CLICMD_SUCCESS;
     }
-  else
-    return 1;
+    else
+    {
+        return CLICMD_INVALID_ARG;
+    }
 }
 
 
-
-
-
-void __attribute__ ((constructor)) libinit_coronagraphs()
+static errno_t coronagraph_simulPSF__cli()
 {
-	if ( INITSTATUS_coronagraphs == 0 )
-	{
-		init_coronagraphs();
-		RegisterModule(__FILE__, "coffee", "Coronagraph routines");
-		INITSTATUS_coronagraphs = 1; 
-	}
+    if(0
+            + CLI_checkarg(1, CLIARG_FLOAT)
+            + CLI_checkarg(2, CLIARG_FLOAT)
+            + CLI_checkarg(3, CLIARG_STR_NOT_IMG)
+            + CLI_checkarg(4, CLIARG_LONG)
+            == 0)
+    {
+        coronagraph_simulPSF(
+            data.cmdargtoken[1].val.numf,
+            data.cmdargtoken[2].val.numf,
+            data.cmdargtoken[3].val.string,
+            data.cmdargtoken[4].val.numl,
+            "");
+
+        return CLICMD_SUCCESS;
+    }
+    else
+    {
+        return CLICMD_INVALID_ARG;
+    }
 }
 
 
-
-
-int_fast8_t init_coronagraphs()
+static errno_t CORONAGRAPHS_scanPIAACMC_centObs_perf__cli()
 {
-  strcpy(data.cmd[data.NBcmd].key,"cormk2Dprolate");
-  strcpy(data.cmd[data.NBcmd].module,__FILE__);
-  data.cmd[data.NBcmd].fp = coronagraph_make_2Dprolate_cli;
-  strcpy(data.cmd[data.NBcmd].info,"make 2D prolate");
-  strcpy(data.cmd[data.NBcmd].syntax,"<focal plane mask radius> <central obstruction> <image name>");
-  strcpy(data.cmd[data.NBcmd].example,"cormk2Dprolate 1.20 0.1 prolim");
-  strcpy(data.cmd[data.NBcmd].Ccall,"coronagraph_make_2Dprolate(double masksize, double centralObs, const char *outname)"); 
-  data.NBcmd++;
-  
-  strcpy(data.cmd[data.NBcmd].key,"cormk2Dprolateld");
-  strcpy(data.cmd[data.NBcmd].module,__FILE__);
-  data.cmd[data.NBcmd].fp = coronagraph_make_2Dprolateld_cli;
-  strcpy(data.cmd[data.NBcmd].info,"make 2D prolate, l/D unit mask size");
-  strcpy(data.cmd[data.NBcmd].syntax,"<focal plane mask radius [l/D]> <central obstruction> <image name> <array size>");
-  strcpy(data.cmd[data.NBcmd].example,"cormk2Dprolateld 1.20 0.1 prolim 2048");
-  strcpy(data.cmd[data.NBcmd].Ccall,"coronagraph_make_2Dprolateld(double masksizeld, double centralObs, const char *outname, long size)"); 
-  data.NBcmd++;
-  
-  strcpy(data.cmd[data.NBcmd].key,"corup2Dprolate");
-  strcpy(data.cmd[data.NBcmd].module,__FILE__);
-  data.cmd[data.NBcmd].fp = coronagraph_update_2Dprolate_cli;
-  strcpy(data.cmd[data.NBcmd].info,"update 2D prolate");
-  strcpy(data.cmd[data.NBcmd].syntax,"<focal plane mask radius [l/D]> <central obstruction> <DFT zoom factor>");
-  strcpy(data.cmd[data.NBcmd].example,"cormk2Dprolateld 1.20 0.1 4.0");
-  strcpy(data.cmd[data.NBcmd].Ccall,"coronagraph_update_2Dprolate(double masksizeld, double centralObs, double zfactor)"); 
-  data.NBcmd++;
+    if(0
+            + CLI_checkarg(1, CLIARG_FLOAT)
+            == 0)
+    {
+        CORONAGRAPHS_scanPIAACMC_centObs_perf(
+            data.cmdargtoken[1].val.numf);
 
-  strcpy(data.cmd[data.NBcmd].key,"corprolcomp");
-  strcpy(data.cmd[data.NBcmd].module,__FILE__);
-  data.cmd[data.NBcmd].fp = coronagraph_APLCapo_compile;
-  strcpy(data.cmd[data.NBcmd].info,"compile prolate functions data");
-  strcpy(data.cmd[data.NBcmd].syntax,"no argument");
-  strcpy(data.cmd[data.NBcmd].example,"corprolcomp");
-  strcpy(data.cmd[data.NBcmd].Ccall,"int coronagraph_APLCapo_compile()"); 
-  data.NBcmd++;
+        return CLICMD_SUCCESS;
+    }
+    else
+    {
+        return CLICMD_INVALID_ARG;
+    }
+}
 
-  strcpy(data.cmd[data.NBcmd].key,"corsimpsf");
-  strcpy(data.cmd[data.NBcmd].module,__FILE__);
-  data.cmd[data.NBcmd].fp = coronagraph_simulPSF_cli;
-  strcpy(data.cmd[data.NBcmd].info,"create coronagraph PSF");
-  strcpy(data.cmd[data.NBcmd].syntax,"<x [l/D]> <y [l/D]> <output image name> <coronagraph index>");
-  strcpy(data.cmd[data.NBcmd].example,"corsimpsf 1.0 0.1 50");
-  strcpy(data.cmd[data.NBcmd].Ccall,"coronagraph_simulPSF(double xld, double yld, const char *psfname, long coronagraph_type, const char *options)"); 
-  data.NBcmd++;
-  
-  
-  strcpy(data.cmd[data.NBcmd].key,"coroscanpiaacmcperf");
-  strcpy(data.cmd[data.NBcmd].module,__FILE__);
-  data.cmd[data.NBcmd].fp = CORONAGRAPHS_scanPIAACMC_centObs_perf_cli;
-  strcpy(data.cmd[data.NBcmd].info,"scan PIAACMC perf");
-  strcpy(data.cmd[data.NBcmd].syntax,"<input central obstruction>");
-  strcpy(data.cmd[data.NBcmd].example,"coroscanpiaacmcperf 0.2");
-  strcpy(data.cmd[data.NBcmd].Ccall,"int CORONAGRAPHS_scanPIAACMC_centObs_perf( double obs0input )"); 
-  data.NBcmd++;
-  
 
- // add atexit functions here
 
-  return 0;
+
+
+
+
+/* ================================================================== */
+/* ================================================================== */
+/*  MODULE CLI INITIALIZATION                                             */
+/* ================================================================== */
+/* ================================================================== */
+
+
+
+
+static errno_t init_module_CLI()
+{
+
+
+    RegisterCLIcommand(
+        "cormk2Dprolate",
+        __FILE__,
+        coronagraph_make_2Dprolate__cli,
+        "make 2D prolate",
+        "<focal plane mask radius> <central obstruction> <image name>",
+        "cormk2Dprolate 1.20 0.1 prolim",
+        "coronagraph_make_2Dprolate(double masksize, double centralObs, const char *outname)");
+
+
+    RegisterCLIcommand(
+        "cormk2Dprolateld",
+        __FILE__,
+        coronagraph_make_2Dprolateld__cli,
+        "make 2D prolate, l/D unit mask size",
+        "<focal plane mask radius [l/D]> <central obstruction> <image name> <array size>",
+        "cormk2Dprolateld 1.20 0.1 prolim 2048",
+        "coronagraph_make_2Dprolateld(double masksizeld, double centralObs, const char *outname, long size)");
+
+
+    RegisterCLIcommand(
+        "corup2Dprolate",
+        __FILE__,
+        coronagraph_update_2Dprolate__cli,
+        "update 2D prolate",
+        "<focal plane mask radius [l/D]> <central obstruction> <DFT zoom factor>",
+        "cormk2Dprolateld 1.20 0.1 4.0",
+        "coronagraph_update_2Dprolate(double masksizeld, double centralObs, double zfactor)");
+
+
+    RegisterCLIcommand(
+        "corprolcomp",
+        __FILE__,
+        coronagraph_APLCapo_compile,
+        "compile prolate functions data",
+        "no argument",
+        "corprolcomp",
+        "int coronagraph_APLCapo_compile()");
+
+
+    RegisterCLIcommand(
+        "corsimpsf",
+        __FILE__,
+        coronagraph_simulPSF__cli,
+        "create coronagraph PSF",
+        "<x [l/D]> <y [l/D]> <output image name> <coronagraph index>",
+        "corsimpsf 1.0 0.1 50",
+        "coronagraph_simulPSF(double xld, double yld, const char *psfname, long coronagraph_type, const char *options)");
+
+
+    RegisterCLIcommand(
+        "coroscanpiaacmcperf",
+        __FILE__,
+        CORONAGRAPHS_scanPIAACMC_centObs_perf__cli,
+        "scan PIAACMC perf",
+        "<input central obstruction>",
+        "coroscanpiaacmcperf 0.2",
+        "int CORONAGRAPHS_scanPIAACMC_centObs_perf( double obs0input )");
+
+
+	// add atexit functions here
+
+    return RETURN_SUCCESS;
 
 }
 
 
 
 
+
+
+/* ================================================================== */
+/* ================================================================== */
+/*  FUNCTIONS                                                         */
+/* ================================================================== */
+/* ================================================================== */
 
 
 //
 // if pupmask does not exist, do not use it
 //
-double coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double centralObs, const char *outname, long size, const char *pupmask_name)
+double coronagraph_make_2Dprolate(
+    double fpmradpix,
+    double beamradpix,
+    double centralObs,
+    const char *outname,
+    long size,
+    const char *pupmask_name
+)
 {
     FILE *fp;
     long size2;
     long IDfpmask;
-    long IDpupa0,IDpupp0,IDpupa0m,IDpupp0m;
-    long ii,jj,ii1;
+    long IDpupa0, IDpupp0, IDpupa0m, IDpupp0m;
+    long ii, jj, ii1;
     double peak;
-    long IDprol,ID;
-    long double total,total0,total2,v1;
+    long IDprol, ID;
+    long double total, total0, total2, v1;
     long iter;
     long NBiter = 40;
     double transm;
-    double x,y,r2;
-    long IDr,IDi,IDrcp,IDicp; //,ID1,ID2;
-    long IDprolr,IDproli,IDprolp;
+    double x, y, r2;
+    long IDr, IDi, IDrcp, IDicp; //,ID1,ID2;
+    long IDprolr, IDproli, IDprolp;
     char fname[1500];
-	long IDpupmask;
+    long IDpupmask;
 
     int CentralObstructionFlag = 0;
     long IDpupa0co;
 
-    size2 = size*size;
+    size2 = size * size;
 
     if(centralObs > 0.001)
+    {
         CentralObstructionFlag = 1;
+    }
 
 
     ID = variable_ID("PNBITER");
-    if(ID!=-1)
+    if(ID != -1)
     {
-        NBiter = (long) (1.0*data.variable[ID].value.f+0.01);
+        NBiter = (long)(1.0 * data.variable[ID].value.f + 0.01);
     }
 
     v1 = 0.0;
 
 
 
-    MASKSIZELD = (2.0*beamradpix/size)*fpmradpix;
+    MASKSIZELD = (2.0 * beamradpix / size) * fpmradpix;
     printf("MASK RADIUS = %f pix = %f l/D\n", fpmradpix, MASKSIZELD);
     printf("PUPIL RADIUS = %f\n", beamradpix);
     printf("SIZE = %ld\n", size);
@@ -462,10 +570,10 @@ double coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double ce
     IDprolp = create_2Dimage_ID("prolp", size, size);
 
 
-    IDfpmask = make_subpixdisk("FPmask", size, size, size/2, size/2, fpmradpix);
-    for(ii=0; ii<size2; ii++)
+    IDfpmask = make_subpixdisk("FPmask", size, size, size / 2, size / 2, fpmradpix);
+    for(ii = 0; ii < size2; ii++)
     {
-        data.image[IDfpmask].array.F[ii] = 1.0*data.image[IDfpmask].array.F[ii];
+        data.image[IDfpmask].array.F[ii] = 1.0 * data.image[IDfpmask].array.F[ii];
         //      if(data.image[IDfpmask].array.F[ii]<0.01)
         //	data.image[IDfpmask].array.F[ii] = 0.0;
     }
@@ -476,43 +584,50 @@ double coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double ce
     IDpupp0 = create_2Dimage_ID("pupp0", size, size);
 
     IDpupa0 = image_ID("pupa0");
-    if(IDpupa0!=-1)
+    if(IDpupa0 != -1)
     {
-        if(data.image[IDpupa0].md[0].size[0]!=size)
+        if(data.image[IDpupa0].md[0].size[0] != size)
         {
             printf("ERROR: pupa0 should be %ld x %ld\n", size, size);
             exit(0);
         }
     }
-    
-    if(IDpupa0==-1)
+
+    if(IDpupa0 == -1)
     {
-        IDpupa0 = make_disk("pupa0", size, size, size/2, size/2, beamradpix);
+        IDpupa0 = make_disk("pupa0", size, size, size / 2, size / 2, beamradpix);
         if(CentralObstructionFlag == 1)
         {
-            IDpupa0co = make_disk("pupa0co", size, size, size/2, size/2, beamradpix*centralObs);
-            for(ii=0; ii<size*size; ii++)
+            IDpupa0co = make_disk("pupa0co", size, size, size / 2, size / 2,
+                                  beamradpix * centralObs);
+            for(ii = 0; ii < size * size; ii++)
+            {
                 data.image[IDpupa0].array.F[ii] -= data.image[IDpupa0co].array.F[ii];
+            }
             delete_image_ID("pupa0co");
         }
-        
+
         IDpupmask = image_ID(pupmask_name);
         if(IDpupmask != -1)
-			{
-				for(ii=0; ii<size*size; ii++)
-					data.image[IDpupa0].array.F[ii] *= data.image[IDpupmask].array.F[ii];
-			}
+        {
+            for(ii = 0; ii < size * size; ii++)
+            {
+                data.image[IDpupa0].array.F[ii] *= data.image[IDpupmask].array.F[ii];
+            }
+        }
         save_fits("pupa0", "!test_pupa0.fits");
     }
     else
-		save_fits("pupa0", "!test__pupa0.fits");
+    {
+        save_fits("pupa0", "!test__pupa0.fits");
+    }
 
 
     total0 = 0.0;
-    for(ii=0; ii<size2; ii++)
+    for(ii = 0; ii < size2; ii++)
     {
         v1 = data.image[IDpupa0].array.F[ii];
-        total0 += v1*v1;
+        total0 += v1 * v1;
     }
 
 
@@ -523,35 +638,36 @@ double coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double ce
     //
 
     // total0 = arith_image_total("pupa0");
-    IDpupa0m = create_2Dimage_ID("pupa0m",size,size);
-    IDpupp0m = create_2Dimage_ID("pupp0m",size,size);
+    IDpupa0m = create_2Dimage_ID("pupa0m", size, size);
+    IDpupp0m = create_2Dimage_ID("pupp0m", size, size);
 
-    IDprol = create_2Dimage_ID(outname,size,size);
-    for(ii=0; ii<size; ii++)
-        for(jj=0; jj<size; jj++)
+    IDprol = create_2Dimage_ID(outname, size, size);
+    for(ii = 0; ii < size; ii++)
+        for(jj = 0; jj < size; jj++)
         {
-            if(data.image[IDpupa0].array.F[jj*size+ii] > 0.01)
+            if(data.image[IDpupa0].array.F[jj * size + ii] > 0.01)
             {
-                x = 1.0*ii-size/2;
-                y = 1.0*jj-size/2;
-                r2 = (x*x+y*y)/beamradpix/beamradpix;
-                data.image[IDprolr].array.F[jj*size+ii] = exp(-r2*0.73/5.0*fpmradpix);
-                data.image[IDproli].array.F[jj*size+ii] = 0.0;
-                data.image[IDprol].array.F[jj*size+ii] = data.image[IDprolr].array.F[jj*size+ii];
+                x = 1.0 * ii - size / 2;
+                y = 1.0 * jj - size / 2;
+                r2 = (x * x + y * y) / beamradpix / beamradpix;
+                data.image[IDprolr].array.F[jj * size + ii] = exp(-r2 * 0.73 / 5.0 * fpmradpix);
+                data.image[IDproli].array.F[jj * size + ii] = 0.0;
+                data.image[IDprol].array.F[jj * size + ii] = data.image[IDprolr].array.F[jj *
+                        size + ii];
             }
             else
             {
-                data.image[IDprolr].array.F[jj*size+ii] = 0.0;
-                data.image[IDproli].array.F[jj*size+ii] = 0.0;
-                data.image[IDprol].array.F[jj*size+ii] = 0.0;
+                data.image[IDprolr].array.F[jj * size + ii] = 0.0;
+                data.image[IDproli].array.F[jj * size + ii] = 0.0;
+                data.image[IDprol].array.F[jj * size + ii] = 0.0;
             }
         }
 
 
     ID = image_ID("apostart");
-    if(ID!=-1)
+    if(ID != -1)
     {
-        for(ii=0; ii<size2; ii++)
+        for(ii = 0; ii < size2; ii++)
         {
             data.image[IDprolr].array.F[ii] = data.image[ID].array.F[ii];
             data.image[IDprol].array.F[ii] = data.image[ID].array.F[ii];
@@ -565,40 +681,49 @@ double coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double ce
     // START LOOP
     //
 
-    for(iter=0; iter<NBiter; iter++)
+    for(iter = 0; iter < NBiter; iter++)
     {
-        for(ii=0; ii<size2; ii++)
+        for(ii = 0; ii < size2; ii++)
         {
-            data.image[IDpupa0m].array.F[ii] =  data.image[IDpupa0].array.F[ii]*data.image[IDprol].array.F[ii];
-            data.image[IDpupp0m].array.F[ii] =  data.image[IDpupp0].array.F[ii]+0.0*data.image[IDprolp].array.F[ii];
+            data.image[IDpupa0m].array.F[ii] =  data.image[IDpupa0].array.F[ii] *
+                                                data.image[IDprol].array.F[ii];
+            data.image[IDpupp0m].array.F[ii] =  data.image[IDpupp0].array.F[ii] + 0.0 *
+                                                data.image[IDprolp].array.F[ii];
         }
 
         mk_complex_from_amph("pupa0m", "pupp0", "pc1", 0);
         permut("pc1");
-        do2dfft("pc1","fc1");
+        do2dfft("pc1", "fc1");
         permut("fc1");
         mk_amph_from_complex("fc1", "fa1", "fp1", 0);
 
         execute_arith("fa1m=fa1*FPmask");
 
         total = 0.0;
-        for(ii=0; ii<size2; ii++)
-            total += data.image[IDprol].array.F[ii]*data.image[IDprol].array.F[ii];
-        transm = total/total0;
+        for(ii = 0; ii < size2; ii++)
+        {
+            total += data.image[IDprol].array.F[ii] * data.image[IDprol].array.F[ii];
+        }
+        transm = total / total0;
 
         ID = image_ID("fa1m");
         total = 0.0;
-        for(ii=0; ii<size2; ii++)
-            total += data.image[ID].array.F[ii]*data.image[ID].array.F[ii];
-        total /= 1.0*size2*total0;
+        for(ii = 0; ii < size2; ii++)
+        {
+            total += data.image[ID].array.F[ii] * data.image[ID].array.F[ii];
+        }
+        total /= 1.0 * size2 * total0;
 
         ID = image_ID("fa1");
         total2 = 0.0;
-        for(ii=0; ii<size2; ii++)
-            total2 += data.image[ID].array.F[ii]*data.image[ID].array.F[ii];
-        total2 /= 1.0*size2*total0;
+        for(ii = 0; ii < size2; ii++)
+        {
+            total2 += data.image[ID].array.F[ii] * data.image[ID].array.F[ii];
+        }
+        total2 /= 1.0 * size2 * total0;
 
-        printf("%ld/%ld   FPmask throughput = %g    prolate throughput = %.18g\n",iter,NBiter,(double) (total/total2),(double) transm);
+        printf("%ld/%ld   FPmask throughput = %g    prolate throughput = %.18g\n", iter,
+               NBiter, (double)(total / total2), (double) transm);
 
         ID = image_ID("fp1");
         //      for(ii=0;ii<size2;ii++)
@@ -606,7 +731,7 @@ double coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double ce
 
         mk_complex_from_amph("fa1m", "fp1", "fc2", 0);
         permut("fc2");
-        do2dfft("fc2","pc2");
+        do2dfft("fc2", "pc2");
         permut("pc2");
 
 
@@ -616,33 +741,45 @@ double coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double ce
         IDr = image_ID("pr2");
         copy_image_ID("pr2", "pr2cp", 0);
         IDrcp = image_ID("pr2cp");
-        for(ii=0; ii<size; ii++)
-            for(jj=0; jj<size; jj++)
-                data.image[IDr].array.F[jj*size+ii] = 0.0;
+        for(ii = 0; ii < size; ii++)
+            for(jj = 0; jj < size; jj++)
+            {
+                data.image[IDr].array.F[jj * size + ii] = 0.0;
+            }
 
-        for(ii=1; ii<size; ii++)
-            for(jj=1; jj<size; jj++)
-                data.image[IDr].array.F[jj*size+ii] = data.image[IDrcp].array.F[(size-jj)*size+(size-ii)]/size2;
-        peak = data.image[IDr].array.F[(size/2)*size+size/2];
+        for(ii = 1; ii < size; ii++)
+            for(jj = 1; jj < size; jj++)
+            {
+                data.image[IDr].array.F[jj * size + ii] = data.image[IDrcp].array.F[(size - jj)
+                        * size + (size - ii)] / size2;
+            }
+        peak = data.image[IDr].array.F[(size / 2) * size + size / 2];
         delete_image_ID("pr2cp");
 
         IDi = image_ID("pi2");
         copy_image_ID("pi2", "pi2cp", 0);
         IDicp = image_ID("pi2cp");
-        for(ii=0; ii<size; ii++)
-            for(jj=0; jj<size; jj++)
-                data.image[IDi].array.F[jj*size+ii] = 0.0;
+        for(ii = 0; ii < size; ii++)
+            for(jj = 0; jj < size; jj++)
+            {
+                data.image[IDi].array.F[jj * size + ii] = 0.0;
+            }
 
-        for(ii=1; ii<size; ii++)
-            for(jj=1; jj<size; jj++)
-                data.image[IDi].array.F[jj*size+ii] = data.image[IDicp].array.F[(size-jj)*size+(size-ii)]/size2;
+        for(ii = 1; ii < size; ii++)
+            for(jj = 1; jj < size; jj++)
+            {
+                data.image[IDi].array.F[jj * size + ii] = data.image[IDicp].array.F[(size - jj)
+                        * size + (size - ii)] / size2;
+            }
 
         printf("PEAK =  %f ", peak);
         peak = 0.0;
-        for(ii=0; ii<size2; ii++)
+        for(ii = 0; ii < size2; ii++)
             if(data.image[IDpupa0].array.F[ii] > 0.01)
-                if(fabs(data.image[IDr].array.F[ii])>fabs(peak))
+                if(fabs(data.image[IDr].array.F[ii]) > fabs(peak))
+                {
                     peak = data.image[IDr].array.F[ii];
+                }
         printf(" %f\n", peak);
 
 
@@ -657,16 +794,18 @@ double coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double ce
         // Ideal complex transmission for FPM is MASKCAMULT = -(1.0-peak)/peak;
         //
         printf("------- MASK SIZE = %f l/D ------\n", MASKSIZELD);
-        sprintf(fname, "%s/APLCapo.%.3f.%.3f.info", data.SAVEDIR, MASKSIZELD, centralObs);
+        sprintf(fname, "%s/APLCapo.%.3f.%.3f.info", data.SAVEDIR, MASKSIZELD,
+                centralObs);
         fp = fopen(fname, "w");
-        fprintf(fp,"%f %.18f %.18f %.18f %.18f\n", MASKSIZELD, (double) (total/total2), (double) transm, peak, centralObs);
-		fprintf(fp, "# col 1 : Mask size in SYSTEM l/D\n");
+        fprintf(fp, "%f %.18f %.18f %.18f %.18f\n", MASKSIZELD,
+                (double)(total / total2), (double) transm, peak, centralObs);
+        fprintf(fp, "# col 1 : Mask size in SYSTEM l/D\n");
         fprintf(fp, "# col 2 : Fraction of light going through FPmask\n");
         fprintf(fp, "# col 3 : Prolate throughput if not done by PIAA\n");
         fprintf(fp, "# col 4 : Peak\n");
         fprintf(fp, "# col 5 : Central obstruction");
         fclose(fp);
-        printf("IDEAL COMPLEX TRANSMISSION = %g\n", -(1.0-peak)/peak);
+        printf("IDEAL COMPLEX TRANSMISSION = %g\n", -(1.0 - peak) / peak);
 
         //      save_fl_fits("pr2","!pr2.tmp.fits");
         // save_fl_fits("pi2","!pi2.tmp.fits");
@@ -674,40 +813,49 @@ double coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double ce
         //      printf("peak = %f\n",peak);
 
 
-        for(ii=0; ii<size2; ii++)
+        for(ii = 0; ii < size2; ii++)
             if(data.image[IDpupa0].array.F[ii] > 0.01)
             {
-                data.image[IDprolr].array.F[ii] = 1.0*data.image[IDr].array.F[ii];
-                data.image[IDproli].array.F[ii] = 1.0*data.image[IDi].array.F[ii];
+                data.image[IDprolr].array.F[ii] = 1.0 * data.image[IDr].array.F[ii];
+                data.image[IDproli].array.F[ii] = 1.0 * data.image[IDi].array.F[ii];
             }
 
         //      for(ii=0;ii<size2;ii++)
         //	data.image[IDprol].array.F[ii] = data.image[IDprolr].array.F[ii];
-        for(ii=1; ii<size-1; ii++)
-            for(jj=1; jj<size-1; jj++)
+        for(ii = 1; ii < size - 1; ii++)
+            for(jj = 1; jj < size - 1; jj++)
             {
-                ii1 = jj*size+ii;
-                data.image[IDprol].array.F[jj*size+ii] = sqrt(data.image[IDprolr].array.F[ii1]*data.image[IDprolr].array.F[ii1]+data.image[IDproli].array.F[ii1]*data.image[IDproli].array.F[ii1]);
-                data.image[IDprolp].array.F[jj*size+ii] = -atan2(data.image[IDproli].array.F[ii1],data.image[IDprolr].array.F[ii1]);
+                ii1 = jj * size + ii;
+                data.image[IDprol].array.F[jj * size + ii] = sqrt(
+                            data.image[IDprolr].array.F[ii1] * data.image[IDprolr].array.F[ii1] +
+                            data.image[IDproli].array.F[ii1] * data.image[IDproli].array.F[ii1]);
+                data.image[IDprolp].array.F[jj * size + ii] = -atan2(
+                            data.image[IDproli].array.F[ii1], data.image[IDprolr].array.F[ii1]);
             }
 
         peak = 0.0;
-        for(ii=0; ii<size2; ii++)
+        for(ii = 0; ii < size2; ii++)
             if(data.image[IDpupa0].array.F[ii] > 0.01)
-                if(fabs(data.image[IDprol].array.F[ii])>fabs(peak))
+                if(fabs(data.image[IDprol].array.F[ii]) > fabs(peak))
+                {
                     peak = data.image[IDprol].array.F[ii];
+                }
 
         //      printf("peak = %f\n",peak);
-        for(ii=0; ii<size2; ii++)
+        for(ii = 0; ii < size2; ii++)
         {
             if(data.image[IDpupa0].array.F[ii] > 0.001)
+            {
                 data.image[IDprol].array.F[ii] /= peak;
+            }
             else
+            {
                 data.image[IDprol].array.F[ii] = 0.0;
+            }
         }
 
 
-        if (0) // TEST
+        if(0)  // TEST
         {
             mk_amph_from_complex("pc1", "pc1_a", "pc1_p", 0);
             save_fl_fits("pc1_a", "!pc1_a.1.fits");
@@ -731,8 +879,11 @@ double coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double ce
         delete_image_ID("pi2");
     }
 
-    for(ii=0; ii<size2; ii++)
-        data.image[IDfpmask].array.F[ii] = 1.0-data.image[IDfpmask].array.F[ii]*(1.0+(1.0-peak)/peak);
+    for(ii = 0; ii < size2; ii++)
+    {
+        data.image[IDfpmask].array.F[ii] = 1.0 - data.image[IDfpmask].array.F[ii] *
+                                           (1.0 + (1.0 - peak) / peak);
+    }
 
 
     //  save_fl_fits("FPmask","!FPmask.fits");
@@ -1941,7 +2092,7 @@ double coronagraph_apofit(const char *fnameout)
 // each FITS file has 2 dimensions: x = central obstruction, y = focal plane mask radius
 //
 //
-int_fast8_t coronagraph_APLCapo_compile()
+errno_t coronagraph_APLCapo_compile()
 {
     FILE *fp;
     int ret;
@@ -2203,7 +2354,7 @@ int_fast8_t coronagraph_APLCapo_compile()
     delete_image_ID("fitapoc");
     printf("\n");
 
-    return(0);
+    return RETURN_SUCCESS;
 }
 
 
@@ -8102,7 +8253,7 @@ int coronagraph_simulPSF(double xld, double yld, const char *psfname, long coron
         fp = fopen("APLCPIAA.conf", "r");
         if(fp==NULL)
         {
-            printERROR(__FILE__,__func__,__LINE__,"Cannot read configuration file \"APLCPIAA.conf\"\n");
+            PRINT_ERROR("Cannot read configuration file \"APLCPIAA.conf\"\n");
             exit(0);
         }
         //     fscanf(fp,"%ld %f %d %d\n", &NB_APLC_STEP, &APLC_FPMASKsize, &APLC_PIAA, &APLC_PMASK);
