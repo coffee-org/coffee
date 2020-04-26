@@ -18,7 +18,7 @@ IMPORTANT NOTE: coffee uses git submodules. Use `git clone --recursive` (see Dow
 ## Installing cacao
 
 
-cacao runs on Linux/x86 systems.
+coffee runs on Linux/x86 systems.
 
 &#x26A0;
 **coffee requires milk**: Install milk-package (ideally with GPU support) prior to installing coffee. See instructions on the [milk page](https://github.com/milk-org/milk-package).
