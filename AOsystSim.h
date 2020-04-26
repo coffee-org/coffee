@@ -3,13 +3,6 @@
  * @brief   Function prototypes for AOsystSim
  * 
  * 
- * @author  O. Guyon
- * @date    18 Jun 2017
- *
- * 
- * @bug No known bugs.
- * 
- * @see https://github.com/oguyon/Cfits
  */
 
 
@@ -170,7 +163,7 @@ typedef struct {
 
 int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name);
 
-int_fast8_t AOsystSim_extremeAO_contrast_sim();
+errno_t AOsystSim_extremeAO_contrast_sim();
 
 ///@}
 

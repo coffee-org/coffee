@@ -4,14 +4,41 @@
  * 
  * Optical simulation for AO system - useful for testing
  *  
- * @author  O. Guyon
- * @date    18 Jun 2017
- *
- * 
- * @bug No known bugs.
- * 
- * @see http://oguyon.github.io/AdaptiveOpticsControl/src/AOloopControl/doc/AOloopControl.html
  */
+
+
+
+
+
+
+
+
+/* ================================================================== */
+/* ================================================================== */
+/*            MODULE INFO                                             */
+/* ================================================================== */
+/* ================================================================== */
+
+// module default short name
+// all CLI calls to this module functions will be <shortname>.<funcname>
+// if set to "", then calls use <funcname>
+#define MODULE_SHORTNAME_DEFAULT "aosystsim"
+
+// Module short description
+#define MODULE_DESCRIPTION       "Adaptive Optics system simulator"
+
+
+
+
+
+
+
+/* ================================================================== */
+/* ================================================================== */
+/*            DEPENDANCIES                                            */
+/* ================================================================== */
+/* ================================================================== */
+
 
 
 /// System includes
@@ -34,7 +61,6 @@
 
 //   core modules
 #include "CommandLineInterface/CLIcore.h"
-#include "00CORE/00CORE.h"
 #include "COREMOD_memory/COREMOD_memory.h"
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_tools/COREMOD_tools.h"
@@ -53,11 +79,23 @@
 
 
 
-static int INITSTATUS_AOsystSim = 0;
 
-/* =============================================================================================== */
-/*                    LOGGING ACCESS TO FUNCTIONS                                                  */
-/* =============================================================================================== */
+
+/* ================================================================== */
+/* ================================================================== */
+/*           MACROS, DEFINES                                          */
+/* ================================================================== */
+/* ================================================================== */
+
+
+
+/* ================================================================== */
+/* ================================================================== */
+/*            GLOBAL VARIABLES                                        */
+/* ================================================================== */
+/* ================================================================== */
+
+
 
 // uncomment at compilation time to enable logging of function entry/exit
 //#define AOSYSTSIM_LOGFUNC
@@ -111,181 +149,341 @@ OPTSYST *optsystsim;
 
 
 
-// CLI commands
+
+
+
+
+/* ================================================================== */
+/* ================================================================== */
+/*            INITIALIZE LIBRARY                                      */
+/* ================================================================== */
+/* ================================================================== */
+
+// Module initialization macro in CLIcore.h
+// macro argument defines module name for bindings
 //
-// function CLI_checkarg used to check arguments
-// 1: float
-// 2: long
-// 3: string (not image)
-// 4: existing image
-// 5: string
-
-
-int_fast8_t AOsystSim_simpleAOfilter_cli(){
-  if(CLI_checkarg(1,3)+CLI_checkarg(1,3)==0)
-    AOsystSim_simpleAOfilter(data.cmdargtoken[1].val.string, data.cmdargtoken[2].val.string);
-  return(0);}
-
-int_fast8_t AOsystSim_fitTelPup_cli(){
-  if(CLI_checkarg(1,4)+CLI_checkarg(2,3)==0)
-    AOsystSim_fitTelPup(data.cmdargtoken[1].val.string, data.cmdargtoken[2].val.string);
-  return(0);}
-
-int_fast8_t AOsystSim_mkWF_cli(){
-  if(CLI_checkarg(1,5)==0)    {
-        AOsystSim_mkWF(data.cmdargtoken[1].val.string);
-        return 0;
-    }    else        return 1;}
-
-int_fast8_t AOsystSim_PyrWFS_cli(){
-  if(CLI_checkarg(1,5)==0)    {
-        AOsystSim_PyrWFS(data.cmdargtoken[1].val.string);
-        return 0;    }    else        return 1;}
-
-int_fast8_t AOsystSim_DM_cli(){
-  if(CLI_checkarg(1,5)==0)    {
-        AOsystSim_DM(data.cmdargtoken[1].val.string);
-        return 0;    }    else        return 1;}
-
-int_fast8_t AOsystSim_coroLOWFS_cli(){
-  if(CLI_checkarg(1,5)==0)    {
-        AOsystSim_coroLOWFS(data.cmdargtoken[1].val.string);
-        return 0;    }    else        return 1;}
-
-int_fast8_t AOsystSim_run_cli(){
-  if(CLI_checkarg(1,2)+CLI_checkarg(2,2)+CLI_checkarg(3,2)==0)    {
-        AOsystSim_run(data.cmdargtoken[1].val.numl, data.cmdargtoken[2].val.numl, data.cmdargtoken[3].val.numl);
-        return 0;    }    else        return 1;}
-        
-int_fast8_t AOsystSim_FPWFS_mkprobes_CLI(){
-    if(CLI_checkarg(1,3)+CLI_checkarg(2,3)+CLI_checkarg(3,2)+CLI_checkarg(4,2)+CLI_checkarg(5,1)+CLI_checkarg(6,1)+CLI_checkarg(7,1)+CLI_checkarg(8,1)+CLI_checkarg(9,2)==0)    {
-        AOsystSim_FPWFS_mkprobes(data.cmdargtoken[1].val.string, data.cmdargtoken[2].val.string, data.cmdargtoken[3].val.numl, data.cmdargtoken[4].val.numl, data.cmdargtoken[5].val.numf, data.cmdargtoken[6].val.numf, data.cmdargtoken[7].val.numf, data.cmdargtoken[8].val.numf, data.cmdargtoken[9].val.numl);
-        return 0;    }    else        return 1;}
-
-int_fast8_t AOsystSim_FPWFS_sensitivityAnalysis_cli(){
-     if(CLI_checkarg(1,2)+CLI_checkarg(2,2)+CLI_checkarg(3,2)+CLI_checkarg(4,2)==0)    {   
-        AOsystSim_FPWFS_sensitivityAnalysis(data.cmdargtoken[1].val.numl, data.cmdargtoken[2].val.numl, data.cmdargtoken[3].val.numl, data.cmdargtoken[4].val.numl);        return 0;    }    else        return 1;      }
+INIT_MODULE_LIB(AOsystSim)
 
 
 
+/* ================================================================== */
+/* ================================================================== */
+/*            COMMAND LINE INTERFACE (CLI) FUNCTIONS                  */
+/* ================================================================== */
+/* ================================================================== */
 
 
 
-void __attribute__ ((constructor)) libinit_AOsystSim()
+static errno_t AOsystSim_simpleAOfilter__cli()
 {
-	if ( INITSTATUS_AOsystSim == 0 )
-	{
-		init_AOsystSim();
-		RegisterModule(__FILE__, "coffee", "AO system simulation");
-		INITSTATUS_AOsystSim = 1;
-	}
+    if(0
+            + CLI_checkarg(1, CLIARG_STR_NOT_IMG)
+            + CLI_checkarg(1, CLIARG_STR_NOT_IMG)
+            == 0)
+    {
+        AOsystSim_simpleAOfilter(
+            data.cmdargtoken[1].val.string,
+            data.cmdargtoken[2].val.string);
+
+        return CLICMD_SUCCESS;
+    }
+    else
+    {
+        return CLICMD_INVALID_ARG;
+    }
+}
+
+
+
+static errno_t AOsystSim_fitTelPup__cli()
+{
+    if(0
+            + CLI_checkarg(1, CLIARG_IMG)
+            + CLI_checkarg(2, CLIARG_STR_NOT_IMG)
+            == 0)
+    {
+        AOsystSim_fitTelPup(
+            data.cmdargtoken[1].val.string,
+            data.cmdargtoken[2].val.string);
+
+        return CLICMD_SUCCESS;
+    }
+    else
+    {
+        return CLICMD_INVALID_ARG;
+    }
+}
+
+
+static errno_t AOsystSim_mkWF__cli()
+{
+    if(0
+            + CLI_checkarg(1, CLIARG_STR)
+            == 0)
+    {
+        AOsystSim_mkWF(
+            data.cmdargtoken[1].val.string);
+
+        return CLICMD_SUCCESS;
+    }
+    else
+    {
+        return CLICMD_INVALID_ARG;
+    }
+}
+
+
+static errno_t AOsystSim_PyrWFS__cli()
+{
+    if(0
+            + CLI_checkarg(1, CLIARG_STR)
+            == 0)
+    {
+        AOsystSim_PyrWFS(
+            data.cmdargtoken[1].val.string);
+
+        return CLICMD_SUCCESS;
+    }
+    else
+    {
+        return CLICMD_INVALID_ARG;
+    }
+}
+
+
+static errno_t AOsystSim_DM__cli()
+{
+    if(0
+            + CLI_checkarg(1, CLIARG_STR)
+            == 0)
+    {
+        AOsystSim_DM(
+            data.cmdargtoken[1].val.string);
+
+        return CLICMD_SUCCESS;
+    }
+    else
+    {
+        return CLICMD_INVALID_ARG;
+    }
+}
+
+
+static errno_t AOsystSim_coroLOWFS__cli()
+{
+    if(0
+            + CLI_checkarg(1, CLIARG_STR)
+            == 0)
+    {
+        AOsystSim_coroLOWFS(data.cmdargtoken[1].val.string);
+
+        return CLICMD_SUCCESS;
+    }
+    else
+    {
+        return CLICMD_INVALID_ARG;
+    }
+}
+
+
+static errno_t AOsystSim_run__cli()
+{
+    if(0
+            + CLI_checkarg(1, CLIARG_LONG)
+            + CLI_checkarg(2, CLIARG_LONG)
+            + CLI_checkarg(3, CLIARG_LONG)
+            == 0)
+    {
+        AOsystSim_run(
+            data.cmdargtoken[1].val.numl,
+            data.cmdargtoken[2].val.numl,
+            data.cmdargtoken[3].val.numl);
+
+        return CLICMD_SUCCESS;
+    }
+    else
+    {
+        return CLICMD_INVALID_ARG;
+    }
+}
+
+
+static errno_t AOsystSim_FPWFS_mkprobes__cli()
+{
+    if(0
+            + CLI_checkarg(1, CLIARG_STR_NOT_IMG)
+            + CLI_checkarg(2, CLIARG_STR_NOT_IMG)
+            + CLI_checkarg(3, CLIARG_LONG)
+            + CLI_checkarg(4, CLIARG_LONG)
+            + CLI_checkarg(5, CLIARG_FLOAT)
+            + CLI_checkarg(6, CLIARG_FLOAT)
+            + CLI_checkarg(7, CLIARG_FLOAT)
+            + CLI_checkarg(8, CLIARG_FLOAT)
+            + CLI_checkarg(9, CLIARG_LONG)
+            == 0)
+    {
+        AOsystSim_FPWFS_mkprobes(
+            data.cmdargtoken[1].val.string,
+            data.cmdargtoken[2].val.string,
+            data.cmdargtoken[3].val.numl,
+            data.cmdargtoken[4].val.numl,
+            data.cmdargtoken[5].val.numf,
+            data.cmdargtoken[6].val.numf,
+            data.cmdargtoken[7].val.numf,
+            data.cmdargtoken[8].val.numf,
+            data.cmdargtoken[9].val.numl);
+
+        return CLICMD_SUCCESS;
+    }
+    else
+    {
+        return CLICMD_INVALID_ARG;
+    }
+}
+
+
+static errno_t AOsystSim_FPWFS_sensitivityAnalysis__cli()
+{
+    if(0
+            + CLI_checkarg(1, CLIARG_LONG)
+            + CLI_checkarg(2, CLIARG_LONG)
+            + CLI_checkarg(3, CLIARG_LONG)
+            + CLI_checkarg(4, CLIARG_LONG)
+            == 0)
+    {
+        AOsystSim_FPWFS_sensitivityAnalysis(
+            data.cmdargtoken[1].val.numl,
+            data.cmdargtoken[2].val.numl,
+            data.cmdargtoken[3].val.numl,
+            data.cmdargtoken[4].val.numl);
+
+        return CLICMD_SUCCESS;
+    }
+    else
+    {
+        return CLICMD_INVALID_ARG;
+    }
 }
 
 
 
 
-int init_AOsystSim()
+
+
+/* ================================================================== */
+/* ================================================================== */
+/*  MODULE CLI INITIALIZATION                                             */
+/* ================================================================== */
+/* ================================================================== */
+
+
+
+static errno_t init_module_CLI()
 {
-
-    strcpy(data.cmd[data.NBcmd].key,"AOsimfilt");
-    strcpy(data.cmd[data.NBcmd].module,__FILE__);
-    data.cmd[data.NBcmd].fp = AOsystSim_simpleAOfilter_cli;
-    strcpy(data.cmd[data.NBcmd].info,"AO simple filtering");
-    strcpy(data.cmd[data.NBcmd].syntax,"<input WF> <output WF>");
-    strcpy(data.cmd[data.NBcmd].example,"AOsimfilt wfin wfout");
-    strcpy(data.cmd[data.NBcmd].Ccall,"int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)");
-    data.NBcmd++;
-
-    strcpy(data.cmd[data.NBcmd].key,"AOsystsfitpup");
-    strcpy(data.cmd[data.NBcmd].module,__FILE__);
-    data.cmd[data.NBcmd].fp = AOsystSim_fitTelPup_cli;
-    strcpy(data.cmd[data.NBcmd].info,"fit telescope pupil");
-    strcpy(data.cmd[data.NBcmd].syntax,"tel pupil file");
-    strcpy(data.cmd[data.NBcmd].example,"AOsystfitpup");
-    strcpy(data.cmd[data.NBcmd].Ccall,"AOsystSim_fitTelPup(const char *ID_name)");
-    data.NBcmd++;
+    RegisterCLIcommand(
+        "AOsimfilt",
+        __FILE__,
+        AOsystSim_simpleAOfilter__cli,
+        "AO simple filtering",
+        "<input WF> <output WF>",
+        "AOsimfilt wfin wfout",
+        "int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)");
 
 
-	
+    RegisterCLIcommand(
+        "AOsystsfitpup",
+        __FILE__,
+        AOsystSim_fitTelPup__cli,
+        "fit telescope pupil",
+        "tel pupil file",
+        "AOsystfitpup",
+        "AOsystSim_fitTelPup(const char *ID_name)");
 
-    strcpy(data.cmd[data.NBcmd].key,"AOsimmkWF");
-    strcpy(data.cmd[data.NBcmd].module,__FILE__);
-    data.cmd[data.NBcmd].fp = AOsystSim_mkWF_cli;
-    strcpy(data.cmd[data.NBcmd].info,"make WF series for AO simulation");
-    strcpy(data.cmd[data.NBcmd].syntax,"<configuration file name>");
-    strcpy(data.cmd[data.NBcmd].example,"AOsystmkWF WF.conf");
-    strcpy(data.cmd[data.NBcmd].Ccall,"int AOsystSim_mkWF(const char *CONF_FNAME)");
-    data.NBcmd++;
-	
-    strcpy(data.cmd[data.NBcmd].key,"AOsimPyrWFS");
-    strcpy(data.cmd[data.NBcmd].module,__FILE__);
-    data.cmd[data.NBcmd].fp = AOsystSim_PyrWFS_cli;
-    strcpy(data.cmd[data.NBcmd].info,"run pyramid WFS for AO simulation");
-    strcpy(data.cmd[data.NBcmd].syntax,"<configuration file name>");
-    strcpy(data.cmd[data.NBcmd].example,"AOsimPyrWFS PyrWFS.conf");
-    strcpy(data.cmd[data.NBcmd].Ccall,"int AOsystSim_PyrWFS(const char *CONF_FNAME)");
-    data.NBcmd++;
-	
-    strcpy(data.cmd[data.NBcmd].key,"AOsimDM");
-    strcpy(data.cmd[data.NBcmd].module,__FILE__);
-    data.cmd[data.NBcmd].fp = AOsystSim_DM_cli;
-    strcpy(data.cmd[data.NBcmd].info,"run DM for AO simulation");
-    strcpy(data.cmd[data.NBcmd].syntax,"<configuration file name>");
-    strcpy(data.cmd[data.NBcmd].example,"AOsimDM PyrWFS.conf");
-    strcpy(data.cmd[data.NBcmd].Ccall,"int AOsystSim_DM(const char *CONF_FNAME)");
-    data.NBcmd++;
-	
-    strcpy(data.cmd[data.NBcmd].key,"AOsimcoroLOWFS");
-    strcpy(data.cmd[data.NBcmd].module,__FILE__);
-    data.cmd[data.NBcmd].fp = AOsystSim_coroLOWFS_cli;
-    strcpy(data.cmd[data.NBcmd].info,"run coro and LOWFS for AO simulation");
-    strcpy(data.cmd[data.NBcmd].syntax,"<configuration file name>");
-    strcpy(data.cmd[data.NBcmd].example,"AOsimcoroLOWFS LOWFS.conf");
-    strcpy(data.cmd[data.NBcmd].Ccall,"int AOsystSim_coroLOWFS(const char *CONF_FNAME)");
-    data.NBcmd++;
-	
-	
-	
 
-    strcpy(data.cmd[data.NBcmd].key,"AOsystsim");
-    strcpy(data.cmd[data.NBcmd].module,__FILE__);
-    data.cmd[data.NBcmd].fp = AOsystSim_run_cli;
-    strcpy(data.cmd[data.NBcmd].info,"run fake AO system");
-    strcpy(data.cmd[data.NBcmd].syntax,"<syncmode> <DMindex> <delayus>");
-    strcpy(data.cmd[data.NBcmd].example,"AOsystsim");
-    strcpy(data.cmd[data.NBcmd].Ccall,"int AOsystSim_run(int syncmode, long DMindex, long delayus)");
-    data.NBcmd++;
+    RegisterCLIcommand(
+        "AOsimmkWF",
+        __FILE__,
+        AOsystSim_mkWF__cli,
+        "make WF series for AO simulation",
+        "<configuration file name>",
+        "AOsystmkWF WF.conf",
+        "int AOsystSim_mkWF(const char *CONF_FNAME)");
 
-    strcpy(data.cmd[data.NBcmd].key,"AOsystexaosim");
-    strcpy(data.cmd[data.NBcmd].module,__FILE__);
-    data.cmd[data.NBcmd].fp = AOsystSim_extremeAO_contrast_sim;
-    strcpy(data.cmd[data.NBcmd].info,"run extremeAO analysis");
-    strcpy(data.cmd[data.NBcmd].syntax,"no argument");
-    strcpy(data.cmd[data.NBcmd].example,"AOsystexaosim");
-    strcpy(data.cmd[data.NBcmd].Ccall,"int AOsystSim_extremeAO_contrast_sim()");
-    data.NBcmd++;
-    
-    strcpy(data.cmd[data.NBcmd].key,"AOsystmkABprobes");
-    strcpy(data.cmd[data.NBcmd].module,__FILE__);
-    data.cmd[data.NBcmd].fp = AOsystSim_FPWFS_mkprobes_CLI;
-    strcpy(data.cmd[data.NBcmd].info,"make AB probes for focal plane sensing and coherence measurement");
-    strcpy(data.cmd[data.NBcmd].syntax, "AOsystmkABprobes prA prB 50 50 0.7 0.1 0.7 0.1 1");
-    strcpy(data.cmd[data.NBcmd].example,"AOsystmkABprobes");
-    strcpy(data.cmd[data.NBcmd].Ccall,"int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name, const char *IDprobeB_name, long dmxsize, long dmysize, double CPAmax, double CPArmin, double CPArmax, double RMSampl, long modegeom)");
-    data.NBcmd++;
- 
-    strcpy(data.cmd[data.NBcmd].key,"AOsystFPWFSan");
-    strcpy(data.cmd[data.NBcmd].module,__FILE__);
-    data.cmd[data.NBcmd].fp = AOsystSim_FPWFS_sensitivityAnalysis_cli;
-    strcpy(data.cmd[data.NBcmd].info,"run focal plane WFS sensitivity analysis");
-    strcpy(data.cmd[data.NBcmd].syntax,"<mapmode> <mode> <optmode> <NBprobes>");
-    strcpy(data.cmd[data.NBcmd].example,"AOsystFPWFSan");
-    strcpy(data.cmd[data.NBcmd].Ccall,"int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode, int NBprobes)");
-    data.NBcmd++;
+
+    RegisterCLIcommand(
+        "AOsimPyrWFS",
+        __FILE__,
+        AOsystSim_PyrWFS__cli,
+        "run pyramid WFS for AO simulation",
+        "<configuration file name>",
+        "AOsimPyrWFS PyrWFS.conf",
+        "int AOsystSim_PyrWFS(const char *CONF_FNAME)");
+
+
+    RegisterCLIcommand(
+        "AOsimDM",
+        __FILE__,
+        AOsystSim_DM__cli,
+        "run DM for AO simulation",
+        "<configuration file name>",
+        "AOsimDM PyrWFS.conf",
+        "int AOsystSim_DM(const char *CONF_FNAME)");
+
+
+
+    RegisterCLIcommand(
+        "AOsimcoroLOWFS",
+        __FILE__,
+        AOsystSim_coroLOWFS__cli,
+        "run coro and LOWFS for AO simulation",
+        "<configuration file name>",
+        "AOsimcoroLOWFS LOWFS.conf",
+        "int AOsystSim_coroLOWFS(const char *CONF_FNAME)");
+
+
+    RegisterCLIcommand(
+        "AOsystsim",
+        __FILE__,
+        AOsystSim_run__cli,
+        "run fake AO system",
+        "<syncmode> <DMindex> <delayus>",
+        "AOsystsim",
+        "int AOsystSim_run(int syncmode, long DMindex, long delayus)");
+
+
+    RegisterCLIcommand(
+        "AOsystexaosim",
+        __FILE__,
+        AOsystSim_extremeAO_contrast_sim,
+        "run extremeAO analysis",
+        "no argument",
+        "AOsystexaosim",
+        "int AOsystSim_extremeAO_contrast_sim()");
+
+
+    RegisterCLIcommand(
+        "AOsystmkABprobes",
+        __FILE__,
+        AOsystSim_FPWFS_mkprobes__cli,
+        "make AB probes for focal plane sensing and coherence measurement",
+        "probes params",
+        "AOsystmkABprobes prA prB 50 50 0.7 0.1 0.7 0.1 1",
+        "int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name, const char *IDprobeB_name, long dmxsize, long dmysize, double CPAmax, double CPArmin, double CPArmax, double RMSampl, long modegeom)");
+
+
+    RegisterCLIcommand(
+        "AOsystFPWFSan",
+        __FILE__,
+        AOsystSim_FPWFS_sensitivityAnalysis__cli,
+        "run focal plane WFS sensitivity analysis",
+        "<mapmode> <mode> <optmode> <NBprobes>",
+        "AOsystFPWFSan",
+        "int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode, int NBprobes)");
+
 
     // add atexit functions here
 
-    return 0;
+    return RETURN_SUCCESS;
 }
 
 
@@ -298,6 +496,11 @@ int init_AOsystSim()
 
 
 
+/* ================================================================== */
+/* ================================================================== */
+/*  FUNCTIONS                                                         */
+/* ================================================================== */
+/* ================================================================== */
 
 
 
@@ -356,7 +559,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
 	if(WDIR_INIT==0)
 	{
 		if(system("mkdir -p AOsystSim_wdir") != 0)
-            printERROR(__FILE__,__func__,__LINE__, "system() returns non-zero value");
+            PRINT_ERROR("system() returns non-zero value");
 		WDIR_INIT = 1;
 	}
 
@@ -654,10 +857,10 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
         index = 2;
         
         if(sprintf(imnameamp, "WFamp0_%03ld", index) < 1)
-            printERROR(__FILE__, __func__, __LINE__, "sprintf wrote <1 char");
+            PRINT_ERROR("sprintf wrote <1 char");
         
         if(sprintf(imnamepha, "WFpha0_%03ld", index) < 1)
-            printERROR(__FILE__, __func__, __LINE__, "sprintf wrote <1 char");
+            PRINT_ERROR("sprintf wrote <1 char");
         
         mk_complex_from_amph(imnameamp, imnamepha, "_tmpwfc", 0);
         AOsystSim_WFSsim_Pyramid("_tmpwfc", "aosimwfsim", 0.0, 1);
@@ -995,7 +1198,7 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
 
 
 
-int_fast8_t AOsystSim_extremeAO_contrast_sim()
+errno_t AOsystSim_extremeAO_contrast_sim()
 {
     EXAOSIMCONF *exaosimconf;
     long CN2layer;
@@ -1516,7 +1719,7 @@ int_fast8_t AOsystSim_extremeAO_contrast_sim()
 
     free(exaosimconf);
 
-    return(0);
+    return RETURN_SUCCESS;
 }
 
 
