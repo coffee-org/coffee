@@ -133,30 +133,6 @@ message("COMPILE_OPTIONS:  ${COMPILE_OPTIONS}")
 
 
 
-# =======================================
-# GPU ACCELERATION
-# =======================================
-
-# MAGMA (optional)
-if(USE_MAGMA)
-set(USE_CUDA ON)
-endif(USE_MAGMA)
-
-
-if(USE_CUDA)
-find_package( CUDA REQUIRED )
-endif(USE_CUDA)
-
-if(USE_MAGMA)
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(MAGMA REQUIRED magma)
-message(STATUS ${MAGMA_LIBRARY_DIRS})
-link_directories( ${MAGMA_LIBRARY_DIRS} )
-endif(USE_MAGMA)
-
-
-
-
 
 
 
@@ -176,6 +152,21 @@ pkg_check_modules(MILK REQUIRED milk>=1.01)
 link_directories(${MILK_LIBRARY_DIRS})
 include_directories(${MILK_INCLUDE_DIRS})
 message("MILK_VERSION = ${MILK_VERSION}")
+
+
+
+
+
+
+# =======================================
+# GPU ACCELERATION
+# =======================================
+
+
+# options
+option(USE_CUDA  "Use CUDA        library" OFF)
+option(USE_MAGMA "Use MAGMA       library" OFF)
+
 
 
 string(FIND "${MILK_CFLAGS}" "MILK_USE_CUDA=ON" sresult)
@@ -200,6 +191,32 @@ message("milk was NOT compiled with magma")
 message("${PROJECT_NAME} will NOT use magma")
 set(USE_MAGMA OFF)
 endif()
+
+
+
+# MAGMA (optional)
+if(USE_MAGMA)
+set(USE_CUDA ON)
+endif(USE_MAGMA)
+
+
+if(USE_CUDA)
+find_package( CUDA REQUIRED )
+pkg_check_modules(CUDA REQUIRED cuda)
+message("CUDA_LIBRARY_DIRS  : ${CUDA_LIBRARY_DIRS}" )
+endif(USE_CUDA)
+
+if(USE_MAGMA)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(MAGMA REQUIRED magma)
+message(STATUS ${MAGMA_LIBRARY_DIRS})
+link_directories( ${MAGMA_LIBRARY_DIRS} )
+message("MAGMA_LIBRARY_DIRS  : ${MAGMA_LIBRARY_DIRS}" )
+endif(USE_MAGMA)
+
+
+
+
 
 
 
@@ -247,41 +264,6 @@ add_subdirectory ( "src/${extramodule}" )
 ENDFOREACH()
 
 
-
-
-
-#                               
-# recursively add libraries to be compiled
-# each library compile as SHARED
-#
-#add_subdirectory ( "src/ImageStreamIO" )
-#add_subdirectory ( "src/CommandLineInterface" )
-#add_subdirectory ( "src/00CORE" )
-#add_subdirectory ( "src/COREMOD_arith" )
-#add_subdirectory ( "src/COREMOD_iofits" )
-#add_subdirectory ( "src/COREMOD_memory" )
-#add_subdirectory ( "src/COREMOD_tools" )
-#add_subdirectory ( "src/info" )
-#add_subdirectory ( "src/fft" )
-#add_subdirectory ( "src/statistic" )
-#add_subdirectory ( "src/linopt_imtools" )
-#add_subdirectory ( "src/image_gen" )
-#add_subdirectory ( "src/image_filter" )
-#add_subdirectory ( "src/image_basic" )
-#add_subdirectory ( "src/ZernikePolyn" )
-#add_subdirectory ( "src/image_format" )
-#add_subdirectory ( "src/img_reduce" )
-#add_subdirectory ( "src/psf" )
-#add_subdirectory ( "src/cudacomp" )
-#add_subdirectory ( "src/kdtree" )
-#add_subdirectory ( "src/linARfilterPred" )
-
-#add_subdirectory ( "src/PIAACMCsimul" )
-#add_subdirectory ( "src/OptSystProp" )
-#add_subdirectory ( "src/OpticsMaterials" )
-#add_subdirectory ( "src/WFpropagate" )
-#add_subdirectory ( "src/coronagraphs" )
-#add_subdirectory ( "src/AOsystSim" )
 
 
 
@@ -345,17 +327,16 @@ ${CMAKE_THREAD_LIBS_INIT}
 
 
 
+if(USE_CUDA)
+target_link_libraries (${PROJECT_NAME} PUBLIC ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES})
+set(BUILD_FLAGS "${BUILD_FLAGS} -DHAVE_CUDA" )
+endif(USE_CUDA)
 
 if(USE_MAGMA)
 target_link_libraries (${PROJECT_NAME} PUBLIC ${MAGMA_LIBRARIES})
 set(BUILD_FLAGS "${BUILD_FLAGS} -DHAVE_CUDA -DHAVE_MAGMA" )
 endif(USE_MAGMA)
 
-if(USE_QDWHPARTIAL)
-target_link_libraries (${PROJECT_NAME} PUBLIC ${QDWHPARTIAL_LIBRARIES})
-target_include_directories(coffee PUBLIC ${QDWHPARTIAL_INCLUDE_PATH} )
-set(BUILD_FLAGS "${BUILD_FLAGS} -DHAVE_QDWHpartial" )
-endif(USE_QDWHPARTIAL)
 
 
 set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "${BUILD_FLAGS}" )
