@@ -201,9 +201,11 @@ endif(USE_MAGMA)
 
 
 if(USE_CUDA)
-find_package( CUDA REQUIRED )
-pkg_check_modules(CUDA REQUIRED cuda)
-message("CUDA_LIBRARY_DIRS  : ${CUDA_LIBRARY_DIRS}" )
+find_package(CUDA 9.0 REQUIRED)
+message(STATUS "Found CUDA ${CUDA_VERSION_STRING} at ${CUDA_TOOLKIT_ROOT_DIR}")
+message("---- CUDA_INCLUDE_DIRS   = ${CUDA_INCLUDE_DIRS}")
+message("---- CUDA_LIBRARIES      = ${CUDA_LIBRARIES} ${CUDA_cusolver_LIBRARY}" )   
+message("---- CUDA_CUBLAS_LIBRARIES    = ${CUDA_CUBLAS_LIBRARIES}" )   
 endif(USE_CUDA)
 
 if(USE_MAGMA)
@@ -277,6 +279,16 @@ src/CLImain.c)
 
 
 
+# =======================================
+# INCLUDES
+# =======================================
+
+
+if(USE_CUDA)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CUDA_INCLUDE_DIRS})
+endif(USE_CUDA)
+
+
 target_include_directories(${PROJECT_NAME} PUBLIC
 ${PROJECT_SOURCE_DIR}/src
 ${GSL_INCLUDE_DIRS}
@@ -284,6 +296,13 @@ ${FFTW_INCLUDE_DIRS}
 ${FFTWF_INCLUDE_DIRS}
 ${CURSES_INCLUDE_DIR}
 )
+
+
+
+
+# =======================================
+# COMPILE OPTIONS
+# =======================================
 
 # adds the options to all targets within the directory and its sub-directories
 target_compile_options(${PROJECT_NAME} PUBLIC 
@@ -295,6 +314,12 @@ ${FFTWF_CFLAGS_OTHER}
 set(BUILD_FLAGS "-DPACKAGE_NAME=\\\"${PROJECT_NAME}\\\" -DPACKAGE_VERSION=\\\"1.0.00\\\" -DCONFIGDIR=\\\"${PROJECT_SOURCE_DIR}/config\\\" -DSOURCEDIR=\\\"${PROJECT_SOURCE_DIR}/src\\\" -DABSSRCTOPDIR=\\\"${PROJECT_SOURCE_DIR}\\\" -DPACKAGE_BUGREPORT=\\\"https://github.com/${PROJECT_NAME}-org/${PROJECT_NAME}/issues\\\"")
 
 
+
+
+# =======================================
+# LINKING
+# =======================================
+
 #
 # link order must satisfy dependancies
 # 
@@ -305,7 +330,6 @@ set(BUILD_FLAGS "-DPACKAGE_NAME=\\\"${PROJECT_NAME}\\\" -DPACKAGE_VERSION=\\\"1.
 foreach(lname IN LISTS libname)
 target_link_libraries (${PROJECT_NAME} PUBLIC "${lname}" )
 endforeach()
-
 
 
 
@@ -336,6 +360,8 @@ if(USE_MAGMA)
 target_link_libraries (${PROJECT_NAME} PUBLIC ${MAGMA_LIBRARIES})
 set(BUILD_FLAGS "${BUILD_FLAGS} -DHAVE_CUDA -DHAVE_MAGMA" )
 endif(USE_MAGMA)
+
+
 
 
 
