@@ -62,6 +62,8 @@ set(SCRIPTS
 
 set(LINKLIBS
 	CLIcore
+    milkinfo
+    milkOpticsMaterials
 )
 
 # DEFAULT SETTINGS

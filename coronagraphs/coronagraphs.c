@@ -84,6 +84,7 @@
 #define SWAP(x,y)  tmp=(x);x=(y);y=tmp;
 #define PI 3.14159265358979323846264338328
 #define CORONAGRAPHSDATALOCAL "/data/tmp/coronagraphs"
+#define CORONAGRAPHSDATADIR ""
 
 #define CORONAGRAPHS_PSCALE 0.006 //0.05 /* pupil scale [m per pixel] */
 

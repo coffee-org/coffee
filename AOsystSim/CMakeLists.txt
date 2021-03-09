@@ -12,11 +12,11 @@ set(INCLUDEFILES
 )
 
 set(SCRIPTS
-	scripts/milk-shmimmon
 )
 
 set(LINKLIBS
 	CLIcore
+	milkWFpropagate
 )
 
 # DEFAULT SETTINGS

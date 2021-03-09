@@ -17,6 +17,7 @@ set(SCRIPTS
 
 set(LINKLIBS
 	CLIcore
+	milkimagegen
 )
 
 

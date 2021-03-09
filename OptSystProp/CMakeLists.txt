@@ -4,6 +4,7 @@ set(SRCNAME "OptSystProp")
 
 set(SOURCEFILES
 	${SRCNAME}.c
+	${SRCNAME}.h
 	OptSystProp_propagateCube.c
 	OptSystProp_run.c
 )
@@ -17,6 +18,7 @@ set(SCRIPTS
 
 set(LINKLIBS
 	CLIcore
+	milkWFpropagate
 )
 
 
