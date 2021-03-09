@@ -1,8 +1,0 @@
-.deps/
-.libs/
-00CORE.lo
-00CORE.o
-Makefile
-Makefile.in
-Makefile.bak
-lib00core.la
