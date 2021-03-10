@@ -3,7 +3,7 @@ Coronagraph Optimization For Fast Exoplanets Exploration
 
 ## Installation
 
-Coffee is plugin for milk.
+Coffee is a milk plugin. To compile and install executable in local directory :
 
     git clone git@github.com:milk-org/milk.git
     cd milk
