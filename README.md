@@ -20,6 +20,7 @@ Executable is located in subdirectory of path specified as argument to compile.s
 ## Tutorial
 
 Milk tutorial:
+
     ./local/milk-1.01.02/bin/milk-tutorial
 
 Coffee tutorial to be done
