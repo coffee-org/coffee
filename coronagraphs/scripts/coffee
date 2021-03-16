@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+MILKCLI_ADD_LIBS="$MILKCLI_ADD_LIBS;coffeeAOsystSim,coffeecoronagraphs,coffeeOptSystProp,coffeePIAACMCsimul" milk
+

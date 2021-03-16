@@ -13,6 +13,7 @@ set(INCLUDEFILES
 
 
 set(SCRIPTS
+	coffee
 )
 
 set(LINKLIBS
