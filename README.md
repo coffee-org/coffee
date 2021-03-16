@@ -15,3 +15,10 @@ Coffee is a milk plugin. To compile and install executable in local directory :
 Executable is located in subdirectory of path specified as argument to compile.sh script:
 
     ./local/milk-1.01.02/bin/coffee
+
+## Tutorial
+
+Milk tutorial:
+    ./local/milk-1.01.02/bin/milk-tutorial
+
+Coffee tutorial to be done
