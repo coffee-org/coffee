@@ -64,6 +64,8 @@ set(LINKLIBS
 	CLIcore
     milkinfo
     milkOpticsMaterials
+    milklinoptimtools
+    milkimagebasic
 )
 
 # DEFAULT SETTINGS

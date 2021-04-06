@@ -242,7 +242,6 @@ int PIAACMCsimul_initpiaacmcconf(
     double tmplf;
 
     int IDlscumul;
-    long iDM; // DM index
     uint32_t *sizearray;
 
 
@@ -321,7 +320,7 @@ int PIAACMCsimul_initpiaacmcconf(
 
         /// Wavefront control
         piaacmc[0].nbDM = WFCmode; // number of deformable mirrors (10 max)
-        for(iDM = 0; iDM < piaacmc[0].nbDM; iDM++)
+        for(long iDM = 0; iDM < piaacmc[0].nbDM; iDM++)
         {
             piaacmc[0].DMpos[iDM] = 0.0 + 0.6 * iDM / (0.01 + piaacmc[0].nbDM -
                                     1.0); // DM conjugation in collimated space
@@ -783,7 +782,7 @@ int PIAACMCsimul_initpiaacmcconf(
     // ==================== CREATE DMs ===============
     printf("%d DM(s)\n", piaacmc[0].nbDM);
     fflush(stdout);
-    for(iDM = 0; iDM < piaacmc[0].nbDM; iDM++)
+    for(long iDM = 0; iDM < piaacmc[0].nbDM; iDM++)
     {
         printf("DM # %ld\n", iDM);
         sprintf(fname, "wfcDM%ld", iDM);
