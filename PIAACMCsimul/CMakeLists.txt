@@ -66,6 +66,7 @@ set(LINKLIBS
     milkOpticsMaterials
     milklinoptimtools
     milkimagebasic
+    milkimagefilter
 )
 
 # DEFAULT SETTINGS
