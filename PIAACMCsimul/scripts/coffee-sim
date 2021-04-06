@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 
 
@@ -51,7 +51,7 @@ printhelp ()
 	echo ""
 	echo ""
 	echo "Syntax:"
-	echo " $0 <1:designstep> <2:pscale> <3:coin> <4:coout> <5:fpmrad> <6:lambda> <7:PIAAmaterial> <8:LStransm> <9:NBlyotstop> <10:mlambda> <11:mlambdaB> <12:NBrings> <13:maskradld> <14:ssize> <15:extmode> <16:fpmmaterial> <17:index>" 
+	echo " $0 <1:designstep> <2:pscale> <3:coin> <4:coout> <5:fpmrad> <6:lambda> <7:PIAAmaterial> <8:LStransm> <9:NBlyotstop> <10:mlambda> <11:mlambdaB> <12:NBrings> <13:maskradld> <14:ssize> <15:extmode> <16:fpmmaterial> <17:index>"
 	echo "Example : "
 	echo " $0 optsingle    0.00011       0.30     0.29         1.10       650          Mirror         0.75            4           850          10            22           1.60          15           0          Mirror      001"
 	echo ""
@@ -68,10 +68,10 @@ printhelp ()
 	echo " 9    NBlyotstop   : Number of Lyot stops"
 	echo "Note: other settings are specified as conf_.txt files:"
 	echo "            conf_size.txt            [default = 1024]  : array size                                $size pix"
-	echo "            ./log/conf_MdesignStepMax.txt  [default = 13]    : max design step for monochromatic design  $MdesignStepMax" 
+	echo "            ./log/conf_MdesignStepMax.txt  [default = 13]    : max design step for monochromatic design  $MdesignStepMax"
 	echo ""
 	echo ""
-	echo "Arguments specific to PIAACMC focal plane mask :" 
+	echo "Arguments specific to PIAACMC focal plane mask :"
 	echo " 10   mlambda      : mask wavelength [nm]"
 	echo " 11   mlambdaB     : mask bandwidth [%]"
 	echo " 12   NBrings      : number of rings in the focal plane mask"
@@ -79,8 +79,8 @@ printhelp ()
 
 	echo " 14   fpmminsag    : Focal plane mask min sag [m]"
 	echo " 15   fpmmaxsag    : Focal plane mask max sag [m]"
-	echo " 16   fpmregsag_coeff  : regularization coefficient"   
-	echo " 17   fpmregsag_alpha  : regularization exponent" 
+	echo " 16   fpmregsag_coeff  : regularization coefficient"
+	echo " 17   fpmregsag_alpha  : regularization exponent"
 	echo " 18   fpmccnbr     : Center cone number of rings"
 	echo " 19   fpmccz       : center cone sag"
 	echo " 20   fpmocradld   : outer cone radius [l/D]"
@@ -156,7 +156,7 @@ extmode=${23}
 fpmmaterial="${24}"
 
 
-	
+
 
 
 
@@ -228,9 +228,9 @@ cp $dirname1/piaa1Fmodes.fits $dirname/
 cp $dirname1/piaacmcparams.conf $dirname/
 cp $dirname1/LyotStop*.fits $dirname/
 cp $dirname1/PIAA_Mshapes.txt $dirname/
-cp $dirname1/piaam0z.fits $dirname/ 
+cp $dirname1/piaam0z.fits $dirname/
 cp $dirname1/piaam1z.fits $dirname/
-cp $dirname1/piaa0z.fits $dirname/ 
+cp $dirname1/piaa0z.fits $dirname/
 cp $dirname1/piaa1z.fits $dirname/
 cp $dirname1/APOmodesCos.fits $dirname/
 cp $dirname1/apo2Drad.fits $dirname/
@@ -243,7 +243,7 @@ exit
 fi
 
 
-echo "====== EXECUTING: ./runPIAACMC $dirname $size $pscale $pupfile $coin $coout $fpmrad $lambda $PIAAmaterial $LStransm $NBlyotstop $mlambda $mlambdaB $NBrings $maskradld $ssize $extmode $fpmmaterial $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz $index $designstep"
+echo "====== EXECUTING: coffee-runPIAACMC $dirname $size $pscale $pupfile $coin $coout $fpmrad $lambda $PIAAmaterial $LStransm $NBlyotstop $mlambda $mlambdaB $NBrings $maskradld $ssize $extmode $fpmmaterial $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz $index $designstep"
 
 
 
@@ -254,9 +254,9 @@ echo "====== EXECUTING: ./runPIAACMC $dirname $size $pscale $pupfile $coin $coou
 
 
 datestr=`date -u +%Y-%m-%d_%H:%M:%S`
-echo "$datestr  ./runPIAACMC $dirname $size $pscale $pupfile $coin $coout $fpmrad $lambda $PIAAmaterial $LStransm $NBlyotstop $mlambda $mlambdaB $NBrings $maskradld $ssize $extmode $fpmmaterial $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz $index $designstep" >> cmdlog.txt
+echo "$datestr  coffee-runPIAACMC $dirname $size $pscale $pupfile $coin $coout $fpmrad $lambda $PIAAmaterial $LStransm $NBlyotstop $mlambda $mlambdaB $NBrings $maskradld $ssize $extmode $fpmmaterial $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz $index $designstep" >> cmdlog.txt
 
-./runPIAACMC $dirname $size $pscale $pupfile $coin $coout $fpmrad $lambda $PIAAmaterial $LStransm $NBlyotstop $mlambda $mlambdaB $NBrings $maskradld $ssize $extmode $fpmmaterial $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz $index $designstep
+coffee-runPIAACMC $dirname $size $pscale $pupfile $coin $coout $fpmrad $lambda $PIAAmaterial $LStransm $NBlyotstop $mlambda $mlambdaB $NBrings $maskradld $ssize $extmode $fpmmaterial $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz $index $designstep
 #$fpmrad $coin $coout ${rmode} ${emode} ${sprange} $lambda $PIAAmaterial $designstep
 
 #cp -rf $dirname ${dirname}_step$designstep

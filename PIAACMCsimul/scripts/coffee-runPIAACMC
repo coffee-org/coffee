@@ -1,11 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 unset TMUX
 
 mkdir -p log
 
 pid=$$
 
-NBthreadsFPMresp=4 
+NBthreadsFPMresp=4
 
 #execname="PIAACMCdesign -e"  # only run program if X is inactive (prevents slowing down user)
 execname="coffee"
@@ -64,11 +65,11 @@ color=${2:-$black}           # Defaults to black, if not specified.
 
 #  echo -e "$color"
   echo -e "$color $message \033[0m"
-#  echo -e "\033[0m"  
+#  echo -e "\033[0m"
                       # Reset to normal.
   tput sgr0
   return
-}  
+}
 
 
 
@@ -95,7 +96,7 @@ eval "$1=$var"
 function checkexit() {
 
 
-if [ $state -eq $statestop ] 
+if [ $state -eq $statestop ]
 then
 echo "STATE STOP POINT ($statestop)"
 sleep 1
@@ -103,7 +104,7 @@ cleanup
 exit
 fi
 
-if [ $state -eq $exitpt ] 
+if [ $state -eq $exitpt ]
 then
 echo "$0 REACHED STATE EXIT POINT ($exitpt)" > errorstatus.txt
 echo "$0 REACHED STATE EXIT POINT ($exitpt)"
@@ -111,7 +112,7 @@ cleanup
 exit
 else
 echo "$state neq $exitpt -> CONTINUING"
-fi	
+fi
 
 }
 
@@ -159,7 +160,7 @@ printhelp_designsteps()
 	echo -e "     \033[1m lambdalist.txt           \033[0m : List of wavelength values"
 	echo -e "     \033[1m conjugations.txt         \033[0m : List of planes and conjugation values"
 	echo ""
-	echo -e "\E[1;32m  DESCRIPTION:\E[0m" 
+	echo -e "\E[1;32m  DESCRIPTION:\E[0m"
 	echo "    Compute prolate spheroidal apodization for a centrally obscured circular aperture (->apo2Drad.fits)"
 	echo "    Compute radial remapping and radial PIAA Mirror shapes to achieve the desired apodization (function PIAACMCsimul_init_geomPIAA_rad) ->PIAA_Mshapes.txt"
 	echo "    Compute 2D PIAA mirror shapes -> piaam0z.fits, piaam1z.fits"
@@ -438,7 +439,7 @@ statestop=$rstep
 # run steps from 0 to $26
 #if ((rstep >= 0 && rstep <= 99)); then
 
-if [ "$rstep" -ge "0" ] && [ "$rstep" -le "200" ]; then 
+if [ "$rstep" -ge "0" ] && [ "$rstep" -le "200" ]; then
 echo ""
 state=0
 statestop=${rstep}
@@ -448,7 +449,7 @@ fi
 # run steps from 100 to $26
 
 #if ((rstep >= 100 && rstep <= 109)); then
-#if [ "$rstep" -ge "100" ] && ["$rstep" le 109 ]; then 
+#if [ "$rstep" -ge "100" ] && ["$rstep" le 109 ]; then
 #echo ""
 #state=100
 #statestop=${rstep}

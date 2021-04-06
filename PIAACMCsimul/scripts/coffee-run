@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Designing PIAACMC 
+# Designing PIAACMC
 
 
 
@@ -70,14 +70,14 @@ loadparam size 1024
 loadparam beamrad 0.02
 loadparam pscale 0.0001
 loadparam Fratio 80.0
-loadparam PIAAr0lim 1.15 
+loadparam PIAAr0lim 1.15
 loadparam PIAAr1lim 1.50
 loadparam PIAAsep 1.0
-loadparam PIAA0pos 1.0 
+loadparam PIAA0pos 1.0
 loadparam invPIAAmode 1
 
-loadparam prePIAA0maskpos 1.0 
-loadparam postPIAA0maskpos 1.5 
+loadparam prePIAA0maskpos 1.0
+loadparam postPIAA0maskpos 1.5
 loadparam piaaNBCmodesmax 40
 loadparam piaaCPAmax 10.0
 loadparam LyotZmin -2.5
@@ -320,9 +320,6 @@ printFPMnotes ()
 	echo "fpmrega[%06ld] (long) (1000.0*piaacmc[0].fpmsagreg_coeff+0.1)            Regularization exponent\n"
 	echo "[%s]           piaacmc[0].fpmmaterial_name                               Material name\n"
 	echo ""
-	
-	
-	
 }
 
 
@@ -432,8 +429,8 @@ printhelpeval0 ()
 	echo ""
 	echo "- fpm_zonea.[name].fits         Focal plane mask zone amplitudes. 1 pixel per zone, 1D line"
 	echo "     READ by function PIAACMCsimul_initpiaacmcconf()"
-	echo "     - if does not exist : WRITTEN by function PIAACMCsimul_initpiaacmcconf()"	
-	echo "     WRITTEN by function PIAACMCsimul_savepiaacmcconf()"	
+	echo "     - if does not exist : WRITTEN by function PIAACMCsimul_initpiaacmcconf()"
+	echo "     WRITTEN by function PIAACMCsimul_savepiaacmcconf()"
 	echo ""
 	echo "- fpm_zonescoord_[T]_[ZZZ].txt             Focal plane mask zones coordinates"
 	echo "       [T]    Mask geometry type"
@@ -441,7 +438,7 @@ printhelpeval0 ()
 	echo "     WRITTEN by function PIAACMCsimul_mkFPM_zonemap()"
 	echo ""
 	echo "- fpm_sagmapHR.[name].best.fits.gz         Focal plane mask zones geometry (hi-res)"
-	echo ""	
+	echo ""
 	echo "- conf_fpmmaterial_code.txt                Code for focal plane mask material (for verification)"
 	echo "     WRITTEN by function PIAACMCsimul_initpiaacmcconf()"
 	echo ""
@@ -544,10 +541,10 @@ printhelpeval1 ()
 	echo "       [T]    Scoring mask type used for optimization"
 	echo "     WRITTEN by function PIAACMCsimul_eval_poly_design()"
 	echo ""
-	echo ""	
+	echo ""
 	echo "====================================================================="
 	echo "---- PHOTOMETRY AND CONTRAST"
-	echo ""		
+	echo ""
 	echo "- flux_ptsrc_sm[T].[name].txt              Point source flux for each plane"
 	echo "       [T]    Scoring mask type used for optimization"
 	echo "     WRITTEN by function PIAACMCsimul_computePSF()"
@@ -565,11 +562,11 @@ printhelpeval1 ()
 	echo "       [SS]   Source size"
 	echo "       [T]    Scoring mask type used for optimization"
 	echo "     WRITTEN by function PIAACMCsimul_eval_poly_design()"
-	echo ""	
+	echo ""
 	echo "- ContrastVal_extsrc[SS]_sm[T].[name].txt    Contrast value"
 	echo "       [SS]   Source size"
 	echo "       [T]    Scoring mask type used for optimization"
-	echo "     WRITTEN by function PIAACMCsimul_eval_poly_design()"	
+	echo "     WRITTEN by function PIAACMCsimul_eval_poly_design()"
 	echo ""
 	echo "- ContrastCurve_tt000.[name].txt              Contrast curve, point source"
 	echo "     WRITTEN by function PIAACMCsimul_eval_poly_design()"
@@ -717,7 +714,7 @@ rm cmdlog.txt
 
 
 datestr=`date -u +%Y-%m-%d_%H:%M:%S`
-echo "$datestr  ./runopt $runoptcmd $pscale $coin $coout $fpmradld $lambda $PIAAmaterial $LStransm $NBls $mlambda $mlambdaB $NBrings $maskradld $ssize $extmode $fpmmaterial $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz 000" > cmdlog.txt
+echo "$datestr  coffee-runopt $runoptcmd $pscale $coin $coout $fpmradld $lambda $PIAAmaterial $LStransm $NBls $mlambda $mlambdaB $NBrings $maskradld $ssize $extmode $fpmmaterial $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz 000" > cmdlog.txt
 
 touch run.cmd.tsart
 
@@ -725,7 +722,7 @@ touch run.cmd.tsart
 # THIS IS THE MAIN COMMAND
 
 
-./runopt $runoptcmd $pscale $coin $coout $fpmradld $lambda $PIAAmaterial $LStransm $NBls $mlambda $mlambdaB $NBrings $maskradld $ssize $extmode $fpmmaterial $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz 000
+coffee-runopt $runoptcmd $pscale $coin $coout $fpmradld $lambda $PIAAmaterial $LStransm $NBls $mlambda $mlambdaB $NBrings $maskradld $ssize $extmode $fpmmaterial $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz 000
 
 
 
@@ -823,7 +820,7 @@ cd ..
 
 
 if [ "$runoptcmd" = "eval1" ]; then
-eval1cp 
+eval1cp
 fi
 
 

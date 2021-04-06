@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 
 # number of arguments to script
 NBARGS=0
@@ -21,7 +20,7 @@ rm piaacmcscriptsinit.txt
 
 
 function CLEANoutput {
-	
+
 rm -rf testdir
 rm -rf log
 rm -rf ref
@@ -104,7 +103,7 @@ echo "------------------------------------------------------------------------"
 
 printHELP1 ()
 {
-    printf "%20s       PIAACMC design script\n" "$0" 
+    printf "%20s       PIAACMC design script\n" "$0"
 }
 
 
@@ -178,8 +177,8 @@ for arg in "$@"; do
   shift
   case "$arg" in
     "--help") set -- "$@" "-h" ;;
-    "--help1") 
-set -- "$@" "-h" 
+    "--help1")
+set -- "$@" "-h"
 singlelinehelp=1;
 ;;
     *)        set -- "$@" "$arg"
@@ -202,14 +201,14 @@ while getopts :hl: FLAG; do
     l)
     CLEANlevel=$OPTARG
     ;;
-    \?) 
+    \?)
       echo -e \\n"Option -${BOLD}$OPTARG${NORM} not allowed."
       printHELP
       ;;
   esac
 done
 
-shift $((OPTIND-1))  
+shift $((OPTIND-1))
 
 
 
