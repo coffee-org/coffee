@@ -304,7 +304,7 @@ long PIAACMCsimul_regularization_PIAAshapes_add1Dvector(long ID1D, long index0)
  */
 
 int PIAACMCsimul_exec(
-	const char *confindex, 
+	const char *confindex,
 	long mode
 	)
 {
@@ -315,8 +315,8 @@ int PIAACMCsimul_exec(
     double valref, val0;
     long i, jj, ii;
 
-    long IDv, ID, IDref;
-    long IDmodes, IDmodes2D;
+    imageID IDv, ID, IDref;
+    imageID IDmodes, IDmodes2D;
     long xsize = 0;
     long ysize = 0;
     long k;
@@ -324,7 +324,7 @@ int PIAACMCsimul_exec(
     long iter;
 
     char fname[800];
-    long IDm, ID1D, ID1Dref;
+    imageID IDm, ID1D, ID1Dref;
     long size1Dvec, size1Dvec0;
 
 
@@ -392,7 +392,7 @@ int PIAACMCsimul_exec(
 
     double alphareg;
     double bestval = 0.0;
-    long IDoptvec = -1;
+    imageID IDoptvec = -1;
 
     double acoeff0, acoeff1, acoeff2;
     float scangainfact;
@@ -405,7 +405,7 @@ int PIAACMCsimul_exec(
     double tmp;
     int initbestval = 0;
 
-    long ID_CPAfreq;
+    imageID ID_CPAfreq;
 
 
 
@@ -559,7 +559,7 @@ int PIAACMCsimul_exec(
 
 
     default :
-        printERROR(__FILE__,__func__,__LINE__, "mode not recognized");
+        PRINT_ERROR("mode not recognized");
         break;
     }
 

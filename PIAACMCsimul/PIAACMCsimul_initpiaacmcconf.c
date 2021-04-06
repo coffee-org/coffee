@@ -4,12 +4,6 @@
  *
  * Can design both APLCMC and PIAACMC coronagraphs
  *
- * @author  O. Guyon
- * @date    21 nov 2017
- *
- *
- * @bug No known bugs.
- *
  */
 
 
@@ -45,6 +39,7 @@
 #include "COREMOD_memory/COREMOD_memory.h"
 #include "COREMOD_arith/COREMOD_arith.h"
 #include "COREMOD_iofits/COREMOD_iofits.h"
+
 //   other modules
 #include "info/info.h"
 #include "fft/fft.h"
@@ -230,11 +225,11 @@ int PIAACMCsimul_initpiaacmcconf(
     long size, size0;
     long Cmsize;
     long Fmsize;
-    long ID, ID0, ID1;
+    imageID ID, ID0, ID1;
     long size2;
     double rad;
     char command[1000];
-    long IDv1, IDv2;
+    imageID IDv1, IDv2;
     char fname[1500];
     char name[500];
     float tmpf;
@@ -251,13 +246,13 @@ int PIAACMCsimul_initpiaacmcconf(
     uint32_t *sizearray;
 
 
-    long IDapo;
+    imageID IDapo;
     long xsize = 0;
     long ysize = 0;
-    long IDapo_PIAA, IDapo_CPA;
+    imageID IDapo_PIAA, IDapo_CPA;
     double coeff;
 
-    long IDx, IDy, IDr, IDPA;
+    imageID IDx, IDy, IDr, IDPA;
 
 
 #ifdef PIAASIMUL_LOGFUNC0
