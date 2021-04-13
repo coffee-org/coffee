@@ -16,7 +16,6 @@ Code metrics (dev branch) :
 
 
 
-
 # coffee
 Coronagraph Optimization For Fast Exoplanets Exploration
 
