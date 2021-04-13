@@ -37,7 +37,7 @@ jobs:
       shell: bash
       run: sudo make install
 
-- name: Test
+    - name: Test
         working-directory: ${{github.workspace}}/milk/_build
         shell: bash
         # Execute tests defined by the CMake configuration.
