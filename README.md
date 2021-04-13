@@ -1,3 +1,22 @@
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+
+Latest Version (off main branch): [![latesttag](https://img.shields.io/github/tag/coffee-org/coffee.svg)](https://github.com/coffee-org/coffee/tree/main)
+
+| Branch    | Build   | Docker Deployment    | Travis-CI    | Activity   |
+|-------------|-------------|-------------|-------------|-------------|
+**main**|[![CMake badge](https://github.com/coffee-org/coffee/actions/workflows/cmake.yml/badge.svg?branch=main)](https://github.com/coffee-org/coffee/actions/workflows/cmake.yml)|[![CMake badge](https://github.com/coffee-org/coffee/actions/workflows/docker-image.yml/badge.svg?branch=main)](https://github.com/coffee-org/coffee/actions/workflows/docker-image.yml)|[![Build Status](https://www.travis-ci.com/coffee-org/coffee.svg?branch=main)](https://www.travis-ci.com/coffee-org/coffee)|![lastcommit](https://img.shields.io/github/last-commit/coffee-org/coffee/main.svg)|
+**dev**|[![CMake badge](https://github.com/coffee-org/coffee/actions/workflows/cmake.yml/badge.svg?branch=dev)](https://github.com/coffee-org/coffee/actions/workflows/cmake.yml)|[![CMake badge](https://github.com/coffee-org/coffee/actions/workflows/docker-image.yml/badge.svg?branch=dev)](https://github.com/coffee-org/coffee/actions/workflows/docker-image.yml)|[![Build Status dev](https://www.travis-ci.com/coffee-org/coffee.svg?branch=dev)](https://www.travis-ci.com/coffee-org/coffee)|![lastcommit](https://img.shields.io/github/last-commit/coffee-org/coffee/dev.svg)|
+
+
+Code metrics (dev branch) :
+[![CodeScene Code Health](https://codescene.io/projects/14780/status-badges/code-health)](https://codescene.io/projects/14780)
+[![CodeScene System Mastery](https://codescene.io/projects/14780/status-badges/system-mastery)](https://codescene.io/projects/14780)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/6eefa0e1c1254889b1e2f6fda55930ca)](https://www.codacy.com/gh/coffee-org/coffee/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=coffee-org/coffee&amp;utm_campaign=Badge_Grade)
+[![CodeFactor](https://www.codefactor.io/repository/github/coffee-org/coffee/badge)](https://www.codefactor.io/repository/github/coffee-org/coffee)
+
+
+
+
 # coffee
 Coronagraph Optimization For Fast Exoplanets Exploration
 
