@@ -99,10 +99,10 @@
 
 // uncomment at compilation time to enable logging of function entry/exit
 //#define AOSYSTSIM_LOGFUNC
-static int AOSYSTSIM_logfunc_level = 0;
-static int AOSYSTSIM_logfunc_level_max = 2; // log all levels below this number
-static char AOSYSTSIM_logfunc_fname[] = "AOsystSim.fcall.log";
-static char flogcomment[200];
+//static int AOSYSTSIM_logfunc_level = 0;
+//static int AOSYSTSIM_logfunc_level_max = 2; // log all levels below this number
+//static char AOSYSTSIM_logfunc_fname[] = "AOsystSim.fcall.log";
+//static char flogcomment[200];
 
 
 
@@ -559,10 +559,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
 
     if(WDIR_INIT == 0)
     {
-        if(system("mkdir -p AOsystSim_wdir") != 0)
-        {
-            PRINT_ERROR("system() returns non-zero value");
-        }
+        EXECUTE_SYSTEM_COMMAND("mkdir -p AOsystSim_wdir");
         WDIR_INIT = 1;
     }
 
@@ -984,16 +981,14 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
 
 int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
 {
-    long IDin, IDmask, IDout, IDdm, IDwfe;
+    imageID IDin, IDmask, IDout, IDdm, IDwfe;
     uint32_t *sizearray;
-    long cnt0;
-    long ii, jj;
-    double x, y, r;
-    long ID, IDin1;
+    uint64_t cnt0;
+    imageID ID, IDin1;
 
-    long IDaosf_noise;
-    long IDaosf_mult;
-    long IDaosf_gain;
+    imageID IDaosf_noise;
+    imageID IDaosf_mult;
+    imageID IDaosf_gain;
 
     float loopgain = 0.001;
     float multr0 = 0.2;
@@ -1001,7 +996,7 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
     float wfsetime = 0.001; /**< WFS exposure time */
     float timedelay =
         0.0005;/**< time delay between wavefront sensor measurement (end of exposure) and DM correction [sec] */
-    long size2;
+    uint64_t size2;
     double tnowdouble = 0.0;
     double time_wfse0 = 0.0;
     long wfsecnt = 0;
@@ -1015,7 +1010,7 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
     //  double noiselevel = 0.3; // noise level per WFS measurement [um] - only white noise is currently supported
 
     /** wavefront correction buffer to implement time delay */
-    long IDwfcbuff;
+    imageID IDwfcbuff;
     long wfcbuff_size = 10000;
     double *wfcbuff_time;
     long *wfcbuff_status; // 1 : waiting to be applied
@@ -1024,8 +1019,6 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
 
     double dmmovetime = 0.001; /**< time it takes for DM to move */
     long dmmoveNBpt = 10;
-
-    int ret;
 
 
 
@@ -1055,17 +1048,17 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
 
     if(WDIR_INIT == 0)
     {
-        ret = system("mkdir -p AOsystSim_wdir");
+        EXECUTE_SYSTEM_COMMAND("mkdir -p AOsystSim_wdir");
         WDIR_INIT = 1;
     }
 
 
-    for(ii = 0; ii < sizearray[0]; ii++)
-        for(jj = 0; jj < sizearray[1]; jj++)
+    for(uint32_t ii = 0; ii < sizearray[0]; ii++)
+        for(uint32_t jj = 0; jj < sizearray[1]; jj++)
         {
-            x = 1.0 * ii - 0.5 * sizearray[0];
-            y = 1.0 * jj - 0.5 * sizearray[1];
-            r = sqrt(x * x + y * y);
+            double x = 1.0 * ii - 0.5 * sizearray[0];
+            double y = 1.0 * jj - 0.5 * sizearray[1];
+            double r = sqrt(x * x + y * y);
             r1 = (r - rmask) / (0.5 * sizearray[0] - rmask);
 
             if(r1 < 0.0)
@@ -1124,7 +1117,7 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
         if(data.image[IDin].md[0].cnt0 != cnt0)
         {
             /** input masking */
-            for(ii = 0; ii < size2; ii++)
+            for(uint64_t ii = 0; ii < size2; ii++)
             {
                 data.image[IDin1].array.F[ii] = data.image[IDin].array.F[ii] *
                                                 data.image[IDmask].array.F[ii];
@@ -1134,7 +1127,7 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
             WFrms0 = 0.0;
             WFrms = 0.0;
             WFrmscnt = 0;
-            for(ii = 0; ii < sizearray[0]*sizearray[1]; ii++)
+            for(uint64_t ii = 0; ii < sizearray[0]*sizearray[1]; ii++)
             {
                 data.image[IDout].array.F[ii] = data.image[IDin1].array.F[ii] -
                                                 data.image[IDdm].array.F[ii];
@@ -1159,7 +1152,7 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
             do2drfft(IDout_name, "aosf_tmpfft");
             ID = image_ID("aosf_tmpfft");
 
-            for(ii = 0; ii < sizearray[0]*sizearray[1]; ii++)
+            for(uint64_t ii = 0; ii < sizearray[0]*sizearray[1]; ii++)
             {
                 data.image[ID].array.CF[ii].re *= data.image[IDaosf_mult].array.F[ii] / size2;
                 data.image[ID].array.CF[ii].im *= data.image[IDaosf_mult].array.F[ii] / size2;
@@ -1170,7 +1163,7 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
             ID = image_ID("testo");
 
             /** Wavefront estimation */
-            for(ii = 0; ii < sizearray[0]*sizearray[1]; ii++)
+            for(uint64_t ii = 0; ii < sizearray[0]*sizearray[1]; ii++)
             {
                 data.image[IDwfe].array.F[ii] += data.image[ID].array.CF[ii].re;
             }
@@ -1180,7 +1173,7 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
             if((tnowdouble - time_wfse0) > wfsetime)
             {
                 if(wfsecnt > 0)
-                    for(ii = 0; ii < sizearray[0]*sizearray[1]; ii++)
+                    for(uint64_t ii = 0; ii < sizearray[0]*sizearray[1]; ii++)
                     {
                         data.image[IDwfe].array.F[ii] /= wfsecnt;
                     }
@@ -1200,7 +1193,7 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
                         exit(0);
                     }
 
-                    for(ii = 0; ii < size2; ii++)
+                    for(uint64_t ii = 0; ii < size2; ii++)
                     {
                         data.image[IDwfcbuff].array.F[k0 * size2 + ii] = data.image[IDwfe].array.F[ii] /
                                 dmmoveNBpt;
@@ -1210,7 +1203,7 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
                     wfcbuff_status[k0] = 1;
                 }
 
-                for(ii = 0; ii < sizearray[0]*sizearray[1]; ii++)
+                for(uint64_t ii = 0; ii < sizearray[0]*sizearray[1]; ii++)
                 {
                     data.image[IDwfe].array.F[ii] = 0.0;
                 }
@@ -1228,7 +1221,7 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
                     {
                         //			printf("Reading WFC buffer slice %ld  [%5ld %5ld]\n", k, wfsecnt1, wfsecnt);
                         /** update DM shape */
-                        for(ii = 0; ii < sizearray[0]*sizearray[1]; ii++)
+                        for(uint64_t ii = 0; ii < sizearray[0]*sizearray[1]; ii++)
                         {
                             data.image[IDdm].array.F[ii] += data.image[IDaosf_gain].array.F[ii] *
                                                             data.image[IDwfcbuff].array.F[k * size2 + ii];
@@ -1270,13 +1263,13 @@ errno_t AOsystSim_extremeAO_contrast_sim()
     EXAOSIMCONF *exaosimconf;
     long CN2layer;
     double tmpv1, tmpv2, tmpv3, tmpv4;
-    double tmpC;
+    //double tmpC;
 
-    double lambda_V = 0.545e-6;
-    double zeropt_V = 9.9690e10;
+    //double lambda_V = 0.545e-6;
+    //double zeropt_V = 9.9690e10;
 
-    double lambda_R = 0.638e-6;
-    double zeropt_R = 7.2384e10;
+    //double lambda_R = 0.638e-6;
+    //double zeropt_R = 7.2384e10;
 
     double lambda_I = 0.797e-6;
     double zeropt_I = 4.5825e10;
@@ -1284,14 +1277,14 @@ errno_t AOsystSim_extremeAO_contrast_sim()
     double lambda_J = 1.22e-6;
     double zeropt_J = 1.9422e10;
 
-    double lambda_H = 1.63e-6;
-    double zeropt_H = 9.4440e9;
+    //double lambda_H = 1.63e-6;
+    //double zeropt_H = 9.4440e9;
 
-    double lambda_K = 2.19e-6;
-    double zeropt_K = 4.3829e9;
+    //double lambda_K = 2.19e-6;
+    //double zeropt_K = 4.3829e9;
 
-    double lambda_L = 3.45e-6;
-    double zeropt_L = 1.2292e9;
+    //double lambda_L = 3.45e-6;
+    //double zeropt_L = 1.2292e9;
 
 
 
@@ -1304,7 +1297,7 @@ errno_t AOsystSim_extremeAO_contrast_sim()
     double lambdaBsci = 0.2; // dlambda/lambda
     double systemEfficiency = 0.2;
 
-    double coeff;
+    //double coeff;
     FILE *fp;
     double dsa;
 
@@ -1314,7 +1307,7 @@ errno_t AOsystSim_extremeAO_contrast_sim()
     double crosstime;
 
     double WFStlim; // WFS min effective exposure time
-    double sciWFStlim; // sci WFS min exposure time
+    //double sciWFStlim; // sci WFS min exposure time
     double IWAld = 1.3;
 
 
@@ -1369,7 +1362,7 @@ errno_t AOsystSim_extremeAO_contrast_sim()
     exaosimconf[0].betaaWFS    = sqrt(2.0);
     exaosimconf[0].betapWFSsci = 2.0;
     exaosimconf[0].betaaWFSsci = 2.0;
-    sciWFStlim = 0.001; // sci WFS min exposure time
+    //sciWFStlim = 0.001; // sci WFS min exposure time
 
 
 
@@ -1441,7 +1434,7 @@ errno_t AOsystSim_extremeAO_contrast_sim()
     {
         double tmpA, tmpB;
         int OK = 0;
-        double att2;
+        //double att2;
 
         printf("\nSeparation = %f\n", exaosimconf[0].alpha_arcsec);
         fflush(stdout);
@@ -1901,46 +1894,38 @@ long AOsystSim_mkTelPupDM(const char *ID_name, long msize, double xc, double yc,
                           double rin, double rout, double pupPA, double spiderPA, double spideroffset,
                           double spiderthick, double stretchx)
 {
-    long ID, IDz;
-    long ii,  jj;
-    double x, y, x1, y1, r;
+    imageID ID, IDz;
     long binfact = 8;
-    long size;
-    double PA;
-    double val;
-    long IDindex, IDi;
+    imageID IDindex, IDi;
     long index;
-    long ii1, jj1;
-
-    int ret;
 
 
     if(WDIR_INIT == 0)
     {
-        ret = system("mkdir -p AOsystSim_wdir");
+        EXECUTE_SYSTEM_COMMAND("mkdir -p AOsystSim_wdir");
         WDIR_INIT = 1;
     }
 
 
-    size = msize * binfact;
+    long size = msize * binfact;
 
     ID = create_2Dimage_ID(ID_name, msize, msize);
     IDi = create_3Dimage_ID("TPind", msize, msize, 5);
 
     IDz = create_2Dimage_ID("telpupDMz", size, size);
     IDindex = create_2Dimage_ID("telpupDMzindex", size, size);
-    for(ii = 0; ii < size; ii++)
-        for(jj = 0; jj < size; jj++)
+    for(uint32_t ii = 0; ii < size; ii++)
+        for(uint32_t jj = 0; jj < size; jj++)
         {
             index = 0;
-            val = 1.0;
+            double val = 1.0;
 
-            x = (1.0 * ii / binfact);
-            y = (1.0 * jj / binfact);
+            double x = (1.0 * ii / binfact);
+            double y = (1.0 * jj / binfact);
             x -= xc;
             y -= yc;
-            r = sqrt(x * x + y * y);
-            PA = atan2(y, x);
+            double r = sqrt(x * x + y * y);
+            double PA = atan2(y, x);
             PA += pupPA;
             x = r * cos(PA) * stretchx;
             y = r * sin(PA);
@@ -1954,8 +1939,8 @@ long AOsystSim_mkTelPupDM(const char *ID_name, long msize, double xc, double yc,
                 val = 0.0;
             }
 
-            x1 = x - spideroffset - spiderthick / 2.0;
-            y1 = y;
+            double x1 = x - spideroffset - spiderthick / 2.0;
+            double y1 = y;
             PA = atan2(y1, x1);
             if(fabs(PA) < spiderPA)
             {
@@ -2017,8 +2002,8 @@ long AOsystSim_mkTelPupDM(const char *ID_name, long msize, double xc, double yc,
             data.image[IDz].array.F[jj * size + ii] = val;
             data.image[IDindex].array.F[jj * size + ii] = index * val;
 
-            ii1 = (long)(ii / binfact);
-            jj1 = (long)(jj / binfact);
+            long ii1 = (long)(ii / binfact);
+            long jj1 = (long)(jj / binfact);
 
 
             data.image[ID].array.F[jj1 * msize + ii1] += val / binfact / binfact;
@@ -2048,13 +2033,12 @@ long AOsystSim_mkTelPupDM(const char *ID_name, long msize, double xc, double yc,
 long AOsystSim_fitTelPup(const char *ID_name, const char *IDtelpup_name)
 {
     FILE *fp;
-    long ID, ID1, IDt;
-    long IDtelpup;
+    imageID ID, ID1, IDt;
+    //imageID IDtelpup;
     double xc, yc, pupPA, spiderPA, spideroffset, spiderthick, rin, rout, stretchx;
     long size;
     double vp10, vp90;
     double rms;
-    long ii, jj;
     double v1;
 
     double xc_min, yc_min, pupPA_min, rout_min, stretchx_min, spiderPA_min,
@@ -2108,7 +2092,7 @@ long AOsystSim_fitTelPup(const char *ID_name, const char *IDtelpup_name)
     vp10 = img_percentile_float(ID_name, 0.1);
     vp90 = img_percentile_float(ID_name, 0.9);
     printf("%f %f\n", vp10, vp90);
-    for(ii = 0; ii < data.image[ID].md[0].size[0]*data.image[ID].md[0].size[1];
+    for(uint64_t ii = 0; ii < data.image[ID].md[0].size[0]*data.image[ID].md[0].size[1];
             ii++)
     {
         data.image[ID].array.F[ii] = (data.image[ID].array.F[ii] - vp10) /
@@ -2123,8 +2107,8 @@ long AOsystSim_fitTelPup(const char *ID_name, const char *IDtelpup_name)
     for(coeffx = -1.5; coeffx < 1.5; coeffx += 0.05)
         for(coeffy = -1.5; coeffy < 1.5; coeffy += 0.05)
         {
-            for(ii = 0; ii < size; ii++)
-                for(jj = 0; jj < size; jj++)
+            for(uint32_t ii = 0; ii < size; ii++)
+                for(uint32_t jj = 0; jj < size; jj++)
                 {
                     x = 1.0 * ii / size;
                     y = 1.0 * jj / size;
@@ -2144,8 +2128,8 @@ long AOsystSim_fitTelPup(const char *ID_name, const char *IDtelpup_name)
         }
 
     printf("COEFF : %f %f\n", coeffx1, coeffy1);
-    for(ii = 0; ii < size; ii++)
-        for(jj = 0; jj < size; jj++)
+    for(uint32_t ii = 0; ii < size; ii++)
+        for(uint32_t jj = 0; jj < size; jj++)
         {
             x = 1.0 * ii / size;
             y = 1.0 * jj / size;
@@ -2161,14 +2145,14 @@ long AOsystSim_fitTelPup(const char *ID_name, const char *IDtelpup_name)
 
 
 
-    for(ii = 0; ii < data.image[ID].md[0].size[0]*data.image[ID].md[0].size[1];
+    for(uint64_t ii = 0; ii < data.image[ID].md[0].size[0]*data.image[ID].md[0].size[1];
             ii++)
     {
         data.image[ID].array.F[ii] = (data.image[ID].array.F[ii] - vp10) /
                                      (vp90 - vp10);
     }
 
-    for(ii = 0; ii < size * size; ii++)
+    for(uint64_t ii = 0; ii < size * size; ii++)
     {
         if(data.image[ID].array.F[ii] > 0.05)
         {
@@ -2182,7 +2166,7 @@ long AOsystSim_fitTelPup(const char *ID_name, const char *IDtelpup_name)
 
     vp10 = img_percentile_float(ID_name, 0.1);
     vp90 = img_percentile_float(ID_name, 0.9);
-    for(ii = 0; ii < data.image[ID].md[0].size[0]*data.image[ID].md[0].size[1];
+    for(uint64_t ii = 0; ii < data.image[ID].md[0].size[0]*data.image[ID].md[0].size[1];
             ii++)
     {
         data.image[ID].array.F[ii] = (data.image[ID].array.F[ii] - vp10) /
@@ -2241,7 +2225,7 @@ long AOsystSim_fitTelPup(const char *ID_name, const char *IDtelpup_name)
                                     // save_fits("testpup", "!AOsystSim_wdir/testpup.fits");
 
                                     rms = 0.0;
-                                    for(ii = 0; ii < size * size; ii++)
+                                    for(uint64_t ii = 0; ii < size * size; ii++)
                                     {
                                         v1 = data.image[ID].array.F[ii] - data.image[IDt].array.F[ii];
                                         rms += v1 * v1;
@@ -2446,29 +2430,29 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
 {
     FILE *fp;
     FILE *fp1;
-    char fname[200];
-    char wf_fname[500];
+    char fname[STRINGMAXLEN_FILENAME];
+    char wf_fname[STRINGMAXLEN_FULLFILENAME];
 
-    int MODE;
-    char WFDIR[500];
+    //int MODE;
+    char WFDIR[STRINGMAXLEN_DIRNAME];
     float LAMBDA;
-    char conf_atmWFconf_fname[500];
+    char conf_atmWFconf_fname[STRINGMAXLEN_FULLFILENAME];
 
     int OUT0FITSFILE;
-    char OUT0FITSFILENAMEOPD[200];
-    char OUT0FITSFILENAMEAMP[200];
+    char OUT0FITSFILENAMEOPD[STRINGMAXLEN_FULLFILENAME];
+    char OUT0FITSFILENAMEAMP[STRINGMAXLEN_FULLFILENAME];
 
-    char OUTPHYSTIME[200];
+    char OUTPHYSTIME[STRINGMAXLEN_STREAMNAME];
     int OUT0STREAM;
-    char OUT0STREAMNAMEOPD[200];
-    char OUT0STREAMNAMEAMP[200];
+    char OUT0STREAMNAMEOPD[STRINGMAXLEN_STREAMNAME];
+    char OUT0STREAMNAMEAMP[STRINGMAXLEN_STREAMNAME];
 
     int TRIGGERMODE;
-    char TRIGGERFILE[200];
+    char TRIGGERFILE[STRINGMAXLEN_FULLFILENAME];
     float TRIGGERDT;
-    char TRIGGER0STREAM[200];
+    char TRIGGER0STREAM[STRINGMAXLEN_STREAMNAME];
     int TRIGGER0SEM;
-    char TRIGGER1STREAM[200];
+    char TRIGGER1STREAM[STRINGMAXLEN_STREAMNAME];
     int TRIGGER1SEM;
 
     float DT;
@@ -2476,24 +2460,24 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
     float AMPMFACT;
     long ARRAYSIZE;
     int PIXSCALEMODE;
-    float PIXSCALECUSTOM;
-    float PIXSCALE;
+    //float PIXSCALECUSTOM;
+    //float PIXSCALE;
     int PIXBINFACTOR;
     float PUPDIAM;
-    char PUPILFILE[200];
+    char PUPILFILE[STRINGMAXLEN_FULLFILENAME];
     long IDpupil, pupilsize;
 
     int DM0MODE;
-    char DM0NAME[200];
-    int OUT1FITSFILE;
-    char OUT1FITSFILENAMEOPD[200];
-    char OUT1FITSFILENAMEAMP[200];
+    char DM0NAME[STRINGMAXLEN_STREAMNAME];
+    //int OUT1FITSFILE;
+    char OUT1FITSFILENAMEOPD[STRINGMAXLEN_FULLFILENAME];
+    char OUT1FITSFILENAMEAMP[STRINGMAXLEN_FULLFILENAME];
     int OUT1STREAM;
-    char OUT1STREAMNAMEOPD[200];
-    char OUT1STREAMNAMEAMP[200];
+    char OUT1STREAMNAMEOPD[STRINGMAXLEN_STREAMNAME];
+    char OUT1STREAMNAMEAMP[STRINGMAXLEN_STREAMNAME];
 
 
-    struct timespec ts;
+    //struct timespec ts;
 
     // read from atm turbb config file
     float wfin_TIME_STEP;
@@ -2503,40 +2487,36 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
     float wfin_PUPIL_SCALE;
     long wfin_WFsize;
 
-    long ii, jj, ii1, jj1;
     int OKf;
-    int OK;
+    //int OK;
     long k, k1;
     long kmax = 3;
-    char wfimname_pha[200];
-    char wfimname_amp[200];
+    char wfimname_pha[STRINGMAXLEN_STREAMNAME];
+    char wfimname_amp[STRINGMAXLEN_STREAMNAME];
     uint32_t *sizearray;
 
-    long IDwf0, IDwf1;
-    long IDwf0amp, IDwf1amp;
+    imageID IDwf0, IDwf1;
+    imageID IDwf0amp, IDwf1amp;
     long kk0, kk1;
 
     double phystime;
     float frame_f;
     long NBframes;
-    char command[200];
-    int ret;
 
-    long IDopd0, IDamp0, IDopd1, IDamp1;
+    imageID IDopd0, IDamp0, IDopd1, IDamp1;
     long iioffset, jjoffset;
-    long IDbin_re, IDbin_im, IDbin_amp, IDbin_opd;
-    long i, j;
+    imageID IDbin_re, IDbin_im, IDbin_amp, IDbin_opd;
     float opd, amp, re, im;
     int AMPfile = 1;
-    long IDampmask;
+    imageID IDampmask;
     float pupscale;
     long ii1start0, jj1start0, ii1end0, jj1end0; // compute window in output array
     long ii1start, jj1start, ii1end, jj1end;
     long off1;
-    long ID;
+    imageID ID;
 
-    long IDdm0opd;
-    long IDphystime;
+    imageID IDdm0opd;
+    imageID IDphystime;
 
     int fOK;
     long knext;
@@ -2603,7 +2583,7 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
     printf("ARRAYSIZE = %ld   (%s)\n", ARRAYSIZE, CONF_FNAME);
 
     PIXSCALEMODE =  read_config_parameter_long(CONF_FNAME, "PIXSCALEMODE");
-    PIXSCALECUSTOM =  read_config_parameter_float(CONF_FNAME, "PIXSCALECUSTOM");
+    //PIXSCALECUSTOM =  read_config_parameter_float(CONF_FNAME, "PIXSCALECUSTOM");
     PIXBINFACTOR =  read_config_parameter_long(CONF_FNAME, "PIXBINFACTOR");
     PUPDIAM =  read_config_parameter_float(CONF_FNAME, "PUPDIAMM");
     read_config_parameter(CONF_FNAME, "PUPILFILE", PUPILFILE);
@@ -2611,7 +2591,7 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
     // OUTPUT STREAM 1
     DM0MODE =  read_config_parameter_long(CONF_FNAME, "DM0MODE");
     read_config_parameter(CONF_FNAME, "DM0NAME", DM0NAME);
-    OUT1FITSFILE = read_config_parameter_long(CONF_FNAME, "OUT1FITSFILE");
+    //OUT1FITSFILE = read_config_parameter_long(CONF_FNAME, "OUT1FITSFILE");
     read_config_parameter(CONF_FNAME, "OUT1FITSFILENAMEOPD", OUT1FITSFILENAMEOPD);
     read_config_parameter(CONF_FNAME, "OUT1FITSFILENAMEAMP", OUT1FITSFILENAMEAMP);
     OUT1STREAM = read_config_parameter_long(CONF_FNAME, "OUT1STREAM");
@@ -2760,7 +2740,7 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
         }
     }
 
-    OK = 1;
+    //OK = 1;
 
     k = 0;
     k1 = 0;
@@ -2774,7 +2754,7 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
     kmax = 0;
     while(fOK == 1)
     {
-        sprintf(wf_fname, "%s/%s%08ld.%09ld.pha.fits", WFDIR, wfin_PREFIX, kmax,
+        WRITE_FULLFILENAME(wf_fname, "%s/%s%08ld.%09ld.pha.fits", WFDIR, wfin_PREFIX, kmax,
                 (long)(1.0e12 * LAMBDA + 0.5));
         fOK = file_exists(wf_fname);
         kmax++;
@@ -2791,17 +2771,15 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
 
     if(IDpupil != -1)
     {
-        float x, y;
-
         printf("LOADED %s\n", PUPILFILE);
         pupilsize = data.image[IDpupil].md[0].size[0];
-        for(ii = 0; ii < ARRAYSIZE; ii++)
-            for(jj = 0; jj < ARRAYSIZE; jj++)
+        for(long ii = 0; ii < ARRAYSIZE; ii++)
+            for(long jj = 0; jj < ARRAYSIZE; jj++)
             {
-                x = (1.0 * ii - 0.5 * ARRAYSIZE) / (0.5 * PUPDIAM / pupscale);
-                y = (1.0 * jj - 0.5 * ARRAYSIZE) / (0.5 * PUPDIAM / pupscale);
-                ii1 = (long)(0.5 * x * pupilsize + 0.5 * pupilsize);
-                jj1 = (long)(0.5 * y * pupilsize + 0.5 * pupilsize);
+                float x = (1.0 * ii - 0.5 * ARRAYSIZE) / (0.5 * PUPDIAM / pupscale);
+                float y = (1.0 * jj - 0.5 * ARRAYSIZE) / (0.5 * PUPDIAM / pupscale);
+                long ii1 = (long)(0.5 * x * pupilsize + 0.5 * pupilsize);
+                long jj1 = (long)(0.5 * y * pupilsize + 0.5 * pupilsize);
                 if((ii1 > -1) && (ii1 < pupilsize) && (jj1 > -1) && (jj1 < pupilsize))
                 {
                     data.image[IDampmask].array.F[jj * ARRAYSIZE + ii] *=
@@ -2815,7 +2793,7 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
     }
 
 
-    for(ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
+    for(long ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
     {
         data.image[IDamp0].array.F[ii] = data.image[IDampmask].array.F[ii];
     }
@@ -2823,8 +2801,8 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
     jj1start0 = ARRAYSIZE;
     ii1end0 = 0;
     jj1end0 = 0;
-    for(ii1 = 0; ii1 < ARRAYSIZE; ii1++)
-        for(jj1 = 0; jj1 < ARRAYSIZE; jj1++)
+    for(long ii1 = 0; ii1 < ARRAYSIZE; ii1++)
+        for(long jj1 = 0; jj1 < ARRAYSIZE; jj1++)
         {
             if(data.image[IDampmask].array.F[jj1 * ARRAYSIZE + ii1] > 1.0e-6)
             {
@@ -2852,11 +2830,11 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
 
     for(;;)
     {
-        long ID0, ID1;
-        long ID0amp, ID1amp;
+        imageID ID0, ID1;
+        imageID ID0amp, ID1amp;
         float alpha;
         long frame_n;
-        long iistart, iiend, jjstart, jjend, iisize, jjsize, csize;
+        long csize;
 
 
 
@@ -2881,14 +2859,12 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
         sprintf(wfimname_amp, "wf%08ld_amp", k);
         if(image_ID(wfimname_pha) == -1)
         {
-            sprintf(wf_fname, "%s/%s%08ld.%09ld.pha.fits", WFDIR, wfin_PREFIX, k,
-                    (long)(1.0e12 * LAMBDA + 0.5));
+            WRITE_FULLFILENAME(wf_fname, "%s/%s%08ld.%09ld.pha.fits", WFDIR, wfin_PREFIX, k, (long)(1.0e12 * LAMBDA + 0.5));
             printf("Loading WF file name : %s\n", wf_fname);
             sprintf(wfimname_pha, "wf%08ld_pha", k);
             IDwf0 = load_fits(wf_fname, wfimname_pha, 1);
 
-            sprintf(wf_fname, "%s/%s%08ld.%09ld.amp.fits", WFDIR, wfin_PREFIX, k,
-                    (long)(1.0e12 * LAMBDA + 0.5));
+            WRITE_FULLFILENAME(wf_fname, "%s/%s%08ld.%09ld.amp.fits", WFDIR, wfin_PREFIX, k, (long)(1.0e12 * LAMBDA + 0.5));
             printf("Loading WF file name : %s\n", wf_fname);
             sprintf(wfimname_amp, "wf%08ld_amp", k);
             IDwf0amp = load_fits(wf_fname, wfimname_amp, 1);
@@ -2914,13 +2890,14 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
         sprintf(wfimname_amp, "wf%08ld_amp", knext);
         if(image_ID(wfimname_pha) == -1)
         {
-            sprintf(wf_fname, "%s/%s%08ld.%09ld.pha.fits", WFDIR, wfin_PREFIX, knext,
-                    (long)(1.0e12 * LAMBDA + 0.5));
+            WRITE_FULLFILENAME(wf_fname, "%s/%s%08ld.%09ld.pha.fits", WFDIR, wfin_PREFIX,
+                               knext, (long)(1.0e12 * LAMBDA + 0.5));
             printf("Loading WF file name : %s\n", wf_fname);
+
             sprintf(wfimname_pha, "wf%08ld_pha", knext);
             IDwf1 = load_fits(wf_fname, wfimname_pha, 1);
 
-            sprintf(wf_fname, "%s/%s%08ld.%09ld.amp.fits", WFDIR, wfin_PREFIX, knext,
+            WRITE_FULLFILENAME(wf_fname, "%s/%s%08ld.%09ld.amp.fits", WFDIR, wfin_PREFIX, knext,
                     (long)(1.0e12 * LAMBDA + 0.5));
             printf("Loading WF file name : %s\n", wf_fname);
             sprintf(wfimname_amp, "wf%08ld_amp", knext);
@@ -3035,19 +3012,19 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
 
             if(AMPfile == 1)
             {
-                for(ii1 = ii1start; ii1 < ii1end; ii1++)
-                    for(jj1 = jj1start; jj1 < jj1end; jj1++)
+                for(long ii1 = ii1start; ii1 < ii1end; ii1++)
+                    for(long jj1 = jj1start; jj1 < jj1end; jj1++)
                     {
                         if(data.image[IDampmask].array.F[(jj1 - off1)*ARRAYSIZE +
                                                          (ii1 - off1)] > 1.0e-6)
                         {
                             data.image[IDbin_re].array.F[jj1 * csize + ii1] = 0.0;
                             data.image[IDbin_im].array.F[jj1 * csize + ii1] = 0.0;
-                            for(i = 0; i < PIXBINFACTOR; i++)
-                                for(j = 0; j < PIXBINFACTOR; j++)
+                            for(long i = 0; i < PIXBINFACTOR; i++)
+                                for(long j = 0; j < PIXBINFACTOR; j++)
                                 {
-                                    ii = PIXBINFACTOR * ii1 + i;
-                                    jj = PIXBINFACTOR * jj1 + j;
+                                    long ii = PIXBINFACTOR * ii1 + i;
+                                    long jj = PIXBINFACTOR * jj1 + j;
                                     opd = OPDMFACT * ((1.0 - alpha) * data.image[ID0].array.F[kk0 * wfin_WFsize *
                                                       wfin_WFsize + jj * wfin_WFsize + ii] + alpha * data.image[ID1].array.F[kk1 *
                                                               wfin_WFsize * wfin_WFsize + jj * wfin_WFsize + ii]) / (2.0 * M_PI) * LAMBDA *
@@ -3071,19 +3048,19 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
             }
             else
             {
-                for(ii1 = ii1start; ii1 < ii1end; ii1++)
-                    for(jj1 = jj1start; jj1 < jj1end; jj1++)
+                for(long ii1 = ii1start; ii1 < ii1end; ii1++)
+                    for(long jj1 = jj1start; jj1 < jj1end; jj1++)
                     {
                         if(data.image[IDampmask].array.F[(jj1 - off1)*ARRAYSIZE +
                                                          (ii1 - off1)] > 1.0e-6)
                         {
                             data.image[IDbin_re].array.F[jj1 * csize + ii1] = 0.0;
                             data.image[IDbin_im].array.F[jj1 * csize + ii1] = 0.0;
-                            for(i = 0; i < PIXBINFACTOR; i++)
-                                for(j = 0; j < PIXBINFACTOR; j++)
+                            for(long i = 0; i < PIXBINFACTOR; i++)
+                                for(long j = 0; j < PIXBINFACTOR; j++)
                                 {
-                                    ii = PIXBINFACTOR * ii1 + i;
-                                    jj = PIXBINFACTOR * jj1 + j;
+                                    long ii = PIXBINFACTOR * ii1 + i;
+                                    long jj = PIXBINFACTOR * jj1 + j;
                                     opd = OPDMFACT * ((1.0 - alpha) * data.image[ID0].array.F[kk0 * wfin_WFsize *
                                                       wfin_WFsize + jj * wfin_WFsize + ii] + alpha * data.image[ID1].array.F[kk1 *
                                                               wfin_WFsize * wfin_WFsize + jj * wfin_WFsize + ii]) / (2.0 * M_PI) * LAMBDA *
@@ -3109,13 +3086,13 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
 
 
         // WRITE PIXELS
-        iistart = 0;
-        iiend = ARRAYSIZE;
-        jjstart = 0;
-        jjend = ARRAYSIZE;
+        long iistart = 0;
+        long iiend = ARRAYSIZE;
+        long jjstart = 0;
+        long jjend = ARRAYSIZE;
 
-        iisize = wfin_WFsize / PIXBINFACTOR;
-        jjsize = wfin_WFsize / PIXBINFACTOR;
+        long iisize = wfin_WFsize / PIXBINFACTOR;
+        //long jjsize = wfin_WFsize / PIXBINFACTOR;
 
         iistart = (ARRAYSIZE / 2) - (iisize / 2);
         iiend = (ARRAYSIZE / 2) + (iisize / 2);
@@ -3139,11 +3116,11 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
         data.image[IDopd0].md[0].write = 1;
         if(PIXBINFACTOR == 1)
         {
-            for(ii = iistart; ii < iiend; ii++)
-                for(jj = jjstart; jj < jjend; jj++)
+            for(long ii = iistart; ii < iiend; ii++)
+                for(long jj = jjstart; jj < jjend; jj++)
                 {
-                    ii1 = ii + iioffset;
-                    jj1 = jj + jjoffset;
+                    long ii1 = ii + iioffset;
+                    long jj1 = jj + jjoffset;
                     data.image[IDopd0].array.F[jj * ARRAYSIZE + ii] = OPDMFACT * ((
                                 1.0 - alpha) * data.image[ID0].array.F[kk0 * wfin_WFsize * wfin_WFsize + jj1 *
                                         wfin_WFsize + ii1] + alpha * data.image[ID1].array.F[kk1 * wfin_WFsize *
@@ -3152,11 +3129,11 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
         }
         else
         {
-            for(ii = iistart; ii < iiend; ii++)
-                for(jj = jjstart; jj < jjend; jj++)
+            for(long ii = iistart; ii < iiend; ii++)
+                for(long jj = jjstart; jj < jjend; jj++)
                 {
-                    ii1 = (ii - iistart) + iioffset;
-                    jj1 = (jj - jjstart) + jjoffset;
+                    long ii1 = (ii - iistart) + iioffset;
+                    long jj1 = (jj - jjstart) + jjoffset;
                     data.image[IDopd0].array.F[jj * ARRAYSIZE + ii] =
                         data.image[IDbin_opd].array.F[jj1 * csize + ii1];
                 }
@@ -3178,11 +3155,11 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
             {
                 if(AMPfile == 1)
                 {
-                    for(ii = iistart; ii < iiend; ii++)
-                        for(jj = jjstart; jj < jjend; jj++)
+                    for(long ii = iistart; ii < iiend; ii++)
+                        for(long jj = jjstart; jj < jjend; jj++)
                         {
-                            ii1 = ii + iioffset;
-                            jj1 = jj + jjoffset;
+                            long ii1 = ii + iioffset;
+                            long jj1 = jj + jjoffset;
                             data.image[IDamp0].array.F[jj * ARRAYSIZE + ii] = AMPMFACT *
                                     data.image[IDampmask].array.F[jj * ARRAYSIZE + ii] * ((1.0 - alpha) *
                                             data.image[ID0amp].array.F[kk0 * wfin_WFsize * wfin_WFsize + jj1 * wfin_WFsize +
@@ -3192,11 +3169,11 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
                 }
                 else
                 {
-                    for(ii = iistart; ii < iiend; ii++)
-                        for(jj = jjstart; jj < jjend; jj++)
+                    for(long ii = iistart; ii < iiend; ii++)
+                        for(long jj = jjstart; jj < jjend; jj++)
                         {
-                            ii1 = ii + iioffset;
-                            jj1 = jj + jjoffset;
+                            //long ii1 = ii + iioffset;
+                            //long jj1 = jj + jjoffset;
                             data.image[IDamp0].array.F[jj * ARRAYSIZE + ii] = AMPMFACT *
                                     data.image[IDampmask].array.F[jj * ARRAYSIZE + ii];
                         }
@@ -3206,11 +3183,11 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
             {
                 if(AMPfile == 1)
                 {
-                    for(ii = iistart; ii < iiend; ii++)
-                        for(jj = jjstart; jj < jjend; jj++)
+                    for(long ii = iistart; ii < iiend; ii++)
+                        for(long jj = jjstart; jj < jjend; jj++)
                         {
-                            ii1 = ii + iioffset;
-                            jj1 = jj + jjoffset;
+                            long ii1 = ii + iioffset;
+                            long jj1 = jj + jjoffset;
                             data.image[IDamp0].array.F[jj * ARRAYSIZE + ii] = AMPMFACT *
                                     data.image[IDampmask].array.F[jj * ARRAYSIZE + ii] *
                                     data.image[IDbin_amp].array.F[jj1 * csize + ii1] * ((1.0 - alpha) *
@@ -3221,11 +3198,11 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
                 }
                 else
                 {
-                    for(ii = iistart; ii < iiend; ii++)
-                        for(jj = jjstart; jj < jjend; jj++)
+                    for(long ii = iistart; ii < iiend; ii++)
+                        for(long jj = jjstart; jj < jjend; jj++)
                         {
-                            ii1 = (ii - iistart) + iioffset;
-                            jj1 = (jj - jjstart) + jjoffset;
+                            long ii1 = (ii - iistart) + iioffset;
+                            long jj1 = (jj - jjstart) + jjoffset;
                             data.image[IDamp0].array.F[jj * ARRAYSIZE + ii] = AMPMFACT *
                                     data.image[IDampmask].array.F[jj * ARRAYSIZE + ii] *
                                     data.image[IDbin_amp].array.F[jj1 * csize + ii1];
@@ -3242,16 +3219,14 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
 
         if(OUT0FITSFILE > 0)
         {
-            sprintf(command, "rm %s", OUT0FITSFILENAMEOPD);
-            ret = system(command);
-            sprintf(fname, "!%s", OUT0FITSFILENAMEOPD);
+            EXECUTE_SYSTEM_COMMAND("rm %s", OUT0FITSFILENAMEOPD);
+            WRITE_FILENAME(fname, "!%s", OUT0FITSFILENAMEOPD);
             save_fits(OUT0STREAMNAMEOPD, fname);
         }
         if((OUT0FITSFILE == 2) && (OUT0STREAM == 2))
         {
-            sprintf(command, "rm %s", OUT0FITSFILENAMEAMP);
-            ret = system(command);
-            sprintf(fname, "!%s", OUT0FITSFILENAMEAMP);
+            EXECUTE_SYSTEM_COMMAND("rm %s", OUT0FITSFILENAMEAMP);
+            WRITE_FILENAME(fname, "!%s", OUT0FITSFILENAMEAMP);
             save_fits(OUT0STREAMNAMEAMP, fname);
         }
 
@@ -3261,7 +3236,7 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
             data.image[IDopd1].md[0].write = 1;
             data.image[IDamp1].md[0].write = 1;
 
-            for(ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
+            for(uint64_t ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
             {
                 data.image[IDopd1].array.F[ii] = data.image[IDopd0].array.F[ii] - 2.0 *
                                                  data.image[IDdm0opd].array.F[ii];
@@ -3296,8 +3271,7 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
                     usleep((long)(1.0e6 * TRIGGERDT));
                     if(file_exists(TRIGGERFILE) == 1)
                     {
-                        sprintf(command, "rm %s", TRIGGERFILE);
-                        ret = system(command);
+                        EXECUTE_SYSTEM_COMMAND("rm %s", TRIGGERFILE);
                         OKf = 1;
                     }
                 }
@@ -3373,16 +3347,15 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
 int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
                              double modampl, long modnbpts)
 {
-    long ID_inWFc, ID_outWFSim;
-    long arraysize;
+    imageID ID_inWFc, ID_outWFSim;
+    uint32_t arraysize;
     uint32_t *imsize;
-    long ID_inWFccp;
-    long arraysize2;
-    long IDpyramp, IDpyrpha;
+    imageID ID_inWFccp;
+    uint64_t arraysize2;
+    imageID IDpyramp, IDpyrpha;
     double lenssize;
     double pcoeff = 1.4;
     double x, y;
-    long ii, jj;
     char pnamea[200];
     char pnamep[200];
     char pfnamea[200];
@@ -3392,10 +3365,7 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
     long pmodpt;
     double PYRMOD_rad;
     double xc, yc, PA;
-    long ID_outWFSim_tmp;
-
-    int ret;
-
+    imageID ID_outWFSim_tmp;
 
 
     PYRMOD_nbpts = modnbpts;
@@ -3410,7 +3380,7 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
 
     if(WDIR_INIT == 0)
     {
-        ret = system("mkdir -p AOsystSim_wdir");
+        EXECUTE_SYSTEM_COMMAND("mkdir -p AOsystSim_wdir");
         WDIR_INIT = 1;
     }
 
@@ -3435,8 +3405,8 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
             xc = PYRMOD_rad * cos(PA);
             yc = PYRMOD_rad * sin(PA);
 
-            for(ii = 0; ii < arraysize; ii++)
-                for(jj = 0; jj < arraysize; jj++)
+            for(uint32_t ii = 0; ii < arraysize; ii++)
+                for(uint32_t jj = 0; jj < arraysize; jj++)
                 {
                     x = 1.0 * (ii - arraysize / 2) - xc;
                     y = 1.0 * (jj - arraysize / 2) - yc;
@@ -3500,14 +3470,14 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
 
 
     data.image[ID_outWFSim].md[0].write = 1;
-    for(ii = 0; ii < arraysize2; ii++)
+    for(uint64_t ii = 0; ii < arraysize2; ii++)
     {
         data.image[ID_outWFSim_tmp].array.F[ii] = 0.0;
     }
 
     for(pmodpt = 0; pmodpt < PYRMOD_nbpts; pmodpt++)
     {
-        long IDa, IDp;
+        imageID IDa, IDp;
 
 
         memcpy(data.image[ID_inWFccp].array.CF, data.image[ID_inWFc].array.CF,
@@ -3528,7 +3498,7 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
         IDa = image_ID("pyrpsfa");
         IDp = image_ID("pyrpsfp");
 
-        for(ii = 0; ii < arraysize2; ii++)
+        for(uint64_t ii = 0; ii < arraysize2; ii++)
         {
             data.image[IDa].array.F[ii] *= data.image[IDpyramp].array.F[ii];
             data.image[IDp].array.F[ii] += data.image[IDpyrpha].array.F[ii];
@@ -3550,7 +3520,7 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
 
         IDa = image_ID("pyrwfs_pupa");
 
-        for(ii = 0; ii < arraysize2; ii++)
+        for(uint64_t ii = 0; ii < arraysize2; ii++)
         {
             data.image[ID_outWFSim_tmp].array.F[ii] += data.image[IDa].array.F[ii] *
                     data.image[IDa].array.F[ii] / PYRMOD_nbpts;
@@ -3572,14 +3542,13 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
 
 int AOsystSim_runWFS(long index, const char *IDout_name)
 {
-    long cnt0;
-    long IDinamp;
-    char imnameamp[200];
-    char imnamepha[200];
-    int ret;
+    uint64_t cnt0;
+    imageID IDinamp;
+    char imnameamp[STRINGMAXLEN_IMGNAME];
+    char imnamepha[STRINGMAXLEN_IMGNAME];
 
-    ret = sprintf(imnameamp, "WFamp0_%03ld", index);
-    ret = sprintf(imnamepha, "WFpha0_%03ld", index);
+    WRITE_IMAGENAME(imnameamp, "WFamp0_%03ld", index);
+    WRITE_IMAGENAME(imnamepha, "WFpha0_%03ld", index);
     IDinamp = image_ID(imnameamp);
 
     cnt0 = 0;
@@ -3681,7 +3650,7 @@ int AOsystSim_PyrWFS_mkCONF(const char *fname)
 int AOsystSim_PyrWFS(const char *CONF_FNAME)
 {
     FILE *fp;
-    char fname[200];
+    char fname[STRINGMAXLEN_FILENAME];
     uint32_t *sizearray;
     long k;
     long kmax = 100000000;
@@ -3713,23 +3682,22 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
     long OUTARRAYSIZE;
 
 
-    long IDinOPD, IDinAMP;
+    imageID IDinOPD, IDinAMP;
     long wfinsize;
-    char command[200];
-    int ret;
-    long ii, jj, ii1, jj1;
-    long IDout;
+    //char command[200];
+    //long ii, jj, ii1, jj1;
+    imageID IDout;
     int OKf;
-    long IDpupamp, IDpuppha, IDfocamp, IDfocpha;
+    imageID IDpupamp, IDpuppha, IDfocamp, IDfocpha;
     long offset;
 
     long pmodpt;
-    long IDpyr_amp, IDpyr_pha;
-    float pcoeff = 100.0 * M_PI;
+    imageID IDpyr_amp, IDpyr_pha;
+    //float pcoeff = 100.0 * M_PI;
     float x, y;
 
     float fpscale = 1.0; // pix per l/D
-    long IDpyrpupi;
+    imageID IDpyrpupi;
     long i, j;
     long outoffset;
     int WRITEOUT;
@@ -3741,7 +3709,7 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
 
     if(WDIR_INIT == 0)
     {
-        ret = system("mkdir -p AOsystSim_wdir");
+        EXECUTE_SYSTEM_COMMAND("mkdir -p AOsystSim_wdir");
         WDIR_INIT = 1;
     }
 
@@ -3820,16 +3788,16 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
         xc = PYRMODAMP * cos(PA);
         yc = PYRMODAMP * sin(PA);
 
-        for(ii = 0; ii < ARRAYSIZE; ii++)
-            for(jj = 0; jj < ARRAYSIZE; jj++)
+        for(uint32_t ii = 0; ii < ARRAYSIZE; ii++)
+            for(uint32_t jj = 0; jj < ARRAYSIZE; jj++)
             {
                 x = 1.0 * (ii - ARRAYSIZE / 2) - xc * fpscale;
                 y = 1.0 * (jj - ARRAYSIZE / 2) - yc * fpscale;
 
                 data.image[IDpyr_pha].array.F[pmodpt * ARRAYSIZE * ARRAYSIZE + jj * ARRAYSIZE +
                                               ii] = M_PI * PUPPIXDIAM * PYRPUPSEP / ARRAYSIZE * (fabs(x) + fabs(y));
-                if((fabs(ii - ARRAYSIZE / 2) > PYRAPERTURE * fpscale)
-                        || (fabs(jj - ARRAYSIZE / 2) > PYRAPERTURE * fpscale))
+                if((fabs(1.0*ii - ARRAYSIZE / 2) > PYRAPERTURE * fpscale)
+                        || (fabs(1.0*jj - ARRAYSIZE / 2) > PYRAPERTURE * fpscale))
                 {
                     data.image[IDpyr_amp].array.F[pmodpt * ARRAYSIZE * ARRAYSIZE + jj * ARRAYSIZE +
                                                   ii] = 0.0;
@@ -3918,11 +3886,11 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
 
 
         // compute focal plane CA
-        for(ii = 0; ii < wfinsize; ii++)
-            for(jj = 0; jj < wfinsize; jj++)
+        for(uint32_t ii = 0; ii < wfinsize; ii++)
+            for(uint32_t jj = 0; jj < wfinsize; jj++)
             {
-                ii1 = ii + offset;
-                jj1 = jj + offset;
+                uint32_t ii1 = ii + offset;
+                uint32_t jj1 = jj + offset;
                 data.image[IDpuppha].array.F[jj1 * ARRAYSIZE + ii1] = 2.0 * M_PI *
                         (1.0e-6 * data.image[IDinOPD].array.F[jj * wfinsize + ii]) / LAMBDA;
                 data.image[IDpupamp].array.F[jj1 * ARRAYSIZE + ii1] =
@@ -3942,7 +3910,7 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
 
 
 
-        for(ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
+        for(uint64_t ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
         {
             data.image[IDfocamp].array.F[ii] = data.image[IDfoca].array.F[ii] *
                                                data.image[IDpyr_amp].array.F[pmodpt * ARRAYSIZE * ARRAYSIZE + ii];
@@ -3963,7 +3931,7 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
 
 
         data.image[IDoutinst].md[0].write = 1;
-        for(ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
+        for(uint64_t ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
         {
             data.image[IDoutinst].array.F[ii] = data.image[IDpupa].array.F[ii] *
                                                 data.image[IDpupa].array.F[ii];
@@ -3976,7 +3944,7 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
         }
         delete_image_ID("pupa");
 
-        for(ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
+        for(uint64_t ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
         {
             data.image[IDpyrpupi].array.F[ii] += data.image[IDoutinst].array.F[ii];
         }
@@ -3998,11 +3966,11 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
         if(WRITEOUT == 1)      // WRITE PIXELS
         {
             TotalFlux = 0.0;
-            for(ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
+            for(uint64_t ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
             {
                 TotalFlux += data.image[IDpyrpupi].array.F[ii];
             }
-            for(ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
+            for(uint64_t ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
             {
                 data.image[IDpyrpupi].array.F[ii] *= WFSFLUX / TotalFlux;
             }
@@ -4013,15 +3981,15 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
             data.image[IDout].md[0].write = 1;
 
 
-            for(ii = 0; ii < OUTARRAYSIZE; ii++)
-                for(jj = 0; jj < OUTARRAYSIZE; jj++)
+            for(uint32_t ii = 0; ii < OUTARRAYSIZE; ii++)
+                for(uint32_t jj = 0; jj < OUTARRAYSIZE; jj++)
                 {
                     tmpval = 0.0;
                     for(i = 0; i < OUTBINFACT; i++)
                         for(j = 0; j < OUTBINFACT; j++)
                         {
-                            ii1 = ii * OUTBINFACT + i + outoffset;
-                            jj1 = jj * OUTBINFACT + j + outoffset;
+                            uint32_t ii1 = ii * OUTBINFACT + i + outoffset;
+                            uint32_t jj1 = jj * OUTBINFACT + j + outoffset;
                             tmpval += data.image[IDpyrpupi].array.F[jj1 * ARRAYSIZE + ii1];
                         }
                     data.image[IDout].array.F[jj * OUTARRAYSIZE + ii] = fast_poisson(
@@ -4041,14 +4009,12 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
 
             if(OUTMODE == 1)
             {
-                sprintf(command, "rm %s", OUTFITSFILENAME);
-                ret = system(command);
-                sprintf(fname, "!%s", OUTFITSFILENAME);
+                EXECUTE_SYSTEM_COMMAND("rm %s", OUTFITSFILENAME);
+                WRITE_FILENAME(fname, "!%s", OUTFITSFILENAME);
                 save_fits(OUTSTREAMNAME, fname);
-                sprintf(command, "touch %s", OUTTRIGGERFILE);
-                ret = system(command);
+                EXECUTE_SYSTEM_COMMAND("touch %s", OUTTRIGGERFILE);
             }
-            for(ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
+            for(uint64_t ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
             {
                 data.image[IDpyrpupi].array.F[ii] = 0.0;
             }
@@ -4066,8 +4032,7 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
                     usleep(10000);
                     if(file_exists(INTRIGGERFILE) == 1)
                     {
-                        sprintf(command, "rm %s", INTRIGGERFILE);
-                        ret = system(command);
+                        EXECUTE_SYSTEM_COMMAND("rm %s", INTRIGGERFILE);
                         OKf = 1;
                     }
                 }
@@ -4112,12 +4077,11 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
 int AOsystSim_DMshape(const char *IDdmctrl_name, const char *IDdmifc_name,
                       const char *IDdm_name)
 {
-    long IDdmctrl, IDdmifc, IDdm;
-    long dmsizex, dmsizey, DMnbact;
-    long ii, jj;
+    imageID IDdmctrl, IDdmifc, IDdm;
+    uint32_t dmsizex, dmsizey;
+    imageID DMnbact;
     double eps = 1.0e-12;
-    long k;
-    long kk;
+
 
     IDdmctrl = image_ID(IDdmctrl_name);
 
@@ -4129,11 +4093,9 @@ int AOsystSim_DMshape(const char *IDdmctrl_name, const char *IDdmifc_name,
 
     if(DMifpixarray_init == 0)
     {
-        long dmact;
-
         DMifpixarray_NBpix = 0.0;
-        for(dmact = 0; dmact < DMnbact; dmact++)
-            for(ii = 0; ii < dmsizex * dmsizey; ii++)
+        for(long dmact = 0; dmact < DMnbact; dmact++)
+            for(uint64_t ii = 0; ii < dmsizex * dmsizey; ii++)
                 if(fabs(data.image[IDdmifc].array.F[dmact * dmsizex * dmsizey + ii]) > eps)
                 {
                     DMifpixarray_NBpix++;
@@ -4146,8 +4108,8 @@ int AOsystSim_DMshape(const char *IDdmctrl_name, const char *IDdmifc_name,
 
 
         DMifpixarray_NBpix = 0.0;
-        for(dmact = 0; dmact < DMnbact; dmact++)
-            for(ii = 0; ii < dmsizex * dmsizey; ii++)
+        for(long dmact = 0; dmact < DMnbact; dmact++)
+            for(uint64_t ii = 0; ii < dmsizex * dmsizey; ii++)
                 if(fabs(data.image[IDdmifc].array.F[dmact * dmsizex * dmsizey + ii]) > eps)
                 {
                     dmifpixactarray[DMifpixarray_NBpix] = dmact * dmsizex * dmsizey + ii;
@@ -4187,7 +4149,7 @@ int AOsystSim_DMshape(const char *IDdmctrl_name, const char *IDdmifc_name,
                     }
     */
 
-    for(kk = 0; kk < DMifpixarray_NBpix0; kk++)
+    for(long kk = 0; kk < DMifpixarray_NBpix0; kk++)
     {
         DMifpixarray_val[kk] = data.image[IDdmifc].array.F[dmifpixactarray[kk]];
         DMifpixarray_index[kk] = dmifpixactarray_dmact[kk];
@@ -4204,7 +4166,7 @@ int AOsystSim_DMshape(const char *IDdmctrl_name, const char *IDdmifc_name,
     }
 
 
-    for(ii = 0; ii < dmsizex * dmsizey; ii++)
+    for(uint64_t ii = 0; ii < dmsizex * dmsizey; ii++)
     {
         data.image[IDdm].array.F[ii] = 0.0;
     }
@@ -4216,7 +4178,7 @@ int AOsystSim_DMshape(const char *IDdmctrl_name, const char *IDdmifc_name,
         }
     */
 
-    for(k = 0; k < DMifpixarray_NBpix; k++)
+    for(long k = 0; k < DMifpixarray_NBpix; k++)
     {
         data.image[IDdm].array.F[DMifpixarray_pixindex[k]] +=
             data.image[IDdmctrl].array.F[DMifpixarray_index[k]] * DMifpixarray_val[k];
@@ -4290,7 +4252,7 @@ int AOsystSim_DM_mkCONF(const char *fname)
 int AOsystSim_DM(const char *CONF_FNAME)
 {
     FILE *fp;
-    char fname[200];
+    char fname[STRINGMAXLEN_FILENAME];
     uint32_t *sizearray;
     long k;
     long kmax = 100000000;
@@ -4319,28 +4281,25 @@ int AOsystSim_DM(const char *CONF_FNAME)
     float DMTIMECST;
 
     long DMsize;
-    long IDout, IDout_tmp;
-    int ret;
-    char command[200];
+    imageID IDout, IDout_tmp;
     int OKf;
-    long IDinTRIG, IDinDM;
+    imageID IDinTRIG, IDinDM;
 
-    long DMnbact;
+    imageID DMnbact;
     uint32_t *imsize;
-    long DMif;
-    long ii, jj;
+    //imageID DMif;
     float x, y;
     float sig;
     long mx, my;
     float rx, ry, rxif, ryif, u, t, v00, v01, v10, v11;
     long rxi, ryi;
-    long IDif, IDifc;
+    imageID IDif, IDifc;
     float ii0f, jj0f;
     double dmifscale =
         4.0; // scale magnification between full DM map and DM influence function
 
-    long IDdmdispC, IDdmdispC1;
-    long act;
+    imageID IDdmdispC, IDdmdispC1;
+    //long act;
 
     long NBdmifcarray;
     float dmif_limit = 0.0001; // small value threshold [um]
@@ -4372,7 +4331,7 @@ int AOsystSim_DM(const char *CONF_FNAME)
 
     if(WDIR_INIT == 0)
     {
-        ret = system("mkdir -p AOsystSim_wdir");
+        EXECUTE_SYSTEM_COMMAND("mkdir -p AOsystSim_wdir");
         WDIR_INIT = 1;
     }
 
@@ -4478,8 +4437,8 @@ int AOsystSim_DM(const char *CONF_FNAME)
     printf("actuator pix size = %f pix\n", dmifscale * (2.0 * DMRAD / DMsize));
 
     list_image_ID();
-    for(ii = 0; ii < ARRAYSIZE; ii++)
-        for(jj = 0; jj < ARRAYSIZE; jj++)
+    for(uint32_t ii = 0; ii < ARRAYSIZE; ii++)
+        for(uint32_t jj = 0; jj < ARRAYSIZE; jj++)
         {
             x = (1.0 * ii - 0.5 * ARRAYSIZE); // [pix]
             y = (1.0 * jj - 0.5 * ARRAYSIZE); // [pix]
@@ -4527,8 +4486,8 @@ int AOsystSim_DM(const char *CONF_FNAME)
             // center: mx = DMsize/2-0.5  4 -> 1.5
             ii0f = 0.5 * ARRAYSIZE + 2.0 * (mx - DMsize / 2) / DMsize * DMRAD;
             jj0f = 0.5 * ARRAYSIZE + 2.0 * (my - DMsize / 2) / DMsize * DMRAD;
-            for(ii = 0; ii < ARRAYSIZE; ii++)
-                for(jj = 0; jj < ARRAYSIZE; jj++)
+            for(uint32_t ii = 0; ii < ARRAYSIZE; ii++)
+                for(uint32_t jj = 0; jj < ARRAYSIZE; jj++)
                 {
                     rx = 1.0 * ii - ii0f;
                     ry = 1.0 * jj - jj0f;
@@ -4572,8 +4531,8 @@ int AOsystSim_DM(const char *CONF_FNAME)
     for(mx = 0; mx < DMsize; mx++)
         for(my = 0; my < DMsize; my++)
         {
-            for(ii = 0; ii < ARRAYSIZE; ii++)
-                for(jj = 0; jj < ARRAYSIZE; jj++)
+            for(uint32_t ii = 0; ii < ARRAYSIZE; ii++)
+                for(uint32_t jj = 0; jj < ARRAYSIZE; jj++)
                 {
                     if(fabs(data.image[IDifc].array.F[(my * DMsize + mx)*ARRAYSIZE * ARRAYSIZE + jj
                                                       * ARRAYSIZE + ii]) > dmif_limit)
@@ -4613,7 +4572,7 @@ int AOsystSim_DM(const char *CONF_FNAME)
 
 
         for(kk = kkstart; kk < NBTSAMPLES; kk++)
-            for(ii = 0; ii < DMsize * DMsize; ii++)
+            for(uint64_t ii = 0; ii < DMsize * DMsize; ii++)
             {
                 data.image[IDdmdispC].array.F[kk * DMsize * DMsize + ii] =
                     data.image[IDinDM].array.F[ii] - alpha * (data.image[IDinDM].array.F[ii] -
@@ -4645,12 +4604,10 @@ int AOsystSim_DM(const char *CONF_FNAME)
 
         if(OUTMODE == 1)
         {
-            sprintf(command, "rm %s", OUTFITSFILENAMEDM);
-            ret = system(command);
-            sprintf(fname, "!%s", OUTFITSFILENAMEDM);
+            EXECUTE_SYSTEM_COMMAND("rm %s", OUTFITSFILENAMEDM);
+            WRITE_FILENAME(fname, "!%s", OUTFITSFILENAMEDM);
             save_fits(OUTSTREAMNAMEDM, fname);
-            sprintf(command, "touch %s", OUTTRIGGERFILE);
-            ret = system(command);
+            EXECUTE_SYSTEM_COMMAND("touch %s", OUTTRIGGERFILE);
         }
 
         switch(INMODE)
@@ -4665,8 +4622,7 @@ int AOsystSim_DM(const char *CONF_FNAME)
                     usleep(10000);
                     if(file_exists(INTRIGGERFILE) == 1)
                     {
-                        sprintf(command, "rm %s", INTRIGGERFILE);
-                        ret = system(command);
+                        EXECUTE_SYSTEM_COMMAND("rm %s", INTRIGGERFILE);
                         OKf = 1;
                     }
                 }
@@ -4791,7 +4747,7 @@ int AOsystSim_coroLOWFS_mkCONF(const char *fname)
 int AOsystSim_coroLOWFS(const char *CONF_FNAME)
 {
     FILE *fp;
-    char fname[200];
+    char fname[STRINGMAXLEN_FILENAME];
     uint32_t *sizearray;
     long k;
     long kmax = 100000000;
@@ -4799,18 +4755,18 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
     int INMODE;
     char INAMPSTREAMNAME[200];
     char INOPDSTREAMNAME[200];
-    char INAMPFITSFILENAME[200];
-    char INOPDFITSFILENAME[200];
+    char INAMPFITSFILENAME[STRINGMAXLEN_FULLFILENAME];
+    char INOPDFITSFILENAME[STRINGMAXLEN_FULLFILENAME];
     char INTRIGSTREAMNAME[200];
     int INTRIGSEMCHAN;
     char INTRIGGERFILE[200];
     char INPHYSTIME[200];
 
     int OUTMODE;
-    long OUTLOWFSARRAYSIZE;
-    long OUTLOWFSARRAYSIZE2;
+    uint32_t OUTLOWFSARRAYSIZE;
+    uint64_t OUTLOWFSARRAYSIZE2;
     char OUTLOWFSSTREAMNAME[200];
-    char OUTLOWFSFITSFILENAME[200];
+    char OUTLOWFSFITSFILENAME[STRINGMAXLEN_FULLFILENAME];
     char OUTTRIGGERFILE[200];
     char COROFPMAMP[200];
     char COROFPMPHA[200];
@@ -4824,39 +4780,34 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
     float LOWFScamstarttime = 0.0;
     long LOWFScamcnt = 0;
 
-    long ARRAYSIZE;
-    long ARRAYSIZE2;
+    uint32_t ARRAYSIZE;
+    uint64_t ARRAYSIZE2;
     double LAMBDA;
 
-    long DMsize;
-    long IDoutLOWFS, IDout_tmp;
-    int ret;
-    char command[200];
+    //long DMsize;
+    long IDoutLOWFS; //, IDout_tmp;
     int OKf;
-    long IDinTRIG, IDinOPD, IDinAMP;
+    imageID IDinTRIG, IDinOPD, IDinAMP;
 
-    uint32_t *imsize;
-    long xsizein, ysizein;
-    long ii, jj;
-    long ii1, jj1;
-    long iioffset, jjoffset;
+    //uint32_t *imsize;
+    uint32_t xsizein, ysizein;
 
-    long IDfpmamp, IDfpmpha;
-    long ID_LS_ramp, ID_LS_rpha; // Lyot stop reflected amplitude and phase
-    long ID_LS_tamp, ID_LS_tpha; // Lyot stop transmitted amplitude and phase
-    long ID_lowfsopd;
+    imageID IDfpmamp, IDfpmpha;
+    imageID ID_LS_ramp, ID_LS_rpha; // Lyot stop reflected amplitude and phase
+    imageID ID_LS_tamp, ID_LS_tpha; // Lyot stop transmitted amplitude and phase
+    imageID ID_lowfsopd;
 
-    long IDwfa, IDwfp;
-    long IDfoc0a, IDfoc0p;
-    long IDfoc1a, IDfoc1p;
-    long IDpup1a, IDpup1p;
-    long IDpup1ta, IDpup1tp;
-    long IDpup1ra, IDpup1rp;
-    long IDfoclowfsa;
-    long IDimlowfs;
+    imageID IDwfa, IDwfp;
+    imageID IDfoc0a, IDfoc0p;
+    imageID IDfoc1a, IDfoc1p;
+    imageID IDpup1a, IDpup1p;
+    imageID IDpup1ta, IDpup1tp;
+    imageID IDpup1ra, IDpup1rp;
+    imageID IDfoclowfsa;
+    imageID IDimlowfs;
 
-    long IDphystime;
-    long IDimcamlowfstmp;
+    imageID IDphystime;
+    imageID IDimcamlowfstmp;
 
 
     printf("AOsystSim coro LOWFS...\n");
@@ -5009,7 +4960,7 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
     sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
     sizearray[0] = OUTLOWFSARRAYSIZE;
     sizearray[1] = OUTLOWFSARRAYSIZE;
-    DMsize = data.image[IDinOPD].md[0].size[0];
+    //DMsize = data.image[IDinOPD].md[0].size[0];
     if(OUTMODE == 0)
     {
         IDoutLOWFS = create_image_ID(OUTLOWFSSTREAMNAME, 2, sizearray, _DATATYPE_FLOAT,
@@ -5050,8 +5001,8 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
     ysizein = data.image[IDinOPD].md[0].size[1];
     IDwfa = create_2Dimage_ID("aosim_wfa", ARRAYSIZE, ARRAYSIZE);
     IDwfp = create_2Dimage_ID("aosim_wfp", ARRAYSIZE, ARRAYSIZE);
-    iioffset = (ARRAYSIZE - xsizein) / 2;
-    jjoffset = (ARRAYSIZE - ysizein) / 2;
+    long iioffset = (ARRAYSIZE - xsizein) / 2;
+    long jjoffset = (ARRAYSIZE - ysizein) / 2;
 
     IDimcamlowfstmp = create_2Dimage_ID("aosim_imcamlowfstmp", ARRAYSIZE,
                                         ARRAYSIZE);
@@ -5068,11 +5019,11 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
 
 
         // COMPUTE FOCAL PLANE COMPLEX AMPLITUDE INCIDENT ON FOCAL PLANE MASK
-        for(ii = 0; ii < xsizein; ii++)
-            for(jj = 0; jj < ysizein; jj++)
+        for(uint32_t ii = 0; ii < xsizein; ii++)
+            for(uint32_t jj = 0; jj < ysizein; jj++)
             {
-                ii1 = ii + iioffset;
-                jj1 = jj + jjoffset;
+                long ii1 = ii + iioffset;
+                long jj1 = jj + jjoffset;
                 data.image[IDwfa].array.F[jj1 * ARRAYSIZE + ii1] =
                     data.image[IDinAMP].array.F[jj * xsizein + ii];
                 data.image[IDwfp].array.F[jj1 * ARRAYSIZE + ii1] = 1.0 * M_PI *
@@ -5094,7 +5045,7 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
         IDfoc0p = image_ID("aosim_foc0_pha");
         data.image[IDfoc1a].md[0].write = 1;
         data.image[IDfoc1p].md[0].write = 1;
-        for(ii = 0; ii < ARRAYSIZE2; ii++)
+        for(uint64_t ii = 0; ii < ARRAYSIZE2; ii++)
         {
             data.image[IDfoc1a].array.F[ii] = data.image[IDfoc0a].array.F[ii] *
                                               data.image[IDfpmamp].array.F[ii];
@@ -5124,7 +5075,7 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
         // COMPUTE pup1t
         data.image[IDpup1ta].md[0].write = 1;
         data.image[IDpup1tp].md[0].write = 1;
-        for(ii = 0; ii < ARRAYSIZE2; ii++)
+        for(uint64_t ii = 0; ii < ARRAYSIZE2; ii++)
         {
             data.image[IDpup1ta].array.F[ii] = data.image[IDpup1a].array.F[ii] *
                                                data.image[ID_LS_tamp].array.F[ii];
@@ -5154,7 +5105,7 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
         // COMPUTE pup1r
         data.image[IDpup1ra].md[0].write = 1;
         data.image[IDpup1rp].md[0].write = 1;
-        for(ii = 0; ii < ARRAYSIZE2; ii++)
+        for(uint64_t ii = 0; ii < ARRAYSIZE2; ii++)
         {
             data.image[IDpup1ra].array.F[ii] = data.image[IDpup1a].array.F[ii] *
                                                data.image[ID_LS_ramp].array.F[ii];
@@ -5184,11 +5135,11 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
         // COMPUTE imlowfs
         IDfoclowfsa = image_ID("aosim_foclowfs_amp");
         data.image[IDimlowfs].md[0].write = 1;
-        for(ii = 0; ii < OUTLOWFSARRAYSIZE; ii++)
-            for(jj = 0; jj < OUTLOWFSARRAYSIZE; jj++)
+        for(uint32_t ii = 0; ii < OUTLOWFSARRAYSIZE; ii++)
+            for(uint32_t jj = 0; jj < OUTLOWFSARRAYSIZE; jj++)
             {
-                ii1 = ii + (ARRAYSIZE - OUTLOWFSARRAYSIZE) / 2;
-                jj1 = jj + (ARRAYSIZE - OUTLOWFSARRAYSIZE) / 2;
+                long ii1 = ii + (ARRAYSIZE - OUTLOWFSARRAYSIZE) / 2;
+                long jj1 = jj + (ARRAYSIZE - OUTLOWFSARRAYSIZE) / 2;
                 data.image[IDimlowfs].array.F[OUTLOWFSARRAYSIZE * jj + ii] =
                     data.image[IDfoclowfsa].array.F[jj1 * ARRAYSIZE + ii1] *
                     data.image[IDfoclowfsa].array.F[jj1 * ARRAYSIZE + ii1];
@@ -5210,12 +5161,12 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
         {
             data.image[IDoutLOWFS].md[0].write = 1;
             data.image[IDimcamlowfstmp].md[0].write = 1;
-            for(ii = 0; ii < OUTLOWFSARRAYSIZE2; ii++)
+            for(uint64_t ii = 0; ii < OUTLOWFSARRAYSIZE2; ii++)
             {
                 data.image[IDoutLOWFS].array.F[ii] = data.image[IDimcamlowfstmp].array.F[ii] /
                                                      LOWFScamcnt;
             }
-            for(ii = 0; ii < OUTLOWFSARRAYSIZE2; ii++)
+            for(uint64_t ii = 0; ii < OUTLOWFSARRAYSIZE2; ii++)
             {
                 data.image[IDimcamlowfstmp].array.F[ii] = 0.0;
             }
@@ -5233,12 +5184,10 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
 
         if(OUTMODE == 1)
         {
-            sprintf(command, "rm %s", OUTLOWFSFITSFILENAME);
-            ret = system(command);
-            sprintf(fname, "!%s", OUTLOWFSFITSFILENAME);
+            EXECUTE_SYSTEM_COMMAND("rm %s", OUTLOWFSFITSFILENAME);
+            WRITE_FILENAME(fname, "!%s", OUTLOWFSFITSFILENAME);
             save_fits(OUTLOWFSSTREAMNAME, fname);
-            sprintf(command, "touch %s", OUTTRIGGERFILE);
-            ret = system(command);
+            EXECUTE_SYSTEM_COMMAND("touch %s", OUTTRIGGERFILE);
         }
 
 
@@ -5255,8 +5204,7 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
                     usleep(10000);
                     if(file_exists(INTRIGGERFILE) == 1)
                     {
-                        sprintf(command, "rm %s", INTRIGGERFILE);
-                        ret = system(command);
+                        EXECUTE_SYSTEM_COMMAND("rm %s", INTRIGGERFILE);
                         OKf = 1;
                     }
                 }
@@ -5315,9 +5263,8 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
 
 double f_eval(const gsl_vector *v, void *params)
 {
-    double *p = (double *)params;
+    //double *p = (double *)params;
     long double value;
-    long k;
     long pr;
 
     long double ptre_test;
@@ -5329,6 +5276,7 @@ double f_eval(const gsl_vector *v, void *params)
     long double ai;
     long double re, im, x, y, tmp1;
 
+    (void) params;
 
     ptre_test = gsl_vector_get(v, 0);
     ptim_test = gsl_vector_get(v, 1);
@@ -5408,21 +5356,21 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
 {
     long size = 256;
     double puprad = 50.0;
-    long IDpupa;
-    long IDwf0; // initial WF
-    long IDwfA; // probe A
-    long IDwfB; // probe B
-    long IDwf;
-    long IDpsfC; // PSF cube
+    imageID IDpupa;
+    imageID IDwf0; // initial WF
+    imageID IDwfA; // probe A
+    imageID IDwfB; // probe B
+    imageID IDwf;
+    imageID IDpsfC; // PSF cube
     long pr;
-    long IDa;
+    imageID IDa;
     long ii, jj, ii1, jj1;
     double coeffA, coeffB;
-    double x, y, x1, y1;
-    double sincx, sincy;
+    double x, y; //, x1, y1;
+    //double sincx, sincy;
     double CPAx, CPAy;
     double CPAstep;
-    long ID, ID1;
+    imageID ID, ID1;
     long xsize, ysize, xmin, xmax, ymin, ymax;
 
     double tot1 = 0.0;
@@ -5431,7 +5379,7 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
     // define WFS probe area
     double CPAxmin, CPAxmax, CPAymin, CPAymax;
     double pixscaleld;
-    long IDtmp;
+    imageID IDtmp;
     char imname[200];
     char fname[200];
     double probeAmultcoeff = 1.0;
@@ -5439,15 +5387,13 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
     double probeBphaseoffset = 1.0 * M_PI / 2.0;
 
     double dmactgain;
-    long IDnoise;
+    imageID IDnoise;
     double val;
-
-    int ret;
 
 
     if(WDIR_INIT == 0)
     {
-        ret = system("mkdir -p AOsystSim_wdir");
+        EXECUTE_SYSTEM_COMMAND("mkdir -p AOsystSim_wdir");
         WDIR_INIT = 1;
     }
 
@@ -5786,25 +5732,23 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
                              const char *IDprobeB_name, long dmxsize, long dmysize, double CPAmax,
                              double CPArmin, double CPArmax, double RMSampl, long modegeom)
 {
-    long IDdmA, IDdmB;
+    imageID IDdmA, IDdmB;
     double CPAstep = 0.1;
     double x, y, r;
     double CPAx, CPAy, CPAr;
-    double CPAxmin, CPAxmax;
+    double CPAxmin;
+    double CPAxmax;
     double CPAymin, CPAymax;
     long dmsize;
-    long ii, jj;
     double rms;
-    long ID;
+    imageID ID;
     long imsize;
     double pha;
-
-    int ret;
 
 
     if(WDIR_INIT == 0)
     {
-        ret = system("mkdir -p AOsystSim_wdir");
+        EXECUTE_SYSTEM_COMMAND("mkdir -p AOsystSim_wdir");
         WDIR_INIT = 1;
     }
 
@@ -5850,15 +5794,15 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
         dmsize = dmysize;
     }
 
-    for(CPAx = CPAxmin; CPAx < CPAmax; CPAx += CPAstep)
+    for(CPAx = CPAxmin; CPAx < CPAxmax; CPAx += CPAstep)
         for(CPAy = CPAymin; CPAy < CPAymax; CPAy += CPAstep)
         {
             CPAr = sqrt(CPAx * CPAx + CPAy * CPAy);
             if((CPAr > CPArmin) && (CPAr < CPArmax))
             {
                 pha = -1.6 * CPAx;
-                for(ii = 0; ii < dmxsize; ii++)
-                    for(jj = 0; jj < dmysize; jj++)
+                for(uint32_t ii = 0; ii < dmxsize; ii++)
+                    for(uint32_t jj = 0; jj < dmysize; jj++)
                     {
                         x = 2.0 * (1.0 * ii - 0.5 * dmxsize) / dmsize;
                         y = 2.0 * (1.0 * jj - 0.5 * dmysize) / dmsize;
@@ -5871,13 +5815,13 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
         }
 
     rms = 0.0;
-    for(ii = 0; ii < dmxsize * dmysize; ii++)
+    for(uint64_t ii = 0; ii < (uint64_t) (dmxsize * dmysize); ii++)
     {
         rms += data.image[IDdmA].array.F[ii] * data.image[IDdmA].array.F[ii];
     }
     rms = sqrt(rms / (dmxsize * dmysize));
 
-    for(ii = 0; ii < dmxsize * dmysize; ii++)
+    for(uint64_t ii = 0; ii < (uint64_t) (dmxsize * dmysize); ii++)
     {
         data.image[IDdmA].array.F[ii] *= RMSampl / rms;
         data.image[IDdmB].array.F[ii] *= RMSampl / rms;
@@ -5888,8 +5832,8 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
     imsize = 5 * dmsize;
     ID = make_disk("pupa", imsize, imsize, 0.5 * imsize, 0.5 * imsize,
                    0.45 * dmsize);
-    for(ii = 0; ii < imsize; ii++)
-        for(jj = 0; jj < imsize; jj++)
+    for(uint32_t ii = 0; ii < imsize; ii++)
+        for(uint32_t jj = 0; jj < imsize; jj++)
         {
             x = (1.0 * ii - 0.5 * imsize) / (0.45 * dmsize);
             y = (1.0 * jj - 0.5 * imsize) / (0.45 * dmsize);
@@ -5901,8 +5845,8 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
             }
         }
     ID = create_2Dimage_ID("pupp", imsize, imsize);
-    for(ii = 0; ii < dmxsize; ii++)
-        for(jj = 0; jj < dmysize; jj++)
+    for(uint32_t ii = 0; ii < dmxsize; ii++)
+        for(uint32_t jj = 0; jj < dmysize; jj++)
         {
             data.image[ID].array.F[(jj + (imsize - dmysize) / 2)*imsize + (ii +
                                    (imsize - dmxsize) / 2)] = data.image[IDdmA].array.F[jj * dmxsize + ii];
@@ -5924,8 +5868,8 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
 
 
     ID = image_ID("pupp");
-    for(ii = 0; ii < dmxsize; ii++)
-        for(jj = 0; jj < dmysize; jj++)
+    for(uint32_t ii = 0; ii < dmxsize; ii++)
+        for(uint32_t jj = 0; jj < dmysize; jj++)
         {
             data.image[ID].array.F[(jj + (imsize - dmysize) / 2)*imsize + (ii +
                                    (imsize - dmxsize) / 2)] = data.image[IDdmB].array.F[jj * dmxsize + ii];
@@ -5944,8 +5888,8 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
 
 
     ID = image_ID("pupp");
-    for(ii = 0; ii < dmxsize; ii++)
-        for(jj = 0; jj < dmysize; jj++)
+    for(uint32_t ii = 0; ii < dmxsize; ii++)
+        for(uint32_t jj = 0; jj < dmysize; jj++)
         {
             data.image[ID].array.F[(jj + (imsize - dmysize) / 2)*imsize + (ii +
                                    (imsize - dmxsize) / 2)] = -data.image[IDdmA].array.F[jj * dmxsize + ii];
@@ -5964,8 +5908,8 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
 
 
     ID = image_ID("pupp");
-    for(ii = 0; ii < dmxsize; ii++)
-        for(jj = 0; jj < dmysize; jj++)
+    for(uint32_t ii = 0; ii < dmxsize; ii++)
+        for(uint32_t jj = 0; jj < dmysize; jj++)
         {
             data.image[ID].array.F[(jj + (imsize - dmysize) / 2)*imsize + (ii +
                                    (imsize - dmxsize) / 2)] = -data.image[IDdmB].array.F[jj * dmxsize + ii];
@@ -5986,8 +5930,8 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
 
 
     ID = image_ID("pupp");
-    for(ii = 0; ii < dmxsize; ii++)
-        for(jj = 0; jj < dmysize; jj++)
+    for(uint32_t ii = 0; ii < dmxsize; ii++)
+        for(uint32_t jj = 0; jj < dmysize; jj++)
         {
             data.image[ID].array.F[(jj + (imsize - dmysize) / 2)*imsize + (ii +
                                    (imsize - dmxsize) / 2)] = 0.0;
@@ -6036,52 +5980,51 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
     double ProbeNoise;
 
     double probe_mflux[100]; // measured flux (ideal, no noise)
-    double probe_mflux_dre[100]; // derivative against ptre
-    double probe_mflux_dim[100]; // derivative against ptim
-    double probe_mflux_dI[100]; // derivative against Iflux
+    //double probe_mflux_dre[100]; // derivative against ptre
+    //double probe_mflux_dim[100]; // derivative against ptim
+    //double probe_mflux_dI[100]; // derivative against Iflux
 
     double probeamp;
     int pr;
     double Iflux = 0.0; // incoherent flux
     double re, im;
-    double eps = 1.0e-8;
+    //double eps = 1.0e-8;
 
     double re_re, re_im, im_re, im_im;
-    long k, ks;
-    double tmp1;
+    //long k, ks;
+    //double tmp1;
     int execmode;
 
     // solver
-    double ptre_test, ptim_test, Iflux_test, are_test, aim_test, e_test;
+    //double ptre_test, ptim_test, Iflux_test, are_test, aim_test, e_test;
     double ptre_best, ptim_best, Iflux_best, are_best, aim_best, e_best;
-    double value, bvalue, value0;
-    double x, y;
+    //double value, bvalue, value0;
 
-    double optampl;
-    long ksmax = 100000000;
+    //double optampl;
+    //long ksmax = 100000000;
 
     double mapampl = 2.0;
     long mapsize = 41; // map size (linear)
     long mapxsize, mapysize;
     long kx, ky, kz;
 
-    long IDmap;
+    imageID IDmap;
 
     // output solution
-    long IDmap_ptre;
-    long IDmap_ptim;
-    long IDmap_ptre_in;
-    long IDmap_ptim_in;
-    long IDmap_Iflux;
-    long IDmap_are;
-    long IDmap_aim;
-    long IDmap_e;
+    imageID IDmap_ptre;
+    imageID IDmap_ptim;
+    imageID IDmap_ptre_in;
+    imageID IDmap_ptim_in;
+    imageID IDmap_Iflux;
+    imageID IDmap_are;
+    imageID IDmap_aim;
+    imageID IDmap_e;
 
     long mapz;
     long mapzsize;
 
 
-    long st;
+    //long st;
     long optvar;
     const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex2;
     gsl_multimin_fminimizer *s = NULL;
@@ -6097,17 +6040,16 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
     double FLUXph = 1.0e4; // total number of photon per cycle
 
     int imSimulMode = 0; // 1 if real image simulated
-    long IDpsfC;
+    imageID IDpsfC;
 
     long avecnt;
     double ave, rms;
-    long ii, jj;
     long kxtest = 21;
     long kytest = 11;
 
-    long IDprobampC = -1;
+    imageID IDprobampC = -1;
 
-    long vID;
+    imageID vID;
     double probeampl;
     double WFerr;
     double contrast;
@@ -6115,24 +6057,22 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
 
     int initmap = 0;
 
-    long IDmap_Iflux_ave, IDmap_Iflux_rms;
+    imageID IDmap_Iflux_ave, IDmap_Iflux_rms;
     int NewWF = 0;
-    long IDpsfCnoise;
+    imageID IDpsfCnoise;
 
     double RON = 1.0; // detector readout noise (phe-)
-    long IDmap_Iflux_rmsn;
-    long IDmap_Iflux_rmsn1;
-    long IDmap_CA_rms, IDmap_CA_rmsn;
+    imageID IDmap_Iflux_rmsn;
+    imageID IDmap_Iflux_rmsn1;
+    imageID IDmap_CA_rms, IDmap_CA_rmsn;
     double dx, dy, val;
     double CnoiseFloor;
-
-    int ret;
 
 
 
     if(WDIR_INIT == 0)
     {
-        ret = system("mkdir -p AOsystSim_wdir");
+        EXECUTE_SYSTEM_COMMAND("mkdir -p AOsystSim_wdir");
         WDIR_INIT = 1;
     }
 
@@ -6237,6 +6177,7 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
     probeamp = 1.0;
     if(CENTERprobe == 1) // include center probe
     {
+        pr = 0;
         probe_re[pr] = 0.0;
         probe_im[pr] = 0.0;
         for(pr = 1; pr < NBprobes; pr++)
@@ -6326,7 +6267,7 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
     {
         IDprobampC = create_2Dimage_ID("psfprobeamp", mapxsize, mapysize);
     }
-    for(ii = 0; ii < mapxsize * mapysize; ii++)
+    for(uint64_t ii = 0; ii < (uint64_t) (mapxsize * mapysize); ii++)
     {
         data.image[IDprobampC].array.F[ii] = 1.0;
     }
@@ -6351,8 +6292,8 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
 
             for(pr = 1; pr < NBprobes; pr++)
             {
-                for(ii = 0; ii < data.image[IDpsfC].md[0].size[0]; ii++)
-                    for(jj = 0; jj < data.image[IDpsfC].md[0].size[1]; jj++)
+                for(uint32_t ii = 0; ii < data.image[IDpsfC].md[0].size[0]; ii++)
+                    for(uint32_t jj = 0; jj < data.image[IDpsfC].md[0].size[1]; jj++)
                     {
                         ave += data.image[IDpsfC].array.F[pr * data.image[IDpsfC].md[0].size[0] *
                                                           data.image[IDpsfC].md[0].size[1] + jj * data.image[IDpsfC].md[0].size[0] + ii];
@@ -6510,8 +6451,8 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
 
                     }
 
-                    if((mapmode == 0) && ((kx == kxtest) && (ky == kytest)) || ((kx == kxtest + 1)
-                            && (ky == kytest)))
+                    if( ((mapmode == 0) && ((kx == kxtest) && (ky == kytest))) || (((kx == kxtest + 1)
+                            && (ky == kytest))))
                     {
                         fflush(stdout);
                     }
