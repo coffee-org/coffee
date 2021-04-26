@@ -3,13 +3,6 @@
  * @brief   PIAA-type coronagraph design
  *
  * Can design both APLCMC and PIAACMC coronagraphs
- *
- * @author  O. Guyon
- * @date    21 nov 2017
- *
- *
- * @bug No known bugs.
- *
  */
 
 
@@ -122,10 +115,10 @@ OPTPIAACMCDESIGN *piaacmc;
 
 
 // local function(s)
-static double f_evalmask(const gsl_vector *v, void *params);
+double f_evalmask(const gsl_vector *v, void *params);
 
 // for testing
-static char flogcomment[200];
+//static char flogcomment[200];
 //#define PIAASIMUL_LOGFUNC0 // top level
 //#define PIAASIMUL_LOGFUNC1 // lower level
 
@@ -145,7 +138,7 @@ static char flogcomment[200];
 /*  2. Focal plane mask construction                                                               */
 /* =============================================================================================== */
 
-int_fast8_t PIAACMCsimul_rings2sectors_cli()
+errno_t PIAACMCsimul_rings2sectors_cli()
 {
     if(CLI_checkarg(1, 4) + CLI_checkarg(2, 3) + CLI_checkarg(3, 3) == 0)
     {
@@ -164,7 +157,7 @@ int_fast8_t PIAACMCsimul_rings2sectors_cli()
 /*  4. Lyot Stop(s)                                                              */
 /* =============================================================================================== */
 
-int_fast8_t PIAACMCsimul_geomProp_cli()
+errno_t PIAACMCsimul_geomProp_cli()
 {
     if(CLI_checkarg(1, 4) + CLI_checkarg(2, 4) + CLI_checkarg(3,
             3) + CLI_checkarg(4, 3) + CLI_checkarg(5, 1) + CLI_checkarg(6,
@@ -183,6 +176,7 @@ int_fast8_t PIAACMCsimul_geomProp_cli()
         return 1;
     }
 
+    return 0;
 }
 
 
@@ -191,7 +185,7 @@ int_fast8_t PIAACMCsimul_geomProp_cli()
 /* =============================================================================================== */
 
 
-int_fast8_t PIAACMC_FPMresp_rmzones_cli()
+errno_t PIAACMC_FPMresp_rmzones_cli()
 {
     if(CLI_checkarg(1, 4) + CLI_checkarg(2, 3) + CLI_checkarg(3, 2) == 0)
     {
@@ -205,7 +199,7 @@ int_fast8_t PIAACMC_FPMresp_rmzones_cli()
     }
 }
 
-int_fast8_t PIAACMC_FPMresp_resample_cli()
+errno_t PIAACMC_FPMresp_resample_cli()
 {
     if(CLI_checkarg(1, 4) + CLI_checkarg(2, 3) + CLI_checkarg(3,
             2) + CLI_checkarg(4, 2) == 0)
@@ -225,7 +219,7 @@ int_fast8_t PIAACMC_FPMresp_resample_cli()
 /*  6. Focal plane processing                                                                      */
 /* =============================================================================================== */
 
-int_fast8_t PIAACMC_FPM_process_cli()
+errno_t PIAACMC_FPM_process_cli()
 {
     if(CLI_checkarg(1, 4) + CLI_checkarg(2, 5) + CLI_checkarg(3,
             2) + CLI_checkarg(4, 3) == 0)
@@ -246,7 +240,7 @@ int_fast8_t PIAACMC_FPM_process_cli()
 /*  7. High level routines                                                                         */
 /* =============================================================================================== */
 
-int_fast8_t PIAACMCsimul_run_cli()
+errno_t PIAACMCsimul_run_cli()
 {
     if(CLI_checkarg(1, 3) + CLI_checkarg(2, 2) == 0)
     {
@@ -268,7 +262,8 @@ void __attribute__((constructor)) libinit_PIAACMCsimul()
     if(INITSTATUS_PIAACMCsimul == 0)
     {
         init_PIAACMCsimul();
-        RegisterModule(__FILE__, "coffee", "PIAACMC system simulation", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+        RegisterModule(__FILE__, "coffee", "PIAACMC system simulation", VERSION_MAJOR,
+                       VERSION_MINOR, VERSION_PATCH);
         INITSTATUS_PIAACMCsimul = 1;
     }
 }
@@ -378,7 +373,7 @@ int_fast8_t init_PIAACMCsimul()
     piaacmcsimul_var.CREATE_fpmzt = 0;
 
     piaacmcsimul_var.FORCE_CREATE_fpmza = 0;
-    piaacmcsimul_var.CREATE_fpmza;
+    piaacmcsimul_var.CREATE_fpmza = 0;
 
     piaacmcsimul_var.FORCE_MAKE_PIAA0shape = 0;
     piaacmcsimul_var.MAKE_PIAA0shape = 0;
@@ -428,6 +423,7 @@ int_fast8_t init_PIAACMCsimul()
 // first argument should be "PIAACMCsimul.fcall.log"
 // second argument should be __FUNCTION__
 // PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, "");
+/*
 static void PIAACMCsimul_logFunctionCall(char *LogFileName,
         const char *FunctionName, long line, char *comments)
 {
@@ -458,9 +454,7 @@ static void PIAACMCsimul_logFunctionCall(char *LogFileName,
             FunctionName, line, string, comments);
     fclose(fp);
 }
-
-
-
+*/
 
 
 

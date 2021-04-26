@@ -5,8 +5,6 @@
  * Can design both APLCMC and PIAACMC coronagraphs
  *
  *
- * @bug No known bugs.
- *
  */
 
 
@@ -76,23 +74,22 @@ long PIAACMCsimul_mkFocalPlaneMask(
     int saveMask
 )
 {
-    double eps = 1.0e-12;
-    long ID, IDm;
-    long IDz;
-    long IDsag, IDzone;
-    uint_fast32_t size;
-    uint_fast16_t nblambda;
-    uint_fast32_t k;
-    uint_fast32_t ii, jj;
+//    double eps = 1.0e-12;
+    imageID ID, IDm;
+    imageID IDz;
+    imageID IDsag, IDzone;
+    uint32_t size;
+    long nblambda;
+    long k;
 
     int_fast32_t ii1, jj1;
-    uint_fast32_t iii, jjj;
+    long iii, jjj;
 
     double fpscale; // [m/pix]
-    int_fast16_t zi;
+    long zi;
     double t, a, amp;
-    uint_fast32_t size2;
-    double re, im;
+    uint64_t size2;
+//    double re, im;
     float pha, cospha, sinpha;
     double retmp, imtmp, ttmp, zonetmp;
 
@@ -106,11 +103,9 @@ long PIAACMCsimul_mkFocalPlaneMask(
     double *cosphaarray;
     double *sinphaarray;
 
-    char command[200];
-    time_t tnow;
-    struct tm *uttime;
-    struct timespec timenow;
-    int ret;
+//    time_t tnow;
+//    struct tm *uttime;
+//    struct timespec timenow;
 
     long NBsubPix = 64;
 
@@ -245,7 +240,7 @@ long PIAACMCsimul_mkFocalPlaneMask(
         {
             fpscale = (2.0 * piaacmc[0].beamrad / piaacmc[0].pixscale) / piaacmc[0].size /
                       piaacmc[0].fpzfactor * optsyst[0].lambdaarray[k] * piaacmc[0].Fratio;
-            printf("LAMBDA %3ld / %3ld = %10.5g m    SCALE = %10.5g m/pix   size=%4ld  rad=%g\n",
+            printf("LAMBDA %3ld / %3ld = %10.5g m    SCALE = %10.5g m/pix   size=%4ul  rad=%g\n",
                    k, nblambda, optsyst[0].lambdaarray[k], fpscale, size, piaacmc[0].fpmRad);
             printf("Zone 0 amplitude [%ld]: %lf\n", piaacmc[0].zoneaID,
                    data.image[piaacmc[0].zoneaID].array.D[0]);
@@ -262,8 +257,8 @@ long PIAACMCsimul_mkFocalPlaneMask(
 
 
 
-            for(ii = 0; ii < size; ii++)
-                for(jj = 0; jj < size; jj++)
+            for(uint32_t ii = 0; ii < size; ii++)
+                for(uint32_t jj = 0; jj < size; jj++)
                 {
                     //printf("[ %4ld %4ld ] ", ii, jj);
 
@@ -477,8 +472,8 @@ long PIAACMCsimul_mkFocalPlaneMask(
         /* save mask transmission */
         IDm = create_3DCimage_ID("fpmCA", size, size, nblambda);
         for(k = 0; k < nblambda; k++)
-            for(ii = 0; ii < size; ii++)
-                for(jj = 0; jj < size; jj++)
+            for(uint32_t ii = 0; ii < size; ii++)
+                for(uint32_t jj = 0; jj < size; jj++)
                 {
                     data.image[IDm].array.CF[k * size2 + jj * size + ii].re = 1.0 -
                             data.image[ID].array.CF[k * size2 + jj * size + ii].re;

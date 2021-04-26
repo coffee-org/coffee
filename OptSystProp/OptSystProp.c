@@ -1,10 +1,10 @@
 /**
  * @file    OptSystProp.c
  * @brief   Optical system propagation
- * 
+ *
  * Propagate beam through optical systsm
  *
- * 
+ *
  */
 
 
@@ -21,7 +21,7 @@
 
 #define SBUFFERSIZE 2000
 
-static int INITSTATUS_OptSystProp = 0;
+//static int INITSTATUS_OptSystProp = 0;
 
 
 
@@ -44,7 +44,7 @@ void __attribute__ ((constructor)) libinit_OptSystProp()
 	{
 		init_OptSystProp();
 		RegisterModule(__FILE__, "coffee", "Optical propagation through system");
-		INITSTATUS_OptSystProp = 1; 
+		INITSTATUS_OptSystProp = 1;
 	}
 }
 */
@@ -56,7 +56,7 @@ void __attribute__ ((constructor)) libinit_OptSystProp()
 int_fast8_t init_OptSystProp()
 {
     // add atexit functions here
-   
+
 
     return 0;
 

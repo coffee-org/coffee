@@ -4,8 +4,6 @@
  *
  *
  *
- * @bug No known bugs.
- *
  */
 
 
@@ -62,7 +60,7 @@ extern OPTPIAACMCDESIGN *piaacmc;
 
 int PIAACMCsimul_exec_optimize_fpm_zones()
 {
-    long IDv;
+    imageID IDv;
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
@@ -71,22 +69,21 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
 
 
 
-    long IDfpmresp;
+    imageID IDfpmresp;
     long k;
 
-    long IDstatus;
+    //imageID IDstatus;
     char fname[1500];
 
     FILE *fp;
 
     long elem;
-    int ret;
     double tmplf1, tmplf2;
     int tmpd1;
 
-    long NBiter = 1000;
+    //long NBiter = 1000;
 
-    long ID;
+    //long ID;
 
     long mz;
 
@@ -126,7 +123,7 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
 
 
     // set current state for statistical tracking
-    data.image[IDstatus].array.UI16[0] = 0;
+    //    data.image[IDstatus].array.UI16[0] = 0;
 
     // usual initialization
     PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 1);
@@ -134,16 +131,41 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
     PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0);
 
     // set current state for statistical tracking
-    data.image[IDstatus].array.UI16[0] = 1;
+    //data.image[IDstatus].array.UI16[0] = 1;
 
     // tracking diagnostic, giving the total flux in each plane
     sprintf(fname, "%s/tmp_flux.txt", piaacmcsimul_var.piaacmcconfdir);
     fp = fopen(fname, "r");
     for(elem = 0; elem < optsyst[0].NBelem; elem++)
     {
-        ret = fscanf(fp, "%lf %lf  %d\n", &tmplf1, &tmplf2, &tmpd1);
-        optsyst[0].flux[elem] = tmplf1 / tmpd1 *
-                                optsyst[0].nblambda; // scale flux to current number of lambda
+        //ret = fscanf(fp, "%lf %lf  %d\n", &tmplf1, &tmplf2, &tmpd1);
+
+        int fscanfcnt;
+
+        fscanfcnt = fscanf(fp, "%lf %lf  %d\n", &tmplf1, &tmplf2, &tmpd1);
+        if(fscanfcnt == EOF)
+        {
+            if(ferror(fp))
+            {
+                perror("fscanf");
+            }
+            else
+            {
+                fprintf(stderr,
+                        "Error: fscanf reached end of file, no matching characters, no matching failure\n");
+            }
+            return RETURN_FAILURE;
+        }
+        else if(fscanfcnt != 3)
+        {
+            fprintf(stderr,
+                    "Error: fscanf successfully matched and assigned %i input items, 3 expected\n",
+                    fscanfcnt);
+            return RETURN_FAILURE;
+        }
+
+        // scale flux to current number of lambda
+        optsyst[0].flux[elem] = tmplf1 / tmpd1 * optsyst[0].nblambda;
     }
     fclose(fp);
 
@@ -151,6 +173,7 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
     piaacmcsimul_var.LINOPT =
         1; // perform linear optimization after the switch exits
     // get the number of iterations
+    /*
     if((IDv = variable_ID("PIAACMC_nbiter")) != -1)
     {
         NBiter = (long) data.variable[IDv].value.f + 0.01;
@@ -159,9 +182,9 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
     {
         NBiter = 50;    // default number of iterations
     }
-
+    */
     // set current state for statistical tracking
-    data.image[IDstatus].array.UI16[0] = 2;
+    //data.image[IDstatus].array.UI16[0] = 2;
 
     // get the FPMresp array computed in mode 11
     PIAACMCsimul_update_fnamedescr_conf();
@@ -175,7 +198,8 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
     piaacmcsimul_var.vsize =
         data.image[IDfpmresp].md[0].size[0]; // number of eval pts x2
     // make an array that holds the resulting light for evaluation point given the FPM solution, for each wavelenth
-    ID = create_2Dimage_ID("imvect1", piaacmcsimul_var.vsize, piaacmc[0].nblambda);
+    //ID =
+    create_2Dimage_ID("imvect1", piaacmcsimul_var.vsize, piaacmc[0].nblambda);
 
     // allocate arrays for fast routine
     // define convenient array variables
@@ -202,12 +226,37 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
     piaacmcsimul_var.computePSF_FAST_FPMresp = 1;
 
     // set current state for statistical tracking
-    data.image[IDstatus].array.UI16[0] = 3;
+    //data.image[IDstatus].array.UI16[0] = 3;
 
     // read the contrast normalization factor into CnormFactor
     sprintf(fname, "%s/CnormFactor.txt", piaacmcsimul_var.piaacmcconfdir);
     fp = fopen(fname, "r");
-    ret = fscanf(fp, "%lf", &piaacmcsimul_var.CnormFactor);
+    {
+        int fscanfcnt;
+
+        fscanfcnt = fscanf(fp, "%lf", &piaacmcsimul_var.CnormFactor);
+        if(fscanfcnt == EOF)
+        {
+            if(ferror(fp))
+            {
+                perror("fscanf");
+            }
+            else
+            {
+                fprintf(stderr,
+                        "Error: fscanf reached end of file, no matching characters, no matching failure\n");
+            }
+            return RETURN_FAILURE;
+        }
+        else if(fscanfcnt != 1)
+        {
+            fprintf(stderr,
+                    "Error: fscanf successfully matched and assigned %i input items, 1 expected\n",
+                    fscanfcnt);
+            return RETURN_FAILURE;
+        }
+    }
+    //ret = fscanf(fp, "%lf", &piaacmcsimul_var.CnormFactor);
     fclose(fp);
     // for each zone, add a random offset in range +- MODampl
     // this randomizes the starting point for each zone
@@ -247,7 +296,7 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
         1; // for fast execution using analytic derivatives
 
     // set current state for statistical tracking
-    data.image[IDstatus].array.UI16[0] = 4;
+    //data.image[IDstatus].array.UI16[0] = 4;
     // Now on to the actual optimization, after exit from the switch statement
     // I hope you have a lot of time...
 
