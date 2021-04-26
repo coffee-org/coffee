@@ -49,14 +49,14 @@ int OptSystProp_propagateCube(
     if(IDout_amp == -1)
     {
         IDout_amp = create_image_ID(IDout_amp_name, 3, imsizearray, _DATATYPE_FLOAT,
-                                    sharedmem, 0);
+                                    sharedmem, 0, 0);
     }
 
     imageID IDout_pha = image_ID(IDout_pha_name);
     if(IDout_pha == -1)
     {
         IDout_pha = create_image_ID(IDout_pha_name, 3, imsizearray, _DATATYPE_FLOAT,
-                                    sharedmem, 0);
+                                    sharedmem, 0, 0);
     }
 
     data.image[IDout_amp].md[0].write = 1;

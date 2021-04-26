@@ -112,7 +112,7 @@ long PIAACMCsimul_mkFPM_zonemap(
     sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
     sizearray[0] = piaacmc[0].fpmarraysize;
     sizearray[1] = piaacmc[0].fpmarraysize;
-    ID = create_image_ID(IDname, 2, sizearray, _DATATYPE_UINT16, 0, 0);
+    ID = create_image_ID(IDname, 2, sizearray, _DATATYPE_UINT16, 0, 0, 0);
     free(sizearray);
 
     nbsector = (uint_fast32_t *) malloc(sizeof(uint_fast32_t) * piaacmc[0].NBrings);

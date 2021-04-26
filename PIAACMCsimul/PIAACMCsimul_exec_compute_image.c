@@ -1,14 +1,14 @@
 /**
  * @file    PIAAACMCsimul_compute_image.c
  * @brief   PIAA-type coronagraph design, execute compute image
- * 
- *  
+ *
+ *
  * @author  O. Guyon
  * @date    25 nov 2017
  *
- * 
+ *
  * @bug No known bugs.
- * 
+ *
  */
 
 
@@ -77,24 +77,32 @@ int PIAACMCsimul_exec_compute_image()
     // and create the image for these sources by computing and adding their PSFs
 
     // load some more cli variables
-    if( (IDv = variable_ID("PIAACMC_centobs0")) != -1)
+    if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
+    {
         centobs0 = data.variable[IDv].value.f;
-    if( (IDv = variable_ID("PIAACMC_centobs1")) != -1)
+    }
+    if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
+    {
         centobs1 = data.variable[IDv].value.f;
-    if( (IDv = variable_ID("PIAACMC_fpmradld")) != -1)
+    }
+    if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
         fpmradld = data.variable[IDv].value.f;
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
     piaacmcsimul_var.PIAACMC_fpmtype = 0; // idealized (default)
-    if((IDv=variable_ID("PIAACMC_fpmtype"))!=-1)
-        piaacmcsimul_var.PIAACMC_fpmtype = (int) (data.variable[IDv].value.f + 0.1);
+    if((IDv = variable_ID("PIAACMC_fpmtype")) != -1)
+    {
+        piaacmcsimul_var.PIAACMC_fpmtype = (int)(data.variable[IDv].value.f + 0.1);
+    }
     printf("PIAACMC_fpmtype = %d\n", piaacmcsimul_var.PIAACMC_fpmtype);
 
     PIAACMC_WFCmode = 0; // number of DMs
-    if((IDv=variable_ID("PIAACMC_WFCmode"))!=-1)
-        PIAACMC_WFCmode = (int) (data.variable[IDv].value.f + 0.1);
+    if((IDv = variable_ID("PIAACMC_WFCmode")) != -1)
+    {
+        PIAACMC_WFCmode = (int)(data.variable[IDv].value.f + 0.1);
+    }
     printf("PIAACMC_WFCmode = %d\n", PIAACMC_WFCmode);
 
 
@@ -104,8 +112,9 @@ int PIAACMCsimul_exec_compute_image()
     piaacmcsimul_var.FORCE_CREATE_fpmza = 1;
 
     // main initialization function to set up the piaacmc structure
-    PIAACMCsimul_initpiaacmcconf(piaacmcsimul_var.PIAACMC_fpmtype, fpmradld, centobs0, centobs1, PIAACMC_WFCmode, 1);
-    // make the mirror or lenses shapes 
+    PIAACMCsimul_initpiaacmcconf(piaacmcsimul_var.PIAACMC_fpmtype, fpmradld,
+                                 centobs0, centobs1, PIAACMC_WFCmode, 1);
+    // make the mirror or lenses shapes
     PIAACMCsimul_makePIAAshapes(piaacmc, 0);
     optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm normalization for efficiency
 
@@ -116,24 +125,24 @@ int PIAACMCsimul_exec_compute_image()
     if(fp != NULL)
     {
         printf("RUNNING PSF LOOP COMPUTATION\n");
-        sizearray = (uint32_t*) malloc(sizeof(uint32_t)*2);
+        sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
         sizearray[0] = piaacmc[0].size;
         sizearray[1] = piaacmc[0].size;
 
-        IDopderrC = create_image_ID("opderr", 2, sizearray, _DATATYPE_FLOAT, 1, 0);
+        IDopderrC = create_image_ID("opderr", 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0);
         COREMOD_MEMORY_image_set_createsem("opderr", 10);
         free(sizearray);
 
-        sizecrop = piaacmc[0].size/16;
-        sizearray = (uint32_t*) malloc(sizeof(uint32_t)*3);
+        sizecrop = piaacmc[0].size / 16;
+        sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 3);
         sizearray[0] = sizecrop;
         sizearray[1] = sizecrop;
         sizearray[2] = piaacmc[0].nblambda;
-        IDpsfi0 = create_image_ID("psfiout0", 3, sizearray, _DATATYPE_FLOAT, 1, 0);
+        IDpsfi0 = create_image_ID("psfiout0", 3, sizearray, _DATATYPE_FLOAT, 1, 0, 0);
         free(sizearray);
 
         iter = 0;
-        while(iter<10)
+        while(iter < 10)
         {
             PIAACMCsimul_computePSF(xpos, ypos, 0, optsyst[0].NBelem, 1, 0, 0, 1);
             ID = image_ID("psfi0");
@@ -141,13 +150,15 @@ int PIAACMCsimul_exec_compute_image()
             // copy results to IDpsfi0
             data.image[IDpsfi0].md[0].write = 1;
 
-            for(k=0; k<piaacmc[0].nblambda; k++)
-                for(ii1=0; ii1<sizecrop; ii1++)
-                    for(jj1=0; jj1<sizecrop; jj1++)
+            for(k = 0; k < piaacmc[0].nblambda; k++)
+                for(ii1 = 0; ii1 < sizecrop; ii1++)
+                    for(jj1 = 0; jj1 < sizecrop; jj1++)
                     {
-                        ii = ii1 + (piaacmc[0].size - sizecrop)/2;
-                        jj = jj1 + (piaacmc[0].size - sizecrop)/2;
-                        data.image[IDpsfi0].array.F[k*sizecrop*sizecrop + jj1*sizecrop + ii1] = data.image[ID].array.F[k*piaacmc[0].size*piaacmc[0].size + jj*piaacmc[0].size + ii];
+                        ii = ii1 + (piaacmc[0].size - sizecrop) / 2;
+                        jj = jj1 + (piaacmc[0].size - sizecrop) / 2;
+                        data.image[IDpsfi0].array.F[k * sizecrop * sizecrop + jj1 * sizecrop + ii1] =
+                            data.image[ID].array.F[k * piaacmc[0].size * piaacmc[0].size + jj *
+                                                   piaacmc[0].size + ii];
                     }
             COREMOD_MEMORY_image_set_sempost_byID(IDpsfi0, -1);
             data.image[IDpsfi0].md[0].cnt0 ++;
@@ -155,7 +166,7 @@ int PIAACMCsimul_exec_compute_image()
 
             COREMOD_MEMORY_image_set_semwait("opderr", 0);
             // drive semaphore #1 to zero
-            while(sem_trywait(data.image[IDopderrC].semptr[0])==0) {}
+            while(sem_trywait(data.image[IDopderrC].semptr[0]) == 0) {}
             //iter++;
         }
     }
@@ -163,7 +174,7 @@ int PIAACMCsimul_exec_compute_image()
     {
         // if file "scene.txt" exists, compute series of PSFs and sum
         fp = fopen("SCENE.txt", "r");
-        if(fp!=NULL)
+        if(fp != NULL)
         {
             initscene = 0;
             // for each source in the scene, read position and flux
@@ -179,7 +190,7 @@ int PIAACMCsimul_exec_compute_image()
                 ysize = data.image[ID].md[0].size[1];
                 zsize = data.image[ID].md[0].size[2];
 
-                if(initscene==0)
+                if(initscene == 0)
                 {
                     initscene = 1;
                     // create 3D image to sum the PSFs into
@@ -187,8 +198,10 @@ int PIAACMCsimul_exec_compute_image()
                 }
                 ID = image_ID("psfi0");
                 // sum the current PSF into the image: summed image is IDscene, source is ID
-                for(ii=0; ii<xsize*ysize*zsize; ii++)
-                    data.image[IDscene].array.F[ii] += fval*data.image[ID].array.F[ii];
+                for(ii = 0; ii < xsize * ysize * zsize; ii++)
+                {
+                    data.image[IDscene].array.F[ii] += fval * data.image[ID].array.F[ii];
+                }
 
 
             }

@@ -801,7 +801,7 @@ int PIAACMCsimul_initpiaacmcconf(
             sizearray[0] = size;
             sizearray[1] = size;
             piaacmc[0].ID_DM[iDM] = create_image_ID(fname, 2, sizearray, _DATATYPE_FLOAT, 1,
-                                                    0);
+                                                    0, 0);
             free(sizearray);
         }
     }

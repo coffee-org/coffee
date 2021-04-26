@@ -114,7 +114,7 @@ int OptSystProp_run(OPTSYST *optsyst,
     IDa = image_ID(imname);
     if(IDa == -1)
     {
-        IDa = create_image_ID(imname, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0);
+        IDa = create_image_ID(imname, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0, 0);
         //    create_3Dimage_ID(imname, size, size, nblambda);
     }
     // WFpha is the standard output of the wave front complex phase
@@ -122,7 +122,7 @@ int OptSystProp_run(OPTSYST *optsyst,
     IDp = image_ID(imname);
     if(IDp == -1)
     {
-        IDp = create_image_ID(imname, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0);
+        IDp = create_image_ID(imname, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0, 0);
         //create_3Dimage_ID(imname, size, size, nblambda);
     }
     // initialize wavefront amplitude to 1

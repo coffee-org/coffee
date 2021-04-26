@@ -489,7 +489,7 @@ int PIAACMCsimul_exec(
     sizearray[0] = 1;
     sizearray[1] = 1;
     IDstatus = create_image_ID("stat_PIAACMCsimulexec", 2, sizearray,
-                               _DATATYPE_UINT16, 1, 0);
+                               _DATATYPE_UINT16, 1, 0, 0);
     free(sizearray);
 
 
