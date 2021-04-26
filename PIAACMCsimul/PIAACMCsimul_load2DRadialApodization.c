@@ -48,7 +48,7 @@ uint_fast8_t PIAACMCsimul_load2DRadialApodization(
 		const char *IDapofit_name
 		)
 {
-    long NBpts;
+//    long NBpts;
     long IDm;
     long sizem;
     long kmax = 10;
@@ -58,8 +58,6 @@ uint_fast8_t PIAACMCsimul_load2DRadialApodization(
     long sizein;
     float eps = 1.0e-4;
     char fname[500];
-    int ret;
-    char command[1000];
     int debug = 0;
 
 	#ifdef PIAASIMUL_LOGFUNC0
@@ -102,8 +100,7 @@ uint_fast8_t PIAACMCsimul_load2DRadialApodization(
     }
 
     linopt_imtools_image_fitModes("_apoincrop", "APOmodesCos", "fitmaskapo", 1.0e-8, IDapofit_name, 0);
-    sprintf(command, "mv %s/eigenv.dat %s/eigenv_APOmodesCos.dat", piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
-    ret = system(command);
+    EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_APOmodesCos.dat", piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
 
     if(debug==1) // test fit quality
     {

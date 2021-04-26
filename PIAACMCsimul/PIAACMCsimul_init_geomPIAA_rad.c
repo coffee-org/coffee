@@ -69,26 +69,26 @@ int PIAACMCsimul_init_geomPIAA_rad(
 
     // inner profile adjustment
     double a, b, verr, bstep, x, eps1;
-    double t0, t0cnt, value;
+    double t0; //, t0cnt; //, value;
     int dir, odir;
     long NBistep;
     long iioffset;
 
     double fluxdens, F0, F1, F2;
-    double dr0, dr1, ndr0, ndr1;
+//    double dr0, dr1, ndr0, ndr1;
 
-    long NBpoints;
+//    long NBpoints;
     double *piaar00;
     double *piaar11;
     double *piaar01;
     double *piaar10;
-    long cnt;
-    double tmp;
-    double epsilon = 0.000000000001;
+//    long cnt;
+//    double tmp;
+//    double epsilon = 0.000000000001;
 
     double *piaaM0z;
     double *piaaM1z;
-    double r0c, r1c, dx, dy, dist, y3, r0n, slope, dz;
+    double r0c, r1c, dx, dist, y3, r0n, slope, dz;
 
     char fname[500];
 
@@ -185,7 +185,7 @@ int PIAACMCsimul_init_geomPIAA_rad(
     while(fabs(verr)>1.0e-9)
     {
         t0 = 0.0;
-        t0cnt = 0.0;
+        //t0cnt = 0.0;
         for(ii=0; ii<NBistep; ii++)
         {
             x = 1.0*ii/NBistep;
@@ -234,7 +234,7 @@ int PIAACMCsimul_init_geomPIAA_rad(
     while(fabs(verr)>1.0e-9)
     {
         t0 = 0.0;
-        t0cnt = 0.0;
+        //t0cnt = 0.0;
         for(ii=0; ii<NBistep; ii++)
         {
             x = 1.0-1.0*ii/NBistep;
@@ -328,7 +328,7 @@ int PIAACMCsimul_init_geomPIAA_rad(
 
     i=0;
     ii=0;
-    cnt = 0;
+    //cnt = 0;
     piaar00[0] = 0.0;
     piaar10[0] = 0.0;
     //  fp = fopen("test0.txt", "w");
@@ -356,7 +356,7 @@ int PIAACMCsimul_init_geomPIAA_rad(
 
     i=0;
     ii=0;
-    cnt = 0;
+    //cnt = 0;
     piaar01[0] = 0.0;
     piaar11[0] = 0.0;
     //  fp = fopen("test1.txt", "w");

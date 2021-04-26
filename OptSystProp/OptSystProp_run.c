@@ -48,31 +48,30 @@ int OptSystProp_run(OPTSYST *optsyst,
                     int       sharedmem
                    )
 {
-    char command[500];
     char imname[200];
 
 
-    long IDx, IDy, IDr, IDPA;
-    double x, y;
-    long IDa, IDp;
+//    imageID IDx, IDy, IDr, IDPA;
+//    double x, y;
+    imageID IDa, IDp;
     long size;
     long nblambda;
-    long size2;
-    long ii, jj, k;
+    uint64_t size2;
+//    long ii, jj, k;
     long elem;
     long kl;
 
-    char fname_pupa0[200];
-    char fname_pupp0[200];
+//    char fname_pupa0[200];
+//    char fname_pupp0[200];
     char fname[200];
 
-    long ID;
+    imageID ID;
     double proplim = 1.0e-4;
 
 
-    float beamradpix;
-    long ID0;
-    long size0, size1;
+//    float beamradpix;
+//    imageID ID0;
+//    long size0, size1;
     long i, j;
 
     char imnameamp_in[200];
@@ -127,7 +126,7 @@ int OptSystProp_run(OPTSYST *optsyst,
         //create_3Dimage_ID(imname, size, size, nblambda);
     }
     // initialize wavefront amplitude to 1
-    for(ii = 0; ii < size2; ii++)
+    for(uint64_t ii = 0; ii < size2; ii++)
         for(kl = 0; kl < nblambda; kl++)
         {
             data.image[IDa].array.F[size2 * kl + ii] = 1.0;
@@ -293,7 +292,7 @@ int OptSystProp_run(OPTSYST *optsyst,
                     #pragma omp for
 # endif
                     for(kl = 0; kl < nblambda; kl++) // loop over wavelengths
-                        for(ii = 0; ii < size2; ii++)
+                        for(uint64_t ii = 0; ii < size2; ii++)
                             // actually apply the mask
                         {
                             data.image[IDa].array.F[size2 * kl + ii] *= data.image[ID].array.F[ii];
@@ -312,7 +311,7 @@ int OptSystProp_run(OPTSYST *optsyst,
                     #pragma omp for
 # endif
                     // don't loop over wavelength
-                    for(ii = 0; ii < size2 *nblambda; ii++)
+                    for(uint64_t ii = 0; ii < size2 *nblambda; ii++)
                         // actually apply the mask
                     {
                         data.image[IDa].array.F[ii] *= data.image[ID].array.F[ii];
@@ -357,7 +356,7 @@ int OptSystProp_run(OPTSYST *optsyst,
                     // in the "achromatic mirror" case, the phase is still chromatic so we
                     // have to loop over wavelength
                     for(kl = 0; kl < nblambda; kl++)
-                        for(ii = 0; ii < size2; ii++)
+                        for(uint64_t ii = 0; ii < size2; ii++)
                             // compute the change in phase
                         {
                             data.image[IDp].array.F[size2 * kl + ii] -= 4.0 * M_PI *
@@ -375,7 +374,7 @@ int OptSystProp_run(OPTSYST *optsyst,
                     #pragma omp for
 # endif
                     for(kl = 0; kl < nblambda; kl++)
-                        for(ii = 0; ii < size2; ii++)
+                        for(uint64_t ii = 0; ii < size2; ii++)
                             // compute the change in phase
                         {
                             data.image[IDp].array.F[size2 * kl + ii] -= 4.0 * M_PI *
@@ -437,7 +436,7 @@ int OptSystProp_run(OPTSYST *optsyst,
                     #pragma omp for
 # endif
                     for(kl = 0; kl < nblambda; kl++)
-                        for(ii = 0; ii < size2; ii++)
+                        for(uint64_t ii = 0; ii < size2; ii++)
                             // apply change in phase
                         {
                             data.image[IDp].array.F[size2 * kl + ii] += data.image[ID].array.F[ii] *
@@ -455,7 +454,7 @@ int OptSystProp_run(OPTSYST *optsyst,
                     #pragma omp for
 # endif
                     for(kl = 0; kl < nblambda; kl++)
-                        for(ii = 0; ii < size2; ii++)
+                        for(uint64_t ii = 0; ii < size2; ii++)
                             // apply change in phase
                         {
                             data.image[IDp].array.F[size2 * kl + ii] += data.image[ID].array.F[size2 * kl +
@@ -514,8 +513,8 @@ int OptSystProp_run(OPTSYST *optsyst,
 
                 ID = image_ID("_WFctmp");
                 for(kl = 0; kl < nblambda; kl++)
-                    for(ii = 0; ii < size; ii++)
-                        for(jj = 0; jj < size; jj++)
+                    for(uint32_t ii = 0; ii < size; ii++)
+                        for(uint32_t jj = 0; jj < size; jj++)
                         {
                             // for each pixel
                             re = data.image[ID].array.CF[size2 * kl + jj * size + ii].re;
@@ -644,8 +643,8 @@ int OptSystProp_run(OPTSYST *optsyst,
                             for(i = 0; i < 2 * gsize + 1; i++)
                                 for(j = 0; j < 2 * gsize + 1; j++)
                                 {
-                                    ii = ii1 + (i - gsize); // indices of the original pixels to interpolate onto
-                                    jj = jj1 + (j - gsize);
+                                    long ii = ii1 + (i - gsize); // indices of the original pixels to interpolate onto
+                                    long jj = jj1 + (j - gsize);
                                     // perform the convolution, saving the results in separate Re and Im arrays
                                     data.image[IDre1].array.F[size2 * kl + jj * size + ii] += re * convkern[j *
                                             (2 * gsize + 1) + i];
@@ -723,7 +722,7 @@ int OptSystProp_run(OPTSYST *optsyst,
         IDa = image_ID(imnameamp_out); // output of the current element
         optsyst[index].flux[elem] = 0.0;
         for(kl = 0; kl < nblambda; kl++)
-            for(ii = 0; ii < size2; ii++)
+            for(uint64_t ii = 0; ii < size2; ii++)
             {
                 optsyst[index].flux[elem] += data.image[IDa].array.F[kl * size2 + ii] *
                                              data.image[IDa].array.F[kl * size2 + ii];
@@ -801,7 +800,7 @@ int OptSystProp_run(OPTSYST *optsyst,
         IDre = image_ID(imnamere);
         IDim = image_ID(imnameim);
         // normalize so the intensity sums to 1
-        for(ii = 0; ii < size2 * nblambda; ii++)
+        for(uint64_t ii = 0; ii < size2 * nblambda; ii++)
         {
             data.image[ID].array.F[ii] /= sqrt(size2 * optsyst[index].flux[0] / nblambda);
             data.image[IDre].array.F[ii] /= sqrt(size2 * optsyst[index].flux[0] / nblambda);

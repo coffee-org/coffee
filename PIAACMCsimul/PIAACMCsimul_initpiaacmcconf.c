@@ -226,10 +226,9 @@ int PIAACMCsimul_initpiaacmcconf(
     long Cmsize;
     long Fmsize;
     imageID ID, ID0, ID1;
-    long size2;
+//    long size2;
     double rad;
-    char command[1000];
-    imageID IDv1, IDv2;
+//    imageID IDv1, IDv2;
     char fname[1500];
     char name[500];
     float tmpf;
@@ -237,11 +236,10 @@ int PIAACMCsimul_initpiaacmcconf(
     int loaded = 0; // has the configuration been loaded ?
 
     int saveconf = 0; // if 1, save conf at end of this function
-    long IDv;
-    int ret;
-    double tmplf;
+    imageID IDv;
+//    double tmplf;
 
-    int IDlscumul;
+//    int IDlscumul;
     uint32_t *sizearray;
 
 
@@ -261,11 +259,13 @@ int PIAACMCsimul_initpiaacmcconf(
 
 
     // Create required directories
+    int ret;
     ret = mkdir("testdir", 0777);  // test files, output from code
     ret = mkdir("conf",    0777);  // configuration
     ret = mkdir("status",  0777);  // status
     ret = mkdir("ref",     0777);  // reference files
     ret = mkdir("log",     0777);  // log
+    (void) ret;
 
 
 
@@ -677,8 +677,7 @@ int PIAACMCsimul_initpiaacmcconf(
     {
         printf("Loading PIAACMC configuration\n");
         fflush(stdout);
-        sprintf(command, "mkdir -p %s", piaacmcsimul_var.piaacmcconfdir);
-        ret = system(command);
+        EXECUTE_SYSTEM_COMMAND("mkdir -p %s", piaacmcsimul_var.piaacmcconfdir);
         loaded = PIAACMCsimul_loadpiaacmcconf(piaacmcsimul_var.piaacmcconfdir);
         if(loaded == 0)
         {
@@ -854,9 +853,8 @@ int PIAACMCsimul_initpiaacmcconf(
         piaacmc[0].CmodesID = image_ID("Cmodes");
         save_fits("Cmodes", fname);
 
-        sprintf(command, "mv ModesExpr_CosRad.txt %s/",
+        EXECUTE_SYSTEM_COMMAND("mv ModesExpr_CosRad.txt %s/",
                 piaacmcsimul_var.piaacmcconfdir);
-        ret = system(command);
     }
     piaacmc[0].NBCmodes = data.image[piaacmc[0].CmodesID].md[0].size[2];
     piaacmc[0].Cmsize = data.image[piaacmc[0].CmodesID].md[0].size[0];
@@ -895,8 +893,7 @@ int PIAACMCsimul_initpiaacmcconf(
         piaacmc[0].FmodesID = image_ID("Fmodes");
         save_fits("Fmodes", fname);
         save_fits("cpamodesfreq", "!cpamodesfreq.fits");
-        sprintf(command, "mv ModesExpr_CPA.txt %s/", piaacmcsimul_var.piaacmcconfdir);
-        ret = system(command);
+        EXECUTE_SYSTEM_COMMAND("mv ModesExpr_CPA.txt %s/", piaacmcsimul_var.piaacmcconfdir);
     }
     piaacmc[0].NBFmodes = data.image[piaacmc[0].FmodesID].md[0].size[2];
     piaacmc[0].Fmsize = data.image[piaacmc[0].FmodesID].md[0].size[0];
@@ -913,8 +910,7 @@ int PIAACMCsimul_initpiaacmcconf(
 
 
     // =================== IMPORT / CREATE PIAA SHAPES =====================
-    sprintf(command, "mkdir -p %s/piaaref/", piaacmcsimul_var.piaacmcconfdir);
-    ret = system(command);
+    EXECUTE_SYSTEM_COMMAND("mkdir -p %s/piaaref/", piaacmcsimul_var.piaacmcconfdir);
 
     if(piaacmc[0].PIAAmode == 1)
     {
@@ -923,8 +919,7 @@ int PIAACMCsimul_initpiaacmcconf(
         piaacmc[0].piaa1CmodesID = image_ID("piaa1Cmodescoeff");
         piaacmc[0].piaa1FmodesID = image_ID("piaa1Fmodescoeff");
 
-        sprintf(command, "mkdir -p %s/piaaref/", piaacmcsimul_var.piaacmcconfdir);
-        ret = system(command);
+        EXECUTE_SYSTEM_COMMAND("mkdir -p %s/piaaref/", piaacmcsimul_var.piaacmcconfdir);
 
         if((piaacmc[0].piaa0CmodesID == -1) || (piaacmc[0].piaa0FmodesID == -1)
                 || (piaacmc[0].piaa1CmodesID == -1) || (piaacmc[0].piaa1FmodesID == -1))
@@ -961,9 +956,8 @@ int PIAACMCsimul_initpiaacmcconf(
         sprintf(fname, "%s/apo2Drad.fits", piaacmcsimul_var.piaacmcconfdir);
         if(load_fits(fname, "apo2Drad", 1) == -1) // CREATE APODIZATION
         {
-            sprintf(command, "cp %s/piaaref/apo2Drad.fits %s/apo2Drad.fits",
+            EXECUTE_SYSTEM_COMMAND("cp %s/piaaref/apo2Drad.fits %s/apo2Drad.fits",
                     piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
-            ret = system(command);
 
             sprintf(fname, "%s/apo2Drad.fits", piaacmcsimul_var.piaacmcconfdir);
             if(load_fits(fname, "apo2Drad", 1) == -1)
@@ -973,8 +967,8 @@ int PIAACMCsimul_initpiaacmcconf(
                 fflush(stdout);
 
                 // first iteration: half size image, 2x zoom, without pupil mask
-                IDv1 = create_variable_ID("DFTZFACTOR", 2);
-                IDv2 = create_variable_ID("PNBITER", 15);
+                create_variable_ID("DFTZFACTOR", 2);
+                create_variable_ID("PNBITER", 15);
                 coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix * 0.5,
                                              piaacmc[0].centObs1, "apotmp1", size / 2, "NULLim");
 
@@ -983,23 +977,23 @@ int PIAACMCsimul_initpiaacmcconf(
                 delete_image_ID("apotmp1");
 
                 // full size, 4x zoom
-                IDv1 = create_variable_ID("DFTZFACTOR", 4);
-                IDv2 = create_variable_ID("PNBITER", 5);
+                create_variable_ID("DFTZFACTOR", 4);
+                create_variable_ID("PNBITER", 5);
                 coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix,
                                              piaacmc[0].centObs1, "apo", size, "pupmaskim");
 
                 // full size, 8x zoom
                 chname_image_ID("apo", "apostart");
-                IDv1 = create_variable_ID("DFTZFACTOR", 8);
-                IDv2 = create_variable_ID("PNBITER", 5);
+                create_variable_ID("DFTZFACTOR", 8);
+                create_variable_ID("PNBITER", 5);
                 coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix,
                                              piaacmc[0].centObs1, "apo", size, "pupmaskim");
 
 
                 // full size, 16x zoom
                 chname_image_ID("apo", "apostart");
-                IDv1 = create_variable_ID("DFTZFACTOR", 16);
-                IDv2 = create_variable_ID("PNBITER", 10);
+                create_variable_ID("DFTZFACTOR", 16);
+                create_variable_ID("PNBITER", 10);
                 coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix,
                                              piaacmc[0].centObs1, "apo", size, "pupmaskim");
 
@@ -1126,19 +1120,16 @@ int PIAACMCsimul_initpiaacmcconf(
 
         linopt_imtools_image_fitModes("piaa0zcrop", "Cmodes", "maskfit", 1.0e-6,
                                       "piaa0Cmodescoeff", 0);
-        sprintf(command, "mv %s/eigenv.dat %s/eigenv_piaa0Cmodes.dat",
+        EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_piaa0Cmodes.dat",
                 piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
-        ret = system(command);
-
 
         //      sprintf(fname, "!%s/piaa0Cmodescoeff.fits", piaacmcsimul_var.piaacmcconfdir);
         //      save_fits("piaa0Cmodescoeff", fname);
 
         linopt_imtools_image_fitModes("piaa1zcrop", "Cmodes", "maskfit", 1.0e-6,
                                       "piaa1Cmodescoeff", 0);
-        sprintf(command, "mv %s/eigenv.dat %s/eigenv_piaa1Cmodes.dat",
+        EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_piaa1Cmodes.dat",
                 piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
-        ret = system(command);
 
         //      sprintf(fname, "!%s/piaa1Cmodescoeff.fits", piaacmcsimul_var.piaacmcconfdir);
         //      save_fits("piaa1Cmodescoeff", fname);
@@ -1205,15 +1196,13 @@ int PIAACMCsimul_initpiaacmcconf(
 
         linopt_imtools_image_fitModes("piaa0Cres", "Fmodes", "maskfit", 0.01,
                                       "piaa0Fmodescoeff", 0);
-        sprintf(command, "mv %s/eigenv.dat %s/eigenv_piaa0Fmodes.dat",
+        EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_piaa0Fmodes.dat",
                 piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
-        ret = system(command);
 
         linopt_imtools_image_fitModes("piaa1Cres", "Fmodes", "maskfit", 0.01,
                                       "piaa1Fmodescoeff", 0);
-        sprintf(command, "mv %s/eigenv.dat %s/eigenv_piaa1Fmodes.dat",
+        EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_piaa1Fmodes.dat",
                 piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
-        ret = system(command);
 
 
         // save_fits("piaa1Fmodescoeff", "!piaa1Fmodescoeff.fits");
@@ -1253,9 +1242,8 @@ int PIAACMCsimul_initpiaacmcconf(
         sprintf(fname, "!%s/piaaref/piaa1Fmodes.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits(data.image[piaacmc[0].piaa1FmodesID].name, fname);
 
-        sprintf(command, "cp %s/piaaref/* %s/", piaacmcsimul_var.piaacmcconfdir,
+        EXECUTE_SYSTEM_COMMAND("cp %s/piaaref/* %s/", piaacmcsimul_var.piaacmcconfdir,
                 piaacmcsimul_var.piaacmcconfdir);
-        ret = system(command);
     }
 
 
@@ -1263,12 +1251,10 @@ int PIAACMCsimul_initpiaacmcconf(
 
     PIAACMCsimul_update_fnamedescr();
 
-    sprintf(command, "echo \"%s\" > fpm_name.txt", piaacmcsimul_var.fnamedescr);
-    ret = system(command);
+    EXECUTE_SYSTEM_COMMAND("echo \"%s\" > fpm_name.txt", piaacmcsimul_var.fnamedescr);
 
-    sprintf(command, "echo \"%s\" > fpm_name_conf.txt",
+    EXECUTE_SYSTEM_COMMAND("echo \"%s\" > fpm_name_conf.txt",
             piaacmcsimul_var.fnamedescr_conf);
-    ret = system(command);
 
 
 
@@ -1490,7 +1476,7 @@ int PIAACMCsimul_initpiaacmcconf(
     printf("LOADING/CREATING LYOT MASK  - %ld masks  (PIAAmode = %d, %ld x %ld)\n",
            piaacmc[0].NBLyotStop, piaacmc[0].PIAAmode, xsize, ysize);
     // list_image_ID();
-    size2 = size * size;
+    //size2 = size * size;
 
 
     if(piaacmc[0].PIAAmode == 1)

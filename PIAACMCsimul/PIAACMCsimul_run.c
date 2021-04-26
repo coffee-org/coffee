@@ -60,13 +60,11 @@ int PIAACMCsimul_run(
     char fname1[1500];
     char fnamebestval[1500];
     double bestval = 1.0;
-    int ret;
-    char command[1000];
     long k;
     int fOK = 0;
     int bOK = 0;
     int zeroST = 0;
-    int r;
+//    int r;
     int loopOK;
     char stopfile[500];
     long IDv;
@@ -183,7 +181,8 @@ int PIAACMCsimul_run(
         fp = fopen(fname, "r");
         if(fp != NULL)
         {
-            r = fscanf(fp, "%lf\n", &searchtime);
+            int r = fscanf(fp, "%lf\n", &searchtime);
+            (void) r;
             fclose(fp);
         }
 
@@ -206,29 +205,28 @@ int PIAACMCsimul_run(
         i = 0;
 
         // while not exceed searchtime or no stop file
-        //ret = system("touch start.loop.ttxt");
+        // EXECUTE_SYSTEM_COMMAND("touch start.loop.ttxt");
         while((loopOK == 1) && (i < 1000000))
         {
             printf("LOOP start\n");
             fflush(stdout);
 
-            //sprintf(command, "touch start.iter%05ld.ttxt", i);
-            //ret = system(command);
+            //EXECUTE_SYSTEM_COMMAND("touch start.iter%05ld.ttxt", i);
 
             // read in the real searchtime nominally set by the bash script
             sprintf(fname, "searchtime.txt");
             fp = fopen(fname, "r");
             if(fp != NULL)
             {
-                r = fscanf(fp, "%lf\n", &searchtime);
+                int r = fscanf(fp, "%lf\n", &searchtime);
+                (void) r;
                 fclose(fp);
             }
 
             printf("searchtime = %f sec\n", searchtime);
             fflush(stdout);
 
-            //sprintf(command, "touch step00.iter%05ld.ttxt", i);
-            //ret = system(command);
+            //EXECUTE_SYSTEM_COMMAND("touch step00.iter%05ld.ttxt", i);
 
             loopin = 1; // loop has been initialized
             if((i < 1))
@@ -292,8 +290,7 @@ int PIAACMCsimul_run(
                 zeroST = 0;
             }
 
-            //sprintf(command, "touch step01.iter%05ld.ttxt", i);
-            //ret = system(command);
+            //EXECUTE_SYSTEM_COMMAND("touch step01.iter%05ld.ttxt", i);
 
             // zeroST = 3 => starting point is best solution found so far.  Same as zeroST=2
             // this flags that it's this value 'cause it's third iteration
@@ -328,9 +325,8 @@ int PIAACMCsimul_run(
 
             if(i > 0)
             {
-                sprintf(command, "echo \"%g  %ld\" > sag0.txt", sag0,
-                        (long) data.image[piaacmc[0].zonezID].md[0].size[0]);
-                ret = system(command);
+                EXECUTE_SYSTEM_COMMAND("echo \"%g  %ld\" > sag0.txt", sag0,
+                                       (long) data.image[piaacmc[0].zonezID].md[0].size[0]);
 
                 // randomly select regions that are abs()>sag0/2 and push them back toward zero
                 prob1 = pow(ran1(),
@@ -376,9 +372,7 @@ int PIAACMCsimul_run(
 
             }
 
-            //sprintf(command, "touch step02.iter%05ld.ttxt", i);
-            //ret = system(command);
-
+            //EXECUTE_SYSTEM_COMMAND("touch step02.iter%05ld.ttxt", i);
 
             // actually do the optmization
             printf("Execute optimization\n");
@@ -415,8 +409,7 @@ int PIAACMCsimul_run(
             // set the name of the stopfile
             sprintf(stopfile, "%s/stoploop13.txt", piaacmcsimul_var.piaacmcconfdir);
 
-            //sprintf(command, "touch step03.iter%05ld.ttxt", i);
-            //ret = system(command);
+            //EXECUTE_SYSTEM_COMMAND("touch step03.iter%05ld.ttxt", i);
 
 
             // on first iteration load the best _value_ if it exists
@@ -431,13 +424,14 @@ int PIAACMCsimul_run(
                 fp = fopen(fnamebestval, "r");
                 if(fp != NULL)
                 {
-                    r = fscanf(fp, "%lf", &bestval); // this loads only the first value on the line
+                    int r = fscanf(fp, "%lf",
+                                   &bestval); // this loads only the first value on the line
+                    (void) r;
                     fclose(fp);
                 }
             }
 
-            //sprintf(command, "touch step04.iter%05ld.ttxt", i);
-            //ret = system(command);
+            //EXECUTE_SYSTEM_COMMAND("touch step04.iter%05ld.ttxt", i);
 
             printf("\n\n\n\n======= val = %g [%g]\n", piaacmcsimul_var.PIAACMCSIMUL_VAL,
                    bestval);
@@ -446,10 +440,7 @@ int PIAACMCsimul_run(
             if(piaacmcsimul_var.PIAACMCSIMUL_VAL <
                     bestval) // piaacmcsimul_var.PIAACMCSIMUL_VAL was set in PIAACMCsimul_exec()
             {
-                char command1[1000];
-
-                //sprintf(command, "touch step05.iter%05ld.ttxt", i);
-                //ret = system(command);
+                //EXECUTE_SYSTEM_COMMAND("touch step05.iter%05ld.ttxt", i);
 
                 // we have a better solution!
                 bOK = 1;
@@ -489,19 +480,23 @@ int PIAACMCsimul_run(
                         piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.fnamedescr);
 
                 // copy the current solution to the best solution
-                sprintf(command, "cp %s %s", fname1, fnamebestsol);
-                ret = system(command);
-                sprintf(command1, "echo \"%s\" > cmdlogtest.txt", command);
-                ret = system(command1);
+                {
+                    char cmdstring[5000];
+                    sprintf("cp %s %s", fname1, fnamebestsol);
+                    EXECUTE_SYSTEM_COMMAND("%s", cmdstring);
+                    EXECUTE_SYSTEM_COMMAND("echo \"%s\" > cmdlogtest.txt", cmdstring);
+                }
 
                 sprintf(fname1, "%s/fpm_sagmapHR.%s.fits", piaacmcsimul_var.piaacmcconfdir,
                         piaacmcsimul_var.fnamedescr);
                 sprintf(fnamebestsol, "%s/fpm_sagmapHR.%s.best.fits",
                         piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.fnamedescr);
-                sprintf(command, "cp %s %s", fname1, fnamebestsol);
-                ret = system(command);
-                sprintf(command1, "echo \"%s\" > cmdlogtest1.txt", command);
-                ret = system(command1);
+                {
+                    char cmdstring[5000];
+                    sprintf(cmdstring, "cp %s %s", fname1, fnamebestsol);
+                    EXECUTE_SYSTEM_COMMAND("%s", cmdstring);
+                    EXECUTE_SYSTEM_COMMAND("echo \"%s\" > cmdlogtest1.txt", cmdstring);
+                }
 
 
                 // write new best value in file
@@ -515,11 +510,10 @@ int PIAACMCsimul_run(
                 fclose(fp);
 
                 // advertise the existence of new best solution via file signaling.  Currently no listeners?
-                sprintf(command, "touch %s/newbestsol.txt", piaacmcsimul_var.piaacmcconfdir);
-                r = system(command);
+                EXECUTE_SYSTEM_COMMAND("touch %s/newbestsol.txt",
+                                       piaacmcsimul_var.piaacmcconfdir);
 
-                //sprintf(command, "touch step06.iter%05ld.ttxt", i);
-                //ret = system(command);
+                //EXECUTE_SYSTEM_COMMAND("touch step06.iter%05ld.ttxt", i);
             }
 
             // Add current solution (possibly not best) to the mode13...opt.txt file
@@ -538,8 +532,7 @@ int PIAACMCsimul_run(
                 fOK = 1;
             }
 
-            //sprintf(command, "touch step07.iter%05ld.ttxt", i);
-            //ret = system(command);
+            //EXECUTE_SYSTEM_COMMAND("touch step07.iter%05ld.ttxt", i);
 
             // open mode13...opt.txt for adding and write current value
             fp = fopen(fname, "a");
@@ -569,9 +562,8 @@ int PIAACMCsimul_run(
             {
                 printf("FILE \"%s\" found -> stopping\n", stopfile);
                 loopOK = 0;
-                ret = system("touch stop.stopfile.txt");
-                sprintf(command, "rm %s", stopfile);
-                ret = system(command);
+                EXECUTE_SYSTEM_COMMAND("touch stop.stopfile.txt");
+                EXECUTE_SYSTEM_COMMAND("rm %s", stopfile);
             }
             else
             {
@@ -581,8 +573,7 @@ int PIAACMCsimul_run(
 
             fflush(stdout);
 
-            //sprintf(command, "touch step08.iter%05ld.ttxt", i);
-            //ret = system(command);
+            //EXECUTE_SYSTEM_COMMAND("touch step08.iter%05ld.ttxt", i);
 
             gettimeofday(&end, NULL);
 
@@ -600,18 +591,16 @@ int PIAACMCsimul_run(
             fprintf(fp, "%12.3f    %12.3f\n", 1.0e-6 * micros_used, searchtime);
             fclose(fp);
 
-            //sprintf(command, "touch step09.iter%05ld.ttxt", i);
-            //ret = system(command);
+            //EXECUTE_SYSTEM_COMMAND("touch step09.iter%05ld.ttxt", i);
 
             // check to see if time has run out
             if(micros_used > 1000000.0 * searchtime) // searchtime is in seconds
             {
                 loopOK = 0; // stop loop flag
-                ret = system("touch stop.time_elapsed.ttxt");
+                EXECUTE_SYSTEM_COMMAND("touch stop.time_elapsed.ttxt");
             }
 
-            //sprintf(command, "touch step10.iter%05ld.ttxt", i);
-            //ret = system(command);
+            //EXECUTE_SYSTEM_COMMAND("touch step10.iter%05ld.ttxt", i);
             printf("End of loop\n");
             fflush(stdout);
         }
@@ -655,11 +644,7 @@ int PIAACMCsimul_run(
             sprintf(fnamebestsol, "%s/fpm_zonez.%s.best.fits",
                     piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.fnamedescr);
 
-            sprintf(command, "cp %s %s", fnamebestsol, fname1);
-            printf("COMMAND: %s\n", command);
-            fflush(stdout);
-
-            ret = system(command);
+            EXECUTE_SYSTEM_COMMAND("cp %s %s", fnamebestsol, fname1);
         }
     }
     else
