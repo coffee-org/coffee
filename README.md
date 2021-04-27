@@ -15,7 +15,6 @@ Code metrics (dev branch) :
 [![CodeFactor](https://www.codefactor.io/repository/github/coffee-org/coffee/badge)](https://www.codefactor.io/repository/github/coffee-org/coffee)
 
 
-
 # coffee
 Coronagraph Optimization For Fast Exoplanets Exploration
 
