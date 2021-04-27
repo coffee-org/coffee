@@ -19,6 +19,7 @@ Code metrics (dev branch) :
 # coffee
 Coronagraph Optimization For Fast Exoplanets Exploration
 
+
 ## Installation
 
 Coffee is a milk plugin. To install coffee, follow the milk installation steps, adding extra coffee plugins.

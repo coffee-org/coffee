@@ -15,7 +15,7 @@ jobs:
     - name: Install Dependencies
       run: sudo apt-get install -qq libcfitsio-dev libreadline6-dev libncurses5-dev libfftw3-dev libgsl0-dev flex bison
 
-    - name: get milk and cacao
+    - name: get milk and coffee
       run: |
         git clone https://github.com/milk-org/milk.git
         cd milk
