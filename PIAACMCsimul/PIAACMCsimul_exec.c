@@ -382,11 +382,11 @@ int PIAACMCsimul_exec(
     int linscanOK;
     double valold, oldval;
     double bestgain;
- //   double linoptgainarray[100];
+//   double linoptgainarray[100];
 //    double linoptvalarray[100];
     int linoptlimflagarray[100];
     long NBlinoptgain;
- //   long kmax;
+//   long kmax;
 
 
     //double valtest;
@@ -486,6 +486,10 @@ int PIAACMCsimul_exec(
     }
 
     sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+    if(sizearray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
     sizearray[0] = 1;
     sizearray[1] = 1;
     IDstatus = create_image_ID("stat_PIAACMCsimulexec", 2, sizearray,
@@ -500,6 +504,10 @@ int PIAACMCsimul_exec(
     if(optsyst == NULL)
     {
         optsyst = (OPTSYST *) malloc(sizeof(OPTSYST));
+        if(optsyst == NULL) {
+            PRINT_ERROR("malloc returns NULL pointer");
+            abort(); // or handle error in other ways
+        }
         optsyst[0].SAVE = 1;
     }
 
@@ -544,66 +552,66 @@ int PIAACMCsimul_exec(
     switch(mode)
     {
 
-        case 0 :
-            PIAACMCsimul_exec_compute_image();
-            printf("EXEC CASE 0 COMPLETED\n");
-            fflush(stdout);
-            break;
+    case 0 :
+        PIAACMCsimul_exec_compute_image();
+        printf("EXEC CASE 0 COMPLETED\n");
+        fflush(stdout);
+        break;
 
-        case 1 :
-            PIAACMCsimul_exec_optimize_lyot_stop_position();
-            break;
+    case 1 :
+        PIAACMCsimul_exec_optimize_lyot_stop_position();
+        break;
 
-        case 2 :
-            PIAACMCsimul_exec_optimize_fpmtransmission();
-            break;
+    case 2 :
+        PIAACMCsimul_exec_optimize_fpmtransmission();
+        break;
 
-        case 3 :
-            val = PIAACMCsimul_exec_computePSF_no_fpm();
-            break;
+    case 3 :
+        val = PIAACMCsimul_exec_computePSF_no_fpm();
+        break;
 
-        case 4 :
-            PIAACMCsimul_exec_optimize_PIAA_shapes();
-            break;
+    case 4 :
+        PIAACMCsimul_exec_optimize_PIAA_shapes();
+        break;
 
-        case 5 :
-            PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions();
-            break;
+    case 5 :
+        PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions();
+        break;
 
-        case 11 :
-            PIAACMCsimul_exec_multizone_fpm_calib();
-            break;
+    case 11 :
+        PIAACMCsimul_exec_multizone_fpm_calib();
+        break;
 
-        case 13 :
-            PIAACMCsimul_exec_optimize_fpm_zones();
-            break;
+    case 13 :
+        PIAACMCsimul_exec_optimize_fpm_zones();
+        break;
 
-        case 40 :
-            PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm();
-            break;
+    case 40 :
+        PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm();
+        break;
 
-        case 100 : // evaluate current design: polychromatic contrast, pointing sensitivity
-            PIAACMCsimul_eval_poly_design();
-            break;
+    case 100 : // evaluate current design: polychromatic contrast, pointing sensitivity
+        PIAACMCsimul_eval_poly_design();
+        break;
 
-        case 101 :
-            PIAACMCsimul_measure_transm_curve();
-            break;
-
-
+    case 101 :
+        PIAACMCsimul_measure_transm_curve();
+        break;
 
 
-        case 302 : // restore configuration settings
-            printf("=================================== mode 302 ===================================\n");
-
-            EXECUTE_SYSTEM_COMMAND("cp %s/saveconf/conf_*.txt %s/",
-                                   piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
-            break;
 
 
-        default :
-            PRINT_ERROR("mode not recognized");
-            break;
+    case 302 : // restore configuration settings
+        printf("=================================== mode 302 ===================================\n");
+
+        EXECUTE_SYSTEM_COMMAND("cp %s/saveconf/conf_*.txt %s/",
+                               piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
+        break;
+
+
+    default :
+        PRINT_ERROR("mode not recognized");
+        break;
     }
 
 

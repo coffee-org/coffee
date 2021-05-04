@@ -91,6 +91,11 @@ long PIAACMCsimul_CA2propCubeInt(
 
     // initialize zarray
     zarray = (float *) malloc(sizeof(float) * NBz);
+    if(zarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     for(l = 0; l < NBz; l++)
     {
         zarray[l] = zmin + (zmax - zmin) * l / (NBz - 1);

@@ -41,6 +41,10 @@ int OptSystProp_propagateCube(
     imageID IDc_in = create_2DCimage_ID("tmppropCin", size, size);
 
     uint32_t * imsizearray = (uint32_t *) malloc(sizeof(uint32_t) * 3);
+    if(imsizearray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
     imsizearray[0] = size;
     imsizearray[1] = size;
     imsizearray[2] = optsyst[index].nblambda;
@@ -58,6 +62,7 @@ int OptSystProp_propagateCube(
         IDout_pha = create_image_ID(IDout_pha_name, 3, imsizearray, _DATATYPE_FLOAT,
                                     sharedmem, 0, 0);
     }
+    free(imsizearray);
 
     data.image[IDout_amp].md[0].write = 1;
     data.image[IDout_pha].md[0].write = 1;

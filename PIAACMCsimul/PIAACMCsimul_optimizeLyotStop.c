@@ -148,13 +148,34 @@ double PIAACMCsimul_optimizeLyotStop(
     filter_size = (long)(sigma * 2.0);
 
     zarray = (float *) malloc(sizeof(float) * NBz);
+    if(zarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
     rinarray = (float *) malloc(sizeof(float) * NBmasks);
+    if(rinarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     routarray = (float *) malloc(sizeof(float) * NBmasks);
+    if(routarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
     totarray = (double *) malloc(sizeof(double) * NBmasks * NBz);
-    tot2array = (double *) malloc(sizeof(double) * NBmasks * NBz);
+    if(totarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
+    tot2array = (double *) malloc(sizeof(double) * NBmasks * NBz);
+    if(tot2array == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
     routarray[0] = 1.0;
     rinarray[0] = 1.0 - 1.0 / NBmasks;
@@ -178,6 +199,11 @@ double PIAACMCsimul_optimizeLyotStop(
 
 
     rarray = (float *) malloc(sizeof(float) * xsize * ysize);
+    if(rarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     IDincohc = image_ID(IDincohc_name);
 
 

@@ -274,6 +274,10 @@ int PIAACMCsimul_initpiaacmcconf(
     {
         piaacmc = (OPTPIAACMCDESIGN *) malloc(sizeof(OPTPIAACMCDESIGN) *
                                               NBpiaacmcdesign);
+        if(piaacmc == NULL) {
+            PRINT_ERROR("malloc returns NULL pointer");
+            abort(); // or handle error in other ways
+        }
 
 
         // Default Values for PIAACMC (will adopt them unless configuration file exists)
@@ -798,6 +802,10 @@ int PIAACMCsimul_initpiaacmcconf(
         if(piaacmc[0].ID_DM[iDM] == -1)
         {
             sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+            if(sizearray == NULL) {
+                PRINT_ERROR("malloc returns NULL pointer");
+                abort(); // or handle error in other ways
+            }
             sizearray[0] = size;
             sizearray[1] = size;
             piaacmc[0].ID_DM[iDM] = create_image_ID(fname, 2, sizearray, _DATATYPE_FLOAT, 1,
@@ -854,7 +862,7 @@ int PIAACMCsimul_initpiaacmcconf(
         save_fits("Cmodes", fname);
 
         EXECUTE_SYSTEM_COMMAND("mv ModesExpr_CosRad.txt %s/",
-                piaacmcsimul_var.piaacmcconfdir);
+                               piaacmcsimul_var.piaacmcconfdir);
     }
     piaacmc[0].NBCmodes = data.image[piaacmc[0].CmodesID].md[0].size[2];
     piaacmc[0].Cmsize = data.image[piaacmc[0].CmodesID].md[0].size[0];
@@ -957,7 +965,7 @@ int PIAACMCsimul_initpiaacmcconf(
         if(load_fits(fname, "apo2Drad", 1) == -1) // CREATE APODIZATION
         {
             EXECUTE_SYSTEM_COMMAND("cp %s/piaaref/apo2Drad.fits %s/apo2Drad.fits",
-                    piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
+                                   piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
 
             sprintf(fname, "%s/apo2Drad.fits", piaacmcsimul_var.piaacmcconfdir);
             if(load_fits(fname, "apo2Drad", 1) == -1)
@@ -1121,7 +1129,7 @@ int PIAACMCsimul_initpiaacmcconf(
         linopt_imtools_image_fitModes("piaa0zcrop", "Cmodes", "maskfit", 1.0e-6,
                                       "piaa0Cmodescoeff", 0);
         EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_piaa0Cmodes.dat",
-                piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
+                               piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
 
         //      sprintf(fname, "!%s/piaa0Cmodescoeff.fits", piaacmcsimul_var.piaacmcconfdir);
         //      save_fits("piaa0Cmodescoeff", fname);
@@ -1129,7 +1137,7 @@ int PIAACMCsimul_initpiaacmcconf(
         linopt_imtools_image_fitModes("piaa1zcrop", "Cmodes", "maskfit", 1.0e-6,
                                       "piaa1Cmodescoeff", 0);
         EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_piaa1Cmodes.dat",
-                piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
+                               piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
 
         //      sprintf(fname, "!%s/piaa1Cmodescoeff.fits", piaacmcsimul_var.piaacmcconfdir);
         //      save_fits("piaa1Cmodescoeff", fname);
@@ -1197,12 +1205,12 @@ int PIAACMCsimul_initpiaacmcconf(
         linopt_imtools_image_fitModes("piaa0Cres", "Fmodes", "maskfit", 0.01,
                                       "piaa0Fmodescoeff", 0);
         EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_piaa0Fmodes.dat",
-                piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
+                               piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
 
         linopt_imtools_image_fitModes("piaa1Cres", "Fmodes", "maskfit", 0.01,
                                       "piaa1Fmodescoeff", 0);
         EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_piaa1Fmodes.dat",
-                piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
+                               piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
 
 
         // save_fits("piaa1Fmodescoeff", "!piaa1Fmodescoeff.fits");
@@ -1243,7 +1251,7 @@ int PIAACMCsimul_initpiaacmcconf(
         save_fits(data.image[piaacmc[0].piaa1FmodesID].name, fname);
 
         EXECUTE_SYSTEM_COMMAND("cp %s/piaaref/* %s/", piaacmcsimul_var.piaacmcconfdir,
-                piaacmcsimul_var.piaacmcconfdir);
+                               piaacmcsimul_var.piaacmcconfdir);
     }
 
 
@@ -1254,7 +1262,7 @@ int PIAACMCsimul_initpiaacmcconf(
     EXECUTE_SYSTEM_COMMAND("echo \"%s\" > fpm_name.txt", piaacmcsimul_var.fnamedescr);
 
     EXECUTE_SYSTEM_COMMAND("echo \"%s\" > fpm_name_conf.txt",
-            piaacmcsimul_var.fnamedescr_conf);
+                           piaacmcsimul_var.fnamedescr_conf);
 
 
 

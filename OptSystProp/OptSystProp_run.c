@@ -101,6 +101,10 @@ int OptSystProp_run(OPTSYST *optsyst,
     nblambda = optsyst[index].nblambda;
 
     imsizearray = (uint32_t *) malloc(sizeof(uint32_t) * 3);
+    if(imsizearray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
 
     // create base complex amplitude output arrays
 
@@ -609,6 +613,10 @@ int OptSystProp_run(OPTSYST *optsyst,
                 // gsize is the grid spacing between subsampled pixels
                 // so the kernel spans one subsampled area
                 convkern = (float *) malloc(sizeof(float) * (2 * gsize + 1) * (2 * gsize + 1));
+                if(convkern == NULL) {
+                    PRINT_ERROR("malloc returns NULL pointer");
+                    abort();
+                }
                 tot = 0.0;
                 // set up the convolution kernel
                 for(i = 0; i < 2 * gsize + 1; i++)

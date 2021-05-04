@@ -110,140 +110,152 @@ long PIAACMCsimul_mkFPM_zonemap(
 
 
     sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+    if(sizearray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
     sizearray[0] = piaacmc[0].fpmarraysize;
     sizearray[1] = piaacmc[0].fpmarraysize;
     ID = create_image_ID(IDname, 2, sizearray, _DATATYPE_UINT16, 0, 0, 0);
     free(sizearray);
 
     nbsector = (uint_fast32_t *) malloc(sizeof(uint_fast32_t) * piaacmc[0].NBrings);
+    if(nbsector == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     nbsectorcumul = (uint_fast32_t *) malloc(sizeof(uint_fast32_t) *
                     piaacmc[0].NBrings);
-
+    if(nbsectorcumul == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
     switch(piaacmcsimul_var.PIAACMC_FPMsectors)
     {
 
-        case 0: // rings
-            nbsectorcumul[0] = 1;
-            for(ring = 1; ring < piaacmc[0].NBrings; ring++)
+    case 0: // rings
+        nbsectorcumul[0] = 1;
+        for(ring = 1; ring < piaacmc[0].NBrings; ring++)
+        {
+            nbsectorcumul[ring] = nbsectorcumul[ring - 1] + 1;
+        }
+        break;
+
+    case 1: // rings broken in sectors
+        sprintf(fname, "%s/fpm_zonescoord_%d_%03ld.txt",
+                piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.PIAACMC_FPMsectors,
+                piaacmc[0].NBrings);
+        fp = fopen(fname, "w");
+        //NBzones = 0;
+        cnt = 0;
+        fprintf(fp, "0 0\n");
+        nbsector[0] = 1;
+        nbsectorcumul[0] = 1;
+        for(ring = 1; ring < piaacmc[0].NBrings; ring++)
+        {
+
+            nbsector[ring] = 2 * (ring + 1);
+            nbsectorcumul[ring] = nbsectorcumul[ring - 1] + nbsector[ring];
+            for(cnt1 = 0; cnt1 < nbsector[ring]; cnt1++)
             {
-                nbsectorcumul[ring] = nbsectorcumul[ring - 1] + 1;
+                cnt++;
+                fprintf(fp, "%ld %ld\n", cnt, ring);
             }
-            break;
+        }
 
-        case 1: // rings broken in sectors
-            sprintf(fname, "%s/fpm_zonescoord_%d_%03ld.txt",
-                    piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.PIAACMC_FPMsectors,
-                    piaacmc[0].NBrings);
-            fp = fopen(fname, "w");
-            //NBzones = 0;
-            cnt = 0;
-            fprintf(fp, "0 0\n");
-            nbsector[0] = 1;
-            nbsectorcumul[0] = 1;
-            for(ring = 1; ring < piaacmc[0].NBrings; ring++)
+        fclose(fp);
+        for(ring = 0; ring < piaacmc[0].NBrings; ring++)
+        {
+            printf("ring %ld : %ld %ld\n", ring, nbsector[ring], nbsectorcumul[ring]);
+        }
+        break;
+
+    case 2: // rings of hexagons
+        sprintf(fname, "%s/fpm_zonescoord_%d_%03ld.txt",
+                piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.PIAACMC_FPMsectors,
+                piaacmc[0].NBrings);
+        fp = fopen(fname, "w");
+        fprintf(fp, "# focal plane mask zones geometry\n");
+        fprintf(fp, "# hexagonal tiling\n");
+        fprintf(fp, "# col 1: hexagon index\n");
+        fprintf(fp, "# col 2: ring index\n");
+        fprintf(fp, "# col 3: hexagon center x coordinate\n");
+        fprintf(fp, "# col 4: hexagon center y coordinate\n");
+        fprintf(fp, "# Note: unit = hexagon center to tip radius (circumradius)\n");
+        fprintf(fp, "# \n");
+        nbsector[0] = 1;
+        nbsector[0] = 1;
+        nbsectorcumul[0] = 1;
+        for(ring = 1; ring < piaacmc[0].NBrings; ring++)
+        {
+            nbsector[ring] = 0;
+            nbsectorcumul[ring] = 0;
+        }
+        hindex = 0;
+        // hegagon side = s = ring unit
+        ii1max = (long)(piaacmc[0].NBrings / 3 + 2);
+        jj1max = (long)(piaacmc[0].NBrings / sqrt(3.0) + 2);
+        for(ii1 = -ii1max; ii1 < ii1max; ii1++)
+            for(jj1 = -jj1max; jj1 < jj1max; jj1++)
             {
+                hx = hexstep * ii1 * 3;
+                hy = hexstep * sqrt(3.0) * jj1;
+                ring = (long) sqrt(hx * hx + hy * hy);
+                if(ring < piaacmc[0].NBrings)
+                {
+                    nbsector[ring] ++;
+                    hex_x[hindex] = hx;
+                    hex_y[hindex] = hy;
+                    hex_ring[hindex] = ring;
+                    hindex++;
+                }
 
-                nbsector[ring] = 2 * (ring + 1);
+
+                hx += hexstep * 1.5;
+                hy += hexstep * sqrt(3.0) / 2.0;
+                ring = (long) sqrt(hx * hx + hy * hy);
+                if(ring < piaacmc[0].NBrings)
+                {
+                    nbsector[ring] ++;
+                    hex_x[hindex] = hx;
+                    hex_y[hindex] = hy;
+                    hex_ring[hindex] = ring;
+                    hindex++;
+                }
+            }
+        hindexMax = hindex;
+
+        fprintf(fp, "%5ld %5ld  %11.6f %11.6f\n", (long) 0, (long) 0, 0.0, 0.0);
+        hcnt = 1;
+        for(ring = 1; ring < piaacmc[0].NBrings; ring++)
+        {
+            for(hindex = 0; hindex < hindexMax; hindex++)
+                if(hex_ring[hindex] == ring)
+                {
+                    hex_number[hindex] = hcnt;
+                    fprintf(fp, "%5ld %5ld  %11.6f %11.6f\n", hcnt, ring, hex_x[hindex],
+                            hex_y[hindex]);
+                    hcnt++;
+                }
+            if(ring > 0)
+            {
                 nbsectorcumul[ring] = nbsectorcumul[ring - 1] + nbsector[ring];
-                for(cnt1 = 0; cnt1 < nbsector[ring]; cnt1++)
-                {
-                    cnt++;
-                    fprintf(fp, "%ld %ld\n", cnt, ring);
-                }
             }
+        }
+        fclose(fp);
+        for(ring = 0; ring < piaacmc[0].NBrings; ring++)
+        {
+            printf("ring %ld : %ld %ld\n", ring, nbsector[ring], nbsectorcumul[ring]);
+        }
+        break;
 
-            fclose(fp);
-            for(ring = 0; ring < piaacmc[0].NBrings; ring++)
-            {
-                printf("ring %ld : %ld %ld\n", ring, nbsector[ring], nbsectorcumul[ring]);
-            }
-            break;
-
-        case 2: // rings of hexagons
-            sprintf(fname, "%s/fpm_zonescoord_%d_%03ld.txt",
-                    piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.PIAACMC_FPMsectors,
-                    piaacmc[0].NBrings);
-            fp = fopen(fname, "w");
-            fprintf(fp, "# focal plane mask zones geometry\n");
-            fprintf(fp, "# hexagonal tiling\n");
-            fprintf(fp, "# col 1: hexagon index\n");
-            fprintf(fp, "# col 2: ring index\n");
-            fprintf(fp, "# col 3: hexagon center x coordinate\n");
-            fprintf(fp, "# col 4: hexagon center y coordinate\n");
-            fprintf(fp, "# Note: unit = hexagon center to tip radius (circumradius)\n");
-            fprintf(fp, "# \n");
-            nbsector[0] = 1;
-            nbsector[0] = 1;
-            nbsectorcumul[0] = 1;
-            for(ring = 1; ring < piaacmc[0].NBrings; ring++)
-            {
-                nbsector[ring] = 0;
-                nbsectorcumul[ring] = 0;
-            }
-            hindex = 0;
-            // hegagon side = s = ring unit
-            ii1max = (long)(piaacmc[0].NBrings / 3 + 2);
-            jj1max = (long)(piaacmc[0].NBrings / sqrt(3.0) + 2);
-            for(ii1 = -ii1max; ii1 < ii1max; ii1++)
-                for(jj1 = -jj1max; jj1 < jj1max; jj1++)
-                {
-                    hx = hexstep * ii1 * 3;
-                    hy = hexstep * sqrt(3.0) * jj1;
-                    ring = (long) sqrt(hx * hx + hy * hy);
-                    if(ring < piaacmc[0].NBrings)
-                    {
-                        nbsector[ring] ++;
-                        hex_x[hindex] = hx;
-                        hex_y[hindex] = hy;
-                        hex_ring[hindex] = ring;
-                        hindex++;
-                    }
-
-
-                    hx += hexstep * 1.5;
-                    hy += hexstep * sqrt(3.0) / 2.0;
-                    ring = (long) sqrt(hx * hx + hy * hy);
-                    if(ring < piaacmc[0].NBrings)
-                    {
-                        nbsector[ring] ++;
-                        hex_x[hindex] = hx;
-                        hex_y[hindex] = hy;
-                        hex_ring[hindex] = ring;
-                        hindex++;
-                    }
-                }
-            hindexMax = hindex;
-
-            fprintf(fp, "%5ld %5ld  %11.6f %11.6f\n", (long) 0, (long) 0, 0.0, 0.0);
-            hcnt = 1;
-            for(ring = 1; ring < piaacmc[0].NBrings; ring++)
-            {
-                for(hindex = 0; hindex < hindexMax; hindex++)
-                    if(hex_ring[hindex] == ring)
-                    {
-                        hex_number[hindex] = hcnt;
-                        fprintf(fp, "%5ld %5ld  %11.6f %11.6f\n", hcnt, ring, hex_x[hindex],
-                                hex_y[hindex]);
-                        hcnt++;
-                    }
-                if(ring > 0)
-                {
-                    nbsectorcumul[ring] = nbsectorcumul[ring - 1] + nbsector[ring];
-                }
-            }
-            fclose(fp);
-            for(ring = 0; ring < piaacmc[0].NBrings; ring++)
-            {
-                printf("ring %ld : %ld %ld\n", ring, nbsector[ring], nbsectorcumul[ring]);
-            }
-            break;
-
-        default:
-            printf("ERROR: FPMsector mode (%d) not recognized\n",
-                   piaacmcsimul_var.PIAACMC_FPMsectors);
-            exit(0);
-            break;
+    default:
+        printf("ERROR: FPMsector mode (%d) not recognized\n",
+               piaacmcsimul_var.PIAACMC_FPMsectors);
+        exit(0);
+        break;
     }
 
 

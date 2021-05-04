@@ -960,8 +960,22 @@ double coronagraph_make_2Dprolate_DFT(
     size2 = size * size;
 
     fpmshape_ra = (double *) malloc(sizeof(double) * fpmshape_n);
+    if(fpmshape_ra == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     fpmshape_ka = (double *) malloc(sizeof(double) * fpmshape_n);
+    if(fpmshape_ka == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     fpmshape_pa = (double *) malloc(sizeof(double) * fpmshape_n);
+    if(fpmshape_pa == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
 
     if((ID = variable_ID("DFTZFACTOR")) != -1)
@@ -1273,7 +1287,7 @@ double coronagraph_make_2Dprolate_DFT(
         fclose(fp);
         printf("IDEAL COMPLEX TRANSMISSION = %g\n", -(1.0 - peak) / peak);
 
-        //IDv = 
+        //IDv =
         create_variable_ID("APLCmaskCtransm", -(1.0 - peak) / peak);
 
         if(0) // TEST
@@ -1917,9 +1931,22 @@ double coronagraph_apofit(
     s = gsl_multimin_fminimizer_alloc(T, NBoptVar);
 
     fitapo_a_best = (double *) malloc(sizeof(double) * fitapoN);
-    fitapo_b_best = (double *) malloc(sizeof(double) * fitapoN);
-    fitapo_c_best = (double *) malloc(sizeof(double) * fitapoN);
+    if(fitapo_a_best == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
+    fitapo_b_best = (double *) malloc(sizeof(double) * fitapoN);
+    if(fitapo_b_best == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
+    fitapo_c_best = (double *) malloc(sizeof(double) * fitapoN);
+    if(fitapo_c_best == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
 
     // read previous best solution (if it exits)
@@ -2414,9 +2441,28 @@ errno_t coronagraph_APLCapo_compile()
 
 
                     fitapo_a = (double *) malloc(sizeof(double) * fitapoN);
+                    if(fitapo_a == NULL) {
+                        PRINT_ERROR("malloc returns NULL pointer");
+                        abort(); // or handle error in other ways
+                    }
+
                     fitapo_b = (double *) malloc(sizeof(double) * fitapoN);
+                    if(fitapo_b == NULL) {
+                        PRINT_ERROR("malloc returns NULL pointer");
+                        abort(); // or handle error in other ways
+                    }
+
                     fitapo_c = (double *) malloc(sizeof(double) * fitapoN);
+                    if(fitapo_c == NULL) {
+                        PRINT_ERROR("malloc returns NULL pointer");
+                        abort(); // or handle error in other ways
+                    }
+
                     fitapo_c1 = (double *) malloc(sizeof(double) * fitapoN);
+                    if(fitapo_c1 == NULL) {
+                        PRINT_ERROR("malloc returns NULL pointer");
+                        abort(); // or handle error in other ways
+                    }
 
 
                     fitapo_a[0] = 1.0;
@@ -2536,7 +2582,16 @@ errno_t coronagraph_APLCapo_compile()
 
                         // FIT APODIZATION WITH ANALYTICAL FUNCTION
                         aporaw_r = (double *) malloc(sizeof(double) * PIAAAPO_NBPOINTS);
+                        if(aporaw_r == NULL) {
+                            PRINT_ERROR("malloc returns NULL pointer");
+                            abort(); // or handle error in other ways
+                        }
+
                         aporaw_v = (double *) malloc(sizeof(double) * PIAAAPO_NBPOINTS);
+                        if(aporaw_v == NULL) {
+                            PRINT_ERROR("malloc returns NULL pointer");
+                            abort(); // or handle error in other ways
+                        }
 
                         cnt = 0;
                         for(i = 0; i < PIAAAPO_NBPOINTS; i++)
@@ -2793,8 +2848,16 @@ int coronagraph_init_PIAA()
 
     // allocate memory for profile
     PIAAAPO = (double *) malloc(sizeof(double) * PIAAAPO_NBPOINTS);
-    PIAA_HYBRID_CPAAPO = (double *) malloc(sizeof(double) * PIAAAPO_NBPOINTS);
+    if(PIAAAPO == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
+    PIAA_HYBRID_CPAAPO = (double *) malloc(sizeof(double) * PIAAAPO_NBPOINTS);
+    if(PIAA_HYBRID_CPAAPO == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
 
 
@@ -3075,6 +3138,11 @@ int coronagraph_init_PIAA()
     verr = 1.0;
     NBistep = 1000000;
     innerprof_cumul = (double *) malloc(sizeof(double) * NBistep);
+    if(innerprof_cumul == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     dir = 1.0; // initial direction
     while(fabs(verr) > 1.0e-9)
     {
@@ -3137,6 +3205,10 @@ int coronagraph_init_PIAA()
     printf("PIAAextfactor0 = %f  \n", PIAAextfactor0);
     piaaconfpup_amp_profile = (double *) malloc(sizeof(double) *
                               piaaconfNPUPFILESIZE);
+    if(piaaconfpup_amp_profile == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
     //long jj = 0;
     for(long ii = 0; ii < piaaconfNPUPFILESIZE; ii++)
@@ -3157,10 +3229,34 @@ int coronagraph_init_PIAA()
     }
 
     r0 = (double *) malloc(sizeof(double) * NBpoints0);
+    if(r0 == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     r1 = (double *) malloc(sizeof(double) * NBpoints0);
+    if(r1 == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     pup = (double *) malloc(sizeof(double) * piaaconfNPUPFILESIZE);
+    if(pup == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     pupsum = (double *) malloc(sizeof(double) * piaaconfNPUPFILESIZE);
+    if(pupsum == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     pup0sum = (double *) malloc(sizeof(double) * NBpoints0);
+    if(pup0sum == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
     /* computing r0 and r1 */
     /* r0 and r1 are dimensionless */
@@ -8831,292 +8927,354 @@ int coronagraph_simulPSF(
 
     switch(coronagraph_type)
     {
-        case -1:
-            coronagraph_simul_NOCORO(xld, yld, psfname);
-            break;
+    case -1:
+        coronagraph_simul_NOCORO(xld, yld, psfname);
+        break;
 
-        case 0:
-            coronagraph_simul_DICC(xld, yld, psfname);
-            break;
+    case 0:
+        coronagraph_simul_DICC(xld, yld, psfname);
+        break;
 
-        case 1:
-            coronagraph_simul_AIC(xld, yld, psfname);
-            break;
+    case 1:
+        coronagraph_simul_AIC(xld, yld, psfname);
+        break;
 
-        case 2: // Phase mask coronagraph
-            coronagraph_simul_RRPM(xld, yld, psfname);
-            break;
+    case 2: // Phase mask coronagraph
+        coronagraph_simul_RRPM(xld, yld, psfname);
+        break;
 
-        case 3:
-            coronagraph_simul_4QPM(xld, yld, psfname);
-            break;
+    case 3:
+        coronagraph_simul_4QPM(xld, yld, psfname);
+        break;
 
-        case 4:
-            coronagraph_simul_PIAA(xld, yld, psfname);
-            break;
+    case 4:
+        coronagraph_simul_PIAA(xld, yld, psfname);
+        break;
 
-        case 5:
-            PIAAFPMASKRAD = 5.5; // IWA ~ 2.2 l/D
-            coronagraph_simul_PIAAC(xld, yld, psfname);
-            break;
+    case 5:
+        PIAAFPMASKRAD = 5.5; // IWA ~ 2.2 l/D
+        coronagraph_simul_PIAAC(xld, yld, psfname);
+        break;
 
-        case 6:
-            BL8MODE = 0;
-            coronagraph_simul_BL8(xld, yld, psfname);
-            break;
+    case 6:
+        BL8MODE = 0;
+        coronagraph_simul_BL8(xld, yld, psfname);
+        break;
 
-        case 7:
-            BL8MODE = 1;
-            coronagraph_simul_BL8(xld, yld, psfname);
-            break;
+    case 7:
+        BL8MODE = 1;
+        coronagraph_simul_BL8(xld, yld, psfname);
+        break;
 
-        case 8:
-            coronagraph_simul_AIC_PIAAC(xld, yld, psfname);
-            break;
+    case 8:
+        coronagraph_simul_AIC_PIAAC(xld, yld, psfname);
+        break;
 
-        case 9:
-            coronagraph_simul_CPA(xld, yld, psfname);
-            break;
+    case 9:
+        coronagraph_simul_CPA(xld, yld, psfname);
+        break;
 
-        case 10:
-            NB_APLC_STEP = 1;
-            APLC_FPMASKsize = 1.8; // 1.8 is the best mask size for 1e10 contrast
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 10:
+        NB_APLC_STEP = 1;
+        APLC_FPMASKsize = 1.8; // 1.8 is the best mask size for 1e10 contrast
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 11:
-            NB_APLC_STEP = 2;
-            APLC_FPMASKsize = 1.4; // 1.4 is the best mask size for 1e10 contrast
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 11:
+        NB_APLC_STEP = 2;
+        APLC_FPMASKsize = 1.4; // 1.4 is the best mask size for 1e10 contrast
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 12:
-            NB_APLC_STEP = 3;
-            APLC_FPMASKsize = 1.2; // 1.2 is the best mask size for 1e10 contrast
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 12:
+        NB_APLC_STEP = 3;
+        APLC_FPMASKsize = 1.2; // 1.2 is the best mask size for 1e10 contrast
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 13:
-            NB_APLC_STEP = 4;
-            APLC_FPMASKsize = 1.0; // 1.0 is the best mask size for 1e10 contrast
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 13:
+        NB_APLC_STEP = 4;
+        APLC_FPMASKsize = 1.0; // 1.0 is the best mask size for 1e10 contrast
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 14:
-            NB_APLC_STEP = 5;
-            APLC_FPMASKsize = 1.0; // 1.0 is the best mask size for 1e10 contrast
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 14:
+        NB_APLC_STEP = 5;
+        APLC_FPMASKsize = 1.0; // 1.0 is the best mask size for 1e10 contrast
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 15:
-            NB_APLC_STEP = 0;
-            APLC_FPMASKsize = 4.2; // this is the best mask size for 1e10 contrast
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 15:
+        NB_APLC_STEP = 0;
+        APLC_FPMASKsize = 4.2; // this is the best mask size for 1e10 contrast
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 16:
-            coronagraph_simul_ODC(xld, yld, psfname);
-            break;
+    case 16:
+        coronagraph_simul_ODC(xld, yld, psfname);
+        break;
 
-        case 17:
-            SHEAR4_SHEAR = 0.3;
-            coronagraph_simul_SHEAR4(xld, yld, psfname);
-            break;
+    case 17:
+        SHEAR4_SHEAR = 0.3;
+        coronagraph_simul_SHEAR4(xld, yld, psfname);
+        break;
 
-        case 18:
-            coronagraph_simul_BL4(xld, yld, psfname);
-            break;
+    case 18:
+        coronagraph_simul_BL4(xld, yld, psfname);
+        break;
 
-        case 19:
-            STRIPCOFFSET = 0.4;
-            coronagraph_simul_STRIPC(xld, yld, psfname);
-            break;
+    case 19:
+        STRIPCOFFSET = 0.4;
+        coronagraph_simul_STRIPC(xld, yld, psfname);
+        break;
 
-        case 20:
-            coronagraph_simul_SIMXY(xld, yld, psfname);
-            break;
+    case 20:
+        coronagraph_simul_SIMXY(xld, yld, psfname);
+        break;
 
-        case 21:
-            PIAAFPMASKRAD = 5.0;
-            coronagraph_simul_PIAAC(xld, yld, psfname);
-            break;
+    case 21:
+        PIAAFPMASKRAD = 5.0;
+        coronagraph_simul_PIAAC(xld, yld, psfname);
+        break;
 
-        case 22:
-            STRIPCOFFSET = 0.35;
-            coronagraph_simul_STRIPC(xld, yld, psfname);
-            break;
+    case 22:
+        STRIPCOFFSET = 0.35;
+        coronagraph_simul_STRIPC(xld, yld, psfname);
+        break;
 
-        case 23:
-            STRIPCOFFSET = 0.45;
-            coronagraph_simul_STRIPC(xld, yld, psfname);
-            break;
+    case 23:
+        STRIPCOFFSET = 0.45;
+        coronagraph_simul_STRIPC(xld, yld, psfname);
+        break;
 
-        case 24: // SMEX baseline
-            PIAAFPMASKRAD = 3.5;
-            coronagraph_simul_PIAAC(xld, yld, psfname);
-            break;
+    case 24: // SMEX baseline
+        PIAAFPMASKRAD = 3.5;
+        coronagraph_simul_PIAAC(xld, yld, psfname);
+        break;
 
-        case 25:
-            OVC_CHARGE = 2;
-            coronagraph_simul_OVC(xld, yld, psfname);
-            break;
+    case 25:
+        OVC_CHARGE = 2;
+        coronagraph_simul_OVC(xld, yld, psfname);
+        break;
 
-        case 26:
-            OVC_CHARGE = 4;
-            coronagraph_simul_OVC(xld, yld, psfname);
-            break;
+    case 26:
+        OVC_CHARGE = 4;
+        coronagraph_simul_OVC(xld, yld, psfname);
+        break;
 
-        case 27:
-            OVC_CHARGE = 5;
-            coronagraph_simul_OVC(xld, yld, psfname);
-            break;
+    case 27:
+        OVC_CHARGE = 5;
+        coronagraph_simul_OVC(xld, yld, psfname);
+        break;
 
-        case 28:
-            OVC_CHARGE = 6;
-            coronagraph_simul_OVC(xld, yld, psfname);
-            break;
+    case 28:
+        OVC_CHARGE = 6;
+        coronagraph_simul_OVC(xld, yld, psfname);
+        break;
 
-        case 29:
-            OVC_CHARGE = 8;
-            coronagraph_simul_OVC(xld, yld, psfname);
-            break;
+    case 29:
+        OVC_CHARGE = 8;
+        coronagraph_simul_OVC(xld, yld, psfname);
+        break;
 
-        case 30:
-            coronagraph_simul_PPA(xld, yld, psfname);
-            break;
+    case 30:
+        coronagraph_simul_PPA(xld, yld, psfname);
+        break;
 
-        case 31:
-            APLC_PIAA = 1;
-            NB_APLC_STEP = 2;
-            APLC_FPMASKsize = 1.6; // for 1e10 contrast with IWA = 1.2 l/D
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 31:
+        APLC_PIAA = 1;
+        NB_APLC_STEP = 2;
+        APLC_FPMASKsize = 1.6; // for 1e10 contrast with IWA = 1.2 l/D
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 32:
-            APLC_PIAA = 1;
-            NB_APLC_STEP = 3;
-            APLC_FPMASKsize = 1.3; // for 1e10 contrast
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 32:
+        APLC_PIAA = 1;
+        NB_APLC_STEP = 3;
+        APLC_FPMASKsize = 1.3; // for 1e10 contrast
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 33:
-            APLC_PIAA = 1;
-            NB_APLC_STEP = 4;
-            APLC_FPMASKsize = 1.2; // for 1e10 contrast
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 33:
+        APLC_PIAA = 1;
+        NB_APLC_STEP = 4;
+        APLC_FPMASKsize = 1.2; // for 1e10 contrast
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 34:
-            APLC_PIAA = 1;
-            NB_APLC_STEP = 2;
-            APLC_FPMASKsize = 2.0; // for 1e10 contrast
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 34:
+        APLC_PIAA = 1;
+        NB_APLC_STEP = 2;
+        APLC_FPMASKsize = 2.0; // for 1e10 contrast
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 35:
-            APLC_PIAA = 1;
-            //      APLC_FLIP = 1;
-            NB_APLC_STEP = 1;
-            APLC_FPMASKsize = 2.4; // for 1e10 contrast
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 35:
+        APLC_PIAA = 1;
+        //      APLC_FLIP = 1;
+        NB_APLC_STEP = 1;
+        APLC_FPMASKsize = 2.4; // for 1e10 contrast
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        /* coronagraphs for 1e6 contrast - ground-based */
+    /* coronagraphs for 1e6 contrast - ground-based */
 
-        case 36:  /* optimal for 1e6 contrast */
-            APLC_PIAA = 0;
-            NB_APLC_STEP = 0;
-            APLC_FPMASKsize = 2.6;
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 36:  /* optimal for 1e6 contrast */
+        APLC_PIAA = 0;
+        NB_APLC_STEP = 0;
+        APLC_FPMASKsize = 2.6;
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 37:  /* optimal for 1e6 contrast */
-            APLC_PIAA = 0;
-            NB_APLC_STEP = 1;
-            APLC_FPMASKsize = 1.4;
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 37:  /* optimal for 1e6 contrast */
+        APLC_PIAA = 0;
+        NB_APLC_STEP = 1;
+        APLC_FPMASKsize = 1.4;
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 38: /* optimal for 1e6 contrast */
-            APLC_PIAA = 0;
-            NB_APLC_STEP = 2;
-            APLC_FPMASKsize = 1.0;
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 38: /* optimal for 1e6 contrast */
+        APLC_PIAA = 0;
+        NB_APLC_STEP = 2;
+        APLC_FPMASKsize = 1.0;
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 39:  /* optimal for 1e6 contrast */
-            APLC_PIAA = 1;
-            NB_APLC_STEP = 0;
-            APLC_FPMASKsize = 2.6;
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 39:  /* optimal for 1e6 contrast */
+        APLC_PIAA = 1;
+        NB_APLC_STEP = 0;
+        APLC_FPMASKsize = 2.6;
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 40:  // optimal for 1e6 contrast baselined for SMEX - but needs to check chromaticity
-            APLC_PIAA = 1;
-            NB_APLC_STEP = 1;
-            APLC_FPMASKsize = 1.4;
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 40:  // optimal for 1e6 contrast baselined for SMEX - but needs to check chromaticity
+        APLC_PIAA = 1;
+        NB_APLC_STEP = 1;
+        APLC_FPMASKsize = 1.4;
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 41: /* optimal for 1e6 contrast */
-            APLC_PIAA = 1;
-            NB_APLC_STEP = 2;
-            APLC_FPMASKsize = 1.0;
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 41: /* optimal for 1e6 contrast */
+        APLC_PIAA = 1;
+        NB_APLC_STEP = 2;
+        APLC_FPMASKsize = 1.0;
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        /* with central obscuration = 0.275 */
+    /* with central obscuration = 0.275 */
 
-        case 42:  /* optimal for 1e6 contrast */
-            PIAACENTOBS = 0.275;
-            APLC_PIAA = 1;
-            NB_APLC_STEP = 0;
-            APLC_FPMASKsize = 2.6;
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 42:  /* optimal for 1e6 contrast */
+        PIAACENTOBS = 0.275;
+        APLC_PIAA = 1;
+        NB_APLC_STEP = 0;
+        APLC_FPMASKsize = 2.6;
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 43:  /* optimal for 1e6 contrast */
-            PIAACENTOBS = 0.275;
-            APLC_PIAA = 1;
-            NB_APLC_STEP = 1;
-            APLC_FPMASKsize = 1.4;
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 43:  /* optimal for 1e6 contrast */
+        PIAACENTOBS = 0.275;
+        APLC_PIAA = 1;
+        NB_APLC_STEP = 1;
+        APLC_FPMASKsize = 1.4;
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 44: /* optimal for 1e6 contrast */
-            PIAACENTOBS = 0.275;
-            APLC_PIAA = 1;
-            NB_APLC_STEP = 2;
-            APLC_FPMASKsize = 1.0;
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 44: /* optimal for 1e6 contrast */
+        PIAACENTOBS = 0.275;
+        APLC_PIAA = 1;
+        NB_APLC_STEP = 2;
+        APLC_FPMASKsize = 1.0;
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 45: // optimal for 1e6 contrast - BASELINE FOR EXCEDE
-            APLC_PIAA = 2; // PIAA -> APLC -> inverse PIAA
-            NB_APLC_STEP = 1;
-            APLC_FPMASKsize = 2.0;
-            fprintf(stderr, "MASK SIZE ERROR = %f\n", FPMASK_size_error);
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-            break;
+    case 45: // optimal for 1e6 contrast - BASELINE FOR EXCEDE
+        APLC_PIAA = 2; // PIAA -> APLC -> inverse PIAA
+        NB_APLC_STEP = 1;
+        APLC_FPMASKsize = 2.0;
+        fprintf(stderr, "MASK SIZE ERROR = %f\n", FPMASK_size_error);
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
+        break;
 
-        case 50: // generalized PIAA APLC, read parameters from file
-            APLC_PIAA = 1;
-            APLC_PMASK = 1; // if NB_APLC_STEP = 1, put phase on focal plane mask
-            APLC_CentOBS0 = 0;
-            APLC_CentOBS1 = 0;
-            fp = fopen("APLCPIAA.conf", "r");
-            if(fp == NULL)
+    case 50: // generalized PIAA APLC, read parameters from file
+        APLC_PIAA = 1;
+        APLC_PMASK = 1; // if NB_APLC_STEP = 1, put phase on focal plane mask
+        APLC_CentOBS0 = 0;
+        APLC_CentOBS1 = 0;
+        fp = fopen("APLCPIAA.conf", "r");
+        if(fp == NULL)
+        {
+            PRINT_ERROR("Cannot read configuration file \"APLCPIAA.conf\"\n");
+            exit(0);
+        }
+        //     fscanf(fp,"%ld %f %d %d\n", &NB_APLC_STEP, &APLC_FPMASKsize, &APLC_PIAA, &APLC_PMASK);
+
+        {
+            int fscanfcnt;
+
+            fscanfcnt = fscanf(fp, "%ld %s %d %d\n", &NB_APLC_STEP, str1, &APLC_PIAA,
+                               &APLC_PMASK);
+            if(fscanfcnt == EOF)
             {
-                PRINT_ERROR("Cannot read configuration file \"APLCPIAA.conf\"\n");
-                exit(0);
+                if(ferror(fp))
+                {
+                    perror("fscanf");
+                }
+                else
+                {
+                    fprintf(stderr,
+                            "Error: fscanf reached end of file, no matching characters, no matching failure\n");
+                }
+                return RETURN_FAILURE;
             }
-            //     fscanf(fp,"%ld %f %d %d\n", &NB_APLC_STEP, &APLC_FPMASKsize, &APLC_PIAA, &APLC_PMASK);
+            else if(fscanfcnt != 4)
+            {
+                fprintf(stderr,
+                        "Error: fscanf successfully matched and assigned %i input items, 4 expected\n",
+                        fscanfcnt);
+                return RETURN_FAILURE;
+            }
 
+        }
+
+        //      printf("str1 = \"%s\"\n", str1);
+        ok1 = 0;
+        for(long i = 0; i < (long) strlen(str1); i++)
+            if(str1[i] == '-')
+            {
+                ok1 = 1;
+                str1[i] = ' ';
+            }
+        if(ok1 == 1)
+        {
+            sscanf(str1, "%lf %lf %lf", &APLC_FPMASKsize, &tmpf0, &tmpf1);
+            APLC_CentOBS0 = tmpf0;
+            APLC_CentOBS1 = tmpf1;
+        }
+        else
+        {
+            sscanf(str1, "%lf", &APLC_FPMASKsize);
+        }
+        fclose(fp);
+
+        //printf("str1 = \"%s\"\n", str1);
+
+        fprintf(stderr, "NB_APLC_STEP = %ld\n",
+                NB_APLC_STEP); // number of APLC steps (1 for PIAACMC)
+        fprintf(stderr, "APLC_FPMASKsize = %f\n",
+                APLC_FPMASKsize); // focal plane mask size (l/D)
+        fprintf(stderr, "APLC_CentOBS0 = %f\n",
+                APLC_CentOBS0); // central obstruction in input
+        fprintf(stderr, "APLC_CentOBS1 = %f\n",
+                APLC_CentOBS1); // central obstruction in output
+        fprintf(stderr, "APLC_PIAA = %d\n", APLC_PIAA); // 2: PIAA->APLC->invPIAA
+        fprintf(stderr, "APLC_PMASK = %d\n", APLC_PMASK); // 1 if fpmask has phase
+
+        if((fp = fopen("MASKerr.conf", "r")) != NULL)
+        {
             {
                 int fscanfcnt;
 
-                fscanfcnt = fscanf(fp, "%ld %s %d %d\n", &NB_APLC_STEP, str1, &APLC_PIAA,
-                                   &APLC_PMASK);
+                fscanfcnt = fscanf(fp, "%lf %lf\n", &FPMASK_transm_error, &FPMASK_size_error);
                 if(fscanfcnt == EOF)
                 {
                     if(ferror(fp))
@@ -9130,94 +9288,32 @@ int coronagraph_simulPSF(
                     }
                     return RETURN_FAILURE;
                 }
-                else if(fscanfcnt != 4)
+                else if(fscanfcnt != 2)
                 {
                     fprintf(stderr,
-                            "Error: fscanf successfully matched and assigned %i input items, 4 expected\n",
+                            "Error: fscanf successfully matched and assigned %i input items, 2 expected\n",
                             fscanfcnt);
                     return RETURN_FAILURE;
                 }
-
-            }
-
-            //      printf("str1 = \"%s\"\n", str1);
-            ok1 = 0;
-            for(long i = 0; i < (long) strlen(str1); i++)
-                if(str1[i] == '-')
-                {
-                    ok1 = 1;
-                    str1[i] = ' ';
-                }
-            if(ok1 == 1)
-            {
-                sscanf(str1, "%lf %lf %lf", &APLC_FPMASKsize, &tmpf0, &tmpf1);
-                APLC_CentOBS0 = tmpf0;
-                APLC_CentOBS1 = tmpf1;
-            }
-            else
-            {
-                sscanf(str1, "%lf", &APLC_FPMASKsize);
             }
             fclose(fp);
+            fprintf(stderr, "MASK TRANSM ERROR = %f\n", FPMASK_transm_error);
+            fprintf(stderr, "MASK SIZE ERROR = %f\n", FPMASK_size_error);
+        }
+        else
+        {
+            printf("No focal plane mask error file - using perfect focal plane mask\n");
+            FPMASK_transm_error = 0.0;
+            FPMASK_size_error = 0.0;
+        }
 
-            //printf("str1 = \"%s\"\n", str1);
+        coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
 
-            fprintf(stderr, "NB_APLC_STEP = %ld\n",
-                    NB_APLC_STEP); // number of APLC steps (1 for PIAACMC)
-            fprintf(stderr, "APLC_FPMASKsize = %f\n",
-                    APLC_FPMASKsize); // focal plane mask size (l/D)
-            fprintf(stderr, "APLC_CentOBS0 = %f\n",
-                    APLC_CentOBS0); // central obstruction in input
-            fprintf(stderr, "APLC_CentOBS1 = %f\n",
-                    APLC_CentOBS1); // central obstruction in output
-            fprintf(stderr, "APLC_PIAA = %d\n", APLC_PIAA); // 2: PIAA->APLC->invPIAA
-            fprintf(stderr, "APLC_PMASK = %d\n", APLC_PMASK); // 1 if fpmask has phase
+        break;
 
-            if((fp = fopen("MASKerr.conf", "r")) != NULL)
-            {
-                {
-                    int fscanfcnt;
-
-                    fscanfcnt = fscanf(fp, "%lf %lf\n", &FPMASK_transm_error, &FPMASK_size_error);
-                    if(fscanfcnt == EOF)
-                    {
-                        if(ferror(fp))
-                        {
-                            perror("fscanf");
-                        }
-                        else
-                        {
-                            fprintf(stderr,
-                                    "Error: fscanf reached end of file, no matching characters, no matching failure\n");
-                        }
-                        return RETURN_FAILURE;
-                    }
-                    else if(fscanfcnt != 2)
-                    {
-                        fprintf(stderr,
-                                "Error: fscanf successfully matched and assigned %i input items, 2 expected\n",
-                                fscanfcnt);
-                        return RETURN_FAILURE;
-                    }
-                }
-                fclose(fp);
-                fprintf(stderr, "MASK TRANSM ERROR = %f\n", FPMASK_transm_error);
-                fprintf(stderr, "MASK SIZE ERROR = %f\n", FPMASK_size_error);
-            }
-            else
-            {
-                printf("No focal plane mask error file - using perfect focal plane mask\n");
-                FPMASK_transm_error = 0.0;
-                FPMASK_size_error = 0.0;
-            }
-
-            coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
-
-            break;
-
-        case 60: /* external occulter */
-            coronagraph_simul_EXTERNAL_OCCULTER(xld, yld, psfname);
-            break;
+    case 60: /* external occulter */
+        coronagraph_simul_EXTERNAL_OCCULTER(xld, yld, psfname);
+        break;
     }
 
     return(0);
@@ -9793,7 +9889,18 @@ int coronagraph_userfunc()
     fprintf(stderr, "CORONAGRAPH USER FUNCTION\n");
 
     zarray = (double *) malloc(sizeof(double) * NBzern);
+    if(zarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
+
     zindex = (long *) malloc(sizeof(long) * NBzern);
+    if(zindex == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     zindex[0] = 12; //24;
     zarray[0] = 1.0e-5;
     coronagraph_PIAAperturbation(zarray, zindex, NBzern, ratio);
@@ -9886,14 +9993,42 @@ int coronagraph_compute_limitcoeff()
     double tmp;
 
     coeffmax = (double *) malloc(sizeof(double) * NBcoeff);
+    if(coeffmax == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
     coeff = (double *) malloc(sizeof(double) * NBcoeff);
+    if(coeff == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
     bestcoeff = (double *) malloc(sizeof(double) * NBcoeff);
+    if(bestcoeff == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
     xval = (double *) malloc(sizeof(double) * NBpts);
+    if(xval == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
     pval = (double *) malloc(sizeof(double) * NBpts);
+    if(pval == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
     xpow = (double *) malloc(sizeof(double) * NBcoeff * NBpts);
+    if(xpow == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
     pvalmax = (double *) malloc(sizeof(double) * NBpts);
+    if(pvalmax == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
     /* initialization */
 
@@ -10154,13 +10289,37 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
 
 
     starprofNBstep = (long)(starprof_maxrad / starprof_step);
+
     starprofrad = (double *) malloc(sizeof(double) * starprofNBstep);
+    if(starprofrad == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     starprofarray = (double *) malloc(sizeof(double) * starprofNBstep);
+    if(starprofarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     starprofarraycnt = (double *) malloc(sizeof(double) * starprofNBstep);
+    if(starprofarraycnt == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
     transmarray = (double *) malloc(sizeof(double) * kmax);
+    if(transmarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
     separray = (double *) malloc(sizeof(double) * kmax);
+    if(separray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     separray[0] = 0.0;
     separray[1] = 0.005;
     separray[2] = 0.01;
@@ -10183,6 +10342,11 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
     // precompute arrays size
     obs1arraysize = (long)((obs1max - obs1min) / obs1step);
     obs1array = (float *) malloc(sizeof(float) * obs1arraysize);
+    if(obs1array == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     obs1_index = 0;
     for(obs1_index = 0; obs1_index < obs1arraysize; obs1_index++)
     {
@@ -10191,6 +10355,11 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
 
     fpmaskradarraysize = (long)((fpmaskradmax - fpmaskradmin) / fpmaskradstep);
     fpmaskradarray = (float *) malloc(sizeof(float) * fpmaskradarraysize);
+    if(fpmaskradarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     fpmaskrad_index = 0;
     for(fpmaskrad_index = 0; fpmaskrad_index < fpmaskradarraysize;
             fpmaskrad_index++)
@@ -10220,6 +10389,13 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                     fprintf(stderr,
                             "Error: fscanf reached end of file, no matching characters, no matching failure\n");
                 }
+                free(transmarray);
+                free(obs1array);
+                free(starprofrad);
+                free(starprofarray);
+                free(fpmaskradarray);
+                free(separray);
+                free(starprofarraycnt);
                 return RETURN_FAILURE;
             }
             else if(fscanfcnt != 1)
@@ -10227,6 +10403,13 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                 fprintf(stderr,
                         "Error: fscanf successfully matched and assigned %i input items, 1 expected\n",
                         fscanfcnt);
+                free(transmarray);
+                free(obs1array);
+                free(starprofrad);
+                free(starprofarray);
+                free(fpmaskradarray);
+                free(separray);
+                free(starprofarraycnt);
                 return RETURN_FAILURE;
             }
         }
@@ -10519,6 +10702,14 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                             fprintf(stderr,
                                     "Error: fscanf reached end of file, no matching characters, no matching failure\n");
                         }
+                        free(transmarray);
+                        free(obs1array);
+                        free(starprofrad);
+                        free(starprofarray);
+                        free(fpmaskradarray);
+                        free(separray);
+                        free(starprofarraycnt);
+                        fclose(fpresult);
                         return RETURN_FAILURE;
                     }
                     else if(fscanfcnt != 4)
@@ -10526,6 +10717,14 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                         fprintf(stderr,
                                 "Error: fscanf successfully matched and assigned %i input items, 4 expected\n",
                                 fscanfcnt);
+                        free(transmarray);
+                        free(obs1array);
+                        free(starprofrad);
+                        free(starprofarray);
+                        free(fpmaskradarray);
+                        free(separray);
+                        free(starprofarraycnt);
+                        fclose(fpresult);
                         return RETURN_FAILURE;
                     }
                 }
@@ -10560,6 +10759,14 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                                 fprintf(stderr,
                                         "Error: fscanf reached end of file, no matching characters, no matching failure\n");
                             }
+                            free(transmarray);
+                            free(obs1array);
+                            free(starprofrad);
+                            free(starprofarray);
+                            free(fpmaskradarray);
+                            free(separray);
+                            free(starprofarraycnt);
+                            fclose(fpresult);
                             return RETURN_FAILURE;
                         }
                         else if(fscanfcnt != 2)
@@ -10567,6 +10774,14 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                             fprintf(stderr,
                                     "Error: fscanf successfully matched and assigned %i input items, 2 expected\n",
                                     fscanfcnt);
+                            free(transmarray);
+                            free(obs1array);
+                            free(starprofrad);
+                            free(starprofarray);
+                            free(fpmaskradarray);
+                            free(separray);
+                            free(starprofarraycnt);
+                            fclose(fpresult);
                             return RETURN_FAILURE;
                         }
 
@@ -10620,6 +10835,14 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                                 fprintf(stderr,
                                         "Error: fscanf reached end of file, no matching characters, no matching failure\n");
                             }
+                            free(transmarray);
+                            free(obs1array);
+                            free(starprofrad);
+                            free(starprofarray);
+                            free(fpmaskradarray);
+                            free(separray);
+                            free(starprofarraycnt);
+                            fclose(fpresult);
                             return RETURN_FAILURE;
                         }
                         else if(fscanfcnt != 2)
@@ -10627,6 +10850,14 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                             fprintf(stderr,
                                     "Error: fscanf successfully matched and assigned %i input items, 2 expected\n",
                                     fscanfcnt);
+                            free(transmarray);
+                            free(obs1array);
+                            free(starprofrad);
+                            free(starprofarray);
+                            free(fpmaskradarray);
+                            free(separray);
+                            free(starprofarraycnt);
+                            fclose(fpresult);
                             return RETURN_FAILURE;
                         }
                     }
@@ -10686,6 +10917,7 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
     free(transmarray);
     free(starprofarray);
     free(starprofrad);
+    free(starprofarraycnt);
 
     free(obs1array);
     free(fpmaskradarray);

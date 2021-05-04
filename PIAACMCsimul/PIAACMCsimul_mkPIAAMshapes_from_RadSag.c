@@ -97,9 +97,28 @@ int PIAACMCsimul_mkPIAAMshapes_from_RadSag(
 
 
     r0array = (double *) malloc(sizeof(double) * piaacmc[0].NBradpts);
+    if(r0array == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     z0array = (double *) malloc(sizeof(double) * piaacmc[0].NBradpts);
+    if(z0array == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     r1array = (double *) malloc(sizeof(double) * piaacmc[0].NBradpts);
+    if(r1array == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     z1array = (double *) malloc(sizeof(double) * piaacmc[0].NBradpts);
+    if(z1array == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
     fp = fopen(fname, "r");
     for(k = 0; k < piaacmc[0].NBradpts; k++)

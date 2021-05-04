@@ -1,15 +1,15 @@
 /**
  * @file    PIAACMCsimul_init_geomPIAA_rad.c
  * @brief   PIAA-type coronagraph design
- * 
+ *
  * Can design both APLCMC and PIAACMC coronagraphs
- *  
+ *
  * @author  O. Guyon
  * @date    21 nov 2017
  *
- * 
+ *
  * @bug No known bugs.
- * 
+ *
  */
 
 
@@ -41,8 +41,8 @@ extern PIAACMCsimul_varType piaacmcsimul_var;
  * uses radial PIAACMC design to initialize PIAA optics shapes and focal plane mask
  */
 int PIAACMCsimul_init_geomPIAA_rad(
-		const char *IDapofit_name
-		)
+    const char *IDapofit_name
+)
 {
     long i, ii, k;
     double *pup0;
@@ -92,15 +92,34 @@ int PIAACMCsimul_init_geomPIAA_rad(
 
     char fname[500];
 
-	#ifdef PIAASIMUL_LOGFUNC0
-		PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__, "");
-	#endif
+#ifdef PIAASIMUL_LOGFUNC0
+    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__, "");
+#endif
 
 
     pup0 = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts);
+    if(pup0 == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     pup1 = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts);
+    if(pup1 == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     flux0cumul = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts);
+    if(flux0cumul == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     flux1cumul = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts);
+    if(flux1cumul == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
 
     // STEP 1: CREATE AMPLITUDE AND CUMULATIVE INTENSITY PROFILES
@@ -181,7 +200,7 @@ int PIAACMCsimul_init_geomPIAA_rad(
     verr = 1.0;
     NBistep = piaacmc[0].centObs0*piaacmc[0].NBradpts/piaacmc[0].r0lim;
     //  innerprof_cumul = (double*) malloc(sizeof(double)*NBistep);
-	dir = 1.0; // initial direction
+    dir = 1.0; // initial direction
     while(fabs(verr)>1.0e-9)
     {
         t0 = 0.0;
@@ -312,10 +331,28 @@ int PIAACMCsimul_init_geomPIAA_rad(
     // STEP 2: COMPUTE r0 - r1 CORRESPONDANCE
 
     piaar00 = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts); // r0 as a function of r0 index
-    piaar11 = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts); // r1 as a function of r1 index
-    piaar10 = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts); // r1 as a function of r0 index
-    piaar01 = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts); // r0 as a function of r1 index
+    if(piaar00 == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
+    piaar11 = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts); // r1 as a function of r1 index
+    if(piaar11 == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
+    piaar10 = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts); // r1 as a function of r0 index
+    if(piaar10 == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
+    piaar01 = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts); // r0 as a function of r1 index
+    if(piaar01 == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
     /* computing r0 and r1 */
     /* r0 and r1 are dimensionless */
 
@@ -386,7 +423,16 @@ int PIAACMCsimul_init_geomPIAA_rad(
 
     printf("======== Compute PIAA optics shapes ============\n");
     piaaM0z = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts);
+    if(piaaM0z == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
+
     piaaM1z = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts);
+    if(piaaM1z == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort(); // or handle error in other ways
+    }
 
     piaaM0z[0] = 0.0;
     piaaM1z[0] = piaacmc[0].PIAAsep;
@@ -398,7 +444,7 @@ int PIAACMCsimul_init_geomPIAA_rad(
         r1c = piaar10[i];
         dx = (r0c-r1c)*piaacmc[0].beamrad;
         dz = piaaM1z[i]-piaaM0z[i];
-   //     dist = sqrt(dx*dx+dz*dz);
+        //     dist = sqrt(dx*dx+dz*dz);
         dist = dz * sqrt(1. + (dx/dz)*(dx/dz)); // preserve sign of dz
         y3 = dist - dz;
         if(fabs(dx)>0.000000001)
@@ -422,7 +468,8 @@ int PIAACMCsimul_init_geomPIAA_rad(
     fclose(fp);
 
 
-
+    free(piaaM0z);
+    free(piaaM1z);
 
     free(flux0cumul);
     free(flux1cumul);
