@@ -257,7 +257,8 @@ int PIAACMCsimul_loadpiaacmcconf(
  */
 int PIAACMCsimul_update_fnamedescr_conf()
 {
-    sprintf(piaacmcsimul_var.fnamedescr_conf,
+    //WRITE_FILENAME()
+    WRITE_FILENAME(piaacmcsimul_var.fnamedescr_conf,
             "s%d_l%04ld_sr%02ld_nbr%03ld_mr%03ld_ssr%02d_ssm%d_wb%02d",
             piaacmcsimul_var.PIAACMC_FPMsectors, (long)(1.0e9 * piaacmc[0].lambda + 0.1),
             (long)(1.0 * piaacmc[0].lambdaB + 0.1), piaacmc[0].NBrings,
@@ -281,7 +282,7 @@ int PIAACMCsimul_update_fnamedescr()
 {
     PIAACMCsimul_update_fnamedescr_conf();
 
-    sprintf(piaacmcsimul_var.fnamedescr,
+    WRITE_FILENAME(piaacmcsimul_var.fnamedescr,
             "%s.minsag%06ld_maxsag%06ld_fpmregc%08ld_fpmrega%06ld_%s",
             piaacmcsimul_var.fnamedescr_conf, (long)(1.0e9 * piaacmc[0].fpmminsag - 0.1),
             (long)(1.0e9 * piaacmc[0].fpmmaxsag + 0.1),

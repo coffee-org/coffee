@@ -575,6 +575,11 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
     if(IDdmctrl == -1)
     {
         dmsizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+        if(dmsizearray == NULL) {
+            PRINT_ERROR("malloc returns NULL pointer");
+            abort();
+        }
+
         dmsizearray[0] = DMsize;
         dmsizearray[1] = DMsize;
         IDdmctrl = create_image_ID(name, 2, dmsizearray, _DATATYPE_FLOAT, 1, 0, 0);
@@ -602,6 +607,11 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
     // DM influence functions stored as a data cube
     DMnbact = DMsize * DMsize;
     imsize = (uint32_t *) malloc(sizeof(uint32_t) * 3);
+    if(imsize == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     imsize[0] = arraysize;
     imsize[1] = arraysize;
     imsize[2] = DMnbact;
@@ -701,6 +711,11 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
     // INITIALIZE TURBULENCE SCREEN
 
     imsize = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+    if(imsize == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     imsize[0] = arraysize;
     imsize[1] = arraysize;
     IDturb = create_image_ID("WFturb", 2, imsize, _DATATYPE_FLOAT, 1, 0, 0);
@@ -720,6 +735,11 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
     // INITIALIZE OPTICAL SYSTEM
 
     optsystsim = (OPTSYST *) malloc(sizeof(OPTSYST) * 1);
+    if(optsystsim == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     optsystsim[0].nblambda = 1;
     optsystsim[0].lambdaarray[0] = 1.6e-6;
     optsystsim[0].beamrad = 0.008; // 8mm
@@ -803,6 +823,10 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
 
     ID = image_ID("psfi0");
     imsize = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+    if(imsize == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
     imsize[0] = data.image[ID].md[0].size[0];
     imsize[1] = data.image[ID].md[0].size[1];
     imsize[2] = data.image[ID].md[0].size[2];
@@ -819,6 +843,11 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
     COREMOD_MEMORY_image_set_sempost("aosimpsfout", -1);
 
     IDarray = (long *) malloc(sizeof(long) * 2);
+    if(IDarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     IDarray[0] = image_ID("WFturb");
     sprintf(name, "dm%02lddisp", DMindex);
     IDarray[1] = image_ID(name);
@@ -830,6 +859,11 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
     dhxoffset = arraysize / 2;
     dhyoffset = arraysize / 2 - dhsize;
     dhsizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+    if(dhsizearray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     dhsizearray[0] = dhxsize * 2;
     dhsizearray[1] = dhysize;
 
@@ -924,19 +958,19 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
 
         switch(syncmode)
         {
-            case 0 : // sync to turbulence
-                waitforsemID((void *) IDarray[0]);
-                break;
-            case 1 : // sync to DM
-                waitforsemID((void *) IDarray[1]);
-                break;
-            case 2 :
-                COREMOD_MEMORY_image_set_semwait_OR_IDarray(IDarray, 2);
-                break;
-            default :
-                printf("WAITING %ld us\n", delayus);
-                usleep(delayus);
-                break;
+        case 0 : // sync to turbulence
+            waitforsemID((void *) IDarray[0]);
+            break;
+        case 1 : // sync to DM
+            waitforsemID((void *) IDarray[1]);
+            break;
+        case 2 :
+            COREMOD_MEMORY_image_set_semwait_OR_IDarray(IDarray, 2);
+            break;
+        default :
+            printf("WAITING %ld us\n", delayus);
+            usleep(delayus);
+            break;
         }
 
         COREMOD_MEMORY_image_set_semflush_IDarray(IDarray, 2);
@@ -1023,6 +1057,10 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
 
 
     sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+    if(sizearray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
 
     IDin = read_sharedmem_image(IDin_name);  /**< turbulence channel */
     sizearray[0] = data.image[IDin].md[0].size[0];
@@ -1032,7 +1070,17 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
     IDwfcbuff = create_3Dimage_ID("wfcbuff", sizearray[0], sizearray[1],
                                   wfcbuff_size);
     wfcbuff_time = (double *) malloc(sizeof(double) * wfcbuff_size);
+    if(wfcbuff_time == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     wfcbuff_status = (long *) malloc(sizeof(long) * wfcbuff_size);
+    if(wfcbuff_status == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     for(k = 0; k < wfcbuff_size; k++)
     {
         wfcbuff_status[k] = 0;
@@ -1312,6 +1360,10 @@ errno_t AOsystSim_extremeAO_contrast_sim()
 
 
     exaosimconf = (EXAOSIMCONF *) malloc(sizeof(EXAOSIMCONF));
+    if(exaosimconf == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
 
     exaosimconf[0].D = 30.0;
 
@@ -2626,6 +2678,11 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
 
 
     sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+    if(sizearray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     sizearray[0] = 1;
     sizearray[1] = 1;
     IDphystime = create_image_ID(OUTPHYSTIME, 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0);
@@ -2649,6 +2706,10 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
     pupscale = wfin_PUPIL_SCALE * PIXBINFACTOR;
 
     sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+    if(sizearray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
     sizearray[0] = ARRAYSIZE;
     sizearray[1] = ARRAYSIZE;
 
@@ -2755,7 +2816,7 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
     while(fOK == 1)
     {
         WRITE_FULLFILENAME(wf_fname, "%s/%s%08ld.%09ld.pha.fits", WFDIR, wfin_PREFIX, kmax,
-                (long)(1.0e12 * LAMBDA + 0.5));
+                           (long)(1.0e12 * LAMBDA + 0.5));
         fOK = file_exists(wf_fname);
         kmax++;
     }
@@ -2898,7 +2959,7 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
             IDwf1 = load_fits(wf_fname, wfimname_pha, 1);
 
             WRITE_FULLFILENAME(wf_fname, "%s/%s%08ld.%09ld.amp.fits", WFDIR, wfin_PREFIX, knext,
-                    (long)(1.0e12 * LAMBDA + 0.5));
+                               (long)(1.0e12 * LAMBDA + 0.5));
             printf("Loading WF file name : %s\n", wf_fname);
             sprintf(wfimname_amp, "wf%08ld_amp", knext);
             IDwf1amp = load_fits(wf_fname, wfimname_amp, 1);
@@ -3264,43 +3325,43 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
 
         switch(TRIGGERMODE)
         {
-            case 0:
-                OKf = 0;
-                while(OKf == 0)
-                {
-                    usleep((long)(1.0e6 * TRIGGERDT));
-                    if(file_exists(TRIGGERFILE) == 1)
-                    {
-                        EXECUTE_SYSTEM_COMMAND("rm %s", TRIGGERFILE);
-                        OKf = 1;
-                    }
-                }
-                break;
-            case 1:
-                ID = image_ID(TRIGGER0STREAM);
-                while(ID == -1)
-
-                {
-                    usleep(1000000);
-                    ID = read_sharedmem_image(TRIGGER0STREAM);
-                }
-                COREMOD_MEMORY_image_set_semwait(TRIGGER0STREAM, TRIGGER0SEM);
-
-                ID = image_ID(TRIGGER1STREAM);
-                while(ID == -1)
-                {
-                    usleep(1000000);
-                    ID = read_sharedmem_image(TRIGGER1STREAM);
-                }
-                COREMOD_MEMORY_image_set_semwait(TRIGGER1STREAM, TRIGGER1SEM);
-                break;
-            case 2:
+        case 0:
+            OKf = 0;
+            while(OKf == 0)
+            {
                 usleep((long)(1.0e6 * TRIGGERDT));
-                break;
-            default:
-                printf("TRIGGERMODE = %d not valid\n", TRIGGERMODE);
-                exit(0);
-                break;
+                if(file_exists(TRIGGERFILE) == 1)
+                {
+                    EXECUTE_SYSTEM_COMMAND("rm %s", TRIGGERFILE);
+                    OKf = 1;
+                }
+            }
+            break;
+        case 1:
+            ID = image_ID(TRIGGER0STREAM);
+            while(ID == -1)
+
+            {
+                usleep(1000000);
+                ID = read_sharedmem_image(TRIGGER0STREAM);
+            }
+            COREMOD_MEMORY_image_set_semwait(TRIGGER0STREAM, TRIGGER0SEM);
+
+            ID = image_ID(TRIGGER1STREAM);
+            while(ID == -1)
+            {
+                usleep(1000000);
+                ID = read_sharedmem_image(TRIGGER1STREAM);
+            }
+            COREMOD_MEMORY_image_set_semwait(TRIGGER1STREAM, TRIGGER1SEM);
+            break;
+        case 2:
+            usleep((long)(1.0e6 * TRIGGERDT));
+            break;
+        default:
+            printf("TRIGGERMODE = %d not valid\n", TRIGGERMODE);
+            exit(0);
+            break;
         }
 
         if(k > kmax)
@@ -3395,6 +3456,10 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
         if((IDpyramp == -1) || (IDpyrpha == -1))
         {
             imsize = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+            if(imsize == NULL) {
+                PRINT_ERROR("malloc returns NULL pointer");
+                abort();
+            }
             imsize[0] = arraysize;
             imsize[1] = arraysize;
             IDpyramp = create_image_ID(pnamea, 2, imsize, _DATATYPE_FLOAT, 0, 0, 0);
@@ -3439,6 +3504,10 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
     if(ID_outWFSim == -1)
     {
         imsize = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+        if(imsize == NULL) {
+            PRINT_ERROR("malloc returns NULL pointer");
+            abort();
+        }
         imsize[0] = arraysize;
         imsize[1] = arraysize;
         ID_outWFSim = create_image_ID(outWFSim_name, 2, imsize, _DATATYPE_FLOAT, 1, 0, 0);
@@ -3450,6 +3519,10 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
     if(ID_outWFSim_tmp == -1)
     {
         imsize = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+        if(imsize == NULL) {
+            PRINT_ERROR("malloc returns NULL pointer");
+            abort();
+        }
         imsize[0] = arraysize;
         imsize[1] = arraysize;
         ID_outWFSim_tmp = create_image_ID("outpwfsimtmp", 2, imsize, _DATATYPE_FLOAT, 1,
@@ -3461,6 +3534,10 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
     if(ID_inWFccp == -1)
     {
         imsize = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+        if(imsize == NULL) {
+            PRINT_ERROR("malloc returns NULL pointer");
+            abort();
+        }
         imsize[0] = arraysize;
         imsize[1] = arraysize;
         ID_inWFccp = create_image_ID("pyrwfcin", 2, imsize, _DATATYPE_COMPLEX_FLOAT, 0,
@@ -3815,31 +3892,36 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
 
     switch(INMODE)
     {
-        case 0:
+    case 0:
+        IDinOPD = read_sharedmem_image(INSTREAMNAMEOPD);
+        while(IDinOPD == -1)
+        {
+            usleep(1000000);
             IDinOPD = read_sharedmem_image(INSTREAMNAMEOPD);
-            while(IDinOPD == -1)
-            {
-                usleep(1000000);
-                IDinOPD = read_sharedmem_image(INSTREAMNAMEOPD);
-            }
+        }
+        IDinAMP = read_sharedmem_image(INSTREAMNAMEAMP);
+        while(IDinAMP == -1)
+        {
+            usleep(1000000);
             IDinAMP = read_sharedmem_image(INSTREAMNAMEAMP);
-            while(IDinAMP == -1)
-            {
-                usleep(1000000);
-                IDinAMP = read_sharedmem_image(INSTREAMNAMEAMP);
-            }
-            break;
-        case 1:
-            IDinOPD = load_fits(INFITSFILENAMEOPD, "inOPD", 1);
-            IDinAMP = load_fits(INFITSFILENAMEAMP, "inAMP", 1);
-            break;
-        default:
-            printf("INMODE value %d not valid\n", INMODE);
-            exit(0);
-            break;
+        }
+        break;
+    case 1:
+        IDinOPD = load_fits(INFITSFILENAMEOPD, "inOPD", 1);
+        IDinAMP = load_fits(INFITSFILENAMEAMP, "inAMP", 1);
+        break;
+    default:
+        printf("INMODE value %d not valid\n", INMODE);
+        exit(0);
+        break;
     }
 
     sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+    if(sizearray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     sizearray[0] = OUTARRAYSIZE; //data.image[IDinOPD].md[0].size[0];
     sizearray[1] = OUTARRAYSIZE; //data.image[IDinOPD].md[0].size[1];
     wfinsize = data.image[IDinOPD].md[0].size[0];
@@ -4022,25 +4104,25 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
 
         switch(INMODE)
         {
-            case 0:
-                COREMOD_MEMORY_image_set_semwait(INSTREAMNAMEOPD, INSEMCHAN);
-                break;
-            case 1:
-                OKf = 0;
-                while(OKf == 0)
+        case 0:
+            COREMOD_MEMORY_image_set_semwait(INSTREAMNAMEOPD, INSEMCHAN);
+            break;
+        case 1:
+            OKf = 0;
+            while(OKf == 0)
+            {
+                usleep(10000);
+                if(file_exists(INTRIGGERFILE) == 1)
                 {
-                    usleep(10000);
-                    if(file_exists(INTRIGGERFILE) == 1)
-                    {
-                        EXECUTE_SYSTEM_COMMAND("rm %s", INTRIGGERFILE);
-                        OKf = 1;
-                    }
+                    EXECUTE_SYSTEM_COMMAND("rm %s", INTRIGGERFILE);
+                    OKf = 1;
                 }
-                break;
-            default:
-                printf("INMODE value %d not valid\n", INMODE);
-                exit(0);
-                break;
+            }
+            break;
+        default:
+            printf("INMODE value %d not valid\n", INMODE);
+            exit(0);
+            break;
         }
     }
 
@@ -4102,8 +4184,22 @@ int AOsystSim_DMshape(const char *IDdmctrl_name, const char *IDdmifc_name,
                 }
 
         dmifpixactarray = (long *) malloc(sizeof(long) * DMifpixarray_NBpix);
+        if(dmifpixactarray == NULL) {
+            PRINT_ERROR("malloc returns NULL pointer");
+            abort();
+        }
+
         dmifpixactarray_dmact = (long *) malloc(sizeof(long) * DMifpixarray_NBpix);
+        if(dmifpixactarray_dmact == NULL) {
+            PRINT_ERROR("malloc returns NULL pointer");
+            abort();
+        }
+
         dmifpixactarray_ii = (long *) malloc(sizeof(long) * DMifpixarray_NBpix);
+        if(dmifpixactarray_ii == NULL) {
+            PRINT_ERROR("malloc returns NULL pointer");
+            abort();
+        }
 
 
 
@@ -4131,7 +4227,17 @@ int AOsystSim_DMshape(const char *IDdmctrl_name, const char *IDdmifc_name,
         }
 
         DMifpixarray_index = (long *) malloc(sizeof(long) * DMifpixarray_NBpix);
+        if(DMifpixarray_index == NULL) {
+            PRINT_ERROR("malloc returns NULL pointer");
+            abort();
+        }
+
         DMifpixarray_pixindex = (long *) malloc(sizeof(long) * DMifpixarray_NBpix);
+        if(DMifpixarray_pixindex == NULL) {
+            PRINT_ERROR("malloc returns NULL pointer");
+            abort();
+        }
+
         DMifpixarray_NBpix0 = DMifpixarray_NBpix;
         DMifpixarray_init = 1;
     }
@@ -4368,35 +4474,40 @@ int AOsystSim_DM(const char *CONF_FNAME)
 
     switch(INMODE)
     {
-        case 0:
+    case 0:
+        IDinDM = read_sharedmem_image(INSTREAMNAMEDM);
+        while(IDinDM == -1)
+        {
+            usleep(100000);
             IDinDM = read_sharedmem_image(INSTREAMNAMEDM);
-            while(IDinDM == -1)
-            {
-                usleep(100000);
-                IDinDM = read_sharedmem_image(INSTREAMNAMEDM);
-            }
+        }
 
-            printf("READING INPUT TRIGGER STREAM ...\n");
+        printf("READING INPUT TRIGGER STREAM ...\n");
+        IDinTRIG = read_sharedmem_image(INTRIGSTREAMNAME);
+        printf("  IDinTRIG = %ld\n", IDinTRIG);
+        while(IDinTRIG == -1)
+        {
+            usleep(100000);
             IDinTRIG = read_sharedmem_image(INTRIGSTREAMNAME);
             printf("  IDinTRIG = %ld\n", IDinTRIG);
-            while(IDinTRIG == -1)
-            {
-                usleep(100000);
-                IDinTRIG = read_sharedmem_image(INTRIGSTREAMNAME);
-                printf("  IDinTRIG = %ld\n", IDinTRIG);
-            }
-            break;
-        case 1:
-            break;
-        default:
-            printf("INMODE value %d not valid\n", INMODE);
-            exit(0);
-            break;
+        }
+        break;
+    case 1:
+        break;
+    default:
+        printf("INMODE value %d not valid\n", INMODE);
+        exit(0);
+        break;
     }
 
 
 
     sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+    if(sizearray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     sizearray[0] = ARRAYSIZE;
     sizearray[1] = ARRAYSIZE;
     DMsize = data.image[IDinDM].md[0].size[0];
@@ -4426,6 +4537,10 @@ int AOsystSim_DM(const char *CONF_FNAME)
     // DM influence functions stored as a data cube
     DMnbact = DMsize * DMsize;
     imsize = (uint32_t *) malloc(sizeof(uint32_t) * 3);
+    if(imsize == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
     imsize[0] = ARRAYSIZE;
     imsize[1] = ARRAYSIZE;
     imsize[2] = DMnbact;
@@ -4523,8 +4638,22 @@ int AOsystSim_DM(const char *CONF_FNAME)
 
 
     dmifcarray_value = (float *) malloc(sizeof(float) * NBdmifcarray);
+    if(dmifcarray_value == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     dmifcarray_act = (long *) malloc(sizeof(long) * NBdmifcarray);
+    if(dmifcarray_act == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     dmifcarray_iijj = (long *) malloc(sizeof(long) * NBdmifcarray);
+    if(dmifcarray_iijj == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
 
 
     NBdmifcarray = 0;
@@ -4612,25 +4741,25 @@ int AOsystSim_DM(const char *CONF_FNAME)
 
         switch(INMODE)
         {
-            case 0:
-                COREMOD_MEMORY_image_set_semwait(INTRIGSTREAMNAME, INTRIGSEMCHAN);
-                break;
-            case 1:
-                OKf = 0;
-                while(OKf == 0)
+        case 0:
+            COREMOD_MEMORY_image_set_semwait(INTRIGSTREAMNAME, INTRIGSEMCHAN);
+            break;
+        case 1:
+            OKf = 0;
+            while(OKf == 0)
+            {
+                usleep(10000);
+                if(file_exists(INTRIGGERFILE) == 1)
                 {
-                    usleep(10000);
-                    if(file_exists(INTRIGGERFILE) == 1)
-                    {
-                        EXECUTE_SYSTEM_COMMAND("rm %s", INTRIGGERFILE);
-                        OKf = 1;
-                    }
+                    EXECUTE_SYSTEM_COMMAND("rm %s", INTRIGGERFILE);
+                    OKf = 1;
                 }
-                break;
-            default:
-                printf("INMODE value %d not valid\n", INMODE);
-                exit(0);
-                break;
+            }
+            break;
+        default:
+            printf("INMODE value %d not valid\n", INMODE);
+            exit(0);
+            break;
         }
         k++;
     }
@@ -4878,37 +5007,37 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
 
     switch(INMODE)
     {
-        case 0:
+    case 0:
+        IDinOPD = read_sharedmem_image(INOPDSTREAMNAME);
+        while(IDinOPD == -1)
+        {
+            usleep(100000);
             IDinOPD = read_sharedmem_image(INOPDSTREAMNAME);
-            while(IDinOPD == -1)
-            {
-                usleep(100000);
-                IDinOPD = read_sharedmem_image(INOPDSTREAMNAME);
-                printf("  INOPDSTREAMNAME stream \"%s\" = %ld\n", INOPDSTREAMNAME, IDinOPD);
-            }
+            printf("  INOPDSTREAMNAME stream \"%s\" = %ld\n", INOPDSTREAMNAME, IDinOPD);
+        }
 
+        IDinAMP = read_sharedmem_image(INAMPSTREAMNAME);
+        while(IDinAMP == -1)
+        {
+            usleep(100000);
             IDinAMP = read_sharedmem_image(INAMPSTREAMNAME);
-            while(IDinAMP == -1)
-            {
-                usleep(100000);
-                IDinAMP = read_sharedmem_image(INAMPSTREAMNAME);
-                printf("  INAMPSTREAMNAME stream \"%s\" = %ld\n", INAMPSTREAMNAME, IDinAMP);
-            }
+            printf("  INAMPSTREAMNAME stream \"%s\" = %ld\n", INAMPSTREAMNAME, IDinAMP);
+        }
 
+        IDinTRIG = read_sharedmem_image(INTRIGSTREAMNAME);
+        while(IDinTRIG == -1)
+        {
+            usleep(100000);
             IDinTRIG = read_sharedmem_image(INTRIGSTREAMNAME);
-            while(IDinTRIG == -1)
-            {
-                usleep(100000);
-                IDinTRIG = read_sharedmem_image(INTRIGSTREAMNAME);
-                printf("  INTRIGSTREAMNAME stream \"%s\" = %ld\n", INTRIGSTREAMNAME, IDinTRIG);
-            }
-            break;
-        case 1:
-            break;
-        default:
-            printf("INMODE value %d not valid\n", INMODE);
-            exit(0);
-            break;
+            printf("  INTRIGSTREAMNAME stream \"%s\" = %ld\n", INTRIGSTREAMNAME, IDinTRIG);
+        }
+        break;
+    case 1:
+        break;
+    default:
+        printf("INMODE value %d not valid\n", INMODE);
+        exit(0);
+        break;
     }
 
 
@@ -4958,6 +5087,11 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
 
 
     sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+    if(sizearray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     sizearray[0] = OUTLOWFSARRAYSIZE;
     sizearray[1] = OUTLOWFSARRAYSIZE;
     //DMsize = data.image[IDinOPD].md[0].size[0];
@@ -5194,25 +5328,25 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
 
         switch(INMODE)
         {
-            case 0:
-                COREMOD_MEMORY_image_set_semwait(INTRIGSTREAMNAME, INTRIGSEMCHAN);
-                break;
-            case 1:
-                OKf = 0;
-                while(OKf == 0)
+        case 0:
+            COREMOD_MEMORY_image_set_semwait(INTRIGSTREAMNAME, INTRIGSEMCHAN);
+            break;
+        case 1:
+            OKf = 0;
+            while(OKf == 0)
+            {
+                usleep(10000);
+                if(file_exists(INTRIGGERFILE) == 1)
                 {
-                    usleep(10000);
-                    if(file_exists(INTRIGGERFILE) == 1)
-                    {
-                        EXECUTE_SYSTEM_COMMAND("rm %s", INTRIGGERFILE);
-                        OKf = 1;
-                    }
+                    EXECUTE_SYSTEM_COMMAND("rm %s", INTRIGGERFILE);
+                    OKf = 1;
                 }
-                break;
-            default:
-                printf("INMODE value %d not valid\n", INMODE);
-                exit(0);
-                break;
+            }
+            break;
+        default:
+            printf("INMODE value %d not valid\n", INMODE);
+            exit(0);
+            break;
         }
 
         k++;
@@ -5758,34 +5892,34 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
 
     switch(modegeom)
     {
-        case 0 :    // mode 1: horizontal
-            CPAxmin = 0.5;
-            CPAxmax = CPAmax;
-            CPAymin = -CPAmax;
-            CPAymax = CPAmax;
-            break;
-        case 1 : // mode 2: vertical
-            CPAxmin = -CPAmax;
-            CPAxmax = CPAmax;
-            CPAymin = 0.5;
-            CPAymax = CPAmax;
-            break;
-        case 2 : // quadrants #1
-            CPAxmin = 0.5;
-            CPAxmax = CPAmax;
-            CPAymin = 0.5;
-            CPAymax = CPAmax;
-            break;
-        case 3 : // quadrants #1
-            CPAxmin = 0.5;
-            CPAxmax = CPAmax;
-            CPAymin = -0.5;
-            CPAymax = -CPAmax;
-            break;
-        default :
-            printf("ERROR: mode not supported\n");
-            exit(0);
-            break;
+    case 0 :    // mode 1: horizontal
+        CPAxmin = 0.5;
+        CPAxmax = CPAmax;
+        CPAymin = -CPAmax;
+        CPAymax = CPAmax;
+        break;
+    case 1 : // mode 2: vertical
+        CPAxmin = -CPAmax;
+        CPAxmax = CPAmax;
+        CPAymin = 0.5;
+        CPAymax = CPAmax;
+        break;
+    case 2 : // quadrants #1
+        CPAxmin = 0.5;
+        CPAxmax = CPAmax;
+        CPAymin = 0.5;
+        CPAymax = CPAmax;
+        break;
+    case 3 : // quadrants #1
+        CPAxmin = 0.5;
+        CPAxmax = CPAmax;
+        CPAymin = -0.5;
+        CPAymax = -CPAmax;
+        break;
+    default :
+        printf("ERROR: mode not supported\n");
+        exit(0);
+        break;
     }
 
     dmsize = dmxsize;
@@ -6218,40 +6352,40 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
 
     switch(mode)
     {
-        case 1 :    // mode 1: perfectly calibrated system -> no probe noise
-            probe_noise_prop = 0.0;
-            for(pr = 0; pr < NBprobes; pr++)
-            {
-                nprobe_re[pr] = probe_re[pr];
-                nprobe_im[pr] = probe_im[pr];
-            }
-            break;
-        case 2 : // mode 2: uncorrelated probes noise
-            probe_noise_prop = ProbeNoise;
-            for(pr = 0; pr < NBprobes; pr++)
-            {
-                nprobe_re[pr] = probe_re[pr] + probe_noise_prop * probeamp *
-                                (2.0 * ran1() - 1.0);
-                nprobe_im[pr] = probe_im[pr] + probe_noise_prop * probeamp *
-                                (2.0 * ran1() - 1.0);
-            }
-            break;
-        case 3 : // noise on probe axes
-            probe_noise_prop = ProbeNoise;
-            re_re = 1.0 + (2.0 * ran1() - 1.0) * probe_noise_prop;
-            re_im = 0.0 + (2.0 * ran1() - 1.0) * probe_noise_prop;
-            im_re = 0.0 + (2.0 * ran1() - 1.0) * probe_noise_prop;
-            im_im = 1.0 + (2.0 * ran1() - 1.0) * probe_noise_prop;
-            for(pr = 0; pr < NBprobes; pr++)
-            {
-                nprobe_re[pr] = probe_re[pr] * re_re + probe_im[pr] * im_re;
-                nprobe_im[pr] = probe_re[pr] * re_im + probe_im[pr] * im_im;
-            }
-            break;
-        default :
-            printf("ERROR: mode not supported\n");
-            execmode = 0;
-            break;
+    case 1 :    // mode 1: perfectly calibrated system -> no probe noise
+        probe_noise_prop = 0.0;
+        for(pr = 0; pr < NBprobes; pr++)
+        {
+            nprobe_re[pr] = probe_re[pr];
+            nprobe_im[pr] = probe_im[pr];
+        }
+        break;
+    case 2 : // mode 2: uncorrelated probes noise
+        probe_noise_prop = ProbeNoise;
+        for(pr = 0; pr < NBprobes; pr++)
+        {
+            nprobe_re[pr] = probe_re[pr] + probe_noise_prop * probeamp *
+                            (2.0 * ran1() - 1.0);
+            nprobe_im[pr] = probe_im[pr] + probe_noise_prop * probeamp *
+                            (2.0 * ran1() - 1.0);
+        }
+        break;
+    case 3 : // noise on probe axes
+        probe_noise_prop = ProbeNoise;
+        re_re = 1.0 + (2.0 * ran1() - 1.0) * probe_noise_prop;
+        re_im = 0.0 + (2.0 * ran1() - 1.0) * probe_noise_prop;
+        im_re = 0.0 + (2.0 * ran1() - 1.0) * probe_noise_prop;
+        im_im = 1.0 + (2.0 * ran1() - 1.0) * probe_noise_prop;
+        for(pr = 0; pr < NBprobes; pr++)
+        {
+            nprobe_re[pr] = probe_re[pr] * re_re + probe_im[pr] * im_re;
+            nprobe_im[pr] = probe_re[pr] * re_im + probe_im[pr] * im_im;
+        }
+        break;
+    default :
+        printf("ERROR: mode not supported\n");
+        execmode = 0;
+        break;
     }
 
 
@@ -6347,15 +6481,15 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
         }
         switch(optmode)
         {
-            case 0 :
-                NBoptVar = 3;
-                break;
-            case 1 :
-                NBoptVar = 4;
-                break;
-            case 2 :
-                NBoptVar = 6;
-                break;
+        case 0 :
+            NBoptVar = 3;
+            break;
+        case 1 :
+            NBoptVar = 4;
+            break;
+        case 2 :
+            NBoptVar = 6;
+            break;
         }
 
         xvect = gsl_vector_alloc(NBoptVar);

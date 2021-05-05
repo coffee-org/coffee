@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-
+#include "CommandLineInterface/CLIcore.h"
 
 
 //
@@ -116,8 +116,8 @@ typedef struct
     long linopt_NBiter;
 
 
-    char fnamedescr[800]; // File name descriptor for focal plane mask, inserted inside output file names
-    char fnamedescr_conf[800]; // File name descriptor for focal plane mask configuration, inserted inside output file names
+    char fnamedescr[STRINGMAXLEN_FILENAME]; // File name descriptor for focal plane mask, inserted inside output file names
+    char fnamedescr_conf[STRINGMAXLEN_FILENAME]; // File name descriptor for focal plane mask configuration, inserted inside output file names
 
 
 } PIAACMCsimul_varType;
