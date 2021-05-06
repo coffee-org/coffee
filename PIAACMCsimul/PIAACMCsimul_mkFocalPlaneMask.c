@@ -166,12 +166,36 @@ long PIAACMCsimul_mkFocalPlaneMask(
     printf("Allocate memory\n");
     fflush(stdout);
     tarray = (double *) malloc(sizeof(double) * piaacmc[0].focmNBzone * nblambda);
+    if(tarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     aarray = (double *) malloc(sizeof(double) * piaacmc[0].focmNBzone * nblambda);
+    if(aarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     phaarray = (double *) malloc(sizeof(double) * piaacmc[0].focmNBzone * nblambda);
+    if(phaarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     cosphaarray = (double *) malloc(sizeof(double) * piaacmc[0].focmNBzone *
                                     nblambda);
+    if(cosphaarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
     sinphaarray = (double *) malloc(sizeof(double) * piaacmc[0].focmNBzone *
                                     nblambda);
+    if(sinphaarray == NULL) {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
 
     // precompute zones phase shifts
     printf("Precompute zones phase shifts  %ld zones, %ld wavelengths\n",
