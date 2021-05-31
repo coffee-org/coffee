@@ -16,11 +16,17 @@ Code metrics (dev branch) :
 
 
 
+
 # coffee
 Coronagraph Optimization For Fast Exoplanets Exploration
 
 
-## Installation
+## Installing coffee
+
+Install pre-requisite packages as needed. For example, under Ubuntu :
+
+	sudo apt install git make dpkg-dev libc6-dev cmake pkg-config python3-dev libcfitsio-dev pybind11-dev python3-pybind11 libgsl-dev libfftw3-dev libncurses-dev libbison-dev libfl-dev libreadline-dev pkg-config gcc-10 g++-10 
+
 
 Coffee is a milk plugin. To install coffee, follow the milk installation steps, adding extra coffee plugins.
 To compile and install executable in local directory :
