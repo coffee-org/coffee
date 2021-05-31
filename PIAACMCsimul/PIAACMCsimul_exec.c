@@ -758,7 +758,7 @@ int PIAACMCsimul_exec(
         // now we will just determine the size of the size of the
         // optimization vectors that we will actually fill in later
         // save vecDHref initial state as a reference
-        sprintf(fname, "!%s/vecDMref.fits", piaacmcsimul_var.piaacmcconfdir);
+        sprintf(fname, "%s/vecDMref.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits("vecDHref", fname);
         // get and copy size of vecDHref, 'cause we're manipulating size1Dvec
         size1Dvec = data.image[ID].md[0].nelement;
@@ -953,7 +953,7 @@ int PIAACMCsimul_exec(
                 // TEST diagnostic
                 memcpy(data.image[IDmodes2D].array.F, data.image[IDmodes].array.F,
                        sizeof(float)*size1Dvec * piaacmcsimul_var.linopt_number_param);
-                save_fl_fits("DHmodes2D", "!test_DHmodes2D.fits");
+                save_fl_fits("DHmodes2D", "test_DHmodes2D.fits");
 
                 // for state tracking and statistics
                 data.image[IDstatus].array.UI16[0] = 13;
@@ -988,7 +988,7 @@ int PIAACMCsimul_exec(
                                                       piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0);
                     }
 
-                    //      sprintf(fname,"!%s/imvect_%02ld.fits", piaacmcsimul_var.piaacmcconfdir, i);
+                    //      sprintf(fname,"%s/imvect_%02ld.fits", piaacmcsimul_var.piaacmcconfdir, i);
                     //       save_fits("imvect", fname);
                     ID = image_ID("imvect");
 
@@ -1057,7 +1057,7 @@ int PIAACMCsimul_exec(
                         data.image[ID].array.F[ii] = data.image[IDmodes].array.F[ii];
                     }
 
-                    sprintf(fname, "!%s/DMmodes.fits", piaacmcsimul_var.piaacmcconfdir);
+                    sprintf(fname, "%s/DMmodes.fits", piaacmcsimul_var.piaacmcconfdir);
                     save_fits("DHmodes2D", fname);
 
                     delete_image_ID("DHmodes2D");
@@ -1167,9 +1167,9 @@ int PIAACMCsimul_exec(
                 arith_image_cstmult("optcoeff2", acoeff2, "optcoeff2m");
 
                 // diagnostic
-                save_fl_fits("optcoeff0", "!optcoeff0.fits");//TEST
-                save_fl_fits("optcoeff1", "!optcoeff1.fits");
-                save_fl_fits("optcoeff2", "!optcoeff2.fits");
+                save_fl_fits("optcoeff0", "optcoeff0.fits");//TEST
+                save_fl_fits("optcoeff1", "optcoeff1.fits");
+                save_fl_fits("optcoeff2", "optcoeff2.fits");
 
                 // optcoeff01m = acoeff0*optcoeff0 + acoeff1*optcoeff1
                 arith_image_add("optcoeff0m", "optcoeff1m", "optcoeff01m");

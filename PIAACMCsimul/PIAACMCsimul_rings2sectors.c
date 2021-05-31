@@ -1,20 +1,9 @@
 /**
  * @file    PIAAACMCsimul_rings2sectors.c
  * @brief   PIAA-type coronagraph design, rings to sectors
- * 
- * Can design both APLCMC and PIAACMC coronagraphs
- *  
- * @author  O. Guyon
- * @date    24 nov 2017
  *
- * 
- * | date        |  Code Change      |
- * |-------------|-------------------|
- * | 2017-11-24  | documentation     |
- * 
- * 
- * @bug No known bugs.
- * 
+ * Can design both APLCMC and PIAACMC coronagraphs
+ *
  */
 
 
@@ -31,17 +20,17 @@
 
 /**
  * @brief Rings to sectors
- * 
+ *
  * @param[in] IDin_name	input image: circular mask design
  * @param[in] sectfname	text file specifying which zones belong to which rings
  * @param[out] IDout_name	output sector mask design
- * 
- */ 
+ *
+ */
 long PIAACMCsimul_rings2sectors(
-		const char *IDin_name, 
-		const char *sectfname, 
-		const char *IDout_name
-		)
+    const char *IDin_name,
+    const char *sectfname,
+    const char *IDout_name
+)
 {
     long IDin, IDout;
     FILE *fp;
@@ -50,9 +39,9 @@ long PIAACMCsimul_rings2sectors(
     long zone;
     long arrayring[5000];
 
-	#ifdef PIAASIMUL_LOGFUNC0
-		PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__, "");
-	#endif
+#ifdef PIAASIMUL_LOGFUNC0
+    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__, "");
+#endif
 
 
     IDin = image_ID(IDin_name);

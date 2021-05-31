@@ -479,16 +479,16 @@ long PIAACMCsimul_mkFocalPlaneMask(
     if(saveMask == 1)
     {
         /* save mask sag */
-        //save_fits("fpmsag", "!tmp_fpmsag.fits");
+        //save_fits("fpmsag", "tmp_fpmsag.fits");
 
         PIAACMCsimul_update_fnamedescr();
-        sprintf(fname, "!%s/fpm_sagmap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
+        sprintf(fname, "%s/fpm_sagmap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
                 piaacmcsimul_var.fnamedescr);
         save_fits("fpmsag", fname);
 
 
         /* save zones */
-        sprintf(fname, "!%s/fpm_zonemap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
+        sprintf(fname, "%s/fpm_zonemap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
                 piaacmcsimul_var.fnamedescr);
         save_fits("fpmzone", fname);
 
@@ -510,10 +510,10 @@ long PIAACMCsimul_mkFocalPlaneMask(
         mk_amph_from_complex("fpmCA", "tfpma", "tfpmp", 0);
         delete_image_ID("fpmCA");
 
-        sprintf(fname, "!%s/fpm_CAampmap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
+        sprintf(fname, "%s/fpm_CAampmap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
                 piaacmcsimul_var.fnamedescr);
         save_fits("tfpma", fname);
-        sprintf(fname, "!%s/fpm_CAphamap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
+        sprintf(fname, "%s/fpm_CAphamap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
                 piaacmcsimul_var.fnamedescr);
         save_fits("tfpmp", fname);
         delete_image_ID("tfpma");

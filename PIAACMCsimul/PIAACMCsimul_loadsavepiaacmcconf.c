@@ -332,7 +332,7 @@ int PIAACMCsimul_savepiaacmcconf(const char *dname)
     {
         if(i < piaacmc[0].NBLyotStop)
         {
-            sprintf(fname, "!%s/LyotStop%ld.fits", dname, i);
+            sprintf(fname, "%s/LyotStop%ld.fits", dname, i);
             if(piaacmc[0].IDLyotStop[i] != -1)
             {
                 save_fits(data.image[piaacmc[0].IDLyotStop[i]].name, fname);
@@ -353,25 +353,25 @@ int PIAACMCsimul_savepiaacmcconf(const char *dname)
 
     // PIAACMC optics
 
-    sprintf(fname, "!%s/piaa0Cmodes.fits", dname);
+    sprintf(fname, "%s/piaa0Cmodes.fits", dname);
     if(piaacmc[0].piaa0CmodesID != -1)
     {
         save_fits(data.image[piaacmc[0].piaa0CmodesID].name, fname);
     }
 
-    sprintf(fname, "!%s/piaa0Fmodes.fits", dname);
+    sprintf(fname, "%s/piaa0Fmodes.fits", dname);
     if(piaacmc[0].piaa0FmodesID != -1)
     {
         save_fits(data.image[piaacmc[0].piaa0FmodesID].name, fname);
     }
 
-    sprintf(fname, "!%s/piaa1Cmodes.fits", dname);
+    sprintf(fname, "%s/piaa1Cmodes.fits", dname);
     if(piaacmc[0].piaa1CmodesID != -1)
     {
         save_fits(data.image[piaacmc[0].piaa1CmodesID].name, fname);
     }
 
-    sprintf(fname, "!%s/piaa1Fmodes.fits", dname);
+    sprintf(fname, "%s/piaa1Fmodes.fits", dname);
     if(piaacmc[0].piaa1FmodesID != -1)
     {
         save_fits(data.image[piaacmc[0].piaa1FmodesID].name, fname);
@@ -384,7 +384,7 @@ int PIAACMCsimul_savepiaacmcconf(const char *dname)
     // Focal plane mask
     PIAACMCsimul_update_fnamedescr();
 
-    sprintf(fname, "!%s/fpm_zonez.%s.fits", piaacmcsimul_var.piaacmcconfdir,
+    sprintf(fname, "%s/fpm_zonez.%s.fits", piaacmcsimul_var.piaacmcconfdir,
             piaacmcsimul_var.fnamedescr);
     if(piaacmc[0].zonezID != -1)
     {
@@ -392,7 +392,7 @@ int PIAACMCsimul_savepiaacmcconf(const char *dname)
     }
 
 
-    sprintf(fname, "!%s/fpm_zonea.%s.fits", piaacmcsimul_var.piaacmcconfdir,
+    sprintf(fname, "%s/fpm_zonea.%s.fits", piaacmcsimul_var.piaacmcconfdir,
             piaacmcsimul_var.fnamedescr);
     if(piaacmc[0].zoneaID != -1)
     {
@@ -425,7 +425,7 @@ int PIAACMCsimul_savepiaacmcconf(const char *dname)
 
     image_basic_indexmap("fpmzmap1", data.image[piaacmc[0].zonezID].name,
                          "fpmsagmapHR");
-    sprintf(fname, "!%s/fpm_sagmapHR.%s.fits", piaacmcsimul_var.piaacmcconfdir,
+    sprintf(fname, "%s/fpm_sagmapHR.%s.fits", piaacmcsimul_var.piaacmcconfdir,
             piaacmcsimul_var.fnamedescr);
     save_fits("fpmsagmapHR", fname);
     delete_image_ID("fpmsagmapHR");

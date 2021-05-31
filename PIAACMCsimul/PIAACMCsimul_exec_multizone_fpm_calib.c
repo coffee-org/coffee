@@ -218,8 +218,8 @@ int PIAACMCsimul_exec_multizone_fpm_calib()
             sprintf(fname, "%s/FPMresp%d.%s.fits", piaacmcsimul_var.piaacmcconfdir,
                     piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr_conf);
 
-            WRITE_FILENAME(fname1, "!%s.tmp", fname);
-            WRITE_FILENAME(fname2, "!%s", fname);
+            WRITE_FILENAME(fname1, "%s.tmp", fname);
+            WRITE_FILENAME(fname2, "%s", fname);
             mzoffset = 0;
             mzstep = 1;
 
@@ -242,7 +242,7 @@ int PIAACMCsimul_exec_multizone_fpm_calib()
                     piaacmcsimul_var.PIAACMC_FPMresp_thread);
 
             // stash the filename of the partial file for later
-            WRITE_FILENAME(fname1, "!%s.tmp", fname);
+            WRITE_FILENAME(fname1, "%s.tmp", fname);
             WRITE_FILENAME(fname2, "%s", fname);
             // set region of the partial file that this child computes
             mzoffset = piaacmcsimul_var.PIAACMC_FPMresp_thread;
@@ -482,7 +482,7 @@ int PIAACMCsimul_exec_multizone_fpm_calib()
                         piaacmcsimul_var.PIAACMC_FPMresp_thread);
 
                 // diagnostic file to make sure the child is working with the right zones
-                sprintf(fnametmp, "!%s/fpmzmap_thread%02ld.fits",
+                sprintf(fnametmp, "%s/fpmzmap_thread%02ld.fits",
                         piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.PIAACMC_FPMresp_thread);
                 save_fits("fpmzmap", fnametmp);
 

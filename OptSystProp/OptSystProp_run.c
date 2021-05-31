@@ -277,8 +277,8 @@ int OptSystProp_run(OPTSYST *optsyst,
                 exit(0);
             }
 
-            //	save_fits(data.image[ID].name, "!opmask.fits"); //TEST
-            //save_fits(data.image[IDa].name, "!opmask1.fits"); //TEST
+            //	save_fits(data.image[ID].name, "opmask.fits"); //TEST
+            //save_fits(data.image[IDa].name, "opmask1.fits"); //TEST
 
             printf("ID = %ld\n", ID);
             fflush(stdout);
@@ -325,7 +325,7 @@ int OptSystProp_run(OPTSYST *optsyst,
 # endif
             }
 
-            //	save_fits(data.image[IDa].name, "!opmask2.fits"); //TEST
+            //	save_fits(data.image[IDa].name, "opmask2.fits"); //TEST
             //	printf("POINT 1.1\n");
 
         }
@@ -488,9 +488,9 @@ int OptSystProp_run(OPTSYST *optsyst,
             // uses 1-fpm
 
             // TEST
-            /*   sprintf(fname, "!%s/test_inamp_%02ld.fits", savedir, elem);
+            /*   sprintf(fname, "%s/test_inamp_%02ld.fits", savedir, elem);
                 save_fits(imnameamp_out, fname);
-                sprintf(fname, "!%s/test_inpha_%02ld.fits", savedir, elem);
+                sprintf(fname, "%s/test_inpha_%02ld.fits", savedir, elem);
                 save_fits(imnamepha_out, fname);*/
             //exit(0);
 
@@ -534,8 +534,8 @@ int OptSystProp_run(OPTSYST *optsyst,
                             }
                         }
 
-                // save_fits("dftgridre", "!dftgridre.fits");
-                // save_fits("dftgridim", "!dftgridim.fits");
+                // save_fits("dftgridre", "dftgridre.fits");
+                // save_fits("dftgridim", "dftgridim.fits");
 
                 // combine separate Re and Im files into single Re/Im complex array
                 mk_complex_from_reim("dftgridre", "dftgridim", "_WFctmpc", 0);
@@ -560,9 +560,9 @@ int OptSystProp_run(OPTSYST *optsyst,
                     // make amp and phase files from complex
                     mk_amph_from_complex("piaacmcfpm", "fpma", "fpmp", 0);
 
-                    sprintf(fname, "!%s/fpm__ampl.fits", savedir);
+                    sprintf(fname, "%s/fpm__ampl.fits", savedir);
                     save_fits("fpma", fname);
-                    sprintf(fname, "!%s/fpm__pha.fits", savedir);
+                    sprintf(fname, "%s/fpm__pha.fits", savedir);
                     save_fits("fpmp", fname);
 
                     delete_image_ID("fpma");
@@ -598,9 +598,9 @@ int OptSystProp_run(OPTSYST *optsyst,
 
                 // TEST
                 /*mk_reim_from_complex("_WFcout", "_twfre", "_twfim");
-                sprintf(fname, "!%s/test_twfre.fits", savedir);
+                sprintf(fname, "%s/test_twfre.fits", savedir);
                 save_fits("_twfre", fname);
-                sprintf(fname, "!%s/test_twfim.fits", savedir);
+                sprintf(fname, "%s/test_twfim.fits", savedir);
                 save_fits("_twfim", fname);
                 delete_image_ID("_twfre");
                 delete_image_ID("_twfim");
@@ -663,9 +663,9 @@ int OptSystProp_run(OPTSYST *optsyst,
 
                 // TEST
 
-                /*         sprintf(fname, "!%s/test_dftgridre1_elem%ld.fits", savedir, elem);
+                /*         sprintf(fname, "%s/test_dftgridre1_elem%ld.fits", savedir, elem);
                          save_fits("dftgridre1", fname);
-                         sprintf(fname, "!%s/test_dftgridim1_elem%ld.fits", savedir, elem);
+                         sprintf(fname, "%s/test_dftgridim1_elem%ld.fits", savedir, elem);
                          save_fits("dftgridim1", fname);
                   */
 
@@ -748,9 +748,9 @@ int OptSystProp_run(OPTSYST *optsyst,
             printf("Saving intermediate plane [%ld] ... ", elem);
             fflush(stdout);
 
-            sprintf(fname, "!./%s/WFamp%ld_%03ld.fits", savedir, index, elem);
+            sprintf(fname, "./%s/WFamp%ld_%03ld.fits", savedir, index, elem);
             save_fits(imnameamp_out, fname);
-            sprintf(fname, "!./%s/WFpha%ld_%03ld.fits", savedir, index, elem);
+            sprintf(fname, "./%s/WFpha%ld_%03ld.fits", savedir, index, elem);
             save_fits(imnamepha_out, fname);
 
             printf("done\n");
@@ -792,14 +792,14 @@ int OptSystProp_run(OPTSYST *optsyst,
         if(optsyst[index].SAVE == 1)
         {
             // save PSF in both Re/Im and amp/phase representations if desired
-            sprintf(fname, "!%s/psfa%ld.fits", savedir, index);
+            sprintf(fname, "%s/psfa%ld.fits", savedir, index);
             save_fits(imnameamp, fname);
-            sprintf(fname, "!%s/psfp%ld.fits", savedir, index);
+            sprintf(fname, "%s/psfp%ld.fits", savedir, index);
             save_fits(imnamepha, fname);
 
-            sprintf(fname, "!%s/psfre%ld.fits", savedir, index);
+            sprintf(fname, "%s/psfre%ld.fits", savedir, index);
             save_fits(imnamere, fname);
-            sprintf(fname, "!%s/psfim%ld.fits", savedir, index);
+            sprintf(fname, "%s/psfim%ld.fits", savedir, index);
             save_fits(imnameim, fname);
         }
 
@@ -827,7 +827,7 @@ int OptSystProp_run(OPTSYST *optsyst,
         if(optsyst[index].SAVE == 1)
         {
             // save PSF intensity if desired
-            sprintf(fname, "!%s/psfi%ld.fits", savedir, index);
+            sprintf(fname, "%s/psfi%ld.fits", savedir, index);
             save_fits(imname, fname);
         }
     }

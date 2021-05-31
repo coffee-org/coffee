@@ -4,10 +4,6 @@
  *
  * Can design both APLCMC and PIAACMC coronagraphs
  *
- * @author  O. Guyon
- * @date    21 nov 2017
- *
- *
  * @bug No known bugs.
  *
  */

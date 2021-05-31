@@ -425,7 +425,7 @@ long PIAACMCsimul_mkFPM_zonemap(
     if(piaacmcsimul_var.PIAACMC_FPMsectors != 0)
     {
         printf("Saving %s ....\n", IDname);
-        save_fits(IDname, "!__test_zonemap_00.fits"); //TEST
+        save_fits(IDname, "__test_zonemap_00.fits"); //TEST
         // sleep(100000);
     }
 

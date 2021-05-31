@@ -4,11 +4,6 @@
  *
  * Can design both APLCMC and PIAACMC coronagraphs
  *
- * @author  O. Guyon
- * @date    21 nov 2017
- *
- *
- * @bug No known bugs.
  *
  */
 
@@ -234,7 +229,7 @@ double PIAACMCsimul_optimizeLyotStop(
         }
     if(piaacmcsimul_var.PIAACMC_save == 1)
     {
-        sprintf(fname, "!%s/LMzonemap.fits", piaacmcsimul_var.piaacmcconfdir);
+        sprintf(fname, "%s/LMzonemap.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits("LMzonemap", fname);
     }
     // initialize zarray
@@ -315,7 +310,7 @@ double PIAACMCsimul_optimizeLyotStop(
     delete_image_ID("imtmpim");
 
 
-    sprintf(fname,  "!%s/LMintC.fits", piaacmcsimul_var.piaacmcconfdir);
+    sprintf(fname,  "%s/LMintC.fits", piaacmcsimul_var.piaacmcconfdir);
     save_fits("LMintC", fname);
 
 
@@ -390,9 +385,9 @@ double PIAACMCsimul_optimizeLyotStop(
 
     if(piaacmcsimul_var.PIAACMC_save == 1)
     {
-        sprintf(fname, "!%s/Lcomb.fits", piaacmcsimul_var.piaacmcconfdir);
+        sprintf(fname, "%s/Lcomb.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits("Lcomb", fname);
-        sprintf(fname, "!%s/LcombOA.fits", piaacmcsimul_var.piaacmcconfdir);
+        sprintf(fname, "%s/LcombOA.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits("LcombOA", fname);
     }
 
@@ -403,7 +398,7 @@ double PIAACMCsimul_optimizeLyotStop(
 
     if(piaacmcsimul_var.PIAACMC_save == 1)
     {
-        sprintf(fname, "!%s/LMask.fits", piaacmcsimul_var.piaacmcconfdir);
+        sprintf(fname, "%s/LMask.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits("LMask", fname);
     }
     delete_image_ID("Lcomb");
@@ -456,7 +451,7 @@ double PIAACMCsimul_optimizeLyotStop(
         }
 
 
-        sprintf(fname, "!%s/optLM%02ld.fits", piaacmcsimul_var.piaacmcconfdir, m);
+        sprintf(fname, "%s/optLM%02ld.fits", piaacmcsimul_var.piaacmcconfdir, m);
         save_fits(name, fname);
     }
 

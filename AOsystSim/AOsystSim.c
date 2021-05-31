@@ -642,7 +642,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
     printf("convolve\n");
     fflush(stdout);
     // convolve dmif
-    save_fits("dmif0", "!AOsystSim_wdir/dmif0.fits");
+    save_fits("dmif0", "AOsystSim_wdir/dmif0.fits");
     sig = 0.5 * dmifscale * (2.0 * dmrad / DMsize);
     printf("gauss filter   %lf %ld\n", sig, (long)(2.0 * sig));
     fflush(stdout);
@@ -653,7 +653,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
 
 
     list_image_ID();
-    save_fits("dmif", "!AOsystSim_wdir/dmif.fits");
+    save_fits("dmif", "AOsystSim_wdir/dmif.fits");
 
     IDifc = create_image_ID("dmifc", 3, imsize, _DATATYPE_FLOAT, 0, 0, 0);
     printf("\n");
@@ -702,7 +702,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
                 }
         }
     free(imsize);
-    save_fits("dmifc", "!AOsystSim_wdir/dmifc.fits");
+    save_fits("dmifc", "AOsystSim_wdir/dmifc.fits");
     printf("\n");
 
 
@@ -726,7 +726,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
     sprintf(name, "dm%02lddisp", DMindex);
     AOsystSim_DMshape(name, "dmifc", "dm2Ddisp");
     IDdm0shape = image_ID("dm2Ddisp");
-    save_fits("dm2Ddisp", "!AOsystSim_wdir/dm2Ddisp.fits");
+    save_fits("dm2Ddisp", "AOsystSim_wdir/dm2Ddisp.fits");
 
 
 
@@ -883,7 +883,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
             }
         }
 
-    save_fits("dhmask", "!AOsystSim_wdir/dhmask.fits");
+    save_fits("dhmask", "AOsystSim_wdir/dhmask.fits");
 
     iter = 0;
     for(;;)
@@ -1132,9 +1132,9 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
             }
             data.image[IDaosf_noise].array.F[jj * sizearray[0] + ii] = 0.0;
         }
-    save_fits("aosf_noise", "!AOsystSim_wdir/aosf_noise.fits");
-    save_fits("aosf_mult", "!AOsystSim_wdir/aosf_mult.fits");
-    save_fits("aosf_gain", "!AOsystSim_wdir/aosf_gain.fits");
+    save_fits("aosf_noise", "AOsystSim_wdir/aosf_noise.fits");
+    save_fits("aosf_mult", "AOsystSim_wdir/aosf_mult.fits");
+    save_fits("aosf_gain", "AOsystSim_wdir/aosf_gain.fits");
 
     permut("aosf_mult");
     permut("aosf_noise");
@@ -2070,7 +2070,7 @@ long AOsystSim_mkTelPupDM(const char *ID_name, long msize, double xc, double yc,
     delete_image_ID("telpupDMz");
     delete_image_ID("telpupDMzindex");
 
-    save_fits("TPind", "!AOsystSim_wdir/TPind.fits");
+    save_fits("TPind", "AOsystSim_wdir/TPind.fits");
 
     return(ID);
 }
@@ -2274,7 +2274,7 @@ long AOsystSim_fitTelPup(const char *ID_name, const char *IDtelpup_name)
                                                          spideroffset, spiderthick, stretchx);
                                     IDt = image_ID("testpup");
                                     // list_image_ID();
-                                    // save_fits("testpup", "!AOsystSim_wdir/testpup.fits");
+                                    // save_fits("testpup", "AOsystSim_wdir/testpup.fits");
 
                                     rms = 0.0;
                                     for(uint64_t ii = 0; ii < size * size; ii++)
@@ -3281,13 +3281,13 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
         if(OUT0FITSFILE > 0)
         {
             EXECUTE_SYSTEM_COMMAND("rm %s", OUT0FITSFILENAMEOPD);
-            WRITE_FILENAME(fname, "!%s", OUT0FITSFILENAMEOPD);
+            WRITE_FILENAME(fname, "%s", OUT0FITSFILENAMEOPD);
             save_fits(OUT0STREAMNAMEOPD, fname);
         }
         if((OUT0FITSFILE == 2) && (OUT0STREAM == 2))
         {
             EXECUTE_SYSTEM_COMMAND("rm %s", OUT0FITSFILENAMEAMP);
-            WRITE_FILENAME(fname, "!%s", OUT0FITSFILENAMEAMP);
+            WRITE_FILENAME(fname, "%s", OUT0FITSFILENAMEAMP);
             save_fits(OUT0STREAMNAMEAMP, fname);
         }
 
@@ -3490,8 +3490,8 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
             gauss_filter("pyrpha0", pnamep, 1.0, 10);
             delete_image_ID("pyrpha0");
 
-            sprintf(pfnamea, "!AOsystSim_wdir/pyramp_%03ld.fits", pmodpt);
-            sprintf(pfnamep, "!AOsystSim_wdir/pyrpha_%03ld.fits", pmodpt);
+            sprintf(pfnamea, "AOsystSim_wdir/pyramp_%03ld.fits", pmodpt);
+            sprintf(pfnamep, "AOsystSim_wdir/pyrpha_%03ld.fits", pmodpt);
 
             printf("SAVING: %s -> %s\n", pnamea, pfnamea);
             save_fits(pnamea, pfnamea);
@@ -3886,8 +3886,8 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
                 }
             }
     }
-    save_fits("pyrpha", "!./AOsystSim_wdir/pyrpha.fits");
-    save_fits("pyramp", "!./AOsystSim_wdir/pyramp.fits");
+    save_fits("pyrpha", "./AOsystSim_wdir/pyrpha.fits");
+    save_fits("pyramp", "./AOsystSim_wdir/pyramp.fits");
 
 
     switch(INMODE)
@@ -4092,7 +4092,7 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
             if(OUTMODE == 1)
             {
                 EXECUTE_SYSTEM_COMMAND("rm %s", OUTFITSFILENAME);
-                WRITE_FILENAME(fname, "!%s", OUTFITSFILENAME);
+                WRITE_FILENAME(fname, "%s", OUTFITSFILENAME);
                 save_fits(OUTSTREAMNAME, fname);
                 EXECUTE_SYSTEM_COMMAND("touch %s", OUTTRIGGERFILE);
             }
@@ -4571,7 +4571,7 @@ int AOsystSim_DM(const char *CONF_FNAME)
     printf("convolve\n");
     fflush(stdout);
     // convolve dmif
-    save_fits("dmif0", "!AOsystSim_wdir/dmif0.fits");
+    save_fits("dmif0", "AOsystSim_wdir/dmif0.fits");
     sig = 0.5 * dmifscale * (2.0 * DMRAD / DMsize);
     printf("gauss filter   %lf %ld\n", sig, (long)(2.0 * sig));
     fflush(stdout);
@@ -4580,7 +4580,7 @@ int AOsystSim_DM(const char *CONF_FNAME)
     delete_image_ID("dmif0");
     IDif = image_ID("dmif");
 
-    save_fits("dmif", "!AOsystSim_wdir/dmif.fits");
+    save_fits("dmif", "AOsystSim_wdir/dmif.fits");
 
     IDifc = create_image_ID("dmifc", 3, imsize, _DATATYPE_FLOAT, 0, 0, 0);
     printf("\n");
@@ -4633,7 +4633,7 @@ int AOsystSim_DM(const char *CONF_FNAME)
                 }
         }
     free(imsize);
-    save_fits("dmifc", "!AOsystSim_wdir/dmifc.fits");
+    save_fits("dmifc", "AOsystSim_wdir/dmifc.fits");
     printf("\n");
 
 
@@ -4734,7 +4734,7 @@ int AOsystSim_DM(const char *CONF_FNAME)
         if(OUTMODE == 1)
         {
             EXECUTE_SYSTEM_COMMAND("rm %s", OUTFITSFILENAMEDM);
-            WRITE_FILENAME(fname, "!%s", OUTFITSFILENAMEDM);
+            WRITE_FILENAME(fname, "%s", OUTFITSFILENAMEDM);
             save_fits(OUTSTREAMNAMEDM, fname);
             EXECUTE_SYSTEM_COMMAND("touch %s", OUTTRIGGERFILE);
         }
@@ -5319,7 +5319,7 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
         if(OUTMODE == 1)
         {
             EXECUTE_SYSTEM_COMMAND("rm %s", OUTLOWFSFITSFILENAME);
-            WRITE_FILENAME(fname, "!%s", OUTLOWFSFITSFILENAME);
+            WRITE_FILENAME(fname, "%s", OUTLOWFSFITSFILENAME);
             save_fits(OUTLOWFSSTREAMNAME, fname);
             EXECUTE_SYSTEM_COMMAND("touch %s", OUTTRIGGERFILE);
         }
@@ -5547,7 +5547,7 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
         {
             data.image[IDwf0].array.F[ii] = wferramp * (1.0 - 2.0 * ran1());
         }
-        save_fl_fits("wf0", "!AOsystSim_wdir/wf0.fits");
+        save_fl_fits("wf0", "AOsystSim_wdir/wf0.fits");
     }
 
 
@@ -5604,8 +5604,8 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
             data.image[IDwfB].array.F[jj * size + ii] *= data.image[IDpupa].array.F[jj *
                     size + ii];
         }
-    save_fl_fits("wfA", "!AOsystSim_wdir/wfA.fits");
-    save_fl_fits("wfB", "!AOsystSim_wdir/wfB.fits");
+    save_fl_fits("wfA", "AOsystSim_wdir/wfA.fits");
+    save_fl_fits("wfB", "AOsystSim_wdir/wfB.fits");
     for(ii = 0; ii < size; ii++)
         for(jj = 0; jj < size; jj++)
         {
@@ -5613,7 +5613,7 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
             y = (1.0 * jj - 0.5 * size) / puprad;
             data.image[IDpupa].array.F[jj * size + ii] *= exp(-8.0 * (x * x + y * y));
         }
-    save_fl_fits("pupa", "!AOsystSim_wdir/pupa.fits");
+    save_fl_fits("pupa", "AOsystSim_wdir/pupa.fits");
 
 
     for(pr = 0; pr < NBprobesG; pr++)
@@ -5635,7 +5635,7 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
                                            data.image[IDwfA].array.F[ii] + coeffB * data.image[IDwfB].array.F[ii];
         }
 
-        sprintf(fname, "!AOsystSim_wdir/DMprobe%02ld.fits", pr);
+        sprintf(fname, "AOsystSim_wdir/DMprobe%02ld.fits", pr);
         save_fl_fits("wf", fname);
 
         mk_complex_from_amph("pupa", "wf", "wfc", 0);
@@ -5779,7 +5779,7 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
             data.image[ID1].array.F[jj1 * xsize + ii1] = tot1 - data.image[ID].array.F[jj1 *
                     xsize + ii1] / peak;
         }
-    save_fl_fits("psfprobeampC", "!AOsystSim_wdir/psfprobeampC.fits");
+    save_fl_fits("psfprobeampC", "AOsystSim_wdir/psfprobeampC.fits");
 
     // noise image
     IDnoise = create_3Dimage_ID("psfCcropnCn", xsize, ysize, NBprobesG);
@@ -5794,8 +5794,8 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
         }
 
 
-    save_fl_fits("psfCcrop", "!AOsystSim_wdir/psfCcrop.fits");
-    save_fl_fits("psfCcropn", "!AOsystSim_wdir/psfCcropn.fits");
+    save_fl_fits("psfCcrop", "AOsystSim_wdir/psfCcrop.fits");
+    save_fl_fits("psfCcropn", "AOsystSim_wdir/psfCcropn.fits");
 
     ID = image_ID("psfCcropn");
     ID1 =  create_3Dimage_ID("psfCcropnC", xsize, ysize, NBprobesG);
@@ -5821,9 +5821,9 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
                         CnoiseFloor;
                 }
             }
-    save_fl_fits("psfCcropnC", "!AOsystSim_wdir/psfCcropnC.fits");
+    save_fl_fits("psfCcropnC", "AOsystSim_wdir/psfCcropnC.fits");
     printf("Saving psfCcropnCn\n");
-    save_fl_fits("psfCcropnCn", "!AOsystSim_wdir/psfCcropnCnoise.fits");
+    save_fl_fits("psfCcropnCn", "AOsystSim_wdir/psfCcropnCnoise.fits");
 
     for(pr = 0; pr < NBprobesG; pr++)
     {
@@ -5836,7 +5836,7 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
                         size + jj * size + ii] / peak;
             }
 
-        sprintf(fname, "!AOsystSim_wdir/psfC_%03ld.fits", pr);
+        sprintf(fname, "AOsystSim_wdir/psfC_%03ld.fits", pr);
         save_fl_fits(imname, fname);
     }
 
@@ -5991,9 +5991,9 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
     do2dfft("pupc", "focc");
     permut("focc");
     mk_amph_from_complex("focc", "foca", "focp", 0);
-    save_fits("pupa", "!AOsystSim_wdir/test_pupa.fits");
-    save_fits("pupp", "!AOsystSim_wdir/test_pupp_A.fits");
-    save_fits("foca", "!AOsystSim_wdir/test_foca_A.fits");
+    save_fits("pupa", "AOsystSim_wdir/test_pupa.fits");
+    save_fits("pupp", "AOsystSim_wdir/test_pupp_A.fits");
+    save_fits("foca", "AOsystSim_wdir/test_foca_A.fits");
     delete_image_ID("pupc");
     delete_image_ID("focc");
     delete_image_ID("foca");
@@ -6013,8 +6013,8 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
     do2dfft("pupc", "focc");
     permut("focc");
     mk_amph_from_complex("focc", "foca", "focp", 0);
-    save_fits("pupp", "!AOsystSim_wdir/test_pupp_B.fits");
-    save_fits("foca", "!AOsystSim_wdir/test_foca_B.fits");
+    save_fits("pupp", "AOsystSim_wdir/test_pupp_B.fits");
+    save_fits("foca", "AOsystSim_wdir/test_foca_B.fits");
     delete_image_ID("pupc");
     delete_image_ID("focc");
     delete_image_ID("foca");
@@ -6033,8 +6033,8 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
     do2dfft("pupc", "focc");
     permut("focc");
     mk_amph_from_complex("focc", "foca", "focp", 0);
-    save_fits("pupp", "!AOsystSim_wdir/test_pupp_mA.fits");
-    save_fits("foca", "!AOsystSim_wdir/test_foca_mA.fits");
+    save_fits("pupp", "AOsystSim_wdir/test_pupp_mA.fits");
+    save_fits("foca", "AOsystSim_wdir/test_foca_mA.fits");
     delete_image_ID("pupc");
     delete_image_ID("focc");
     delete_image_ID("foca");
@@ -6053,8 +6053,8 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
     do2dfft("pupc", "focc");
     permut("focc");
     mk_amph_from_complex("focc", "foca", "focp", 0);
-    save_fits("pupp", "!AOsystSim_wdir/test_pupp_mB.fits");
-    save_fits("foca", "!AOsystSim_wdir/test_foca_mB.fits");
+    save_fits("pupp", "AOsystSim_wdir/test_pupp_mB.fits");
+    save_fits("foca", "AOsystSim_wdir/test_foca_mB.fits");
     delete_image_ID("pupc");
     delete_image_ID("focc");
     delete_image_ID("foca");
@@ -6075,8 +6075,8 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
     do2dfft("pupc", "focc");
     permut("focc");
     mk_amph_from_complex("focc", "foca", "focp", 0);
-    save_fits("pupp", "!AOsystSim_wdir/test_pupp_00.fits");
-    save_fits("foca", "!AOsystSim_wdir/test_foca_00.fits");
+    save_fits("pupp", "AOsystSim_wdir/test_pupp_00.fits");
+    save_fits("foca", "AOsystSim_wdir/test_foca_00.fits");
     delete_image_ID("pupc");
     delete_image_ID("focc");
     delete_image_ID("foca");
@@ -6419,7 +6419,7 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
                                              totFlux, probe_noise_prop, RON, CnoiseFloor); // computes data cube
             IDpsfCnoise = image_ID("psfCcropnCn");
             IDprobampC = image_ID("psfprobeampC");
-            save_fl_fits("psfC", "!psfC.fits");
+            save_fl_fits("psfC", "psfC.fits");
 
             ave = 0.0;
             avecnt = 0;
@@ -6758,20 +6758,20 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
         }
         if(mapmode > 0)
         {
-            save_fits("WFSerrmap", "!AOsystSim_wdir/WFSerrmap.fits");
-            save_fits("WFSsol_ptre", "!AOsystSim_wdir/WFSsol_ptre.fits");
-            save_fits("WFSsol_ptim", "!AOsystSim_wdir/WFSsol_ptim.fits");
-            save_fits("WFSsol_ptre_in", "!AOsystSim_wdir/WFSsol_ptre_in.fits");
-            save_fits("WFSsol_ptim_in", "!AOsystSim_wdir/WFSsol_ptim_in.fits");
-            save_fits("WFSsol_Iflux", "!AOsystSim_wdir/WFSsol_Iflux.fits");
+            save_fits("WFSerrmap", "AOsystSim_wdir/WFSerrmap.fits");
+            save_fits("WFSsol_ptre", "AOsystSim_wdir/WFSsol_ptre.fits");
+            save_fits("WFSsol_ptim", "AOsystSim_wdir/WFSsol_ptim.fits");
+            save_fits("WFSsol_ptre_in", "AOsystSim_wdir/WFSsol_ptre_in.fits");
+            save_fits("WFSsol_ptim_in", "AOsystSim_wdir/WFSsol_ptim_in.fits");
+            save_fits("WFSsol_Iflux", "AOsystSim_wdir/WFSsol_Iflux.fits");
             if(NBoptVar > 3)
             {
-                save_fits("WFSsol_are", "!AOsystSim_wdir/WFSsol_are.fits");
+                save_fits("WFSsol_are", "AOsystSim_wdir/WFSsol_are.fits");
             }
             if(NBoptVar > 4)
             {
-                save_fits("WFSsol_aim", "!AOsystSim_wdir/WFSsol_aim.fits");
-                save_fits("WFSsol_e", "!AOsystSim_wdir/WFSsol_e.fits");
+                save_fits("WFSsol_aim", "AOsystSim_wdir/WFSsol_aim.fits");
+                save_fits("WFSsol_e", "AOsystSim_wdir/WFSsol_e.fits");
             }
         }
 
@@ -6839,8 +6839,8 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
                     data.image[IDmap_Iflux_ave].array.F[ky * mapxsize + kx] = ave;
                     data.image[IDmap_Iflux_rms].array.F[ky * mapxsize + kx] = rms;
                 }
-            save_fits("WFSsol_Iflux_ave", "!AOsystSim_wdir/WFSsol_Iflux_ave.fits");
-            save_fits("WFSsol_Iflux_rms", "!AOsystSim_wdir/WFSsol_Iflux_rms.fits");
+            save_fits("WFSsol_Iflux_ave", "AOsystSim_wdir/WFSsol_Iflux_ave.fits");
+            save_fits("WFSsol_Iflux_rms", "AOsystSim_wdir/WFSsol_Iflux_rms.fits");
 
 
 
@@ -6876,8 +6876,8 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
                             data.image[IDmap_Iflux_rms].array.F[ky * mapxsize + kx] / sqrt(
                                 1.0 / FLUXph) / sqrt(ptre * ptre + ptim * ptim);
                     }
-                save_fits("WFSsol_Iflux_rmsn", "!AOsystSim_wdir/WFSsol_Iflux_rmsn.fits");
-                save_fits("WFSsol_Iflux_rmsn1", "!AOsystSim_wdir/WFSsol_Iflux_rmsn1.fits");
+                save_fits("WFSsol_Iflux_rmsn", "AOsystSim_wdir/WFSsol_Iflux_rmsn.fits");
+                save_fits("WFSsol_Iflux_rmsn1", "AOsystSim_wdir/WFSsol_Iflux_rmsn1.fits");
 
 
 
@@ -6912,7 +6912,7 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
                         rms = sqrt(rms);
                         data.image[IDmap_CA_rms].array.F[ky * mapxsize + kx] = sqrt(ave);
                     }
-                save_fits("WFSsol_CA_rms", "!AOsystSim_wdir/WFSsol_CA_rms.fits");
+                save_fits("WFSsol_CA_rms", "AOsystSim_wdir/WFSsol_CA_rms.fits");
 
                 IDmap_CA_rmsn = image_ID("WFSsol_CA_rmsn");
                 if(IDmap_CA_rmsn == -1)
@@ -6927,7 +6927,7 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
                             data.image[IDmap_CA_rms].array.F[ky * mapxsize + kx] * sqrt(FLUXph);
                     }
 
-                save_fits("WFSsol_CA_rmsn", "!AOsystSim_wdir/WFSsol_CA_rmsn.fits");
+                save_fits("WFSsol_CA_rmsn", "AOsystSim_wdir/WFSsol_CA_rmsn.fits");
             }
         }
 

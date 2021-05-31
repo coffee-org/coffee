@@ -5,12 +5,6 @@
  * Can design both APLCMC and PIAACMC coronagraphs
  *
  *
- * ## Change log
- * - 20180323  Guyon   minor syntax cleanup
- *
- *
- * @author  O. Guyon
- *
  *
  * @bug No known bugs.
  *

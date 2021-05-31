@@ -5,8 +5,6 @@
  * Can design both APLCMC and PIAACMC coronagraphs
  *
  *
- * @bug No known bugs.
- *
  */
 
 

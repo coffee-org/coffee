@@ -150,13 +150,13 @@ int PIAACMCsimul_makePIAAshapes(
 
             if(piaacmcsimul_var.PIAACMC_save == 1)
             {
-                sprintf(fname, "!%s/piaa0Cz.fits", piaacmcsimul_var.piaacmcconfdir);
+                sprintf(fname, "%s/piaa0Cz.fits", piaacmcsimul_var.piaacmcconfdir);
                 save_fits("piaa0Cz", fname);
 
-                sprintf(fname, "!%s/piaa0Fz.fits", piaacmcsimul_var.piaacmcconfdir);
+                sprintf(fname, "%s/piaa0Fz.fits", piaacmcsimul_var.piaacmcconfdir);
                 save_fits("piaa0Fz", fname);
 
-                sprintf(fname, "!%s/piaam0z.fits", piaacmcsimul_var.piaacmcconfdir);
+                sprintf(fname, "%s/piaam0z.fits", piaacmcsimul_var.piaacmcconfdir);
                 save_fits("piaam0z", fname);
             }
             delete_image_ID("piaa0Cz");
@@ -219,7 +219,7 @@ int PIAACMCsimul_makePIAAshapes(
                                                            sag2opd_coeff0;
                 }
 
-                sprintf(fname, "!%s/piaar0zsag.fits", piaacmcsimul_var.piaacmcconfdir);
+                sprintf(fname, "%s/piaar0zsag.fits", piaacmcsimul_var.piaacmcconfdir);
                 if(piaacmcsimul_var.PIAACMC_save == 1)
                 {
                     save_fl_fits("piaar0zsag", fname);
@@ -261,13 +261,13 @@ int PIAACMCsimul_makePIAAshapes(
 
             if(piaacmcsimul_var.PIAACMC_save == 1)
             {
-                sprintf(fname, "!%s/piaa1Cz.fits", piaacmcsimul_var.piaacmcconfdir);
+                sprintf(fname, "%s/piaa1Cz.fits", piaacmcsimul_var.piaacmcconfdir);
                 save_fits("piaa1Cz", fname);
 
-                sprintf(fname, "!%s/piaa1Fz.fits", piaacmcsimul_var.piaacmcconfdir);
+                sprintf(fname, "%s/piaa1Fz.fits", piaacmcsimul_var.piaacmcconfdir);
                 save_fits("piaa1Fz", fname);
 
-                sprintf(fname, "!%s/piaam1z.fits", piaacmcsimul_var.piaacmcconfdir);
+                sprintf(fname, "%s/piaam1z.fits", piaacmcsimul_var.piaacmcconfdir);
                 save_fits("piaam1z", fname);
             }
             delete_image_ID("piaa1Cz");
@@ -332,7 +332,7 @@ int PIAACMCsimul_makePIAAshapes(
                                                            sag2opd_coeff0;
                 }
 
-                sprintf(fname, "!%s/piaar1zsag.fits", piaacmcsimul_var.piaacmcconfdir);
+                sprintf(fname, "%s/piaar1zsag.fits", piaacmcsimul_var.piaacmcconfdir);
                 if(piaacmcsimul_var.PIAACMC_save == 1)
                 {
                     save_fl_fits("piaar1zsag", fname);

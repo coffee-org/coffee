@@ -112,8 +112,8 @@ long PIAACMCsimul_optimizeLyotStop_offaxis_min(
             data.image[IDindex].array.F[jj * xsize + ii] = minindex;
         }
 
-    save_fits("oals_index", "!test_oals_index.fits");
-    save_fits("oals_val", "!test_oals_val.fits");
+    save_fits("oals_index", "test_oals_index.fits");
+    save_fits("oals_val", "test_oals_val.fits");
 
     return 0;
 }
@@ -321,7 +321,7 @@ int PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
             }
 
 
-        sprintf(fname, "!%s/OAincohc.fits", piaacmcsimul_var.piaacmcconfdir);
+        sprintf(fname, "%s/OAincohc.fits", piaacmcsimul_var.piaacmcconfdir);
         // save the final result
         save_fits("OAincohc", fname);
     }
@@ -335,7 +335,7 @@ int PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     /// call function PIAACMCsimul_CA2propCubeInt() to compute 3D intensity cube
     /// @param[out] iprop00 3D intensity image
     PIAACMCsimul_CA2propCubeInt(fnamea, fnamep, zmin, zmax, NBpropstep, "iprop00");
-    //  save_fits("iprop00", "!test_iprop00.fits");
+    //  save_fits("iprop00", "test_iprop00.fits");
 
     /// ### Compute image that has the min along z of OAincohc at each x,y
     /// Function PIAACMCsimul_optimizeLyotStop_offaxis_min() computes minimal intensity image.

@@ -104,7 +104,7 @@ int PIAACMCsimul_measure_transm_curve()
 
 
     PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0);
-    sprintf(fname, "!%s/psfi0test_x00_y00.fits", piaacmcsimul_var.piaacmcconfdir);
+    sprintf(fname, "%s/psfi0test_x00_y00.fits", piaacmcsimul_var.piaacmcconfdir);
     save_fits("psfi0", fname);
 
     PIAACMCsimul_update_fnamedescr();
@@ -127,7 +127,7 @@ int PIAACMCsimul_measure_transm_curve()
         //valref = 
         PIAACMCsimul_computePSF(xld, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0);
         ID = image_ID("psfi0");
-        //            sprintf(fname, "!psfi0transm_%04.1f.fits", xld);
+        //            sprintf(fname, "psfi0transm_%04.1f.fits", xld);
         //           save_fits("psfi0", fname);
         printf("ID = %ld\n", ID);
         xsize = data.image[ID].md[0].size[0];

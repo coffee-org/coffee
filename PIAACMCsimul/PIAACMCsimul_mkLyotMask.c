@@ -222,7 +222,7 @@ long PIAACMCsimul_mkLyotMask(
             data.image[ID1].array.F[ii] = data.image[IDmc].array.F[ii] *
                                           data.image[IDout].array.F[ii];
         }
-        save_fits("postLMim", "!postLMim.fits");
+        save_fits("postLMim", "postLMim.fits");
         delete_image_ID("postLMim");
     }
 

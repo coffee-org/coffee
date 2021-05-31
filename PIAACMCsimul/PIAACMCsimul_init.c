@@ -4,12 +4,6 @@
  *
  * Can design both APLCMC and PIAACMC coronagraphs
  *
- * @author  O. Guyon
- * @date    21 nov 2017
- *
- *
- * @bug No known bugs.
- *
  */
 
 
@@ -66,7 +60,7 @@ void PIAACMCsimul_init(
 )
 {
     FILE *fp;
- //   FILE *fpri;
+//   FILE *fpri;
     long k, i;
     long size;
     double x, y; //, PA;
@@ -260,7 +254,7 @@ void PIAACMCsimul_init(
                     }
                 }
 
-        sprintf(fname_pupa0, "!%s/pupa0_%ld.fits", piaacmcsimul_var.piaacmcconfdir,
+        sprintf(fname_pupa0, "%s/pupa0_%ld.fits", piaacmcsimul_var.piaacmcconfdir,
                 size);
         save_fl_fits("pupa0", fname_pupa0);
     }
@@ -312,7 +306,7 @@ void PIAACMCsimul_init(
             }
     }
 
-    // sprintf(fname, "!%s/TTm.fits", piaacmcsimul_var.piaacmcconfdir);
+    // sprintf(fname, "%s/TTm.fits", piaacmcsimul_var.piaacmcconfdir);
     // save_fits("TTm", fname);
 
     // finish the definition of the TT mirror specifying various properties
@@ -564,8 +558,8 @@ void PIAACMCsimul_init(
         // TEST
 
         mk_reim_from_complex("piaacmcfpm", "piaacmcfpm_re", "piaacmcfpm_im", 0);
-        save_fits("piaacmcfpm_re", "!./testdir/test_piaacmcfpm_re.fits");
-        save_fits("piaacmcfpm_im", "!./testdir/test_piaacmcfpm_im.fits");
+        save_fits("piaacmcfpm_re", "./testdir/test_piaacmcfpm_re.fits");
+        save_fits("piaacmcfpm_im", "./testdir/test_piaacmcfpm_im.fits");
         delete_image_ID("piaacmcfpm_re");
         delete_image_ID("piaacmcfpm_im");
 
