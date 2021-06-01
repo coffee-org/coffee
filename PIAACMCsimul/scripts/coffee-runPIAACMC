@@ -1363,6 +1363,7 @@ PIAACMC_nblambda=1
 PIAACMC_lambda=${lambda}
 
 # load mask if available
+loadfits .errcode 0
 loadfits "_pupmaskload.fits" pupmaskim
 
 piaacmcsimrun $1 0
