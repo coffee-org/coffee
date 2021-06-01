@@ -207,7 +207,7 @@ int PIAACMCsimul_exec_compute_image()
             }
             fclose(fp);
             // we're done!  Save it, overwriting previous scene.fits file
-            save_fits("scene", "!scene.fits");
+            save_fits("scene", "scene.fits");
         }
         else // scene.txt does not exist, just do an on-axis source
         {

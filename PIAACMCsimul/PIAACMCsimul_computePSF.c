@@ -280,7 +280,7 @@ double PIAACMCsimul_computePSF(
         if(piaacmcsimul_var.PIAACMC_save == 1)
         {
             // save a disgnostic image
-            sprintf(fname, "!%s/scoringmask%d.fits", piaacmcsimul_var.piaacmcconfdir,
+            sprintf(fname, "%s/scoringmask%d.fits", piaacmcsimul_var.piaacmcconfdir,
                     piaacmcsimul_var.SCORINGMASKTYPE);
             save_fits("scoringmask", fname);
         }
@@ -412,7 +412,7 @@ double PIAACMCsimul_computePSF(
             linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
             // save the intensity of the first point
             copy_image_ID("psfi0", "psfi0ext", 0);
-            //sprintf(fname, "!%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
+            //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
             //save_fits("psfi0", fname);
             imindex++;
 
@@ -428,7 +428,7 @@ double PIAACMCsimul_computePSF(
                 linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
                 // add the intensity to build up PSF for extended source
                 arith_image_add_inplace("psfi0ext", "psfi0");
-                //sprintf(fname, "!%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
+                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
                 //save_fits("psfi0", fname);
                 imindex++;
 
@@ -442,7 +442,7 @@ double PIAACMCsimul_computePSF(
                 linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
                 // add the intensity to build up PSF for extended source
                 arith_image_add_inplace("psfi0ext", "psfi0");
-                //sprintf(fname, "!%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
+                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
                 //save_fits("psfi0", fname);
                 imindex++;
             }
@@ -459,7 +459,7 @@ double PIAACMCsimul_computePSF(
                                 piaacmcsimul_var.piaacmcconfdir, 0);
                 linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
                 arith_image_add_inplace("psfi0ext", "psfi0");
-                //sprintf(fname, "!%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
+                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
                 //save_fits("psfi0", fname);
                 imindex++;
 
@@ -472,7 +472,7 @@ double PIAACMCsimul_computePSF(
                                 piaacmcsimul_var.piaacmcconfdir, 0);
                 linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
                 arith_image_add_inplace("psfi0ext", "psfi0");
-                //sprintf(fname, "!%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
+                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
                 //save_fits("psfi0", fname);
                 imindex++;
 
@@ -484,7 +484,7 @@ double PIAACMCsimul_computePSF(
                                 piaacmcsimul_var.piaacmcconfdir, 0);
                 linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
                 arith_image_add_inplace("psfi0ext", "psfi0");
-                //sprintf(fname, "!%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
+                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
                 //save_fits("psfi0", fname);
                 imindex++;
 
@@ -517,7 +517,7 @@ double PIAACMCsimul_computePSF(
                                 piaacmcsimul_var.piaacmcconfdir, 0);
                 linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
                 arith_image_add_inplace("psfi0ext", "psfi0");
-                //sprintf(fname, "!%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex); //TEST
+                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex); //TEST
                 //save_fits("psfi0", fname); //TEST
                 delete_image_ID("opderr");
 
@@ -532,7 +532,7 @@ double PIAACMCsimul_computePSF(
             if(outsave == 1)
             {
                 PIAACMCsimul_update_fnamedescr();
-                sprintf(fname, "!%s/psfi0_exsrc%03d_sm%d.%s.fits",
+                sprintf(fname, "%s/psfi0_exsrc%03d_sm%d.%s.fits",
                         piaacmcsimul_var.piaacmcconfdir, sourcesize, piaacmcsimul_var.SCORINGMASKTYPE,
                         piaacmcsimul_var.fnamedescr);
                 save_fits("psfi0ext", fname);
@@ -604,7 +604,7 @@ double PIAACMCsimul_computePSF(
             if(outsave == 1)
             {
                 PIAACMCsimul_update_fnamedescr();
-                sprintf(fname, "!%s/flux_exsrc%03d_sm%d.%s.txt",
+                sprintf(fname, "%s/flux_exsrc%03d_sm%d.%s.txt",
                         piaacmcsimul_var.piaacmcconfdir, sourcesize, piaacmcsimul_var.SCORINGMASKTYPE,
                         piaacmcsimul_var.fnamedescr);
                 fpflux = fopen(fname, "w");
@@ -696,7 +696,7 @@ double PIAACMCsimul_computePSF(
             if(outsave == 1)
             {
                 PIAACMCsimul_update_fnamedescr();
-                sprintf(fname, "!%s/psfi0_ptsrc_sm%d.%s.fits", piaacmcsimul_var.piaacmcconfdir,
+                sprintf(fname, "%s/psfi0_ptsrc_sm%d.%s.fits", piaacmcsimul_var.piaacmcconfdir,
                         piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
                 save_fits("psfi0", fname);
             }
@@ -707,12 +707,12 @@ double PIAACMCsimul_computePSF(
             linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", "imvect");
 
 
-            save_fits("imvect", "!./testdir/test_imvect.fits");
+            save_fits("imvect", "./testdir/test_imvect.fits");
 
 
             // extract amplitude and phase for diagnostics
             //mk_amph_from_complex("psfc0", "psfc0a", "psfc0p", 0);
-            //save_fits("psfc0a", "!test_psfc0a.fits");
+            //save_fits("psfc0a", "test_psfc0a.fits");
             //list_image_ID();
             //delete_image_ID("psfc0a");
             //delete_image_ID("psfc0p");
@@ -722,9 +722,9 @@ double PIAACMCsimul_computePSF(
             // if(savepsf==2)
             //	{
             //	mk_reim_from_complex("psfc0", "psfc0re", "psfc0im", 0);
-            /*					save_fits("psfi0", "!test_psfi0.fits");
-            					save_fits("psfc0re", "!test_psfc0re.fits");
-            					save_fits("psfc0im", "!test_psfc0im.fits");
+            /*					save_fits("psfi0", "test_psfi0.fits");
+            					save_fits("psfc0re", "test_psfc0re.fits");
+            					save_fits("psfc0im", "test_psfc0im.fits");
             					sleep(100000);*/
 
             //	}

@@ -189,7 +189,7 @@ int PIAACMCsimul_eval_poly_design()
     fflush(stdout);
     //sleep(10);
     valref = PIAACMCsimul_computePSF(5.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0);
-    sprintf(fname, "!%s/psfi0_x50_y00.fits", piaacmcsimul_var.piaacmcconfdir);
+    sprintf(fname, "%s/psfi0_x50_y00.fits", piaacmcsimul_var.piaacmcconfdir);
     save_fits("psfi0", fname);
     //load_fits(fname, "psfi");
 
@@ -230,7 +230,7 @@ int PIAACMCsimul_eval_poly_design()
     fflush(stdout);
     //sleep(10);
     valref = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 1);
-    sprintf(fname, "!%s/psfi0_x00_y00.fits", piaacmcsimul_var.piaacmcconfdir);
+    sprintf(fname, "%s/psfi0_x00_y00.fits", piaacmcsimul_var.piaacmcconfdir);
     save_fits("psfi0", fname);
     //load_fits(fname, "psfi");
 
@@ -337,7 +337,7 @@ int PIAACMCsimul_eval_poly_design()
 
     valref = 0.25 * PIAACMCsimul_computePSF(ldoffset, 0.0, 0, optsyst[0].NBelem, 0,
                                             0, 0, 0);
-    sprintf(fname, "!%s/psfi0_p0.fits", piaacmcsimul_var.piaacmcconfdir);
+    sprintf(fname, "%s/psfi0_p0.fits", piaacmcsimul_var.piaacmcconfdir);
     save_fits("psfi0", fname);
     ID = image_ID("psfi0");
     IDre = image_ID("psfre0");
@@ -354,7 +354,7 @@ int PIAACMCsimul_eval_poly_design()
 
     valref += 0.25 * PIAACMCsimul_computePSF(-ldoffset, 0.0, 0, optsyst[0].NBelem,
               0, 0, 0, 0);
-    sprintf(fname, "!%s/psfi0_m0.fits", piaacmcsimul_var.piaacmcconfdir);
+    sprintf(fname, "%s/psfi0_m0.fits", piaacmcsimul_var.piaacmcconfdir);
     save_fits("psfi0", fname);
     ID = image_ID("psfi0");
     IDre = image_ID("psfre0");
@@ -371,7 +371,7 @@ int PIAACMCsimul_eval_poly_design()
 
     valref += 0.25 * PIAACMCsimul_computePSF(0.0, ldoffset, 0, optsyst[0].NBelem, 0,
               0, 0, 0);
-    sprintf(fname, "!%s/psfi0_0p.fits", piaacmcsimul_var.piaacmcconfdir);
+    sprintf(fname, "%s/psfi0_0p.fits", piaacmcsimul_var.piaacmcconfdir);
     save_fits("psfi0", fname);
     ID = image_ID("psfi0");
     IDre = image_ID("psfre0");
@@ -388,7 +388,7 @@ int PIAACMCsimul_eval_poly_design()
 
     valref += 0.25 * PIAACMCsimul_computePSF(0.0, -ldoffset, 0, optsyst[0].NBelem,
               0, 0, 0, 0);
-    sprintf(fname, "!%s/psfi0_0m.fits", piaacmcsimul_var.piaacmcconfdir);
+    sprintf(fname, "%s/psfi0_0m.fits", piaacmcsimul_var.piaacmcconfdir);
     save_fits("psfi0", fname);
     ID = image_ID("psfi0");
     IDre = image_ID("psfre0");
@@ -423,7 +423,7 @@ int PIAACMCsimul_eval_poly_design()
         }
         PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0); // add error to the data
         PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0);
-        sprintf(fname, "!%s/psfi0_opderr%02ld.fits", piaacmcsimul_var.piaacmcconfdir,
+        sprintf(fname, "%s/psfi0_opderr%02ld.fits", piaacmcsimul_var.piaacmcconfdir,
                 OPDmode);
         save_fits("psfi0", fname);
         delete_image_ID("opderr");
@@ -461,25 +461,25 @@ int PIAACMCsimul_eval_poly_design()
 
 
     // same as psfi0_extsrc
-    //    sprintf(fname, "!%s/psfi0_starim.%s.fits", piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.fnamedescr);
+    //    sprintf(fname, "%s/psfi0_starim.%s.fits", piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.fnamedescr);
     //    save_fits("starim", fname);
 
 
 
     PIAACMCsimul_update_fnamedescr();
-    sprintf(fname, "!%s/psfi0_extsrc%2ld_sm%d.%s.fits",
+    sprintf(fname, "%s/psfi0_extsrc%2ld_sm%d.%s.fits",
             piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
             piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
     save_fits("starim", fname);
 
     PIAACMCsimul_update_fnamedescr();
-    sprintf(fname, "!%s/psfi0INC_extsrc%2ld_sm%d.%s.fits",
+    sprintf(fname, "%s/psfi0INC_extsrc%2ld_sm%d.%s.fits",
             piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
             piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
     save_fits("starimINC", fname);
 
     PIAACMCsimul_update_fnamedescr();
-    sprintf(fname, "!%s/psfi0COH_extsrc%2ld_sm%d.%s.fits",
+    sprintf(fname, "%s/psfi0COH_extsrc%2ld_sm%d.%s.fits",
             piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
             piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
     save_fits("starimCOH", fname);
