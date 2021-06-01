@@ -4,12 +4,6 @@
  *
  * Can design both APLCMC and PIAACMC coronagraphs
  *
- * @author  O. Guyon
- * @date    26 nov 2017
- *
- *
- * @bug No known bugs.
- *
  */
 
 
@@ -436,7 +430,7 @@ int PIAACMCsimul_exec(
     //int alphascaninit = 0;
 
     uint32_t *sizearray;
-    long IDstatus;
+    imageID IDstatus;
 
     double valContrast;
     //double tmp;
@@ -479,10 +473,19 @@ int PIAACMCsimul_exec(
     // Create status shared variable
     // this allows realtime monitoring of the code by other processes
     // sets status at different points in the code
+    // has 4 pixels :
+    // - pixel 0    major step
+    // - pixel 1    minor step
+    // - pixel 2    source code file
+    // - pixel 3    source code line number
     IDstatus = image_ID("stat_PIAACMCsimulexec");
     if(IDstatus == -1)
     {
+        printf("Looking for stat_PIAACMCsimulexec\n");
+        fflush(stdout);
         IDstatus = read_sharedmem_image("stat_PIAACMCsimulexec");
+        printf("ID for stat_PIAACMCsimulexec: %ld\n", IDstatus);
+        fflush(stdout);
     }
 
     sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
@@ -490,10 +493,16 @@ int PIAACMCsimul_exec(
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
-    sizearray[0] = 1;
+    sizearray[0] = 4;
     sizearray[1] = 1;
-    IDstatus = create_image_ID("stat_PIAACMCsimulexec", 2, sizearray,
-                               _DATATYPE_UINT16, 1, 0, 0);
+    IDstatus = create_image_ID(
+                   "stat_PIAACMCsimulexec",
+                   2,
+                   sizearray,
+                   _DATATYPE_UINT16,
+                   1,
+                   0,
+                   0);
     free(sizearray);
 
 
