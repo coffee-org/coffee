@@ -195,7 +195,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
             ID_CPAfreq = image_ID("cpamodesfreq");
             if(ID_CPAfreq == -1)
             {
-                ID_CPAfreq = load_fits("cpamodesfreq.fits", "cpamodesfreq", 2);
+                ID_CPAfreq = load_fits("cpamodesfreq.fits", "cpamodesfreq", LOADFITS_ERRCODE_EXIT);
             }
         }
 
