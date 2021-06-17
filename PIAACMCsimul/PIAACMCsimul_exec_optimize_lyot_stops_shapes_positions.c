@@ -141,7 +141,7 @@ long PIAACMCsimul_optimizeLyotStop_offaxis_min(
   *
   *
   */
-int PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
+errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
 {
     imageID IDv;
     double fpmradld = 0.95;  // default
@@ -242,7 +242,14 @@ int PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
 
     oaoffset = 20.0; // off axis amplitude
     // compute the reference on-axis PSF
-    PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0);
+    {
+        double cval = 0.0;
+        errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &cval);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+        }
+    }
 
     // filenames of the complex amplitude and phase in the post FPM pupil plane indexed by elem0
     sprintf(fnamea, "WFamp0_%03ld", elem0);
@@ -295,10 +302,18 @@ int PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
             {
                 // compute PSF for a point at this angle with scaled offset
                 // PIAACMCsimul_computePSF changes fnamea and fnamep (in call to OptSystProp_run)!
-                PIAACMCsimul_computePSF(oaoffset * (1.0 + kr) / NBkr * cos(
-                                            2.0 * M_PI * k1 / NBincpt),
-                                        oaoffset * (1.0 + kr) / NBkr * sin(2.0 * M_PI * k1 / NBincpt), 0,
-                                        optsyst[0].NBelem, 0, 0, 0, 0);
+                {
+                    double cval = 0.0;
+                    errno_t fret = PIAACMCsimul_computePSF(oaoffset * (1.0 + kr) / NBkr * cos(
+                            2.0 * M_PI * k1 / NBincpt),
+                                                           oaoffset * (1.0 + kr) / NBkr * sin(2.0 * M_PI * k1 / NBincpt), 0,
+                                                           optsyst[0].NBelem, 0, 0, 0, 0, &cval);
+                    if( fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+                    }
+                }
+
                 // propagate that elem0 from zmin to zmax with new PSF
                 ID1 = PIAACMCsimul_CA2propCubeInt(fnamea, fnamep, zmin, zmax, NBpropstep,
                                                   "iproptmp");
@@ -329,7 +344,14 @@ int PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
 
 
     /// ### Compute on-axis PSF 3D intensity to define light to reject
-    PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0);
+    {
+        double cval = 0.0;
+        errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &cval);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+        }
+    }
     // propagate it into the optical system, with result in image named "iprop00"
 
     /// call function PIAACMCsimul_CA2propCubeInt() to compute 3D intensity cube
@@ -380,7 +402,7 @@ int PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
                                piaacmcsimul_var.piaacmcconfdir, ls, piaacmcsimul_var.piaacmcconfdir, ls);
     }
 
-    return 0;
+    return RETURN_SUCCESS;
 }
 
 

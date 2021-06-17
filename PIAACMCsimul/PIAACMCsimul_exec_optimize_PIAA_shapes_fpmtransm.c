@@ -99,9 +99,13 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
 
     if(0) // TEST
     {
-        double valref;
+        double valref = 0.0;
 
-        valref = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 1);
+        errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 1, &valref);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+        }
         printf("valref = %g\n", valref);
         printf("EXEC CASE 40 COMPLETED\n");
     }

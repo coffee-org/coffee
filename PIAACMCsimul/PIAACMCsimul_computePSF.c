@@ -4,11 +4,6 @@
  *
  * Can design both APLCMC and PIAACMC coronagraphs
  *
- * @author  O. Guyon
- * @date    21 nov 2017
- *
- *
- * @bug No known bugs.
  *
  */
 
@@ -82,7 +77,7 @@ extern OPTPIAACMCDESIGN *piaacmc;
 
 
 
-double PIAACMCsimul_computePSF(
+errno_t PIAACMCsimul_computePSF(
     float xld, 			/// @param[in]   xld         float: Source X position [l/D]
     float yld, 			/// @param[in]   yld         float: Source Y position [l/D]
     long startelem, 	/// @param[in]   startelem   long : First element in propagation
@@ -90,35 +85,20 @@ double PIAACMCsimul_computePSF(
     int savepsf, 		/// @param[in]   savepsf     int  : Save PSF flag
     int sourcesize, 	/// @param[in]   sourcezise  int  : Source size (10x log10)
     int extmode, 		/// @param[in]   extmode     int  : Source extended type
-    int outsave			/// @param[in]   outsave     int  : Save output flag
+    int outsave,		/// @param[in]   outsave     int  : Save output flag
+    double *contrastval /// @param[out]  contrastval *double : contrast value
 )
 {
     FILE *fp;
     FILE *fpflux;
     double x, y;
-//    imageID IDa, IDp;
     uint32_t size;
-//    long nblambda;
-//    uint64_t size2;
-//    long k;
-//    imageID IDpiaa1z, IDpiaa2z;
     long elem;
     long kl;
 
-//    char fname_piaa1z[500];
-//    char fname_piaa2z[500];
-//   char fname_pupa0[500];
-//    char fname_pupp0[500];
     char fname[1500];
 
     imageID ID;
-//    long index;
-
-//    double proplim = 1.0e-4;
-//    double total;
-
-//    uint32_t size0, size1;
-//    long Cmsize, Fmsize;
 
 
     // how to measure quality
@@ -404,8 +384,19 @@ double PIAACMCsimul_computePSF(
 
             // propagate it (optsyst is a global), output in psfc0 (complex amlitude)
             // and psfi0 (intensity)
-            OptSystProp_run(optsyst, 0, startelem, optsyst[0].NBelem,
-                            piaacmcsimul_var.piaacmcconfdir, 0);
+            {
+                errno_t fret = OptSystProp_run(
+                                   optsyst,
+                                   0,
+                                   startelem, optsyst[0].NBelem,
+                                   piaacmcsimul_var.piaacmcconfdir,
+                                   0);
+
+                if( fret != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to OptSystProp_run failed");
+                }
+            }
 
 
             // convert the image to the vector
@@ -423,8 +414,21 @@ double PIAACMCsimul_computePSF(
                 pha = 2.0 * M_PI / 3.0; // 1/3 around the circle
                 PIAACMCsimul_init(piaacmc, 0, xld + rad1 * cos(pha), yld + rad1 * sin(pha));
                 PIAACMCsimul_makePIAAshapes(piaacmc, 0);
-                OptSystProp_run(optsyst, 0, startelem, optsyst[0].NBelem,
-                                piaacmcsimul_var.piaacmcconfdir, 0);
+
+                {
+                    errno_t fret = OptSystProp_run(
+                                       optsyst,
+                                       0,
+                                       startelem,
+                                       optsyst[0].NBelem,
+                                       piaacmcsimul_var.piaacmcconfdir,
+                                       0);
+                    if( fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to OptSystProp_run failed");
+                    }
+                }
+
                 linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
                 // add the intensity to build up PSF for extended source
                 arith_image_add_inplace("psfi0ext", "psfi0");
@@ -437,8 +441,21 @@ double PIAACMCsimul_computePSF(
                 pha = 4.0 * M_PI / 3.0; // 2/3 around the circle
                 PIAACMCsimul_init(piaacmc, 0, xld + rad1 * cos(pha), yld + rad1 * sin(pha));
                 PIAACMCsimul_makePIAAshapes(piaacmc, 0);
-                OptSystProp_run(optsyst, 0, startelem, optsyst[0].NBelem,
-                                piaacmcsimul_var.piaacmcconfdir, 0);
+
+                {
+                    errno_t fret = OptSystProp_run(
+                                       optsyst,
+                                       0,
+                                       startelem,
+                                       optsyst[0].NBelem,
+                                       piaacmcsimul_var.piaacmcconfdir,
+                                       0);
+                    if( fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to OptSystProp_run failed");
+                    }
+                }
+
                 linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
                 // add the intensity to build up PSF for extended source
                 arith_image_add_inplace("psfi0ext", "psfi0");
@@ -455,8 +472,21 @@ double PIAACMCsimul_computePSF(
                 pha = M_PI / 3.0;
                 PIAACMCsimul_init(piaacmc, 0, xld + rad2 * cos(pha), yld + rad2 * sin(pha));
                 PIAACMCsimul_makePIAAshapes(piaacmc, 0);
-                OptSystProp_run(optsyst, 0, startelem, optsyst[0].NBelem,
-                                piaacmcsimul_var.piaacmcconfdir, 0);
+
+                {
+                    errno_t fret = OptSystProp_run(
+                                       optsyst,
+                                       0,
+                                       startelem,
+                                       optsyst[0].NBelem,
+                                       piaacmcsimul_var.piaacmcconfdir,
+                                       0);
+                    if( fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to OptSystProp_run failed");
+                    }
+                }
+
                 linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
                 arith_image_add_inplace("psfi0ext", "psfi0");
                 //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
@@ -468,8 +498,21 @@ double PIAACMCsimul_computePSF(
                 pha = 2.0 * M_PI / 3.0 + M_PI / 3.0;
                 PIAACMCsimul_init(piaacmc, 0, xld + rad2 * cos(pha), yld + rad2 * sin(pha));
                 PIAACMCsimul_makePIAAshapes(piaacmc, 0);
-                OptSystProp_run(optsyst, 0, startelem, optsyst[0].NBelem,
-                                piaacmcsimul_var.piaacmcconfdir, 0);
+
+                {
+                    errno_t fret = OptSystProp_run(
+                                       optsyst,
+                                       0,
+                                       startelem,
+                                       optsyst[0].NBelem,
+                                       piaacmcsimul_var.piaacmcconfdir,
+                                       0);
+                    if( fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to OptSystProp_run failed");
+                    }
+                }
+
                 linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
                 arith_image_add_inplace("psfi0ext", "psfi0");
                 //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
@@ -480,8 +523,21 @@ double PIAACMCsimul_computePSF(
                 pha = 4.0 * M_PI / 3.0 + M_PI / 3.0;
                 PIAACMCsimul_init(piaacmc, 0, xld + rad2 * cos(pha), yld + rad2 * sin(pha));
                 PIAACMCsimul_makePIAAshapes(piaacmc, 0);
-                OptSystProp_run(optsyst, 0, startelem, optsyst[0].NBelem,
-                                piaacmcsimul_var.piaacmcconfdir, 0);
+
+                {
+                    errno_t fret = OptSystProp_run(
+                                       optsyst,
+                                       0,
+                                       startelem,
+                                       optsyst[0].NBelem,
+                                       piaacmcsimul_var.piaacmcconfdir,
+                                       0);
+                    if( fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to OptSystProp_run failed");
+                    }
+                }
+
                 linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
                 arith_image_add_inplace("psfi0ext", "psfi0");
                 //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
@@ -513,8 +569,21 @@ double PIAACMCsimul_computePSF(
                 }
                 PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0); // add error to the data
                 PIAACMCsimul_makePIAAshapes(piaacmc, 0);
-                OptSystProp_run(optsyst, 0, startelem, optsyst[0].NBelem,
-                                piaacmcsimul_var.piaacmcconfdir, 0);
+
+                {
+                    errno_t fret = OptSystProp_run(
+                                       optsyst,
+                                       0,
+                                       startelem,
+                                       optsyst[0].NBelem,
+                                       piaacmcsimul_var.piaacmcconfdir,
+                                       0);
+                    if( fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to OptSystProp_run failed");
+                    }
+                }
+
                 linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
                 arith_image_add_inplace("psfi0ext", "psfi0");
                 //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex); //TEST
@@ -690,8 +759,20 @@ double PIAACMCsimul_computePSF(
             // ============ perform propagations ================
             // propagate it (optsyst is a global), output in psfc0 (complex amlitude)
             // and psfi0 (intensity)
-            OptSystProp_run(optsyst, 0, startelem, optsyst[0].NBelem,
-                            piaacmcsimul_var.piaacmcconfdir, 0);
+
+            {
+                errno_t fret = OptSystProp_run(
+                                   optsyst,
+                                   0,
+                                   startelem,
+                                   optsyst[0].NBelem,
+                                   piaacmcsimul_var.piaacmcconfdir,
+                                   0);
+                if( fret != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to OptSystProp_run failed");
+                }
+            }
 
             if(outsave == 1)
             {
@@ -855,6 +936,8 @@ double PIAACMCsimul_computePSF(
         }
     }
 
-    return(avContrast);
+    *contrastval = avContrast;
+
+    return RETURN_SUCCESS;
 }
 

@@ -101,17 +101,17 @@ int PIAACMCsimul_exec_multizone_fpm_calib()
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
-/*
-    if((IDv = variable_ID("PIAACMC_nblambda")) != -1)
-    {
-        tmpnblambda = data.variable[IDv].value.f;
-    }
+    /*
+        if((IDv = variable_ID("PIAACMC_nblambda")) != -1)
+        {
+            tmpnblambda = data.variable[IDv].value.f;
+        }
 
-    if((IDv = variable_ID("PIAACMC_NBrings")) != -1)
-    {
-        tmpNBrings = data.variable[IDv].value.f;
-    }
-*/
+        if((IDv = variable_ID("PIAACMC_NBrings")) != -1)
+        {
+            tmpNBrings = data.variable[IDv].value.f;
+        }
+    */
     // initialize
     PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 1);
 
@@ -312,9 +312,15 @@ int PIAACMCsimul_exec_multizone_fpm_calib()
             //
 
 
-            val = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
-                                          piaacmcsimul_var.computePSF_ResolvedTarget,
-                                          piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0);
+            {
+                errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
+                                                       piaacmcsimul_var.computePSF_ResolvedTarget,
+                                                       piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &val);
+                if( fret != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+                }
+            }
             printf("val = %g\n", val);
             ID = image_ID("imvect");
 
@@ -526,9 +532,15 @@ int PIAACMCsimul_exec_multizone_fpm_calib()
                     fflush(stdout);
 
                     // compute the on-axis PSF
-                    val = PIAACMCsimul_computePSF(0.0, 0.0, elem0, optsyst[0].NBelem, 0,
-                                                  piaacmcsimul_var.computePSF_ResolvedTarget,
-                                                  piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0);
+                    {
+                        errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, elem0, optsyst[0].NBelem, 0,
+                                                               piaacmcsimul_var.computePSF_ResolvedTarget,
+                                                               piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &val);
+                        if( fret != RETURN_SUCCESS)
+                        {
+                            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+                        }
+                    }
                     // The PSF result for the evaluation points is put in array "imvect" which previously was
                     // assigned to another PSF result.
                     // Should put another ID = image_ID("imvect") here *************************************

@@ -48,25 +48,24 @@ extern OPTPIAACMCDESIGN *piaacmc;
  *
  */
 
-int PIAACMCsimul_exec_compute_image()
+errno_t PIAACMCsimul_exec_compute_image()
 {
-    long IDv;
+    imageID IDv;
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
     int PIAACMC_WFCmode = 0;
     uint32_t *sizearray;
     FILE *fp;
-    long IDopderrC;
+    imageID IDopderrC;
     long sizecrop;
-    long k, ii, jj, ii1, jj1;
     double xpos, ypos, fval;
     int initscene;
-    long IDscene;
-    long xsize, ysize, zsize;
-    long ID;
+    imageID IDscene;
+    uint32_t xsize, ysize, zsize;
+    imageID ID;
     long iter;
-    long IDpsfi0;
+    imageID IDpsfi0;
     double valref;
 
 
@@ -144,18 +143,26 @@ int PIAACMCsimul_exec_compute_image()
         iter = 0;
         while(iter < 10)
         {
-            PIAACMCsimul_computePSF(xpos, ypos, 0, optsyst[0].NBelem, 1, 0, 0, 1);
+            {
+                double cval = 0.0;
+                errno_t fret = PIAACMCsimul_computePSF(xpos, ypos, 0, optsyst[0].NBelem, 1, 0, 0, 1, &cval);
+                if( fret != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+                }
+            }
+
             ID = image_ID("psfi0");
 
             // copy results to IDpsfi0
             data.image[IDpsfi0].md[0].write = 1;
 
-            for(k = 0; k < piaacmc[0].nblambda; k++)
-                for(ii1 = 0; ii1 < sizecrop; ii1++)
-                    for(jj1 = 0; jj1 < sizecrop; jj1++)
+            for(long k = 0; k < piaacmc[0].nblambda; k++)
+                for(long ii1 = 0; ii1 < sizecrop; ii1++)
+                    for(long jj1 = 0; jj1 < sizecrop; jj1++)
                     {
-                        ii = ii1 + (piaacmc[0].size - sizecrop) / 2;
-                        jj = jj1 + (piaacmc[0].size - sizecrop) / 2;
+                        long ii = ii1 + (piaacmc[0].size - sizecrop) / 2;
+                        long jj = jj1 + (piaacmc[0].size - sizecrop) / 2;
                         data.image[IDpsfi0].array.F[k * sizecrop * sizecrop + jj1 * sizecrop + ii1] =
                             data.image[ID].array.F[k * piaacmc[0].size * piaacmc[0].size + jj *
                                                    piaacmc[0].size + ii];
@@ -182,7 +189,15 @@ int PIAACMCsimul_exec_compute_image()
             {
                 printf("COMPUTING PSF AT POSITION %lf %lf, flux  = %g\n", xpos, ypos, fval);
                 // make the actual PSF
-                PIAACMCsimul_computePSF(xpos, ypos, 0, optsyst[0].NBelem, 1, 0, 0, 1);
+                {
+                    double cval = 0.0;
+                    errno_t fret = PIAACMCsimul_computePSF(xpos, ypos, 0, optsyst[0].NBelem, 1, 0, 0, 1, &cval);
+                    if( fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+                    }
+                }
+
                 // get the image "psfi0" index, which was created in PIAACMCsimul_computePSF
                 ID = image_ID("psfi0");
                 // get image size.  3rd dimension is wavelength
@@ -198,7 +213,7 @@ int PIAACMCsimul_exec_compute_image()
                 }
                 ID = image_ID("psfi0");
                 // sum the current PSF into the image: summed image is IDscene, source is ID
-                for(ii = 0; ii < xsize * ysize * zsize; ii++)
+                for(uint64_t ii = 0; ii < xsize * ysize * zsize; ii++)
                 {
                     data.image[IDscene].array.F[ii] += fval * data.image[ID].array.F[ii];
                 }
@@ -211,13 +226,18 @@ int PIAACMCsimul_exec_compute_image()
         }
         else // scene.txt does not exist, just do an on-axis source
         {
-            valref = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 1);
+            {
+                errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 1, &valref);
+                if( fret != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+                }
+            }
             printf("valref = %g\n", valref);
         }
     }
 
-    return 0;
-
+    return RETURN_SUCCESS;
 }
 
 

@@ -133,7 +133,13 @@ int PIAACMCsimul_exec_optimize_fpmtransmission()
             // compute on-axis PSF of all optical elements returning contrast in evaluation zone
             // ************************* need to do all optsyst[0].NBelem?
             /// - call PIAACMCsimul_computePSF() to evaluate design
-            val = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0);
+            {
+                errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &val);
+                if( fret != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+                }
+            }
 
             if(val < valbest)
             {

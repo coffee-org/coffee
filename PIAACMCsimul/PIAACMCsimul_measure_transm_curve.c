@@ -103,7 +103,18 @@ int PIAACMCsimul_measure_transm_curve()
     optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm
 
 
-    PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0);
+    {
+        double cval = 0.0;
+        errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0, &cval);
+        if( fret != RETURN_SUCCESS)
+        {
+            printf("ERROR  [ %s %s %d ]\n", __FILE__, __func__, __LINE__);
+            printf("    Call to PIAACMCsimul_computePSF failed\n");
+            printf("    Function %s returns FAILURE\n", __func__);
+            return RETURN_FAILURE;
+        }
+    }
+
     sprintf(fname, "%s/psfi0test_x00_y00.fits", piaacmcsimul_var.piaacmcconfdir);
     save_fits("psfi0", fname);
 
@@ -124,8 +135,16 @@ int PIAACMCsimul_measure_transm_curve()
         long xsize, ysize, zsize;
         double val;
 
-        //valref = 
-        PIAACMCsimul_computePSF(xld, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0);
+        //valref =
+        {
+            double cval = 0.0;
+            errno_t fret = PIAACMCsimul_computePSF(xld, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &cval);
+            if( fret != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+            }
+        }
+
         ID = image_ID("psfi0");
         //            sprintf(fname, "psfi0transm_%04.1f.fits", xld);
         //           save_fits("psfi0", fname);
@@ -168,7 +187,7 @@ int PIAACMCsimul_measure_transm_curve()
         }
     }
 
-    return 0;
+    return RETURN_SUCCESS;
 }
 
 

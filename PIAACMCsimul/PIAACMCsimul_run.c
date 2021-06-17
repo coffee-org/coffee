@@ -46,7 +46,7 @@ extern OPTPIAACMCDESIGN *piaacmc;
 /*
     entry point for PIAACMCsimul from the cli
 */
-int PIAACMCsimul_run(
+errno_t PIAACMCsimul_run(
     const char
     *confindex,		/// @param[in] confindex	configuration index (sets name of directory for results)
     long mode					/// @param[in] mode			operation to be executed
@@ -130,8 +130,7 @@ int PIAACMCsimul_run(
 
     printf("mode = %ld\n", mode);
     fflush(stdout);
-    // debug from Justin
-    sleep(10);
+
 
 
     double fpmradld = 0.95;  // default
@@ -375,7 +374,14 @@ int PIAACMCsimul_run(
             // actually do the optmization
             printf("Execute optimization\n");
             fflush(stdout);
-            PIAACMCsimul_exec(confindex, mode);
+            {
+                errno_t fret = PIAACMCsimul_exec(confindex, mode);
+                if(fret != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to function PIAACMCsimul_exec failed");
+                }
+            }
+
             bOK = 0; // initialize have better value flag for printing "best" in a nice place
 
             printf("%g m  -> %g rad\n", sag0,
@@ -647,13 +653,19 @@ int PIAACMCsimul_run(
     }
     else
     {
-        PIAACMCsimul_exec(confindex, mode);
+        {
+            errno_t fret = PIAACMCsimul_exec(confindex, mode);
+            if(fret != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to function PIAACMCsimul_exec failed");
+            }
+        }
     }
 
 
     free(piaacmc);
 
-    return 0;
+    return RETURN_SUCCESS;
 }
 
 

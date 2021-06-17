@@ -1295,8 +1295,6 @@ int PIAACMCsimul_initpiaacmcconf(
     {
         printf("Make zonemap ...\n");
         fflush(stdout);
-        //debug from Justin
-        //sleep(10);
         PIAACMCsimul_mkFPM_zonemap("fpmzmap");
     }
     else
@@ -1329,8 +1327,6 @@ int PIAACMCsimul_initpiaacmcconf(
 
             printf("LOADING FILE NAME : \"%s\"  -  %ld %d \n", fname, piaacmctype, loaded);
             fflush(stdout);
-            // debug from Justin
-            sleep(10);
 
             piaacmc[0].zonezID = load_fits(fname, "fpmzt", 1);
             if(piaacmc[0].zonezID == -1)
@@ -1377,8 +1373,7 @@ int PIAACMCsimul_initpiaacmcconf(
                                               0.5 * (piaacmcsimul_var.LAMBDASTART + piaacmcsimul_var.LAMBDAEND)),
                    0.5 * (piaacmcsimul_var.LAMBDASTART + piaacmcsimul_var.LAMBDAEND));
             fflush(stdout);
-            // debug from Justin
-            //sleep(10);
+
             printf(" -- lambda = %g\n", piaacmc[0].lambda);
             printf(" -- lambdaB = %g\n", piaacmc[0].lambdaB);
             printf(" -- LAMBDASTART = %g\n", piaacmcsimul_var.LAMBDASTART);

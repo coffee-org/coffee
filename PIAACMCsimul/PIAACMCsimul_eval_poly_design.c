@@ -188,7 +188,15 @@ int PIAACMCsimul_eval_poly_design()
     printf("Computing off-axis point spread function\n");
     fflush(stdout);
     //sleep(10);
-    valref = PIAACMCsimul_computePSF(5.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0);
+
+    {
+        errno_t fret = PIAACMCsimul_computePSF(5.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0, &valref);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+        }
+    }
+
     sprintf(fname, "%s/psfi0_x50_y00.fits", piaacmcsimul_var.piaacmcconfdir);
     save_fits("psfi0", fname);
     //load_fits(fname, "psfi");
@@ -229,7 +237,15 @@ int PIAACMCsimul_eval_poly_design()
     printf("Computing on-axis point spread function\n");
     fflush(stdout);
     //sleep(10);
-    valref = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 1);
+    {
+        errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 1, &valref);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+        }
+    }
+
+
     sprintf(fname, "%s/psfi0_x00_y00.fits", piaacmcsimul_var.piaacmcconfdir);
     save_fits("psfi0", fname);
     //load_fits(fname, "psfi");
@@ -335,8 +351,17 @@ int PIAACMCsimul_eval_poly_design()
 
     NBpt = 0;
 
-    valref = 0.25 * PIAACMCsimul_computePSF(ldoffset, 0.0, 0, optsyst[0].NBelem, 0,
-                                            0, 0, 0);
+    {
+        double cval = 0.0;
+        errno_t fret = PIAACMCsimul_computePSF(ldoffset, 0.0, 0, optsyst[0].NBelem, 0,
+                                               0, 0, 0, &cval);
+        valref = 0.25*cval;
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+        }
+    }
+
     sprintf(fname, "%s/psfi0_p0.fits", piaacmcsimul_var.piaacmcconfdir);
     save_fits("psfi0", fname);
     ID = image_ID("psfi0");
@@ -352,8 +377,18 @@ int PIAACMCsimul_eval_poly_design()
     delete_image_ID("psfre0");
     delete_image_ID("psfim0");
 
-    valref += 0.25 * PIAACMCsimul_computePSF(-ldoffset, 0.0, 0, optsyst[0].NBelem,
-              0, 0, 0, 0);
+    {
+        double cval = 0.0;
+        errno_t fret = PIAACMCsimul_computePSF(-ldoffset, 0.0, 0, optsyst[0].NBelem,
+                                               0, 0, 0, 0, &cval);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+        }
+        valref += 0.25 * cval;
+    }
+
+
     sprintf(fname, "%s/psfi0_m0.fits", piaacmcsimul_var.piaacmcconfdir);
     save_fits("psfi0", fname);
     ID = image_ID("psfi0");
@@ -369,8 +404,17 @@ int PIAACMCsimul_eval_poly_design()
     delete_image_ID("psfre0");
     delete_image_ID("psfim0");
 
-    valref += 0.25 * PIAACMCsimul_computePSF(0.0, ldoffset, 0, optsyst[0].NBelem, 0,
-              0, 0, 0);
+    {
+        double cval = 0.0;
+        errno_t fret = PIAACMCsimul_computePSF(0.0, ldoffset, 0, optsyst[0].NBelem, 0,
+                                               0, 0, 0, &cval);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+        }
+        valref += 0.25 * cval;
+    }
+
     sprintf(fname, "%s/psfi0_0p.fits", piaacmcsimul_var.piaacmcconfdir);
     save_fits("psfi0", fname);
     ID = image_ID("psfi0");
@@ -386,8 +430,19 @@ int PIAACMCsimul_eval_poly_design()
     delete_image_ID("psfre0");
     delete_image_ID("psfim0");
 
-    valref += 0.25 * PIAACMCsimul_computePSF(0.0, -ldoffset, 0, optsyst[0].NBelem,
-              0, 0, 0, 0);
+    {
+        double cval = 0.0;
+        errno_t fret = PIAACMCsimul_computePSF(0.0, -ldoffset, 0, optsyst[0].NBelem,
+                                               0, 0, 0, 0, &cval);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+        }
+        valref += 0.25 * cval;
+    }
+
+
+
     sprintf(fname, "%s/psfi0_0m.fits", piaacmcsimul_var.piaacmcconfdir);
     save_fits("psfi0", fname);
     ID = image_ID("psfi0");
@@ -422,7 +477,16 @@ int PIAACMCsimul_eval_poly_design()
                                                OPDmode + ii];
         }
         PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0); // add error to the data
-        PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0);
+
+        {
+            double cval = 0.0;
+            errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &cval);
+            if( fret != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+            }
+        }
+
         sprintf(fname, "%s/psfi0_opderr%02ld.fits", piaacmcsimul_var.piaacmcconfdir,
                 OPDmode);
         save_fits("psfi0", fname);

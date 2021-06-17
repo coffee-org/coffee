@@ -129,7 +129,7 @@ int PIAACMCsimul_exec_optimize_lyot_stop_position()
             // current best position
             parambest[ls] = piaacmc[0].LyotStop_zpos[ls];
 
-           // loopOK = 1;
+            // loopOK = 1;
             valbest = 1.0;
 
             // march to the other other end of range
@@ -159,7 +159,13 @@ int PIAACMCsimul_exec_optimize_lyot_stop_position()
                 optsyst[0].keepMem[elem0] = 1; // save this element and reuse
 
                 // compute the PSF for this Lyot stop position, returning contrast in the evaluation zone
-                val = PIAACMCsimul_computePSF(0.0, 0.0, elem0, optsyst[0].NBelem, 0, 0, 0, 0);
+                {
+                    errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, elem0, optsyst[0].NBelem, 0, 0, 0, 0, &val);
+                    if( fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+                    }
+                }
 
                 // if this is the best contrast for this stop, save it for it and the position of this stop
                 if(val < valbest)

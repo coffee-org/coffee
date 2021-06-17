@@ -1,14 +1,14 @@
 /**
  * @file    PIAAACMCsimul_computePSF_no_fpm.c
  * @brief   Compute on-axis PSF with no focal plane mask
- * 
- *  
+ *
+ *
  * @author  O. Guyon
  * @date    25 nov 2017
  *
- * 
+ *
  * @bug No known bugs.
- * 
+ *
  */
 
 
@@ -56,7 +56,6 @@ extern OPTPIAACMCDESIGN *piaacmc;
 
 double PIAACMCsimul_exec_computePSF_no_fpm()
 {
-    long IDv;
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
@@ -65,14 +64,18 @@ double PIAACMCsimul_exec_computePSF_no_fpm()
     printf("=================================== mode 003 ===================================\n");
 
     // load some more cli variables
-    if( (IDv = variable_ID("PIAACMC_centobs0")) != -1)
-        centobs0 = data.variable[IDv].value.f;
-    if( (IDv = variable_ID("PIAACMC_centobs1")) != -1)
-        centobs1 = data.variable[IDv].value.f;
-    if( (IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
-        fpmradld = data.variable[IDv].value.f;
-        printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
+        variableID IDv;
+
+        if( (IDv = variable_ID("PIAACMC_centobs0")) != -1)
+            centobs0 = data.variable[IDv].value.f;
+        if( (IDv = variable_ID("PIAACMC_centobs1")) != -1)
+            centobs1 = data.variable[IDv].value.f;
+        if( (IDv = variable_ID("PIAACMC_fpmradld")) != -1)
+        {
+            fpmradld = data.variable[IDv].value.f;
+            printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
+        }
     }
 
 
@@ -87,7 +90,13 @@ double PIAACMCsimul_exec_computePSF_no_fpm()
     piaacmcsimul_var.FORCE_CREATE_fpmza = 1;
     PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 0);
     // compute the PSF for an on-axis source, all optical elements
-    val = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0);
+    {
+        errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &val);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+        }
+    }
 
     // restore original configuration
     piaacmc[0].fpmaskamptransm = piaacmcsimul_var.linopt_paramrefval[0];

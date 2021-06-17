@@ -449,18 +449,19 @@ long PIAACMC_FPMresp_resample(const char *FPMresp_in_name,
 /* =============================================================================================== */
 /* =============================================================================================== */
 
-int PIAACMCsimul_exec(const char *confindex, long mode);
+errno_t PIAACMCsimul_exec(const char *confindex, long mode);
 
-double PIAACMCsimul_computePSF(float xld, float yld, long startelem,
-                               long endelem, int savepsf, int sourcesize, int extmode, int outsave);
+errno_t PIAACMCsimul_computePSF(float xld, float yld, long startelem,
+                               long endelem, int savepsf, int sourcesize, int extmode, int outsave,
+                               double *contrastval);
 
 long PIAACMCsimul_CA2propCubeInt(const char *IDamp_name, const char *IDpha_name,
                                  float zmin, float zmax, long NBz, const char *IDout_name);
 
-int PIAACMCsimul_run(const char *confindex, long mode);
+errno_t PIAACMCsimul_run(const char *confindex, long mode);
 
 
-int PIAACMCsimul_exec_compute_image();
+errno_t PIAACMCsimul_exec_compute_image();
 int PIAACMCsimul_exec_optimize_lyot_stop_position();
 int PIAACMCsimul_exec_optimize_fpmtransmission();
 double PIAACMCsimul_exec_computePSF_no_fpm();

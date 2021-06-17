@@ -31,16 +31,16 @@
  *
  * @brief Optical propagation execution
  *
- * @param[in]  index	system index (usually 0)
- * @param[in]	elemstart	starting element index
+ * @param[in]   index	system index (usually 0)
+ * @param[in]   elemstart	starting element index
  * @param[in]	elemend		ending element index
- * @param[in]  savedir  directory to which image results are saved
- * @param[in]  sharedmem  1 if WF* arrays should be kept in memory after use
+ * @param[in]   savedir  directory to which image results are saved
+ * @param[in]   sharedmem  1 if WF* arrays should be kept in memory after use
  *
  * optsyst.elemkeepmem	1 if element complex amplitude should be kept in memory after use
  */
 
-int OptSystProp_run(OPTSYST *optsyst,
+errno_t OptSystProp_run(OPTSYST *optsyst,
                     long      index,
                     long      elemstart,
                     long      elemend,
@@ -350,6 +350,15 @@ int OptSystProp_run(OPTSYST *optsyst,
             ID = optsyst[index].ASPHSURFMarray[optsyst[index].elemarrayindex[elem]].surfID;
             printf("%d surface ID = %ld\n", optsyst[index].elemarrayindex[elem], ID);
 
+            if(ID == -1)
+            {
+                printf("ERROR: Surface ID does not exist\n");
+                printf("   %s %d\n", __FILE__, __LINE__);
+                printf("   Function %s return FAILURE\n", __func__);
+                return RETURN_FAILURE;
+            }
+
+
             if(data.image[ID].md[0].naxis == 2)
             {
 # ifdef HAVE_LIBGOMP
@@ -398,17 +407,23 @@ int OptSystProp_run(OPTSYST *optsyst,
 
 
         // apply a change in phase
-        if(optsyst[index].elemtype[elem] ==
-                4) // REFRACTIVE SURFACE - STORED AS SAG MAP AS A SINGLE MAP (ACHROMATIC) OR A CUBE (CHROMATIC)
+        if(optsyst[index].elemtype[elem] == 4)
         {
+            // REFRACTIVE SURFACE - STORED AS SAG MAP AS A SINGLE MAP (ACHROMATIC) OR A CUBE (CHROMATIC)
             printf("============= Refractive surface =======================\n");
             fflush(stdout);
+
             ID = optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].surfID;
             printf("index %ld    %d surface ID : %ld \n", index,
                    optsyst[index].elemarrayindex[elem], ID);
             fflush(stdout);
 
+            DEBUG_TRACEPOINT("refractive surface ID %ld", (long) ID);
 
+            if(ID == -1)
+            {
+                FUNC_RETURN_FAILURE("image ID not found");
+            }
 
             list_image_ID();
 
@@ -430,7 +445,6 @@ int OptSystProp_run(OPTSYST *optsyst,
                 }
                 optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].init = 1;
             }
-
 
             if(data.image[ID].md[0].naxis == 2)
             {
@@ -468,6 +482,7 @@ int OptSystProp_run(OPTSYST *optsyst,
                 }
 # endif
             }
+            DEBUG_TRACEPOINT("refractive surface ID %ld", (long) ID);
         }
 
 
@@ -835,6 +850,6 @@ int OptSystProp_run(OPTSYST *optsyst,
 
     free(imsizearray);
 
-    return(0);
+    return RETURN_SUCCESS;
 }
 

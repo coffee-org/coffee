@@ -340,7 +340,7 @@ long PIAACMCsimul_regularization_PIAAshapes_add1Dvector(long ID1D, long index0)
  *
  */
 
-int PIAACMCsimul_exec(
+errno_t PIAACMCsimul_exec(
     const char *confindex,
     long mode
 )
@@ -558,11 +558,16 @@ int PIAACMCsimul_exec(
     // set the name of the stopfile
     sprintf(stopfile, "%s/stopmode%ld.txt", piaacmcsimul_var.piaacmcconfdir, mode);
 
+    errno_t fret = RETURN_SUCCESS;
     switch(mode)
     {
 
     case 0 :
-        PIAACMCsimul_exec_compute_image();
+        fret = PIAACMCsimul_exec_compute_image();
+        if(fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_compute_image failed");
+        }
         printf("EXEC CASE 0 COMPLETED\n");
         fflush(stdout);
         break;
@@ -670,9 +675,15 @@ int PIAACMCsimul_exec(
         // Compute Reference on-axis performance contrast (valref)
         PIAACMCsimul_makePIAAshapes(piaacmc, 0);
         optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm
-        valref = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
-                                         piaacmcsimul_var.computePSF_ResolvedTarget,
-                                         piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0);
+        {
+            errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
+                                                   piaacmcsimul_var.computePSF_ResolvedTarget,
+                                                   piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &valref);
+            if( fret != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+            }
+        }
 
 
         // save the current configuration to the _linopt directory
@@ -985,16 +996,28 @@ int PIAACMCsimul_exec(
                     {
                         *(piaacmcsimul_var.linopt_paramvalf[i]) += (float)
                                 piaacmcsimul_var.linopt_paramdelta[i];
-                        val = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
-                                                      piaacmcsimul_var.computePSF_ResolvedTarget,
-                                                      piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0);
+                        {
+                            errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
+                                                                   piaacmcsimul_var.computePSF_ResolvedTarget,
+                                                                   piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &val);
+                            if( fret != RETURN_SUCCESS)
+                            {
+                                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+                            }
+                        }
                     }
                     else
                     {
                         *(piaacmcsimul_var.linopt_paramval[i]) += piaacmcsimul_var.linopt_paramdelta[i];
-                        val = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
-                                                      piaacmcsimul_var.computePSF_ResolvedTarget,
-                                                      piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0);
+                        {
+                            errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
+                                                                   piaacmcsimul_var.computePSF_ResolvedTarget,
+                                                                   piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &val);
+                            if( fret != RETURN_SUCCESS)
+                            {
+                                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+                            }
+                        }
                     }
 
                     //      sprintf(fname,"%s/imvect_%02ld.fits", piaacmcsimul_var.piaacmcconfdir, i);
@@ -1308,9 +1331,15 @@ int PIAACMCsimul_exec(
 
                     // compute new state and compute assossiated evaluation metric
                     // using the modified global data object
-                    val = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
-                                                  piaacmcsimul_var.computePSF_ResolvedTarget,
-                                                  piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0);
+                    {
+                        errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
+                                                               piaacmcsimul_var.computePSF_ResolvedTarget,
+                                                               piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &val);
+                        if( fret != RETURN_SUCCESS)
+                        {
+                            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+                        }
+                    }
                     valContrast = val; // contrast component of the evaluation metric
                     // we've now only done the light portion
 
@@ -1468,10 +1497,15 @@ int PIAACMCsimul_exec(
             }
             valold = val;
             // compute contrast metric component -> val using the data object in the latest optimal state
-            val = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
-                                          piaacmcsimul_var.computePSF_ResolvedTarget,
-                                          piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0);
-
+            {
+                errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
+                                                       piaacmcsimul_var.computePSF_ResolvedTarget,
+                                                       piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &val);
+                if( fret != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+                }
+            }
             // add PIAA shape regularization component (val0) if applicable
             // same val0 and val1 computations are before, using the latest optimal state
             val0 = 0.0;
@@ -1646,7 +1680,7 @@ int PIAACMCsimul_exec(
     // PIAACMCsimul_savepiaacmcconf("piaacmc1");
     //exit(0);
 
-    return 0;
+    return RETURN_SUCCESS;
 }
 
 
