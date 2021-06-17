@@ -46,7 +46,6 @@ rm cpamodesfreq.fits
 rm cmdlog.txt
 rm Cmodes_*
 rm Fmodes_*
-rm runPIAACMCfifo*
 rm clistartup*.txt
 rm test*
 rm piaacmc*/*thread0*.fits

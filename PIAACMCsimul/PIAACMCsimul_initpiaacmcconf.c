@@ -1365,9 +1365,6 @@ int PIAACMCsimul_initpiaacmcconf(
         {
             printf("IDEALIZED FOCAL PLANE MASK\n");
             fflush(stdout);
-            // debug from Justin
-            //sleep(10);
-            //          exit(0);
 
             // measure dpha/dt
             t0 = 1.0e-8;
@@ -1391,7 +1388,6 @@ int PIAACMCsimul_initpiaacmcconf(
         {
             printf("CREATING EXAMPLE FOCAL PLANE MASK  %ld %d\n", piaacmctype, loaded);
             fflush(stdout);
-            //                exit(0);
         }
 
         for(ii = 0; ii < piaacmc[0].focmNBzone; ii++)
@@ -1405,8 +1401,6 @@ int PIAACMCsimul_initpiaacmcconf(
 
         printf("Writing %s\n", fname);
         fflush(stdout);
-        // debug from Justin
-        sleep(10);
         save_fits("fpmzt", fname);
     }
 
@@ -1425,7 +1419,7 @@ int PIAACMCsimul_initpiaacmcconf(
                     piaacmcsimul_var.fnamedescr);
 
             printf("LOADING FILE NAME : \"%s\"\n", fname);
-            piaacmc[0].zoneaID = load_fits(fname, "fpmza", 1);
+            piaacmc[0].zoneaID = load_fits(fname, "fpmza", LOADFITS_ERRCODE_IGNORE);
 
             if(piaacmc[0].zoneaID == -1)
             {

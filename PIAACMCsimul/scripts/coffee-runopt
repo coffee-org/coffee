@@ -31,15 +31,18 @@ echo "$0 $@"
 errorfile="errorstatus.txt"
 checkerrorstatus ()
 {
-if [ -f ${errorfile} ]
-then
-echo ""
-echo "****** [$(date)] FATAL ERROR: script $0 : $(cat ${errorfile})"
-echo "****** exit script $0"
-echo "****** bye !"
-echo ""
-rm $errorfile
-exit
+if [ -f ${errorfile} ]; then
+	echo ""
+	if grep -q "REACHED STATE EXIT POINT" "$errorfile"; then
+		echo -e "\033[32;1m****** [$(date)] NORMAL EXIT: script $0 : $(cat ${errorfile})\033[0m"
+	else
+		echo "\033[31;1m****** [$(date)] FATAL ERROR: script $0 : $(cat ${errorfile})\033[0m"
+	fi
+	echo "****** exit script $0"
+	echo "****** bye !"
+	echo ""
+	rm $errorfile
+	exit
 fi
 }
 
