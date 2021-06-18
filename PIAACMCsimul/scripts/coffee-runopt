@@ -1,6 +1,39 @@
 #!/usr/bin/env bash
 
+
+# exit on error
+set -e 
+
+# debug mode
+set -x
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+
 execname="coffee"
+
+# exit on error
+export MILK_ERROREXIT="1"
+
+
+
+
+
+# function to check previous command return code and exit if not successful
+exit_on_error() {
+    exit_code=$1
+    last_command=${@:2}
+    if [ $exit_code -ne 0 ]; then
+        >&2 echo -e "\n\033[31;1m EXIT on ERROR \033[0m \"${last_command}\" command failed with exit code ${exit_code}.\n"
+        exit $exit_code
+    fi
+}
+
+# enable !! command completion
+set -o history -o histexpand
+
+
+
+
+
 
 size=1024 # default
 file="./conf/conf_size.txt"
@@ -24,7 +57,7 @@ fi
 
 # save command string to filesystem (useful for debugging)
 mkdir -p log
-echo "$0 $@" > ./log/$0_cmdstring.txt
+echo "$0 $@" > ./log/`basename "$0"`_cmdstring.txt
 echo "$0 $@"
 
 
@@ -298,7 +331,7 @@ echo "lambda = $lambda nm"
 
 
 
-
+echo "-- STEP 00 --"
 
 
 
@@ -456,6 +489,8 @@ $execname << EOF
 creaimshm psfout $size $size $
 quit
 EOF
+exit_on_error $? "$execname"
+
 
 if [ $initlooppsf -eq 0 ]; then
 $execname << EOF
@@ -464,6 +499,8 @@ creaimshm psfout_re $size $size $NBlambda
 creaimshm psfout_im $size $size $NBlambda
 exit
 EOF
+exit_on_error $? "$execname"
+
 initlooppsf=1
 fi
 checkerrorstatus
@@ -483,6 +520,7 @@ cp psfre psfout_re
 cp psfim psfout_im
 exit
 EOF
+exit_on_error $? "$execname"
 checkerrorstatus
 
 loopOK=0 # default: exit loop
@@ -509,6 +547,7 @@ fi
 }
 
 
+echo "-- STEP 01 --"
 
 
 funcprocess ()
@@ -575,13 +614,11 @@ fi
 }
 
 
-
-
-
+echo "-- STEP 02 --"
 
 
 mkdir -p status
-rm status/design_coin${coin}_coout${coout}_fpmrad${fpmrad}_l${lambda}_${PIAAmaterial}_lt${LStransm}_nbls${NBlyotstop}_mono.txt
+rm -f status/design_coin${coin}_coout${coout}_fpmrad${fpmrad}_l${lambda}_${PIAAmaterial}_lt${LStransm}_nbls${NBlyotstop}_mono.txt
 
 
 

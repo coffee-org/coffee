@@ -1,7 +1,13 @@
+# library name
 set(LIBNAME "coffeePIAACMCsimul")
+
 set(SRCNAME "PIAACMCsimul")
 
+message("")
+message(" SRCNAME = ${SRCNAME} -> LIBNAME = ${LIBNAME}")
 
+
+# list source files (.c) other than modulename.c
 set(SOURCEFILES
 	${SRCNAME}.c
     PIAACMC_f_evalmask.c
@@ -45,6 +51,7 @@ set(SOURCEFILES
 
 set(INCLUDEFILES
 	${SRCNAME}.h
+    PIAACMCsimul_run.h
 )
 
 set(SCRIPTS

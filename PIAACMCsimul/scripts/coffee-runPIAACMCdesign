@@ -1,5 +1,33 @@
 #!/usr/bin/env bash
 
+# exit on error
+set -e 
+
+# debug mode
+set -x
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+
+
+# milk exit on error
+export MILK_ERROREXIT="1"
+
+# function to check previous command return code and exit if not successful
+exit_on_error() {
+    exit_code=$1
+    last_command=${@:2}
+    if [ $exit_code -ne 0 ]; then
+        >&2 echo -e "\n\033[31;1m EXIT on ERROR \033[0m \"${last_command}\" command failed with exit code ${exit_code}.\n"
+        exit $exit_code
+    fi
+}
+
+# enable !! command completion
+set -o history -o histexpand
+
+
+
+
+
 # number of arguments to script
 NBARGS=0
 
@@ -407,7 +435,7 @@ function SetOptParam {
 # ===================================================================================
 
 
-rm LOOPMODE.txt &> /dev/null
+rm -f LOOPMODE.txt
 
 function printHELP {
     echo "------------------------------------------------------------------------"
@@ -847,7 +875,9 @@ fi
 
 
 # LOAD CUSTOM PARAMETERS IF AVAILABLE
-. ./setparam.bash 2> /dev/null
+if [ -f "setparam.bash" ]; then
+. ./setparam.bash
+fi
 
 
 

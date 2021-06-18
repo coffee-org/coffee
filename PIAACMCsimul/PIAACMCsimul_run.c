@@ -38,6 +38,86 @@ extern OPTSYST *optsyst;
 extern OPTPIAACMCDESIGN *piaacmc;
 
 
+// forward declaration
+errno_t PIAACMCsimul_run(
+    const char *confindex,
+    long mode
+);
+
+
+
+// Local variables pointers
+static char *confindex;
+static uint32_t *mode;
+
+
+static CLICMDARGDEF farg[] =
+{
+    {
+        CLIARG_STR, ".confindex", "configuration index", "000",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &confindex
+    },
+    {
+        CLIARG_LONG, ".mode", "mode", "0",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &mode
+    }
+};
+
+static CLICMDDATA CLIcmddata =
+{
+    "run",
+    "Simulate PIAACMC",
+    CLICMD_FIELDS_DEFAULTS
+};
+
+
+// detailed help
+static errno_t help_function()
+{
+    return RETURN_SUCCESS;
+}
+
+
+
+
+
+static errno_t compute_function()
+{
+    errno_t rval = 0;
+
+    INSERT_STD_PROCINFO_COMPUTEFUNC_START
+
+    rval = PIAACMCsimul_run(confindex,*mode);
+
+    INSERT_STD_PROCINFO_COMPUTEFUNC_END
+
+    return rval;
+}
+
+
+
+
+INSERT_STD_FPSCLIfunctions
+
+// Register function in CLI
+errno_t CLIADDCMD_PIAACMCsimul__run()
+{
+    INSERT_STD_CLIREGISTERFUNC
+    return RETURN_SUCCESS;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -47,8 +127,7 @@ extern OPTPIAACMCDESIGN *piaacmc;
     entry point for PIAACMCsimul from the cli
 */
 errno_t PIAACMCsimul_run(
-    const char
-    *confindex,		/// @param[in] confindex	configuration index (sets name of directory for results)
+    const char *confindex,		/// @param[in] confindex	configuration index (sets name of directory for results)
     long mode					/// @param[in] mode			operation to be executed
 )
 {

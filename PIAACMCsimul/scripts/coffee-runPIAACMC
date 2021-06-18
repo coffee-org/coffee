@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+# exit on error
+set -e 
+
+# debug mode
+set -x
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+
+
+
 unset TMUX
 
 mkdir -p log
@@ -10,6 +19,23 @@ NBthreadsFPMresp=4
 
 #execname="PIAACMCdesign -e"  # only run program if X is inactive (prevents slowing down user)
 execname="coffee"
+
+# exit on error
+export MILK_ERROREXIT="1"
+
+# function to check previous command return code and exit if not successful
+exit_on_error() {
+    exit_code=$1
+    last_command=${@:2}
+    if [ $exit_code -ne 0 ]; then
+        >&2 echo -e "\n\033[31;1m EXIT on ERROR \033[0m \"${last_command}\" command failed with exit code ${exit_code}.\n"
+        exit $exit_code
+    fi
+}
+
+# enable !! command completion
+set -o history -o histexpand
+
 
 
 
@@ -624,9 +650,12 @@ REGPIAA_C_ALPHA=${REGPIAACALPHA}
 REGPIAA_F_COEFF=${REGPIAAFCOEFF}
 REGPIAA_F_ALPHA=${REGPIAAFALPHA}
 
-piaacmcsimrun $1 40
-exit
+coffeepiaacmcsim.run $1 40
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
+
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
 cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step$step.fits
@@ -708,9 +737,11 @@ PIAACMC_NBrings=1
 PIAACMC_nblambda=1
 PIAACMC_resolved=0
 SCORINGMASKTYPE=$SCORINGMASKTYPE
-piaacmcsimrun $1 0
-exit
+coffeepiaacmcsim.run $1 0
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step699.fits
 cleanup
 exit
@@ -751,9 +782,11 @@ PIAACMC_NBrings=1
 PIAACMC_nblambda=1
 PIAACMC_resolved=0
 SCORINGMASKTYPE=$SCORINGMASKTYPE
-piaacmcsimrun $1 0
-exit
+coffeepiaacmcsim.run $1 0
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step700.fits
 cleanup
 exit
@@ -782,9 +815,11 @@ PIAACMC_FPMsectors=0
 PIAACMC_NBrings=1
 PIAACMC_nblambda=1
 PIAACMC_resolved=0
-piaacmcsimrun $1 100
-exit
+coffeepiaacmcsim.run $1 100
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0_starim.fits ./$1/psfi0_step701.fits
 cleanup
 exit
@@ -808,9 +843,11 @@ PIAACMC_FPMsectors=0
 PIAACMC_NBrings=1
 PIAACMC_nblambda=1
 PIAACMC_resolved=1
-piaacmcsimrun $1 0
-exit
+coffeepiaacmcsim.run $1 0
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 cleanup
 exit
 fi
@@ -839,9 +876,11 @@ PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_SAVE_fpm=1
-piaacmcsimrun $1 0
-exit
+coffeepiaacmcsim.run $1 0
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 cleanup
 exit
 fi
@@ -872,9 +911,11 @@ PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_ldoffset=0.01
-piaacmcsimrun $1 100
-exit
+coffeepiaacmcsim.run $1 100
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0_starim.fits ./$1/psfi0_step721.fits
 cleanup
 exit
@@ -904,9 +945,11 @@ PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_ldoffset=0.03
-piaacmcsimrun $1 100
-exit
+coffeepiaacmcsim.run $1 100
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0_starim.fits ./$1/psfi0_step722.fits
 cleanup
 exit
@@ -935,9 +978,11 @@ PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_ldoffset=0.001
-piaacmcsimrun $1 100
-exit
+coffeepiaacmcsim.run $1 100
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0_starim.fits ./$1/psfi0_step723.fits
 cleanup
 exit
@@ -966,9 +1011,11 @@ PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_ldoffset=0.003
-piaacmcsimrun $1 100
-exit
+coffeepiaacmcsim.run $1 100
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0_starim.fits ./$1/psfi0_step724.fits
 cleanup
 exit
@@ -997,9 +1044,11 @@ PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_ldoffset=0.0001
-piaacmcsimrun $1 100
-exit
+coffeepiaacmcsim.run $1 100
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0_starim.fits ./$1/psfi0_step725.fits
 cleanup
 exit
@@ -1038,9 +1087,11 @@ PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_WFCmode=1
-piaacmcsimrun $1 0
-exit
+coffeepiaacmcsim.run $1 0
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 cleanup
 exit
 fi
@@ -1059,9 +1110,11 @@ PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_WFCmode=2
-piaacmcsimrun $1 0
-exit
+coffeepiaacmcsim.run $1 0
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 cleanup
 exit
 fi
@@ -1092,9 +1145,11 @@ PIAACMC_dftgrid=0
 PIAACMC_fpmtype=1 
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
-piaacmcsimrun $1 101
-exit
+coffeepiaacmcsim.run $1 101
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 cleanup
 exit
 fi
@@ -1117,9 +1172,11 @@ $execnamestring -n step111 << EOF
 PIAACMC_dftgrid=0
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
-piaacmcsimrun $1 100
-exit
+coffeepiaacmcsim.run $1 100
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 cleanup
 exit
 fi
@@ -1138,9 +1195,11 @@ PIAACMC_dftgrid=0
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=1
 PIAACMC_resolved=0
-piaacmcsimrun $1 100
-exit
+coffeepiaacmcsim.run $1 100
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 cleanup
 exit
 fi
@@ -1160,9 +1219,11 @@ PIAACMC_dftgrid=2
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=1
 PIAACMC_resolved=0
-piaacmcsimrun $1 100
-exit
+coffeepiaacmcsim.run $1 100
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 cleanup
 exit
 fi
@@ -1180,9 +1241,11 @@ $execnamestring -n step114 << EOF
 PIAACMC_dftgrid=0
 PIAACMC_FPMsectors=0
 PIAACMC_nblambda=1
-piaacmcsimrun $1 101
-exit
+coffeepiaacmcsim.run $1 101
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 cleanup
 exit
 fi
@@ -1221,9 +1284,11 @@ echo "800" > ./$1/runstep
 $execnamestring -n step800 << EOF
 PIAACMC_fpmtype=1 
 PIAACMC_FPMsectors=$FPMsectors
-piaacmcsimrun $1 300
-exit
+coffeepiaacmcsim.run $1 300
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 cleanup
 exit
 fi
@@ -1241,9 +1306,11 @@ touch ./$1/step801.run.txt
 $execnamestring -n step801 << EOF
 PIAACMC_fpmtype=1 
 PIAACMC_FPMsectors=$FPMsectors
-piaacmcsimrun $1 301
-exit
+coffeepiaacmcsim.run $1 301
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 cleanup
 exit
 fi
@@ -1262,9 +1329,11 @@ $execnamestring -n step802 << EOF
 PIAACMC_fpmtype=1 
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_NBrings=$NBrings
-piaacmcsimrun $1 302
-exit
+coffeepiaacmcsim.run $1 302
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 cleanup
 exit
 fi
@@ -1371,9 +1440,11 @@ PIAACMC_lambda=${lambda}
 loadfits .errcode 0
 loadfits "_pupmaskload.fits" pupmaskim
 
-piaacmcsimrun $1 0
-exit
+coffeepiaacmcsim.run $1 0
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step000.fits 
 touch ./$1/step000.txt
 else
@@ -1390,7 +1461,7 @@ fi
 
 
 if [ "$PIAAmode" -eq "1" ]; then
-rm _pupmaskload.fits
+rm -f _pupmaskload.fits
 fi
 
 
@@ -1433,9 +1504,11 @@ PIAACMC_MASKRADLD=0.0
 PIAACMC_resolved=0
 PIAACMC_nblambda=1
 PIAACMC_lambda=${lambda}
-piaacmcsimrun $1 0
-exit
+coffeepiaacmcsim.run $1 0
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
  mv ./$1/psfi0.fits ./$1/psfi0_step001.fits
  cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step001.conf
  cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step001.fits
@@ -1507,9 +1580,11 @@ PIAACMC_MASKRADLD=0.0
 PIAACMC_resolved=0
 PIAACMC_nblambda=1
 PIAACMC_lambda=${lambda}
-piaacmcsimrun $1 0
-exit
+coffeepiaacmcsim.run $1 0
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step003.fits
 touch ./$1/step003.txt
  else
@@ -1555,9 +1630,10 @@ PIAACMC_lstransm=$LStransm2
 PIAACMC_nblambda=1
 PIAACMC_lambda=${lambda}
 PIAACMC_nbpropstep=$NBpropStep
-piaacmcsimrun $1 5
-exit
+coffeepiaacmcsim.run $1 5
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step004.fits
 
@@ -1603,9 +1679,11 @@ PIAACMC_MASKRADLD=0.0
 PIAACMC_resolved=0
 PIAACMC_nblambda=1
 PIAACMC_lambda=${lambda}
-piaacmcsimrun $1 2
-exit
+coffeepiaacmcsim.run $1 2
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step005.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step005.conf
 touch ./$1/step005.txt
@@ -1648,9 +1726,11 @@ PIAACMC_lstransm=$LStransm0
 PIAACMC_nblambda=1
 PIAACMC_lambda=${lambda}
 PIAACMC_nbpropstep=$NBpropStep
-piaacmcsimrun $1 5
-exit
+coffeepiaacmcsim.run $1 5
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step006.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step006.conf
 
@@ -1721,9 +1801,11 @@ REGPIAA_F_ALPHA=${REGPIAAFALPHA}
 
 PIAACMC_dftgrid=0
 
-piaacmcsimrun $1 40
-exit
+coffeepiaacmcsim.run $1 40
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
 cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step$step.fits
@@ -1790,9 +1872,11 @@ REGPIAA_F_ALPHA=${REGPIAAFALPHA}
 
 PIAACMC_dftgrid=0
 
-piaacmcsimrun $1 40
-exit
+coffeepiaacmcsim.run $1 40
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step008.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step008.conf
 cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step008.fits
@@ -1839,9 +1923,11 @@ PIAACMC_lstransm=$LStransm1
 PIAACMC_nblambda=1
 PIAACMC_lambda=${lambda}
 PIAACMC_nbpropstep=$NBpropStep
-piaacmcsimrun $1 5
-exit
+coffeepiaacmcsim.run $1 5
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step009.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step009.conf
 
@@ -1892,9 +1978,11 @@ PIAACMC_nbpropstep=$NBpropStep
 
 PIAACMC_dftgrid=0
 
-piaacmcsimrun $1 1
-exit
+coffeepiaacmcsim.run $1 1
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step010.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step010.conf
 touch ./$1/step010.txt
@@ -1956,9 +2044,11 @@ REGPIAA_F_ALPHA=${REGPIAAFALPHA}
 
 PIAACMC_dftgrid=0
 
-piaacmcsimrun $1 40
-exit
+coffeepiaacmcsim.run $1 40
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
 cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step$step.fits
@@ -2032,9 +2122,11 @@ REGPIAA_F_ALPHA=${REGPIAAFALPHA}
 
 PIAACMC_dftgrid=0
 
-piaacmcsimrun $1 40
-exit
+coffeepiaacmcsim.run $1 40
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
 cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step$step.fits
@@ -2084,9 +2176,11 @@ PIAACMC_nblambda=1
 PIAACMC_lambda=${lambda}
 PIAACMC_nbpropstep=$NBpropStep
 PIAACMC_save=1
-piaacmcsimrun $1 5
-exit
+coffeepiaacmcsim.run $1 5
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
@@ -2137,10 +2231,12 @@ PIAACMC_nbpropstep=$NBpropStep
 
 PIAACMC_dftgrid=0
 
-piaacmcsimrun $1 1
+coffeepiaacmcsim.run $1 1
 
-exit
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
@@ -2203,9 +2299,11 @@ REGPIAA_F_ALPHA=${REGPIAAFALPHA}
 
 PIAACMC_dftgrid=0
 
-piaacmcsimrun $1 40
-exit
+coffeepiaacmcsim.run $1 40
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
 cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step$step.fits
@@ -2277,9 +2375,11 @@ REGPIAA_F_ALPHA=${REGPIAAFALPHA}
 
 PIAACMC_dftgrid=0
 
-piaacmcsimrun $1 40
-exit
+coffeepiaacmcsim.run $1 40
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
 cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step$step.fits
@@ -2348,9 +2448,11 @@ REGPIAA_F_ALPHA=${REGPIAAFALPHA}
 
 PIAACMC_dftgrid=0
 
-piaacmcsimrun $1 40
-exit
+coffeepiaacmcsim.run $1 40
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
 cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step$step.fits
@@ -2454,8 +2556,8 @@ echo "# Current thread ( if thread > mp, then combine results)" >> script${pid}F
 echo "PIAACMC_FPMresp_thread=${thread}" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
 
 echo "PIAACMC_save=0" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
-echo "piaacmcsimrun $1 11" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
-echo "exit" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
+echo "coffeepiaacmcsim.run $1 11" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
+echo "exitCLI" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
 echo "EOF" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
 
 
@@ -2487,9 +2589,11 @@ PIAACMC_FPMresp_mp=${NBthreadsFPMresp}
 PIAACMC_FPMresp_thread=${thread}
 PIAACMC_save=0
 PID=${pid}
-piaacmcsimrun $1 11
-exit
+coffeepiaacmcsim.run $1 11
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
+
 rm initOK_${pid}
 
 
@@ -2545,9 +2649,10 @@ PIAACMC_save=0
 PIAACMC_nbiterSA=10000
 PIAACMC_nbiterDS=100
 
-piaacmcsimrun $1 13
-exit
+coffeepiaacmcsim.run $1 13
+exitCLI
 EOF
+exit_on_error $? "$execnamestring"
  else
 echo "$datestr  $0  LINE $LINENO    skip step 101 [ 13] search for optimal solution"
 echo "$datestr  $0  LINE $LINENO    skip step 101 [ 13] search for optimal solution" >> cmdlog.txt

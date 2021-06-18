@@ -5,6 +5,12 @@
  * Can design both APLCMC and PIAACMC coronagraphs
  */
 
+#define _GNU_SOURCE
+
+
+#define MODULE_SHORTNAME_DEFAULT "coffeepiaacmcsim"
+#define MODULE_DESCRIPTION       "PIAACMC simulation"
+
 
 // System include
 
@@ -53,6 +59,10 @@
 #include "OptSystProp/OptSystProp.h"
 
 
+#include "PIAACMCsimul_run.h"
+
+
+
 
 # ifdef HAVE_LIBGOMP
 #include <omp.h>
@@ -78,8 +88,7 @@ OPTPIAACMCDESIGN *piaacmc;
 
 
 
-
-
+INIT_MODULE_LIB(coffee_PIAACMCsimul)
 
 
 
@@ -237,7 +246,7 @@ errno_t PIAACMCsimul_run_cli()
 ///@}
 
 
-
+/*
 void __attribute__((constructor)) libinit_PIAACMCsimul()
 {
     if(INITSTATUS_PIAACMCsimul == 0)
@@ -248,7 +257,7 @@ void __attribute__((constructor)) libinit_PIAACMCsimul()
         INITSTATUS_PIAACMCsimul = 1;
     }
 }
-
+*/
 
 
 
@@ -258,7 +267,9 @@ void __attribute__((constructor)) libinit_PIAACMCsimul()
 */
 ///@{
 
-int_fast8_t init_PIAACMCsimul()
+//int_fast8_t init_PIAACMCsimul()
+
+static errno_t init_module_CLI()
 {
 #ifdef PIAASIMUL_LOGFUNC0
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
@@ -277,6 +288,7 @@ int_fast8_t init_PIAACMCsimul()
     data.NBcmd++;
 
 
+/*
     strcpy(data.cmd[data.NBcmd].key, "piaacmcsimrun");
     strcpy(data.cmd[data.NBcmd].module, __FILE__);
     data.cmd[data.NBcmd].fp = PIAACMCsimul_run_cli;
@@ -287,6 +299,9 @@ int_fast8_t init_PIAACMCsimul()
     strcpy(data.cmd[data.NBcmd].Ccall,
            "int PIAACMCsimul_run(const char *confindex, long mode)");
     data.NBcmd++;
+*/
+
+    CLIADDCMD_PIAACMCsimul__run();
 
 
     strcpy(data.cmd[data.NBcmd].key, "piaacmsimfpmresprm");
