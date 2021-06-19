@@ -413,7 +413,7 @@ int PIAACMCsimul_exec_multizone_fpm_calib()
                         sleep(1.0);
 
                         // safely remove image with this name
-                        delete_image_ID("tmpFPMresp");
+                        delete_image_ID("tmpFPMresp", DELETE_IMAGE_ERRMODE_WARNING);
                         //  list_image_ID();
                         // try to load the final child's partial FPMresp file
                         load_fits(fname, "tmpFPMresp", 1, &ID1);
@@ -466,7 +466,7 @@ int PIAACMCsimul_exec_multizone_fpm_calib()
                                                                        + 1)*data.image[ID].md[0].size[0] + ii] -= data.image[ID1].array.D[tmpl1];
                                 }
                         }
-                        delete_image_ID("tmpFPMresp"); // we're dont with the partial array, so delete it
+                        delete_image_ID("tmpFPMresp", DELETE_IMAGE_ERRMODE_WARNING); // we're dont with the partial array, so delete it
                     }
 
                 }

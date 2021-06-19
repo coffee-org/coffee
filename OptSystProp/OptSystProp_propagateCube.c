@@ -96,7 +96,7 @@ int OptSystProp_propagateCube(
             data.image[IDout_amp].array.F[kl * size2 + ii] = amp;
             data.image[IDout_pha].array.F[kl * size2 + ii] = pha;
         }
-        delete_image_ID("tmppropCout");
+        delete_image_ID("tmppropCout", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
     data.image[IDout_amp].md[0].cnt0++;

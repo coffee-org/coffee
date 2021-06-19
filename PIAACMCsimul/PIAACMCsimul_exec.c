@@ -866,7 +866,7 @@ errno_t PIAACMCsimul_exec(
         }
 
 
-        delete_image_ID("vecDHref"); // vecDHref has beem embedded into vecDHref1D
+        delete_image_ID("vecDHref", DELETE_IMAGE_ERRMODE_WARNING); // vecDHref has beem embedded into vecDHref1D
 
         // at this point, we have completed the initialization, and the optimization loop starts
 
@@ -1055,7 +1055,7 @@ errno_t PIAACMCsimul_exec(
                     }
 
 
-                    delete_image_ID("imvect"); // has been imbedded into imvect1D
+                    delete_image_ID("imvect", DELETE_IMAGE_ERRMODE_WARNING); // has been imbedded into imvect1D
 
                     // restore original state (return to original staring point)
                     if(piaacmcsimul_var.linopt_paramtype[i] == _DATATYPE_FLOAT)
@@ -1092,7 +1092,7 @@ errno_t PIAACMCsimul_exec(
                     sprintf(fname, "%s/DMmodes.fits", piaacmcsimul_var.piaacmcconfdir);
                     save_fits("DHmodes2D", fname);
 
-                    delete_image_ID("DHmodes2D");
+                    delete_image_ID("DHmodes2D", DELETE_IMAGE_ERRMODE_WARNING);
                 }
                 // for state tracking and statistics
                 data.image[IDstatus].array.UI16[0] = 15;
@@ -1208,10 +1208,10 @@ errno_t PIAACMCsimul_exec(
                 // optcoeff = acoeff0*optcoeff0 + acoeff1*optcoeff1 + acoeff2*optcoeff2
                 arith_image_add("optcoeff01m", "optcoeff2m", "optcoeff");
                 // optcoeff now has our search direction
-                delete_image_ID("optcoeff0m");
-                delete_image_ID("optcoeff1m");
-                delete_image_ID("optcoeff2m");
-                delete_image_ID("optcoeff01m");
+                delete_image_ID("optcoeff0m", DELETE_IMAGE_ERRMODE_WARNING);
+                delete_image_ID("optcoeff1m", DELETE_IMAGE_ERRMODE_WARNING);
+                delete_image_ID("optcoeff2m", DELETE_IMAGE_ERRMODE_WARNING);
+                delete_image_ID("optcoeff01m", DELETE_IMAGE_ERRMODE_WARNING);
 
                 ID = image_ID("optcoeff");
                 // for state tracking and statistics
@@ -1462,14 +1462,14 @@ errno_t PIAACMCsimul_exec(
                     NBlinoptgain = k;
                 }
 
-                delete_image_ID("optcoeff"); // delete the current direction
+                delete_image_ID("optcoeff", DELETE_IMAGE_ERRMODE_WARNING); // delete the current direction
                 // for state tracking and statistics
                 data.image[IDstatus].array.UI16[0] = 26;
             }
             // best solution after this linear linescan is stored in IDoptvec
-            delete_image_ID("optcoeff0");
-            delete_image_ID("optcoeff1");
-            delete_image_ID("DHmodes");
+            delete_image_ID("optcoeff0", DELETE_IMAGE_ERRMODE_WARNING);
+            delete_image_ID("optcoeff1", DELETE_IMAGE_ERRMODE_WARNING);
+            delete_image_ID("DHmodes", DELETE_IMAGE_ERRMODE_WARNING);
 
             // we've now found the minimum using the three directions from the
             // alternative decompositions of the parameter space with the DHmodes basis
@@ -1569,7 +1569,7 @@ errno_t PIAACMCsimul_exec(
                 }
             }
 
-            delete_image_ID("imvect");
+            delete_image_ID("imvect", DELETE_IMAGE_ERRMODE_WARNING);
             // for state tracking and statistics
             data.image[IDstatus].array.UI16[0] = 29;
 

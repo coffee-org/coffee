@@ -324,7 +324,7 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
                         data.image[IDc].array.F[k * xsize * ysize + ii] += data.image[ID1].array.F[k *
                                 xsize * ysize + ii];
                     }
-                delete_image_ID("iproptmp");
+                delete_image_ID("iproptmp", DELETE_IMAGE_ERRMODE_WARNING);
                 cnt ++;
             }
         }

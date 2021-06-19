@@ -210,7 +210,7 @@ void PIAACMCsimul_init(
         printf("CREATING INPUT PUPIL\n");
         if(IDa != -1)
         {
-            delete_image_ID("pupa0");
+            delete_image_ID("pupa0", DELETE_IMAGE_ERRMODE_WARNING);
         }
         IDa = create_3Dimage_ID("pupa0", size, size, nblambda);
 
@@ -445,7 +445,7 @@ void PIAACMCsimul_init(
     // ------------------- [OPTIONAL] opaque mask after last elem -----------------------
     // get opaque mask from the file, with a standard filename for the first mask
     // we don't have one in the nominal design
-    load_fits("postPIAA0mask.fits", "postPIAA0mask", LOADFITS_ERRCODE_IGNORE, &ID);
+    load_fits("postPIAA0mask.fits", "postPIAA0mask", LOADFITS_ERRMODE_IGNORE, &ID);
     if(ID != -1)
     {
         // tell the design that this element exists (was found on disk)
@@ -516,7 +516,7 @@ void PIAACMCsimul_init(
         // ------------------- elem 4 opaque mask at reflective PIAA M1  -----------------------
         sprintf(optsyst[0].name[elem], "opaque mask at PIAA elem 1");
         optsyst[0].elemtype[elem] = 1; // opaque mask
-        load_fits("piaa1mask.fits", "piaa1mask", LOADFITS_ERRCODE_IGNORE, &ID);
+        load_fits("piaa1mask.fits", "piaa1mask", LOADFITS_ERRMODE_IGNORE, &ID);
         if(ID == -1)
         {
             ID = make_disk("piaa1mask", size, size, 0.5 * size, 0.5 * size,
@@ -560,8 +560,8 @@ void PIAACMCsimul_init(
         mk_reim_from_complex("piaacmcfpm", "piaacmcfpm_re", "piaacmcfpm_im", 0);
         save_fits("piaacmcfpm_re", "./testdir/test_piaacmcfpm_re.fits");
         save_fits("piaacmcfpm_im", "./testdir/test_piaacmcfpm_im.fits");
-        delete_image_ID("piaacmcfpm_re");
-        delete_image_ID("piaacmcfpm_im");
+        delete_image_ID("piaacmcfpm_re", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("piaacmcfpm_im", DELETE_IMAGE_ERRMODE_WARNING);
 
 
 

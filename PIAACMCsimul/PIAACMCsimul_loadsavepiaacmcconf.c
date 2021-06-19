@@ -430,7 +430,7 @@ int PIAACMCsimul_savepiaacmcconf(const char *dname)
     sprintf(fname, "%s/fpm_sagmapHR.%s.fits", piaacmcsimul_var.piaacmcconfdir,
             piaacmcsimul_var.fnamedescr);
     save_fits("fpmsagmapHR", fname);
-    delete_image_ID("fpmsagmapHR");
+    delete_image_ID("fpmsagmapHR", DELETE_IMAGE_ERRMODE_WARNING);
 
     return(0);
 }

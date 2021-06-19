@@ -402,7 +402,7 @@ long PIAACMCsimul_mkFPM_zonemap(
                     data.image[ID].array.UI16[ii] = (unsigned int) hex_number[hindex] + 1;
                 }
             }
-            delete_image_ID("_TMPhex");
+            delete_image_ID("_TMPhex", DELETE_IMAGE_ERRMODE_WARNING);
         }
 
         if(piaacmc[0].NBrings > 1)

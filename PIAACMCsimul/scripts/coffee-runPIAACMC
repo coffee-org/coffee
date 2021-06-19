@@ -1451,7 +1451,7 @@ PIAACMC_nblambda=1
 PIAACMC_lambda=${lambda}
 
 # load mask if available
-loadfits .errcode 1
+loadfits .errmode 1
 loadfits "_pupmaskload.fits" pupmaskim
 
 coffeepiaacmcsim.run $1 0

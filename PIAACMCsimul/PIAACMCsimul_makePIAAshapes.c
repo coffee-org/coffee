@@ -159,8 +159,8 @@ int PIAACMCsimul_makePIAAshapes(
                 sprintf(fname, "%s/piaam0z.fits", piaacmcsimul_var.piaacmcconfdir);
                 save_fits("piaam0z", fname);
             }
-            delete_image_ID("piaa0Cz");
-            delete_image_ID("piaa0Fz");
+            delete_image_ID("piaa0Cz", DELETE_IMAGE_ERRMODE_WARNING);
+            delete_image_ID("piaa0Fz", DELETE_IMAGE_ERRMODE_WARNING);
 
             IDpiaam0z = ID;
 
@@ -179,7 +179,7 @@ int PIAACMCsimul_makePIAAshapes(
                             || (data.image[IDpiaar0zsag].md[0].size[1] !=
                                 size)) //||(data.image[IDpiaar0zsag].md[0].size[2] != design[index].nblambda))
                     {
-                        delete_image_ID("piaar0zsag");
+                        delete_image_ID("piaar0zsag", DELETE_IMAGE_ERRMODE_WARNING);
                         mkpiaar0zsag = 1;
                     }
                 }
@@ -270,8 +270,8 @@ int PIAACMCsimul_makePIAAshapes(
                 sprintf(fname, "%s/piaam1z.fits", piaacmcsimul_var.piaacmcconfdir);
                 save_fits("piaam1z", fname);
             }
-            delete_image_ID("piaa1Cz");
-            delete_image_ID("piaa1Fz");
+            delete_image_ID("piaa1Cz", DELETE_IMAGE_ERRMODE_WARNING);
+            delete_image_ID("piaa1Fz", DELETE_IMAGE_ERRMODE_WARNING);
 
             IDpiaam1z = ID;
 
@@ -292,7 +292,7 @@ int PIAACMCsimul_makePIAAshapes(
                             || (data.image[IDpiaar1zsag].md[0].size[1] !=
                                 size)) //||(data.image[IDpiaar1zsag].md[0].size[2] != design[index].nblambda))
                     {
-                        delete_image_ID("piaar1zsag");
+                        delete_image_ID("piaar1zsag", DELETE_IMAGE_ERRMODE_WARNING);
                         mkpiaar1zsag = 1;
                     }
                 }

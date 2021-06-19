@@ -126,13 +126,13 @@ long PIAACMCsimul_CA2propCubeInt(
 
 
 
-        delete_image_ID("_tmppropamp");
-        delete_image_ID("_tmpproppha");
+        delete_image_ID("_tmppropamp", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("_tmpproppha", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
     free(zarray);
-    delete_image_ID("retmpim");
-    delete_image_ID("imtmpim");
+    delete_image_ID("retmpim", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("imtmpim", DELETE_IMAGE_ERRMODE_WARNING);
 
     return IDout;
 }

@@ -588,7 +588,7 @@ errno_t PIAACMCsimul_computePSF(
                 arith_image_add_inplace("psfi0ext", "psfi0");
                 //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex); //TEST
                 //save_fits("psfi0", fname); //TEST
-                delete_image_ID("opderr");
+                delete_image_ID("opderr", DELETE_IMAGE_ERRMODE_WARNING);
 
                 imindex++;
             }
@@ -616,7 +616,7 @@ errno_t PIAACMCsimul_computePSF(
             ID = image_ID("imvect");
             if(ID != -1)
             {
-                delete_image_ID("imvect");
+                delete_image_ID("imvect", DELETE_IMAGE_ERRMODE_WARNING);
             }
 
             offset = nbelem /
@@ -642,7 +642,7 @@ errno_t PIAACMCsimul_computePSF(
                         data.image[ID].array.F[kl * offset1 + imindex * offset + ii] =
                             data.image[ID1].array.F[kl * offset + ii] * normcoeff;
                     }
-                delete_image_ID(imname);
+                delete_image_ID(imname, DELETE_IMAGE_ERRMODE_WARNING);
             }
 
 

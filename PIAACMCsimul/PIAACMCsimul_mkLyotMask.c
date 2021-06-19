@@ -223,7 +223,7 @@ long PIAACMCsimul_mkLyotMask(
                                           data.image[IDout].array.F[ii];
         }
         save_fits("postLMim", "postLMim.fits");
-        delete_image_ID("postLMim");
+        delete_image_ID("postLMim", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
 

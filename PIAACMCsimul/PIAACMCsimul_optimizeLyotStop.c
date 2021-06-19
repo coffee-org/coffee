@@ -287,9 +287,9 @@ double PIAACMCsimul_optimizeLyotStop(
             }
             //data.image[IDa].array.F[ii]*data.image[IDa].array.F[ii]; //data.image[IDintgg].array.F[ii];
 
-            delete_image_ID("retmpimg");
-            delete_image_ID("imtmpimg");
-            delete_image_ID("tmpintgg");
+            delete_image_ID("retmpimg", DELETE_IMAGE_ERRMODE_WARNING);
+            delete_image_ID("imtmpimg", DELETE_IMAGE_ERRMODE_WARNING);
+            delete_image_ID("tmpintgg", DELETE_IMAGE_ERRMODE_WARNING);
         }
 
         /*    for(ii=0; ii<xsize*ysize; ii++)
@@ -303,11 +303,11 @@ double PIAACMCsimul_optimizeLyotStop(
                     tot2array[l*NBmasks+m] += pow(data.image[ID].array.F[l*xsize*ysize+ii], alpha);
                 }
             }*/
-        delete_image_ID(nameamp);
-        delete_image_ID(namepha);
+        delete_image_ID(nameamp, DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID(namepha, DELETE_IMAGE_ERRMODE_WARNING);
     }
-    delete_image_ID("retmpim");
-    delete_image_ID("imtmpim");
+    delete_image_ID("retmpim", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("imtmpim", DELETE_IMAGE_ERRMODE_WARNING);
 
 
     sprintf(fname,  "%s/LMintC.fits", piaacmcsimul_var.piaacmcconfdir);
@@ -401,7 +401,7 @@ double PIAACMCsimul_optimizeLyotStop(
         sprintf(fname, "%s/LMask.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits("LMask", fname);
     }
-    delete_image_ID("Lcomb");
+    delete_image_ID("Lcomb", DELETE_IMAGE_ERRMODE_WARNING);
 
     IDlscumul = create_2Dimage_ID("LMcumul", xsize, ysize);
     for(ii = 0; ii < xsize * ysize; ii++)
@@ -456,7 +456,7 @@ double PIAACMCsimul_optimizeLyotStop(
     }
 
 
-    delete_image_ID("LMcumul");
+    delete_image_ID("LMcumul", DELETE_IMAGE_ERRMODE_WARNING);
 
     free(totarray);
     free(tot2array);
@@ -465,7 +465,7 @@ double PIAACMCsimul_optimizeLyotStop(
     free(zarray);
     free(rarray);
 
-    delete_image_ID("LMzonemap");
+    delete_image_ID("LMzonemap", DELETE_IMAGE_ERRMODE_WARNING);
 
     return(ratio);
 }

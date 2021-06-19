@@ -119,8 +119,8 @@ uint_fast8_t PIAACMCsimul_load2DRadialApodization(
         info_image_stats("apofitresm", "");
     }
 
-    delete_image_ID("_apoincrop");
-    delete_image_ID("fitmaskapo");
+    delete_image_ID("_apoincrop", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fitmaskapo", DELETE_IMAGE_ERRMODE_WARNING);
 
 
     return 0;

@@ -842,7 +842,7 @@ int PIAACMCsimul_initpiaacmcconf(
     {
         if(piaacmc[0].CmodesID != -1)
         {
-            delete_image_ID("Cmodes");
+            delete_image_ID("Cmodes", DELETE_IMAGE_ERRMODE_WARNING);
         }
         Cmsize = (long)(beamradpix * 4);
         if(Cmsize > size)
@@ -987,7 +987,7 @@ int PIAACMCsimul_initpiaacmcconf(
 
                 // expand solution to full size
                 basic_resizeim("apotmp1", "apostart", size, size);
-                delete_image_ID("apotmp1");
+                delete_image_ID("apotmp1", DELETE_IMAGE_ERRMODE_WARNING);
 
                 // full size, 4x zoom
                 create_variable_ID("DFTZFACTOR", 4);
@@ -1224,15 +1224,15 @@ int PIAACMCsimul_initpiaacmcconf(
         //   save_fits("piaa0Fz", "piaa0Fz.fits");
         //arith_image_sub("piaa0Cres", "piaa0Fz", "piaa0CFres");
         //save_fits("piaa0CFres", "piaa0CFres.fits");
-        delete_image_ID("piaa0zcrop");
+        delete_image_ID("piaa0zcrop", DELETE_IMAGE_ERRMODE_WARNING);
 
         //linopt_imtools_image_construct("Fmodes", "piaa1Fmodescoeff", "piaa1Fz");
         //save_fits("piaa1Fz", "piaa1Fz.fits");
         //arith_image_sub("piaa1Cres", "piaa1Fz", "piaa1CFres");
         //save_fits("piaa1CFres", "piaa1CFres.fits");
-        delete_image_ID("piaa1zcrop");
+        delete_image_ID("piaa1zcrop", DELETE_IMAGE_ERRMODE_WARNING);
 
-        delete_image_ID("maskfit");
+        delete_image_ID("maskfit", DELETE_IMAGE_ERRMODE_WARNING);
 
 
 
@@ -1289,7 +1289,7 @@ int PIAACMCsimul_initpiaacmcconf(
         if( piaacmcsimul_var.CREATE_fpmzmap == 1 )
         {
             if(image_ID("fpmzmap")!=-1)
-                delete_image_ID("fpmzmap");
+                delete_image_ID("fpmzmap", DELETE_IMAGE_ERRMODE_WARNING);
             PIAACMCsimul_mkFPM_zonemap("fpmzmap");
             sprintf(fname, "%s/fpmzmap%d_%03ld_%03ld.fits", piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.PIAACMC_FPMsectors, piaacmc[0].NBrings, piaacmc[0].focmNBzone);
             save_fits("fpmzmap", fname);
@@ -1355,7 +1355,7 @@ int PIAACMCsimul_initpiaacmcconf(
         piaacmc[0].zonezID = image_ID("fpmzt");
         if(piaacmc[0].zonezID != -1)
         {
-            delete_image_ID("fpmzt");
+            delete_image_ID("fpmzt", DELETE_IMAGE_ERRMODE_WARNING);
         }
 
         piaacmc[0].zonezID = create_2Dimage_ID_double("fpmzt", piaacmc[0].focmNBzone,
@@ -1419,7 +1419,7 @@ int PIAACMCsimul_initpiaacmcconf(
                     piaacmcsimul_var.fnamedescr);
 
             printf("LOADING FILE NAME : \"%s\"\n", fname);
-            load_fits(fname, "fpmza", LOADFITS_ERRCODE_IGNORE, &(piaacmc[0].zoneaID));
+            load_fits(fname, "fpmza", LOADFITS_ERRMODE_IGNORE, &(piaacmc[0].zoneaID));
 
             if(piaacmc[0].zoneaID == -1)
             {
@@ -1438,7 +1438,7 @@ int PIAACMCsimul_initpiaacmcconf(
     {
         if(piaacmc[0].zoneaID != -1)
         {
-            delete_image_ID("fpmza");
+            delete_image_ID("fpmza", DELETE_IMAGE_ERRMODE_WARNING);
         }
         piaacmc[0].zoneaID = create_2Dimage_ID_double("fpmza", piaacmc[0].focmNBzone,
                              1);

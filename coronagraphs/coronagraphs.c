@@ -614,7 +614,7 @@ double coronagraph_make_2Dprolate(
             {
                 data.image[IDpupa0].array.F[ii] -= data.image[IDpupa0co].array.F[ii];
             }
-            delete_image_ID("pupa0co");
+            delete_image_ID("pupa0co", DELETE_IMAGE_ERRMODE_WARNING);
         }
 
         IDpupmask = image_ID(pupmask_name);
@@ -683,7 +683,7 @@ double coronagraph_make_2Dprolate(
             data.image[IDprol].array.F[ii] = data.image[ID].array.F[ii];
         }
     }
-    delete_image_ID("apostart");
+    delete_image_ID("apostart", DELETE_IMAGE_ERRMODE_WARNING);
 
 
 
@@ -764,7 +764,7 @@ double coronagraph_make_2Dprolate(
                         * size + (size - ii)] / size2;
             }
         peak = data.image[IDr].array.F[(size / 2) * size + size / 2];
-        delete_image_ID("pr2cp");
+        delete_image_ID("pr2cp", DELETE_IMAGE_ERRMODE_WARNING);
 
         IDi = image_ID("pi2");
         copy_image_ID("pi2", "pi2cp", 0);
@@ -872,21 +872,21 @@ double coronagraph_make_2Dprolate(
             save_fl_fits("pc1_p", "pc1_p.1.fits");
             save_fl_fits("pr2", "pr2.1.fits");
             save_fl_fits("pi2", "pi2.1.fits");
-            delete_image_ID("pc1_a");
-            delete_image_ID("pc1_p");
+            delete_image_ID("pc1_a", DELETE_IMAGE_ERRMODE_WARNING);
+            delete_image_ID("pc1_p", DELETE_IMAGE_ERRMODE_WARNING);
             save_fl_fits(outname, "proltmp.1.fits");
         }
 
 
-        delete_image_ID("pc1");
-        delete_image_ID("fc1");
-        delete_image_ID("fa1");
-        delete_image_ID("fp1");
-        delete_image_ID("fa1m");
-        delete_image_ID("fc2");
-        delete_image_ID("pc2");
-        delete_image_ID("pr2");
-        delete_image_ID("pi2");
+        delete_image_ID("pc1", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("fc1", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("fa1", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("fp1", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("fa1m", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pr2", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pi2", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
     for(ii = 0; ii < size2; ii++)
@@ -898,15 +898,15 @@ double coronagraph_make_2Dprolate(
 
     //  save_fl_fits("FPmask","FPmask.fits");
 
-    delete_image_ID("FPmask");
-    delete_image_ID("pupp0");
-    delete_image_ID("pupa0");
-    delete_image_ID("pupa0m");
+    delete_image_ID("FPmask", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pupp0", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pupa0", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pupa0m", DELETE_IMAGE_ERRMODE_WARNING);
 
-    delete_image_ID("proli");
-    delete_image_ID("prolr");
-    delete_image_ID("prolp");
-    delete_image_ID("pupp0m");
+    delete_image_ID("proli", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("prolr", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("prolp", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pupp0m", DELETE_IMAGE_ERRMODE_WARNING);
 
 
     return(transm);
@@ -1069,8 +1069,8 @@ double coronagraph_make_2Dprolate_DFT(
         mk_amph_from_complex("_fpmz", "_fpmza", "_fpmzp", 0);
         save_fl_fits("_fpmza", "_fpmza.fits");
         save_fl_fits("_fpmzp", "_fpmzp.fits");
-        delete_image_ID("_fpmza");
-        delete_image_ID("_fpmzp");
+        delete_image_ID("_fpmza", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("_fpmzp", DELETE_IMAGE_ERRMODE_WARNING);
     }
     // exit(0);
 
@@ -1099,7 +1099,7 @@ double coronagraph_make_2Dprolate_DFT(
             {
                 data.image[IDpupa0].array.F[ii] -= data.image[IDpupa0co].array.F[ii];
             }
-            delete_image_ID("pupa0co");
+            delete_image_ID("pupa0co", DELETE_IMAGE_ERRMODE_WARNING);
         }
 
         //   save_fits("pupa0", "test_pupa00.fits"); //TEST
@@ -1172,7 +1172,7 @@ double coronagraph_make_2Dprolate_DFT(
             data.image[IDprol].array.F[ii] = data.image[ID].array.F[ii];
         }
     }
-    delete_image_ID("apostart");
+    delete_image_ID("apostart", DELETE_IMAGE_ERRMODE_WARNING);
 
 
 
@@ -1343,18 +1343,18 @@ double coronagraph_make_2Dprolate_DFT(
             save_fl_fits("pc3_p", "pc3_p.fits");
             save_fl_fits("pr2", "pr2.fits");
             save_fl_fits("pi2", "pi2.fits");
-            delete_image_ID("pc1_a");
-            delete_image_ID("pc1_p");
-            delete_image_ID("pc3_a");
-            delete_image_ID("pc3_p");
+            delete_image_ID("pc1_a", DELETE_IMAGE_ERRMODE_WARNING);
+            delete_image_ID("pc1_p", DELETE_IMAGE_ERRMODE_WARNING);
+            delete_image_ID("pc3_a", DELETE_IMAGE_ERRMODE_WARNING);
+            delete_image_ID("pc3_p", DELETE_IMAGE_ERRMODE_WARNING);
             save_fl_fits(outname, "proltmp.fits");
             //	  exit(0);
         }
 
-        delete_image_ID("pc1");
-        delete_image_ID("pc3");
-        delete_image_ID("pr2");
-        delete_image_ID("pi2");
+        delete_image_ID("pc1", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pc3", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pr2", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pi2", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
     for(uint64_t ii = 0; ii < size2; ii++)
@@ -1370,17 +1370,17 @@ double coronagraph_make_2Dprolate_DFT(
     }
 
     //  save_fl_fits("FPmaskz","FPmask.fits");
-    delete_image_ID("FPmaskz");
+    delete_image_ID("FPmaskz", DELETE_IMAGE_ERRMODE_WARNING);
 
-    delete_image_ID("FPmask");
-    delete_image_ID("_fpmz");
-    delete_image_ID("pupp0");
-    delete_image_ID("pupa0");
-    delete_image_ID("pupa0m");
-    delete_image_ID("proli");
-    delete_image_ID("prolr");
-    delete_image_ID("prolp");
-    delete_image_ID("pupp0m");
+    delete_image_ID("FPmask", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("_fpmz", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pupp0", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pupa0", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pupa0m", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("proli", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("prolr", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("prolp", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pupp0m", DELETE_IMAGE_ERRMODE_WARNING);
 
 
     return(transm);
@@ -1664,7 +1664,7 @@ int coronagraph_update_2Dprolate(double masksizeld, double beamradpix,
                     EXECUTE_SYSTEM_COMMAND("cp APLCapo.%.3f.%.3f.info %s", MASKSIZELD, centralObs,
                                            fnameinfo);
 
-                    delete_image_ID("apostart");
+                    delete_image_ID("apostart", DELETE_IMAGE_ERRMODE_WARNING);
 
                     if(iter == 1)
                     {
@@ -1687,9 +1687,9 @@ int coronagraph_update_2Dprolate(double masksizeld, double beamradpix,
 
 
 
-            delete_image_ID("apo");
-            delete_image_ID("apo1");
-            delete_image_ID("apo2");
+            delete_image_ID("apo", DELETE_IMAGE_ERRMODE_WARNING);
+            delete_image_ID("apo1", DELETE_IMAGE_ERRMODE_WARNING);
+            delete_image_ID("apo2", DELETE_IMAGE_ERRMODE_WARNING);
 
             EXECUTE_SYSTEM_COMMAND("touch %s", fnamenew);
         }
@@ -2749,14 +2749,14 @@ errno_t coronagraph_APLCapo_compile()
 
 
 
-    delete_image_ID("pffrac");
-    delete_image_ID("ptransm");
-    delete_image_ID("ppeak");
-    delete_image_ID("fitfit");
+    delete_image_ID("pffrac", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("ptransm", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("ppeak", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fitfit", DELETE_IMAGE_ERRMODE_WARNING);
 
-    delete_image_ID("fitapoa");
-    delete_image_ID("fitapob");
-    delete_image_ID("fitapoc");
+    delete_image_ID("fitapoa", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fitapob", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fitapoc", DELETE_IMAGE_ERRMODE_WARNING);
     printf("\n");
 
     return RETURN_SUCCESS;
@@ -4346,7 +4346,7 @@ int coronagraphs_PIAA_apodize_beam(
     save_fl_fits(opd2, "test_opd2.fits");
     save_fl_fits("rtest", "test_r.fits");
 
-    delete_image_ID("rtest");
+    delete_image_ID("rtest", DELETE_IMAGE_ERRMODE_WARNING);
     exit(0);
     */
 
@@ -4852,12 +4852,12 @@ int coronagraph_simul_SHEAR4(double xld, double yld, const char *psfname)
     mk_amph_from_complex("fc2", "fa2", "fp2", 0);
     arith_image_mult("fa2", "fa2", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fa2");
-    delete_image_ID("fp2");
-    delete_image_ID("pa1");
-    delete_image_ID("pp1");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
     for(ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2;
@@ -5098,7 +5098,7 @@ int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
                 }
             }
     }
-    delete_image_ID("paref");
+    delete_image_ID("paref", DELETE_IMAGE_ERRMODE_WARNING);
     for(index = 0; index < size2; index++)
     {
         amp = data.image[IDa1].array.F[index];
@@ -5115,12 +5115,12 @@ int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
     mk_amph_from_complex("fc2", "fa2", "fp2", 0);
     arith_image_mult("fa2", "fa2", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fa2");
-    delete_image_ID("fp2");
-    delete_image_ID("pa1");
-    delete_image_ID("pp1");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
     for(ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2;
@@ -5204,12 +5204,12 @@ int coronagraph_simul_AIC(double xld, double yld, const char *psfname)
     mk_amph_from_complex("fc2", "fa2", "fp2", 0);
     arith_image_mult("fa2", "fa2", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fa2");
-    delete_image_ID("fp2");
-    delete_image_ID("pa1");
-    delete_image_ID("pp1");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
     for(ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2;
@@ -5354,14 +5354,14 @@ int coronagraph_simul_4QPM(double xld, double yld, const char *psfname)
 
     arith_image_mult("fa4", "fa4", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fc4");
-    delete_image_ID("fa4");
-    delete_image_ID("fp4");
-    delete_image_ID("pa1");
-    delete_image_ID("pp1");
-    delete_image_ID("pc3");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pc3", DELETE_IMAGE_ERRMODE_WARNING);
     for(ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2 * size2 * size2;
@@ -5540,14 +5540,14 @@ int coronagraph_simul_ODC(
 
     arith_image_mult("fa4", "fa4", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fc4");
-    delete_image_ID("fa4");
-    delete_image_ID("fp4");
-    delete_image_ID("pa1");
-    delete_image_ID("pp1");
-    delete_image_ID("pc3");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pc3", DELETE_IMAGE_ERRMODE_WARNING);
     for(uint64_t ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2 * size2 * size2;
@@ -5779,14 +5779,14 @@ int coronagraph_simul_BL8(
 
     arith_image_mult("fa4", "fa4", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fc4");
-    delete_image_ID("fa4");
-    delete_image_ID("fp4");
-    delete_image_ID("pa1");
-    delete_image_ID("pp1");
-    delete_image_ID("pc3");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pc3", DELETE_IMAGE_ERRMODE_WARNING);
     for(uint64_t ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2 * size2 * size2;
@@ -5971,14 +5971,14 @@ int coronagraph_simul_BL4(
 
     arith_image_mult("fa4", "fa4", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fc4");
-    delete_image_ID("fa4");
-    delete_image_ID("fp4");
-    delete_image_ID("pa1");
-    delete_image_ID("pp1");
-    delete_image_ID("pc3");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pc3", DELETE_IMAGE_ERRMODE_WARNING);
     for(uint64_t ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2 * size2 * size2;
@@ -6149,7 +6149,7 @@ int coronagraph_simul_RRPM(
             data.image[IDa2].array.F[ii] = data.image[IDa1].array.F[ii] *
                                            data.image[IDref_pm].array.F[ii];
         }
-        delete_image_ID("pp2");
+        delete_image_ID("pp2", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
     mk_complex_from_amph("pa2", "pp1", "pc2", 0);
@@ -6218,15 +6218,15 @@ int coronagraph_simul_RRPM(
 
     arith_image_mult("fa4", "fa4", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fc4");
-    delete_image_ID("fa4");
-    delete_image_ID("fp4");
-    delete_image_ID("pa1");
-    delete_image_ID("pa2");
-    delete_image_ID("pp1");
-    delete_image_ID("pc3");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pc3", DELETE_IMAGE_ERRMODE_WARNING);
     for(uint64_t ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2 * size2 * size2 / factor;
@@ -6405,8 +6405,8 @@ int coronagraph_simul_OVC(
     /*  mk_amph_from_complex("fc2","fa2","fp2");
     save_fl_fits("fa2","fa2");
     save_fl_fits("fp2","fp2");
-    delete_image_ID("fa2");
-    delete_image_ID("fp2");*/
+    delete_image_ID("fa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp2", DELETE_IMAGE_ERRMODE_WARNING);*/
 
 
     permut("fc2");
@@ -6419,8 +6419,8 @@ int coronagraph_simul_OVC(
         mk_amph_from_complex("pc3", "pc3a", "pc3p", 0);
         save_fl_fits("pc3a", "pc3a");
         save_fl_fits("pc3p", "pc3p");
-        delete_image_ID("pc3a");
-        delete_image_ID("pc3p");
+        delete_image_ID("pc3a", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pc3p", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
     /*  for(ii=0;ii<size;ii++)
@@ -6495,14 +6495,14 @@ int coronagraph_simul_OVC(
 
     arith_image_mult("fa4", "fa4", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fc4");
-    delete_image_ID("fa4");
-    delete_image_ID("fp4");
-    delete_image_ID("pa1");
-    delete_image_ID("pp1");
-    delete_image_ID("pc3");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pc3", DELETE_IMAGE_ERRMODE_WARNING);
     for(ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2 * size2 * size2;
@@ -6617,15 +6617,15 @@ int coronagraph_simul_CPA(double xld, double yld, const char *psfname)
 
     arith_image_mult("fa4", "fa4", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fc4");
-    delete_image_ID("fa4");
-    delete_image_ID("fp4");
-    delete_image_ID("pa1");
-    delete_image_ID("pa2");
-    delete_image_ID("pp1");
-    delete_image_ID("pc3");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pc3", DELETE_IMAGE_ERRMODE_WARNING);
     for(ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2 * size2 * size2;
@@ -6718,9 +6718,9 @@ int coronagraph_simul_PPA(double xld, double yld, const char *psfname)
                 data.image[IDrefa].array.F[ii] = sqrt(re * re + im * im);
                 data.image[IDrefp].array.F[ii] = atan2(im, re);
             }
-        delete_image_ID("pparefr");
-        delete_image_ID("pparefi");
-        delete_image_ID("cntref");
+        delete_image_ID("pparefr", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pparefi", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("cntref", DELETE_IMAGE_ERRMODE_WARNING);
         free(pha_array);
         free(index_array);
     }
@@ -6750,13 +6750,13 @@ int coronagraph_simul_PPA(double xld, double yld, const char *psfname)
 
     arith_image_mult("fa2", "fa2", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fa2");
-    delete_image_ID("fp2");
-    delete_image_ID("pa1");
-    delete_image_ID("pa2");
-    delete_image_ID("pp1");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
     for(ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2;
@@ -6806,13 +6806,13 @@ int coronagraph_simul_NOCORO(
 
     arith_image_mult("fa2", "fa2", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fa2");
-    delete_image_ID("fp2");
-    delete_image_ID("pa1");
-    delete_image_ID("pa2");
-    delete_image_ID("pp1");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
     for(uint64_t ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2;
@@ -6954,10 +6954,10 @@ int coronagraph_simul_PIAA(
         {
             data.image[ID].array.F[ii] /= total * size2 * size2 * size2;
         }
-        delete_image_ID("pc3p");
-        delete_image_ID("fc4p");
-        delete_image_ID("fa4p");
-        delete_image_ID("fp4p");
+        delete_image_ID("pc3p", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("fc4p", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("fa4p", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("fp4p", DELETE_IMAGE_ERRMODE_WARNING);
 
         permut("pc3m");
         do2dfft("pc3m", "fc4m");
@@ -6969,10 +6969,10 @@ int coronagraph_simul_PIAA(
         {
             data.image[ID].array.F[ii] /= total * size2 * size2 * size2;
         }
-        delete_image_ID("pc3m");
-        delete_image_ID("fc4m");
-        delete_image_ID("fa4m");
-        delete_image_ID("fp4m");
+        delete_image_ID("pc3m", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("fc4m", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("fa4m", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("fp4m", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
     /* mk_amph_from_complex("pc3","fa","fp", 0);
@@ -6988,16 +6988,16 @@ int coronagraph_simul_PIAA(
 
     arith_image_mult("fa4", "fa4", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fc4");
-    delete_image_ID("fa4");
-    delete_image_ID("fp4");
-    delete_image_ID("pa1");
-    delete_image_ID("pa2");
-    delete_image_ID("pp1");
-    delete_image_ID("pp2");
-    delete_image_ID("pc3");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pc3", DELETE_IMAGE_ERRMODE_WARNING);
     for(uint64_t ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2 * size2 * size2;
@@ -7109,8 +7109,8 @@ int coronagraph_simul_PIAAC(
 
     /*  mk_amph_from_complex("fc2","tfa2","tfp2", 0);
     save_fl_fits("tfa2","tfa2");
-    delete_image_ID("tfa2");
-    delete_image_ID("tfp2");
+    delete_image_ID("tfa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("tfp2", DELETE_IMAGE_ERRMODE_WARNING);
     */
 
     permut("fc2");
@@ -7119,8 +7119,8 @@ int coronagraph_simul_PIAAC(
     ID = image_ID("pc3");
     mk_amph_from_complex("pc3", "pa3t", "pp3t", 0);
     //  save_fl_fits("pa3t","pa3t");
-    delete_image_ID("pa3t");
-    delete_image_ID("pp3t");
+    delete_image_ID("pa3t", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp3t", DELETE_IMAGE_ERRMODE_WARNING);
 
     for(uint32_t ii = 0; ii < size; ii++)
         for(uint32_t jj = 0; jj < size; jj++)
@@ -7189,12 +7189,12 @@ int coronagraph_simul_PIAAC(
         }
     }
 
-    delete_image_ID("pp3b");
-    delete_image_ID("pp3c");
-    delete_image_ID("pa4b");
-    delete_image_ID("pp4b");
-    delete_image_ID("pa4c");
-    delete_image_ID("pp4c");
+    delete_image_ID("pp3b", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp3c", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa4b", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp4b", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa4c", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp4c", DELETE_IMAGE_ERRMODE_WARNING);
 
     if(CHEAT == 1)
     {
@@ -7246,21 +7246,21 @@ int coronagraph_simul_PIAAC(
 
     arith_image_mult("fa4", "fa4", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fc4");
-    delete_image_ID("fa4");
-    delete_image_ID("fp4");
-    delete_image_ID("pa1");
-    delete_image_ID("pa2");
-    delete_image_ID("pa3");
-    delete_image_ID("pa4");
-    delete_image_ID("pp1");
-    delete_image_ID("pp2");
-    delete_image_ID("pp3");
-    delete_image_ID("pp4");
-    delete_image_ID("pc3");
-    delete_image_ID("pc4");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa3", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp3", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pc3", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pc4", DELETE_IMAGE_ERRMODE_WARNING);
     for(uint64_t ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2 * size2 * size2;
@@ -7363,8 +7363,8 @@ int coronagraph_simul_STRIPC(double xld, double yld, const char *psfname)
     mk_amph_from_complex("pc2", "pa2", "pp2", 0);
     /* save_fl_fits("pa2","pa2");
        save_fl_fits("pp2","pp2");*/
-    delete_image_ID("pa2");
-    delete_image_ID("pp2");
+    delete_image_ID("pa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp2", DELETE_IMAGE_ERRMODE_WARNING);
 
     permut("pc2");
     do2dfft("pc2", "fc2");
@@ -7372,12 +7372,12 @@ int coronagraph_simul_STRIPC(double xld, double yld, const char *psfname)
     mk_amph_from_complex("fc2", "fa2", "fp2", 0);
     arith_image_mult("fa2", "fa2", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fa2");
-    delete_image_ID("fp2");
-    delete_image_ID("pa1");
-    delete_image_ID("pp1");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
     for(uint64_t ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2;
@@ -7462,8 +7462,8 @@ int coronagraph_simul_SIMXY(
     mk_amph_from_complex("pc2", "pa2", "pp2", 0);
     /*save_fl_fits("pa2","pa2");
       save_fl_fits("pp2","pp2");*/
-    delete_image_ID("pa2");
-    delete_image_ID("pp2");
+    delete_image_ID("pa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp2", DELETE_IMAGE_ERRMODE_WARNING);
 
     permut("pc2");
     do2dfft("pc2", "fc2");
@@ -7471,12 +7471,12 @@ int coronagraph_simul_SIMXY(
     mk_amph_from_complex("fc2", "fa2", "fp2", 0);
     arith_image_mult("fa2", "fa2", psfname);
     ID = image_ID(psfname);
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fa2");
-    delete_image_ID("fp2");
-    delete_image_ID("pa1");
-    delete_image_ID("pp1");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
     for(uint64_t ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] /= total * size2;
@@ -7583,21 +7583,21 @@ int coronagraph_simul_AIC_PIAAC(
 
     arith_image_mult("fa4", "fa4", "psfPIAAC");
     ID = image_ID("psfPIAAC");
-    delete_image_ID("pc2");
-    delete_image_ID("fc2");
-    delete_image_ID("fc4");
-    delete_image_ID("fa4");
-    delete_image_ID("fp4");
-    delete_image_ID("pa1");
-    delete_image_ID("pa2");
-    delete_image_ID("pa3");
-    delete_image_ID("pa4");
-    delete_image_ID("pp1");
-    delete_image_ID("pp2");
-    delete_image_ID("pp3");
-    delete_image_ID("pp4");
-    delete_image_ID("pc3");
-    delete_image_ID("pc4");
+    delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fp4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa3", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp3", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp4", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pc3", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pc4", DELETE_IMAGE_ERRMODE_WARNING);
 
     for(uint64_t ii = 0; ii < size2; ii++)
     {
@@ -7624,7 +7624,7 @@ int coronagraph_simul_AIC_PIAAC(
             data.image[IDaicc].array.F[jj * size + ii] /= total * size2;
         }
 
-    delete_image_ID("fc2_aic");
+    delete_image_ID("fc2_aic", DELETE_IMAGE_ERRMODE_WARNING);
 
     /* combine the 3 images */
     IDpiaac = image_ID("psfPIAAC");
@@ -7651,9 +7651,9 @@ int coronagraph_simul_AIC_PIAAC(
                     4) * size + (ii - size / 4)];
         }
 
-    delete_image_ID("psfPIAAC");
-    delete_image_ID("psfAICc");
-    delete_image_ID("psfAICd");
+    delete_image_ID("psfPIAAC", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("psfAICc", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("psfAICd", DELETE_IMAGE_ERRMODE_WARNING);
 
     return(0);
 }
@@ -7672,11 +7672,11 @@ int coronagraph_RRPM_optimize()
 
     EXECUTE_SYSTEM_COMMAND("rm %s/rrpmref_fm.ref %s/rrpmref_pm.ref",
                            CORONAGRAPHSDATALOCAL, CORONAGRAPHSDATALOCAL);
-    delete_image_ID("rrpmref_fm.ref");
-    delete_image_ID("rrpmref_pm.ref");
+    delete_image_ID("rrpmref_fm.ref", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("rrpmref_pm.ref", DELETE_IMAGE_ERRMODE_WARNING);
     coronagraph_simul_RRPM(0.0, 0.0, "psf");
     best_value = arith_image_total("psf");
-    delete_image_ID("psf");
+    delete_image_ID("psf", DELETE_IMAGE_ERRMODE_WARNING);
 
 
     while(0 == 0)
@@ -7689,11 +7689,11 @@ int coronagraph_RRPM_optimize()
 
         EXECUTE_SYSTEM_COMMAND("rm %s/rrpmref_fm.ref %s/rrpmref_pm.ref",
                                CORONAGRAPHSDATALOCAL, CORONAGRAPHSDATALOCAL);
-        delete_image_ID("rrpmref_fm.ref");
-        delete_image_ID("rrpmref_pm.ref");
+        delete_image_ID("rrpmref_fm.ref", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("rrpmref_pm.ref", DELETE_IMAGE_ERRMODE_WARNING);
         coronagraph_simul_RRPM(0.0, 0.0, "psf");
         value = arith_image_total("psf");
-        delete_image_ID("psf");
+        delete_image_ID("psf", DELETE_IMAGE_ERRMODE_WARNING);
 
         printf("[%g %g %g %g %g] %g     [%g %g %g %g %g] %g\n", RRPM_RADIUS, RRPM_P2,
                RRPM_P3, RRPM_P4, RRPM_P5, value, best_RRPM_RADIUS, best_RRPM_P2, best_RRPM_P3,
@@ -8091,7 +8091,7 @@ int coronagraph_simul_MULTISTEP_APLC(
                     data.image[IDfpm].array.F[ii] = 1.0 - v1 * (1.0 - FPM_TRANSM1) - (v2 - v1) *
                                                     (1.0 - FPM_TRANSM2);
                 }
-                delete_image_ID("aplcfpm2");
+                delete_image_ID("aplcfpm2", DELETE_IMAGE_ERRMODE_WARNING);
                 save_fl_fits("aplcfpm", "aplcfpm");
             }
         }
@@ -8166,8 +8166,8 @@ int coronagraph_simul_MULTISTEP_APLC(
         }
 
         mk_complex_from_amph("pa1", "pp1", "pc1", 0);
-        delete_image_ID("pa1");
-        delete_image_ID("pp1");
+        delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
 
 
         // AUTO DEFINE LYOT MASK
@@ -8238,8 +8238,8 @@ int coronagraph_simul_MULTISTEP_APLC(
         }
              */
 
-        delete_image_ID("pa1");
-        delete_image_ID("pp1");
+        delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
 
         ID1 = image_ID("pa1a");
         ID = image_ID("postPIAAmask");
@@ -8263,8 +8263,8 @@ int coronagraph_simul_MULTISTEP_APLC(
             save_fl_fits("pa1a", "pa1a");
             save_fl_fits("pp1a", "pp1a");
         }
-        delete_image_ID("pa1a");
-        delete_image_ID("pp1a");
+        delete_image_ID("pa1a", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pp1a", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
 
@@ -8285,7 +8285,7 @@ int coronagraph_simul_MULTISTEP_APLC(
 
             permut("pc1");
             do2dfft("pc1", "fc1");
-            delete_image_ID("pc1");
+            delete_image_ID("pc1", DELETE_IMAGE_ERRMODE_WARNING);
             permut("fc1");
             ID = image_ID("fc1");
             tot1 = 0.0;
@@ -8312,13 +8312,13 @@ int coronagraph_simul_MULTISTEP_APLC(
                 save_fl_fits("fc1_p", "fc1_p.fits");
             }
 
-            delete_image_ID("fc1_a");
-            delete_image_ID("fc1_p");
+            delete_image_ID("fc1_a", DELETE_IMAGE_ERRMODE_WARNING);
+            delete_image_ID("fc1_p", DELETE_IMAGE_ERRMODE_WARNING);
 
             //      printf("Focal plane mask %ld : throughput = %g\n",iter,tot2/tot1);
             permut("fc1");
             do2dfft("fc1", "pc1");
-            delete_image_ID("fc1");
+            delete_image_ID("fc1", DELETE_IMAGE_ERRMODE_WARNING);
             permut("pc1");
 
             if(WriteFiles == 1)
@@ -8326,8 +8326,8 @@ int coronagraph_simul_MULTISTEP_APLC(
                 mk_amph_from_complex("pc1", "pc1a", "pc1p", 0);
                 save_fl_fits("pc1a", "pc1a.fits");
                 save_fl_fits("pc1p", "pc1p.fits");
-                delete_image_ID("pc1a");
-                delete_image_ID("pc1p");
+                delete_image_ID("pc1a", DELETE_IMAGE_ERRMODE_WARNING);
+                delete_image_ID("pc1p", DELETE_IMAGE_ERRMODE_WARNING);
             }
 
             ID = image_ID("pc1");
@@ -8359,8 +8359,8 @@ int coronagraph_simul_MULTISTEP_APLC(
                 mk_amph_from_complex("pc1", "pc1am", "pc1pm", 0);
                 save_fl_fits("pc1am", "pc1am.fits");
                 save_fl_fits("pc1pm", "pc1pm.fits");
-                delete_image_ID("pc1am");
-                delete_image_ID("pc1pm");
+                delete_image_ID("pc1am", DELETE_IMAGE_ERRMODE_WARNING);
+                delete_image_ID("pc1pm", DELETE_IMAGE_ERRMODE_WARNING);
             }
         }
         else // DFT propagation
@@ -8396,7 +8396,7 @@ int coronagraph_simul_MULTISTEP_APLC(
                     data.image[ID].array.CF[ii].im = -data.image[ID].array.CF[ii].im;
                 }
                 fft_DFTinsertFPM("pc1", "aplcfpm_c", DFTZFACTOR, "pc2");
-                delete_image_ID("aplcfpm_c");
+                delete_image_ID("aplcfpm_c", DELETE_IMAGE_ERRMODE_WARNING);
             }
             else
             {
@@ -8409,20 +8409,20 @@ int coronagraph_simul_MULTISTEP_APLC(
                 mk_amph_from_complex("pc1", "dftia", "dftip", 0);
                 save_fl_fits("dftia", "dftia.fits");
                 save_fl_fits("dftip", "dftip.fits");
-                delete_image_ID("dftia");
-                delete_image_ID("dftip");
+                delete_image_ID("dftia", DELETE_IMAGE_ERRMODE_WARNING);
+                delete_image_ID("dftip", DELETE_IMAGE_ERRMODE_WARNING);
                 mk_amph_from_complex("pc2", "dftoa", "dftop", 0);
                 save_fl_fits("dftoa", "dftoa.fits");
                 save_fl_fits("dftop", "dftop.fits");
-                delete_image_ID("dftoa");
-                delete_image_ID("dftop");
+                delete_image_ID("dftoa", DELETE_IMAGE_ERRMODE_WARNING);
+                delete_image_ID("dftop", DELETE_IMAGE_ERRMODE_WARNING);
                 //mk_amph_from_complex("aplcfpm1", "dftfpma", "dftfpmp", 0);
                 save_fl_fits("aplcfpm1", "dftfpma.fits");
                 //	      save_fl_fits("dftfpmp", "dftfpmp.fits");
-                // delete_image_ID("dftfpma");
-                //delete_image_ID("dftfpmp");
+                // delete_image_ID("dftfpma", DELETE_IMAGE_ERRMODE_WARNING);
+                //delete_image_ID("dftfpmp", DELETE_IMAGE_ERRMODE_WARNING);
             }
-            delete_image_ID("aplcfpm1");
+            delete_image_ID("aplcfpm1", DELETE_IMAGE_ERRMODE_WARNING);
             //	  exit(0);
 
 
@@ -8442,14 +8442,14 @@ int coronagraph_simul_MULTISTEP_APLC(
                 data.image[ID1].array.CF[ii].re = re1;
                 data.image[ID1].array.CF[ii].im = im1;
             }
-            delete_image_ID("pc2");
+            delete_image_ID("pc2", DELETE_IMAGE_ERRMODE_WARNING);
             if(WriteFiles == 1)
             {
                 mk_amph_from_complex("pc1", "pc1a", "pc1p", 0);
                 save_fl_fits("pc1a", "pc1a_01.fits");
                 save_fl_fits("pc1p", "pc1p_01.fits");
-                delete_image_ID("pc1a");
-                delete_image_ID("pc1p");
+                delete_image_ID("pc1a", DELETE_IMAGE_ERRMODE_WARNING);
+                delete_image_ID("pc1p", DELETE_IMAGE_ERRMODE_WARNING);
             }
         }
     }
@@ -8526,12 +8526,12 @@ int coronagraph_simul_MULTISTEP_APLC(
             }
         }
 
-        delete_image_ID("pp3b");
-        delete_image_ID("pp3c");
-        delete_image_ID("pa4b");
-        delete_image_ID("pp4b");
-        delete_image_ID("pa4c");
-        delete_image_ID("pp4c");
+        delete_image_ID("pp3b", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pp3c", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pa4b", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pp4b", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pa4c", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pp4c", DELETE_IMAGE_ERRMODE_WARNING);
 
 
         printf(" CENT OBS 0 = %f x %f -------------------\n", APLC_CentOBS0, trad_pix);
@@ -8644,19 +8644,19 @@ int coronagraph_simul_MULTISTEP_APLC(
             data.image[ID].array.F[ii] /= size2 * total0;
         }
 
-        delete_image_ID("pa3");
-        delete_image_ID("pp3");
-        delete_image_ID("pc4");
-        delete_image_ID("pa4");
-        delete_image_ID("pp4");
-        delete_image_ID("fc4");
+        delete_image_ID("pa3", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pp3", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pc4", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pa4", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pp4", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("fc4", DELETE_IMAGE_ERRMODE_WARNING);
         if(WriteFiles == 1)
         {
             save_fl_fits("fa4", "fa4.fits");
             save_fl_fits("fp4", "fp4.fits");
         }
-        delete_image_ID("fa4");
-        delete_image_ID("fp4");
+        delete_image_ID("fa4", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("fp4", DELETE_IMAGE_ERRMODE_WARNING);
     }
     else
     {
@@ -8689,7 +8689,7 @@ int coronagraph_simul_MULTISTEP_APLC(
         mk_amph_from_complex("fc2", "fa2", "fp2", 0);
 
         ID = image_ID("fa2");
-        delete_image_ID("fp2");
+        delete_image_ID("fp2", DELETE_IMAGE_ERRMODE_WARNING);
         IDout = create_2Dimage_ID(psfname, size, size);
         for(uint64_t ii = 0; ii < size2; ii++)
         {
@@ -8697,12 +8697,12 @@ int coronagraph_simul_MULTISTEP_APLC(
                                             data.image[ID].array.F[ii];
         }
 
-        delete_image_ID("fc2");
-        delete_image_ID("fa2");
+        delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("fa2", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
-    delete_image_ID("pc1");
-    delete_image_ID("pa0");
+    delete_image_ID("pc1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa0", DELETE_IMAGE_ERRMODE_WARNING);
 
     // list_image_ID();
 
@@ -8741,9 +8741,9 @@ int coronagraph_init_EXTERNAL_OCCULTER(
     Fresnel_propagate_wavefront("extocc_c", "extoccp", pixscale, l, lambda);
     ID = image_ID("extoccp");
 
-    delete_image_ID("zero");
-    delete_image_ID("extocc");
-    delete_image_ID("extocc_c");
+    delete_image_ID("zero", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("extocc", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("extocc_c", DELETE_IMAGE_ERRMODE_WARNING);
 
     return(ID);
 }
@@ -8839,7 +8839,7 @@ int coronagraph_simul_EXTERNAL_OCCULTER(
     mk_amph_from_complex("fc2", "fa2", "fp2", 0);
 
     ID = image_ID("fa2");
-    delete_image_ID("fp2");
+    delete_image_ID("fp2", DELETE_IMAGE_ERRMODE_WARNING);
     IDout = create_2Dimage_ID(psfname, size, size);
     for(ii = 0; ii < size2; ii++)
     {
@@ -8847,13 +8847,13 @@ int coronagraph_simul_EXTERNAL_OCCULTER(
                                         data.image[ID].array.F[ii];
     }
 
-    delete_image_ID("exta");
-    delete_image_ID("extp");
-    delete_image_ID("pa1");
-    delete_image_ID("pp1");
-    delete_image_ID("pc1");
-    delete_image_ID("fc2");
-    delete_image_ID("fa2");
+    delete_image_ID("exta", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("extp", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pa1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("pc1", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("fa2", DELETE_IMAGE_ERRMODE_WARNING);
 
     return(0);
 }
@@ -9499,7 +9499,7 @@ int coronagraph_transm(const char *fname, long coronagraph_type,
                             {
                                 data.image[ID0].array.F[ii] += data.image[ID1].array.F[ii];
                             }
-                            delete_image_ID("psf1");
+                            delete_image_ID("psf1", DELETE_IMAGE_ERRMODE_WARNING);
                             printf(".");
                             fflush(stdout);
                             cnt++;
@@ -9526,12 +9526,12 @@ int coronagraph_transm(const char *fname, long coronagraph_type,
                     {
                         data.image[ID0].array.F[ii] += data.image[ID1].array.F[ii];
                     }
-                    delete_image_ID("psf1");
+                    delete_image_ID("psf1", DELETE_IMAGE_ERRMODE_WARNING);
                     printf(".");
                     fflush(stdout);
                     cnt++;
                 }
-                delete_image_ID("corphase");
+                delete_image_ID("corphase", DELETE_IMAGE_ERRMODE_WARNING);
                 printf("\n");
             }
             for(ii = 0; ii < size2; ii++)
@@ -9554,7 +9554,7 @@ int coronagraph_transm(const char *fname, long coronagraph_type,
         }
         PIAAFPMASKRAD = CORONAGRAPHS_PIXSCALE * (size / 2 - (ii - 1));
         printf("PIAAC:  MASK RADIUS = %f lambda/d  (ii = %ld)\n", PIAAFPMASKRAD, ii);
-        delete_image_ID("psf0");
+        delete_image_ID("psf0", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
 
@@ -9579,7 +9579,7 @@ int coronagraph_transm(const char *fname, long coronagraph_type,
                         {
                             data.image[ID0].array.F[ii] += data.image[ID1].array.F[ii];
                         }
-                        delete_image_ID("psf1");
+                        delete_image_ID("psf1", DELETE_IMAGE_ERRMODE_WARNING);
                         printf(".");
                         fflush(stdout);
                         cnt++;
@@ -9606,12 +9606,12 @@ int coronagraph_transm(const char *fname, long coronagraph_type,
                 {
                     data.image[ID0].array.F[ii] += data.image[ID1].array.F[ii];
                 }
-                delete_image_ID("psf1");
+                delete_image_ID("psf1", DELETE_IMAGE_ERRMODE_WARNING);
                 printf(".");
                 fflush(stdout);
                 cnt++;
             }
-            delete_image_ID("corphase");
+            delete_image_ID("corphase", DELETE_IMAGE_ERRMODE_WARNING);
             printf("\n");
         }
         for(ii = 0; ii < size2; ii++)
@@ -9632,7 +9632,7 @@ int coronagraph_transm(const char *fname, long coronagraph_type,
             coronagraph_simulPSF(0.0, 0.0, "psf0", coronagraph_type, "");
             ID0 = image_ID("psf0");
             save_fl_fits("corphase", "corphase");
-            delete_image_ID("corphase");
+            delete_image_ID("corphase", DELETE_IMAGE_ERRMODE_WARNING);
         }
         else
         {
@@ -9749,7 +9749,7 @@ int coronagraph_transm(const char *fname, long coronagraph_type,
             fprintf(fp, "%g %g %g\n", sep, total2, total);
             fclose(fp);
             printf("%g %g %g\n", sep, total2, total);
-            delete_image_ID("psf");
+            delete_image_ID("psf", DELETE_IMAGE_ERRMODE_WARNING);
 
             //IWA measurement
             if((total2 > 0.5) && (iwaOK == 0))
@@ -9838,7 +9838,7 @@ int coronagraph_transm(const char *fname, long coronagraph_type,
                 total4 += total;
                 /*      fprintf(fp,"%g %g %g\n",sep,total2,total);*/
                 printf("%g (%ld/%ld) %g %g\n", sep, anglestep, NBanglestep, total2, total);
-                delete_image_ID("psf");
+                delete_image_ID("psf", DELETE_IMAGE_ERRMODE_WARNING);
                 if(total2 > maxtransm)
                 {
                     maxtransm = total2;
@@ -9861,7 +9861,7 @@ int coronagraph_transm(const char *fname, long coronagraph_type,
         }
     }
 
-    delete_image_ID("psf0");
+    delete_image_ID("psf0", DELETE_IMAGE_ERRMODE_WARNING);
 
 
     free(arrayS);
@@ -9952,7 +9952,7 @@ int coronagraph_userfunc()
         FPMASK_FACTOR2 = 1.0 + 0.1 * ran1();
 
         coronagraph_transm("transm.dat", 35, 10.0, "-FPMSERR 1.0");
-        delete_image_ID("aplcfpm");
+        delete_image_ID("aplcfpm", DELETE_IMAGE_ERRMODE_WARNING);
         v1 = COROTMP1;
 
         fp = fopen("result3.log", "a");
@@ -10627,7 +10627,7 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                             for(k = 0; k < kmax; k++)
                             {
                                 sprintf(fname1, "psf%02ld", k);
-                                delete_image_ID(fname1);
+                                delete_image_ID(fname1, DELETE_IMAGE_ERRMODE_WARNING);
                             }
                         }
                     }

@@ -548,7 +548,7 @@ errno_t PIAACMCsimul_run(
                     {
                         data.image[IDbestsol].array.D[k] = data.image[IDbestsoltmp].array.D[k];
                     }
-                    delete_image_ID("fpmbestsoltmp");
+                    delete_image_ID("fpmbestsoltmp", DELETE_IMAGE_ERRMODE_WARNING);
                 }
 
                 // fname1 is the name of the current solution, which is now the best solution

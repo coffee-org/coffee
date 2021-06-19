@@ -216,12 +216,12 @@ errno_t OptSystProp_run(OPTSYST *optsyst,
         // delete the element data if it exists
         if((image_ID(imnameamp_out) != -1) && (sharedmem == 0))
         {
-            delete_image_ID(imnameamp_out);
+            delete_image_ID(imnameamp_out, DELETE_IMAGE_ERRMODE_WARNING);
         }
 
         if((image_ID(imnamepha_out) != -1) && (sharedmem == 0))
         {
-            delete_image_ID(imnamepha_out);
+            delete_image_ID(imnamepha_out, DELETE_IMAGE_ERRMODE_WARNING);
         }
 
         // if our propagation distance big enough to require propagation
@@ -248,8 +248,8 @@ errno_t OptSystProp_run(OPTSYST *optsyst,
         {
             printf("********** Deleting element %ld      %s %s\n", elem - 1, imnameamp_in,
                    imnamepha_in);
-            delete_image_ID(imnameamp_in);
-            delete_image_ID(imnamepha_in);
+            delete_image_ID(imnameamp_in, DELETE_IMAGE_ERRMODE_WARNING);
+            delete_image_ID(imnamepha_in, DELETE_IMAGE_ERRMODE_WARNING);
         }
 
         printf("Applying element %ld\n", elem);
@@ -513,8 +513,8 @@ errno_t OptSystProp_run(OPTSYST *optsyst,
             ID = mk_complex_from_amph(imnameamp_out, imnamepha_out, "_WFctmp", 0);
             if(sharedmem == 0)
             {
-                delete_image_ID(imnameamp_out);
-                delete_image_ID(imnamepha_out);
+                delete_image_ID(imnameamp_out, DELETE_IMAGE_ERRMODE_WARNING);
+                delete_image_ID(imnamepha_out, DELETE_IMAGE_ERRMODE_WARNING);
             }
 
             // if we're subsampling in pixel space for faster DFTs
@@ -554,8 +554,8 @@ errno_t OptSystProp_run(OPTSYST *optsyst,
 
                 // combine separate Re and Im files into single Re/Im complex array
                 mk_complex_from_reim("dftgridre", "dftgridim", "_WFctmpc", 0);
-                delete_image_ID("dftgridre");
-                delete_image_ID("dftgridim");
+                delete_image_ID("dftgridre", DELETE_IMAGE_ERRMODE_WARNING);
+                delete_image_ID("dftgridim", DELETE_IMAGE_ERRMODE_WARNING);
 
 
                 i = optsyst[index].elemarrayindex[elem];
@@ -566,8 +566,8 @@ errno_t OptSystProp_run(OPTSYST *optsyst,
                 //      fflush(stdout);
 
 
-                delete_image_ID("fpmatest");
-                delete_image_ID("fpmptest");
+                delete_image_ID("fpmatest", DELETE_IMAGE_ERRMODE_WARNING);
+                delete_image_ID("fpmptest", DELETE_IMAGE_ERRMODE_WARNING);
                 mk_amph_from_complex("piaacmcfpm", "fpmatest", "fpmptest", 0);
 
                 if(optsyst[index].SAVE == 1)
@@ -580,8 +580,8 @@ errno_t OptSystProp_run(OPTSYST *optsyst,
                     sprintf(fname, "%s/fpm__pha.fits", savedir);
                     save_fits("fpmp", fname);
 
-                    delete_image_ID("fpma");
-                    delete_image_ID("fpmp");
+                    delete_image_ID("fpma", DELETE_IMAGE_ERRMODE_WARNING);
+                    delete_image_ID("fpmp", DELETE_IMAGE_ERRMODE_WARNING);
                 }
 
 
@@ -599,7 +599,7 @@ errno_t OptSystProp_run(OPTSYST *optsyst,
                 // that are applied as part of fft_DFTinsertFPM
                 fft_DFTinsertFPM("_WFctmpc", data.image[ID].name,
                                  optsyst[index].FOCMASKarray[i].zfactor, "_WFcout");
-                delete_image_ID("_WFctmpc");
+                delete_image_ID("_WFctmpc", DELETE_IMAGE_ERRMODE_WARNING);
 
 
 
@@ -617,8 +617,8 @@ errno_t OptSystProp_run(OPTSYST *optsyst,
                 save_fits("_twfre", fname);
                 sprintf(fname, "%s/test_twfim.fits", savedir);
                 save_fits("_twfim", fname);
-                delete_image_ID("_twfre");
-                delete_image_ID("_twfim");
+                delete_image_ID("_twfre", DELETE_IMAGE_ERRMODE_WARNING);
+                delete_image_ID("_twfim", DELETE_IMAGE_ERRMODE_WARNING);
                 */
 
                 //
@@ -685,11 +685,11 @@ errno_t OptSystProp_run(OPTSYST *optsyst,
                   */
 
                 free(convkern);
-                delete_image_ID("_WFcout");
+                delete_image_ID("_WFcout", DELETE_IMAGE_ERRMODE_WARNING);
                 // convert the interpolated full-resolution DFT result arrays to a single complex array
                 mk_complex_from_reim("dftgridre1", "dftgridim1", "_WFcout", 0);
-                delete_image_ID("dftgridre1");
-                delete_image_ID("dftgridim1");
+                delete_image_ID("dftgridre1", DELETE_IMAGE_ERRMODE_WARNING);
+                delete_image_ID("dftgridim1", DELETE_IMAGE_ERRMODE_WARNING);
 
             }
             else /// If not subsampled :
@@ -732,9 +732,9 @@ errno_t OptSystProp_run(OPTSYST *optsyst,
                 mk_amph_from_complex("_WFcout", imnameamp_out, imnamepha_out, 0);
             }
 
-            delete_image_ID("_WFctmp");
-            delete_image_ID("_WFcout");
-            //  delete_image_ID("dftgrid");
+            delete_image_ID("_WFctmp", DELETE_IMAGE_ERRMODE_WARNING);
+            delete_image_ID("_WFcout", DELETE_IMAGE_ERRMODE_WARNING);
+            //  delete_image_ID("dftgrid", DELETE_IMAGE_ERRMODE_WARNING);
         }
 
 
@@ -793,7 +793,7 @@ errno_t OptSystProp_run(OPTSYST *optsyst,
         // propagate to the final image plane via a direct 2d fft
         do2dfft("_WFctmp", imname);
 
-        delete_image_ID("_WFctmp");
+        delete_image_ID("_WFctmp", DELETE_IMAGE_ERRMODE_WARNING);
         permut(imname);
         sprintf(imnameamp, "psfa%ld", index);
         sprintf(imnamepha, "psfp%ld", index);

@@ -508,7 +508,7 @@ long PIAACMCsimul_mkFocalPlaneMask(
 
 
         mk_amph_from_complex("fpmCA", "tfpma", "tfpmp", 0);
-        delete_image_ID("fpmCA");
+        delete_image_ID("fpmCA", DELETE_IMAGE_ERRMODE_WARNING);
 
         sprintf(fname, "%s/fpm_CAampmap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
                 piaacmcsimul_var.fnamedescr);
@@ -516,11 +516,11 @@ long PIAACMCsimul_mkFocalPlaneMask(
         sprintf(fname, "%s/fpm_CAphamap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
                 piaacmcsimul_var.fnamedescr);
         save_fits("tfpmp", fname);
-        delete_image_ID("tfpma");
-        delete_image_ID("tfpmp");
+        delete_image_ID("tfpma", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("tfpmp", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
-    delete_image_ID("fpmsag");
+    delete_image_ID("fpmsag", DELETE_IMAGE_ERRMODE_WARNING);
 
     free(tarray);
     free(aarray);

@@ -177,7 +177,7 @@ int PIAACMCsimul_measure_transm_curve()
         fpt = fopen(fnametransm, "a");
         fprintf(fpt, "%10f %.18f\n", xld, val);
         fclose(fpt);
-        delete_image_ID("psfi0");
+        delete_image_ID("psfi0", DELETE_IMAGE_ERRMODE_WARNING);
 
         stepld = 0.001;
         stepld += 0.1 * xld;

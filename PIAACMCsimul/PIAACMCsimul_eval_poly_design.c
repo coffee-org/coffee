@@ -229,7 +229,7 @@ int PIAACMCsimul_eval_poly_design()
     }
     avpeak /= zsize;
     free(peakarray);
-    delete_image_ID("psfi0");
+    delete_image_ID("psfi0", DELETE_IMAGE_ERRMODE_WARNING);
 
 
     // compute on-axis POINT source
@@ -374,8 +374,8 @@ int PIAACMCsimul_eval_poly_design()
         data.image[IDps_im].array.F[ii] += data.image[IDim].array.F[ii];
     }
     NBpt++;
-    delete_image_ID("psfre0");
-    delete_image_ID("psfim0");
+    delete_image_ID("psfre0", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("psfim0", DELETE_IMAGE_ERRMODE_WARNING);
 
     {
         double cval = 0.0;
@@ -401,8 +401,8 @@ int PIAACMCsimul_eval_poly_design()
         data.image[IDps_im].array.F[ii] += data.image[IDim].array.F[ii];
     }
     NBpt++;
-    delete_image_ID("psfre0");
-    delete_image_ID("psfim0");
+    delete_image_ID("psfre0", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("psfim0", DELETE_IMAGE_ERRMODE_WARNING);
 
     {
         double cval = 0.0;
@@ -427,8 +427,8 @@ int PIAACMCsimul_eval_poly_design()
         data.image[IDps_im].array.F[ii] += data.image[IDim].array.F[ii];
     }
     NBpt++;
-    delete_image_ID("psfre0");
-    delete_image_ID("psfim0");
+    delete_image_ID("psfre0", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("psfim0", DELETE_IMAGE_ERRMODE_WARNING);
 
     {
         double cval = 0.0;
@@ -455,8 +455,8 @@ int PIAACMCsimul_eval_poly_design()
         data.image[IDps_im].array.F[ii] += data.image[IDim].array.F[ii];
     }
     NBpt++;
-    delete_image_ID("psfre0");
-    delete_image_ID("psfim0");
+    delete_image_ID("psfre0", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("psfim0", DELETE_IMAGE_ERRMODE_WARNING);
 
 
 
@@ -490,7 +490,7 @@ int PIAACMCsimul_eval_poly_design()
         sprintf(fname, "%s/psfi0_opderr%02ld.fits", piaacmcsimul_var.piaacmcconfdir,
                 OPDmode);
         save_fits("psfi0", fname);
-        delete_image_ID("opderr");
+        delete_image_ID("opderr", DELETE_IMAGE_ERRMODE_WARNING);
         ID = image_ID("psfi0");
         IDre = image_ID("psfre0");
         IDim = image_ID("psfim0");
@@ -501,8 +501,8 @@ int PIAACMCsimul_eval_poly_design()
             data.image[IDps_im].array.F[ii] += data.image[IDim].array.F[ii];
         }
         NBpt++;
-        delete_image_ID("psfre0");
-        delete_image_ID("psfim0");
+        delete_image_ID("psfre0", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("psfim0", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
 
@@ -655,11 +655,11 @@ int PIAACMCsimul_eval_poly_design()
 
 
     free(rcarray);
-    delete_image_ID("_tmp_rc");
+    delete_image_ID("_tmp_rc", DELETE_IMAGE_ERRMODE_WARNING);
     fclose(fp);
 
-    delete_image_ID("starimINC");
-    delete_image_ID("starimCOH");
+    delete_image_ID("starimINC", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("starimCOH", DELETE_IMAGE_ERRMODE_WARNING);
 
 
     PIAACMCsimul_update_fnamedescr();

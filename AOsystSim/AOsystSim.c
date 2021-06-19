@@ -648,7 +648,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
     fflush(stdout);
     gauss_filter("dmif0", "dmif", sig, (long)(2.0 * sig));
     list_image_ID();
-    delete_image_ID("dmif0");
+    delete_image_ID("dmif0", DELETE_IMAGE_ERRMODE_WARNING);
     IDif = image_ID("dmif");
 
 
@@ -921,7 +921,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
 
         mk_complex_from_amph(imnameamp, imnamepha, "_tmpwfc", 0);
         AOsystSim_WFSsim_Pyramid("_tmpwfc", "aosimwfsim", 0.0, 1);
-        delete_image_ID("_tmpwfc");
+        delete_image_ID("_tmpwfc", DELETE_IMAGE_ERRMODE_WARNING);
 
         COREMOD_MEMORY_image_set_sempost("aosimwfsim", 0);
 
@@ -1207,7 +1207,7 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
             }
 
             do2dffti("aosf_tmpfft", "testo");
-            delete_image_ID("aosf_tmpfft");
+            delete_image_ID("aosf_tmpfft", DELETE_IMAGE_ERRMODE_WARNING);
             ID = image_ID("testo");
 
             /** Wavefront estimation */
@@ -1215,7 +1215,7 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
             {
                 data.image[IDwfe].array.F[ii] += data.image[ID].array.CF[ii].re;
             }
-            delete_image_ID("testo");
+            delete_image_ID("testo", DELETE_IMAGE_ERRMODE_WARNING);
             wfsecnt ++;
 
             if((tnowdouble - time_wfse0) > wfsetime)
@@ -1281,7 +1281,7 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
         }
     }
 
-    delete_image_ID("circbuff");
+    delete_image_ID("circbuff", DELETE_IMAGE_ERRMODE_WARNING);
 
     free(sizearray);
     free(wfcbuff_time);
@@ -2067,8 +2067,8 @@ long AOsystSim_mkTelPupDM(const char *ID_name, long msize, double xc, double yc,
             }
         }
 
-    delete_image_ID("telpupDMz");
-    delete_image_ID("telpupDMzindex");
+    delete_image_ID("telpupDMz", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("telpupDMzindex", DELETE_IMAGE_ERRMODE_WARNING);
 
     save_fits("TPind", "AOsystSim_wdir/TPind.fits");
 
@@ -2296,7 +2296,7 @@ long AOsystSim_fitTelPup(const char *ID_name, const char *IDtelpup_name)
                                         spiderPA1 = spiderPA;
                                         spideroffset1 = spideroffset;
                                     }
-                                    delete_image_ID("testpup");
+                                    delete_image_ID("testpup", DELETE_IMAGE_ERRMODE_WARNING);
                                     printf("%f %f %f  %f -> rms = %g\n", rout, xc, yc, pupPA, rms);
                                     fp = fopen("pupfit.txt", "a");
                                     fprintf(fp, "%f %f %f %f %g\n", rout, xc, yc, pupPA, rms);
@@ -3488,7 +3488,7 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
                     }
                 }
             gauss_filter("pyrpha0", pnamep, 1.0, 10);
-            delete_image_ID("pyrpha0");
+            delete_image_ID("pyrpha0", DELETE_IMAGE_ERRMODE_WARNING);
 
             sprintf(pfnamea, "AOsystSim_wdir/pyramp_%03ld.fits", pmodpt);
             sprintf(pfnamep, "AOsystSim_wdir/pyrpha_%03ld.fits", pmodpt);
@@ -3566,7 +3566,7 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
         do2dfft("pyrwfcin", "pyrpsfcin");
         permut("pyrpsfcin");
         mk_amph_from_complex("pyrpsfcin", "pyrpsfa", "pyrpsfp", 0);
-        delete_image_ID("pyrpsfcin");
+        delete_image_ID("pyrpsfcin", DELETE_IMAGE_ERRMODE_WARNING);
 
         sprintf(pnamea, "pyramp_%03ld", pmodpt);
         sprintf(pnamep, "pyrpha_%03ld", pmodpt);
@@ -3583,17 +3583,17 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
 
 
         mk_complex_from_amph("pyrpsfa", "pyrpsfp", "pyrpsfc", 0);
-        delete_image_ID("pyrpsfa");
-        delete_image_ID("pyrpsfp");
+        delete_image_ID("pyrpsfa", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pyrpsfp", DELETE_IMAGE_ERRMODE_WARNING);
 
         permut("pyrpsfc");
         do2dfft("pyrpsfc", "pyrwfs_pupc");
-        delete_image_ID("pyrpsfc");
+        delete_image_ID("pyrpsfc", DELETE_IMAGE_ERRMODE_WARNING);
         permut("pyrwfs_pupc");
         mk_amph_from_complex("pyrwfs_pupc", "pyrwfs_pupa", "pyrwfs_pupp", 0);
 
-        delete_image_ID("pyrwfs_pupp");
-        delete_image_ID("pyrwfs_pupc");
+        delete_image_ID("pyrwfs_pupp", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pyrwfs_pupc", DELETE_IMAGE_ERRMODE_WARNING);
 
         IDa = image_ID("pyrwfs_pupa");
 
@@ -3602,7 +3602,7 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
             data.image[ID_outWFSim_tmp].array.F[ii] += data.image[IDa].array.F[ii] *
                     data.image[IDa].array.F[ii] / PYRMOD_nbpts;
         }
-        delete_image_ID("pyrwfs_pupa");
+        delete_image_ID("pyrwfs_pupa", DELETE_IMAGE_ERRMODE_WARNING);
     }
     memcpy(data.image[ID_outWFSim].array.F, data.image[ID_outWFSim_tmp].array.F,
            sizeof(float)*arraysize * arraysize);
@@ -3641,7 +3641,7 @@ int AOsystSim_runWFS(long index, const char *IDout_name)
         mk_complex_from_amph(imnameamp, imnamepha, "_tmpwfc", 0);
         AOsystSim_WFSsim_Pyramid("_tmpwfc", IDout_name, 0.0, 1);
 
-        delete_image_ID("_tmpwfc");
+        delete_image_ID("_tmpwfc", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
 
@@ -3982,10 +3982,10 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
         mk_complex_from_amph("pupamp", "puppha", "wfc", 0);
         permut("wfc");
         do2dfft("wfc", "imc");
-        delete_image_ID("wfc");
+        delete_image_ID("wfc", DELETE_IMAGE_ERRMODE_WARNING);
         permut("imc");
         mk_amph_from_complex("imc", "ima", "imp", 0);
-        delete_image_ID("imc");
+        delete_image_ID("imc", DELETE_IMAGE_ERRMODE_WARNING);
         IDfoca = image_ID("ima");
         IDfocp = image_ID("imp");
 
@@ -4002,12 +4002,12 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
         mk_complex_from_amph("focamp", "focpha", "focc", 0);
         permut("focc");
         do2dfft("focc", "pupc");
-        delete_image_ID("focc");
+        delete_image_ID("focc", DELETE_IMAGE_ERRMODE_WARNING);
         permut("pupc");
         mk_amph_from_complex("pupc", "pupa", "pupp", 0);
         IDpupa = image_ID("pupa");
-        delete_image_ID("pupc");
-        delete_image_ID("pupp");
+        delete_image_ID("pupc", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("pupp", DELETE_IMAGE_ERRMODE_WARNING);
         //for(ii=0; ii<ARRAYSIZE*ARRAYSIZE; ii++)
         //  data.image[IDpyrpupi].array.F[ii] += data.image[IDpupa].array.F[ii]*data.image[IDpupa].array.F[ii];
 
@@ -4024,7 +4024,7 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
         {
             COREMOD_MEMORY_image_set_sempost(OUTINSTSTREAMNAME, -1);
         }
-        delete_image_ID("pupa");
+        delete_image_ID("pupa", DELETE_IMAGE_ERRMODE_WARNING);
 
         for(uint64_t ii = 0; ii < ARRAYSIZE * ARRAYSIZE; ii++)
         {
@@ -4577,7 +4577,7 @@ int AOsystSim_DM(const char *CONF_FNAME)
     fflush(stdout);
     gauss_filter("dmif0", "dmif", sig, (long)(2.0 * sig));
     list_image_ID();
-    delete_image_ID("dmif0");
+    delete_image_ID("dmif0", DELETE_IMAGE_ERRMODE_WARNING);
     IDif = image_ID("dmif");
 
     save_fits("dmif", "AOsystSim_wdir/dmif.fits");
@@ -5170,8 +5170,8 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
         do2dfft("loc_aosim_wfc", "loc_aosim_fc0");
         permut("loc_aosim_fc0");
         mk_amph_from_complex("loc_aosim_fc0", "aosim_foc0_amp", "aosim_foc0_pha", 1);
-        delete_image_ID("loc_aosim_wfc");
-        delete_image_ID("loc_aosim_fc0");
+        delete_image_ID("loc_aosim_wfc", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("loc_aosim_fc0", DELETE_IMAGE_ERRMODE_WARNING);
 
 
         // APPLY FOCAL PLANE MASK
@@ -5197,10 +5197,10 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
         mk_complex_from_amph("aosim_foc1_amp", "aosim_foc1_pha", "loc_aosim_foc1_c", 0);
         permut("loc_aosim_foc1_c");
         do2dfft("loc_aosim_foc1_c", "loc_aosim_pup1_c");
-        delete_image_ID("loc_aosim_foc1_c");
+        delete_image_ID("loc_aosim_foc1_c", DELETE_IMAGE_ERRMODE_WARNING);
         permut("loc_aosim_pup1_c");
         mk_amph_from_complex("loc_aosim_pup1_c", "aosim_pup1_amp", "aosim_pup1_pha", 1);
-        delete_image_ID("loc_aosim_pup1_c");
+        delete_image_ID("loc_aosim_pup1_c", DELETE_IMAGE_ERRMODE_WARNING);
 
         IDpup1a = image_ID("aosim_pup1_amp");
         IDpup1p = image_ID("aosim_pup1_pha");
@@ -5231,8 +5231,8 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
         do2dfft("loc_aosim_pup1t_c", "loc_aosim_foc2_c");
         permut("loc_aosim_foc2_c");
         mk_amph_from_complex("loc_aosim_foc2_c", "aosim_foc2_amp", "aosim_foc2_pha", 1);
-        delete_image_ID("loc_aosim_pup1t_c");
-        delete_image_ID("loc_aosim_foc2_c");
+        delete_image_ID("loc_aosim_pup1t_c", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("loc_aosim_foc2_c", DELETE_IMAGE_ERRMODE_WARNING);
 
 
 
@@ -5263,8 +5263,8 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
         permut("loc_aosim_foc1r_c");
         mk_amph_from_complex("loc_aosim_foc1r_c", "aosim_foclowfs_amp",
                              "aosim_foclowfs_pha", 1);
-        delete_image_ID("loc_aosim_pup1r_c");
-        delete_image_ID("loc_aosim_foc1r_c");
+        delete_image_ID("loc_aosim_pup1r_c", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("loc_aosim_foc1r_c", DELETE_IMAGE_ERRMODE_WARNING);
 
         // COMPUTE imlowfs
         IDfoclowfsa = image_ID("aosim_foclowfs_amp");
@@ -5643,8 +5643,8 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
         do2dfft("wfc", "imc");
         permut("imc");
         mk_amph_from_complex("imc", "ima", "imp", 0);
-        delete_image_ID("imc");
-        delete_image_ID("imp");
+        delete_image_ID("imc", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("imp", DELETE_IMAGE_ERRMODE_WARNING);
         IDa = image_ID("ima");
         for(ii = 0; ii < size * size; ii++)
         {
@@ -5652,7 +5652,7 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
                     * data.image[IDa].array.F[ii];
             tot1 += data.image[IDpsfC].array.F[pr * size * size + ii];
         }
-        delete_image_ID("ima");
+        delete_image_ID("ima", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
     // ADD COMPANIONS
@@ -5716,7 +5716,7 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
 
             }
     }
-    delete_image_ID("tmp3dim");
+    delete_image_ID("tmp3dim", DELETE_IMAGE_ERRMODE_WARNING);
 
 
     for(ii = 0; ii < size * size * NBprobesG; ii++)
@@ -5994,10 +5994,10 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
     save_fits("pupa", "AOsystSim_wdir/test_pupa.fits");
     save_fits("pupp", "AOsystSim_wdir/test_pupp_A.fits");
     save_fits("foca", "AOsystSim_wdir/test_foca_A.fits");
-    delete_image_ID("pupc");
-    delete_image_ID("focc");
-    delete_image_ID("foca");
-    delete_image_ID("focp");
+    delete_image_ID("pupc", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("focc", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("foca", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("focp", DELETE_IMAGE_ERRMODE_WARNING);
 
 
 
@@ -6015,10 +6015,10 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
     mk_amph_from_complex("focc", "foca", "focp", 0);
     save_fits("pupp", "AOsystSim_wdir/test_pupp_B.fits");
     save_fits("foca", "AOsystSim_wdir/test_foca_B.fits");
-    delete_image_ID("pupc");
-    delete_image_ID("focc");
-    delete_image_ID("foca");
-    delete_image_ID("focp");
+    delete_image_ID("pupc", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("focc", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("foca", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("focp", DELETE_IMAGE_ERRMODE_WARNING);
 
 
     ID = image_ID("pupp");
@@ -6035,10 +6035,10 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
     mk_amph_from_complex("focc", "foca", "focp", 0);
     save_fits("pupp", "AOsystSim_wdir/test_pupp_mA.fits");
     save_fits("foca", "AOsystSim_wdir/test_foca_mA.fits");
-    delete_image_ID("pupc");
-    delete_image_ID("focc");
-    delete_image_ID("foca");
-    delete_image_ID("focp");
+    delete_image_ID("pupc", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("focc", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("foca", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("focp", DELETE_IMAGE_ERRMODE_WARNING);
 
 
     ID = image_ID("pupp");
@@ -6055,10 +6055,10 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
     mk_amph_from_complex("focc", "foca", "focp", 0);
     save_fits("pupp", "AOsystSim_wdir/test_pupp_mB.fits");
     save_fits("foca", "AOsystSim_wdir/test_foca_mB.fits");
-    delete_image_ID("pupc");
-    delete_image_ID("focc");
-    delete_image_ID("foca");
-    delete_image_ID("focp");
+    delete_image_ID("pupc", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("focc", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("foca", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("focp", DELETE_IMAGE_ERRMODE_WARNING);
 
 
 
@@ -6077,10 +6077,10 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
     mk_amph_from_complex("focc", "foca", "focp", 0);
     save_fits("pupp", "AOsystSim_wdir/test_pupp_00.fits");
     save_fits("foca", "AOsystSim_wdir/test_foca_00.fits");
-    delete_image_ID("pupc");
-    delete_image_ID("focc");
-    delete_image_ID("foca");
-    delete_image_ID("focp");
+    delete_image_ID("pupc", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("focc", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("foca", DELETE_IMAGE_ERRMODE_WARNING);
+    delete_image_ID("focp", DELETE_IMAGE_ERRMODE_WARNING);
 
 
 
@@ -6776,26 +6776,26 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
         }
 
 
-        delete_image_ID("pupa");
+        delete_image_ID("pupa", DELETE_IMAGE_ERRMODE_WARNING);
 
         if(NewWF == 1)
         {
-            delete_image_ID("wf0");
+            delete_image_ID("wf0", DELETE_IMAGE_ERRMODE_WARNING);
         }
 
-        delete_image_ID("wfA");
-        delete_image_ID("wfB");
-        delete_image_ID("wf");
-        delete_image_ID("psfC");
-        delete_image_ID("wfc");
-        delete_image_ID("psfCcrop");
-        delete_image_ID("psfprobeampC");
-        delete_image_ID("psfCcropn");
-        delete_image_ID("psfCcropnC");
+        delete_image_ID("wfA", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("wfB", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("wf", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("psfC", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("wfc", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("psfCcrop", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("psfprobeampC", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("psfCcropn", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("psfCcropnC", DELETE_IMAGE_ERRMODE_WARNING);
         for(pr = 0; pr < NBprobes; pr++)
         {
             sprintf(imname, "psfC_%03d", pr);
-            delete_image_ID(imname);
+            delete_image_ID(imname, DELETE_IMAGE_ERRMODE_WARNING);
         }
 
         list_image_ID();
