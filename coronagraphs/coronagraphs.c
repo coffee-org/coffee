@@ -1626,7 +1626,7 @@ int coronagraph_update_2Dprolate(double masksizeld, double beamradpix,
                                 CORONAGRAPHSDATALOCAL, MASKSIZELD, centralObs, size);
                     }
 
-                    load_fits(fname, "apostart", 1);
+                    load_fits(fname, "apostart", 1, NULL);
                     // save_fl_fits("apostart", "apostart.fits");
                     //	  exit(0);
                     printf(".... STARTING OPTIMIZATION [%s] (%f %f %f)... \n", fname, MASKSIZELD,
@@ -4090,7 +4090,7 @@ int coronagraphs_PIAA_apodize_beam(
 
     int USE_2DPROL =
         1;  /* if set to 1, the 2D apodized pupil will be used to make the apodization */
-    int ID_2DPROL;
+    imageID ID_2DPROL;
     char fname_2DPROL[400];
     double totalProl = 0.0;
     long totalProlcnt = 0;
@@ -4113,7 +4113,7 @@ int coronagraphs_PIAA_apodize_beam(
         ID_2DPROL = image_ID("prol2d");
         if(ID_2DPROL == -1)
         {
-            ID_2DPROL = load_fits(fname_2DPROL, "prol2d", 1);
+              load_fits(fname_2DPROL, "prol2d", 1, &ID_2DPROL);
         }
         //     save_fl_fits("prol2d","test_prol2d.fits");
         // exit(0);
@@ -5244,7 +5244,7 @@ int coronagraph_simul_4QPM(double xld, double yld, const char *psfname)
     {
         if(file_exists(fname1) == 1)
         {
-            IDrefr = load_fits(fname1, "ref4qre", 1);
+              load_fits(fname1, "ref4qre", 1, &IDrefr);
         }
         else
         {
@@ -5257,7 +5257,7 @@ int coronagraph_simul_4QPM(double xld, double yld, const char *psfname)
     {
         if(file_exists(fname1) == 1)
         {
-            IDrefi = load_fits(fname1, "ref4qim", 1);
+              load_fits(fname1, "ref4qim", 1, &IDrefi);
         }
         else
         {
@@ -5404,7 +5404,7 @@ int coronagraph_simul_ODC(
     {
         if(file_exists(fname1) == 1)
         {
-            IDrefr = load_fits(fname1, fname, 1);
+             load_fits(fname1, fname, 1, &IDrefr);
         }
         else
         {
@@ -5420,7 +5420,7 @@ int coronagraph_simul_ODC(
     {
         if(file_exists(fname1) == 1)
         {
-            IDrefi = load_fits(fname1, fname, 1);
+             load_fits(fname1, fname, 1, &IDrefi);
         }
         else
         {
@@ -5444,7 +5444,7 @@ int coronagraph_simul_ODC(
     {
         if(file_exists(refname) == 1)
         {
-            IDrefm = load_fits(refname, refname1, 1);
+              load_fits(refname, refname1, 1, &IDrefm);
         }
         else
         {
@@ -5599,7 +5599,7 @@ int coronagraph_simul_BL8(
     {
         if(file_exists(fname1) == 1)
         {
-            IDrefr = load_fits(fname1, fname, 1);
+              load_fits(fname1, fname, 1, &IDrefr);
         }
         else
         {
@@ -5622,7 +5622,7 @@ int coronagraph_simul_BL8(
     {
         if(file_exists(fname1) == 1)
         {
-            IDrefi = load_fits(fname1, fname, 1);
+              load_fits(fname1, fname, 1, &IDrefi);
         }
         else
         {
@@ -5655,7 +5655,7 @@ int coronagraph_simul_BL8(
     {
         if(file_exists(refname) == 1)
         {
-            IDrefm = load_fits(refname, refname1, 1);
+             load_fits(refname, refname1, 1, &IDrefm);
         }
         else
         {
@@ -5832,7 +5832,7 @@ int coronagraph_simul_BL4(
     {
         if(file_exists(fname1) == 1)
         {
-            IDrefr = load_fits(fname1, fname, 1);
+              load_fits(fname1, fname, 1, &IDrefr);
         }
         else
         {
@@ -5848,7 +5848,7 @@ int coronagraph_simul_BL4(
     {
         if(file_exists(fname1) == 1)
         {
-            IDrefi = load_fits(fname1, fname, 1);
+              load_fits(fname1, fname, 1, &IDrefi);
         }
         else
         {
@@ -5872,7 +5872,7 @@ int coronagraph_simul_BL4(
     {
         if(file_exists(refname) == 1)
         {
-            IDrefm = load_fits(refname, refname1, 1);
+              load_fits(refname, refname1, 1, &IDrefm);
         }
         else
         {
@@ -6018,7 +6018,7 @@ int coronagraph_simul_RRPM(
     {
         if(file_exists(refname) == 1)
         {
-            IDref_fm = load_fits(refname, refname1, 1);
+            load_fits(refname, refname1, 1, &IDref_fm);
         }
         else
         {
@@ -6034,7 +6034,7 @@ int coronagraph_simul_RRPM(
     {
         if(file_exists(refname) == 1)
         {
-            IDref_pm = load_fits(refname, refname1, 1);
+            load_fits(refname, refname1, 1, &IDref_pm);
         }
         else
         {
@@ -6053,7 +6053,7 @@ int coronagraph_simul_RRPM(
     {
         if(file_exists(fname1) == 1)
         {
-            IDrefr = load_fits(fname1, "refrrpmre", 1);
+            load_fits(fname1, "refrrpmre", 1, &IDrefr);
         }
         else
         {
@@ -6066,7 +6066,7 @@ int coronagraph_simul_RRPM(
     {
         if(file_exists(fname1) == 1)
         {
-            IDrefi = load_fits(fname1, "refrrpmim", 1);
+            load_fits(fname1, "refrrpmim", 1, &IDrefi);
         }
         else
         {
@@ -6245,17 +6245,17 @@ int coronagraph_simul_OVC(
 )
 {
     long size = CORONAGRAPHS_ARRAYSIZE;
-    long IDa1, IDp1;
-    long ID;
+    imageID IDa1, IDp1;
+    imageID ID;
     double trad_pix;
     long ii, jj;
     double total;
     long size2 = size * size;
-    long IDref_fmp, IDref_fma;
+    imageID IDref_fmp, IDref_fma;
     double r, tmp1, tmp2;
     char refname[200];
     char refname1[200];
-    long IDrefr, IDrefi;
+    imageID IDrefr, IDrefi;
     double x, y;
     int initovc = 0;
     char fname1[200];
@@ -6269,7 +6269,7 @@ int coronagraph_simul_OVC(
     {
         if(file_exists(refname) == 1)
         {
-            IDref_fmp = load_fits(refname, refname1, 1);
+            load_fits(refname, refname1, 1, &IDref_fmp);
         }
         else
         {
@@ -6287,7 +6287,7 @@ int coronagraph_simul_OVC(
     {
         if(file_exists(refname) == 1)
         {
-            IDref_fma = load_fits(refname, refname1, 1);
+            load_fits(refname, refname1, 1, &IDref_fma);
         }
         else
         {
@@ -6306,7 +6306,7 @@ int coronagraph_simul_OVC(
     {
         if(file_exists(fname1) == 1)
         {
-            IDrefr = load_fits(fname1, "refovcre", 1);
+            load_fits(fname1, "refovcre", 1, &IDrefr);
         }
         else
         {
@@ -6319,7 +6319,7 @@ int coronagraph_simul_OVC(
     {
         if(file_exists(fname1) == 1)
         {
-            IDrefi = load_fits(fname1, "refovcim", 1);
+            load_fits(fname1, "refovcim", 1, &IDrefi);
         }
         else
         {
@@ -6515,8 +6515,8 @@ int coronagraph_simul_OVC(
 int coronagraph_simul_CPA(double xld, double yld, const char *psfname)
 {
     long size = CORONAGRAPHS_ARRAYSIZE;
-    long IDa1, IDp1, IDa2;
-    long ID;
+    imageID IDa1, IDp1, IDa2;
+    imageID ID;
     double trad_pix;
     long ii, jj;
     double total;
@@ -6534,7 +6534,7 @@ int coronagraph_simul_CPA(double xld, double yld, const char *psfname)
     {
         if(file_exists(refname) == 1)
         {
-            IDref = load_fits(refname, refname1, 1);
+            load_fits(refname, refname1, 1, &IDref);
         }
         else
         {
@@ -7798,28 +7798,28 @@ int coronagraph_simul_MULTISTEP_APLC(
     if(IDprol_init == -1)
     {
         sprintf(fname, "%s/APLCapo_init.fits.gz", CORONAGRAPHSDATADIR);
-        IDprol_init = load_fits(fname, "pinit", 1);
+        load_fits(fname, "pinit", 1, &IDprol_init);
     }
 
     IDprol_ffrac = image_ID("pffrac");
     if(IDprol_ffrac == -1)
     {
         sprintf(fname, "%s/APLCapo_ffrac.fits.gz", CORONAGRAPHSDATADIR);
-        IDprol_ffrac = load_fits(fname, "pffrac", 1);
+        load_fits(fname, "pffrac", 1, &IDprol_ffrac);
     }
 
     IDprol_transm = image_ID("ptransm");
     if(IDprol_transm == -1)
     {
         sprintf(fname, "%s/APLCapo_transm.fits.gz", CORONAGRAPHSDATADIR);
-        IDprol_transm = load_fits(fname, "ptransm", 1);
+        load_fits(fname, "ptransm", 1, &IDprol_transm);
     }
 
     IDprol_peak = image_ID("ppeak");
     if(IDprol_peak == -1)
     {
         sprintf(fname, "%s/APLCapo_peak.fits.gz", CORONAGRAPHSDATADIR);
-        IDprol_peak = load_fits(fname, "ppeak", 1);
+        load_fits(fname, "ppeak", 1, &IDprol_peak);
     }
 
 
@@ -7828,21 +7828,21 @@ int coronagraph_simul_MULTISTEP_APLC(
     if(IDprol_fitapo_a == -1)
     {
         sprintf(fname, "%s/APLCapo_fitapo_a.fits.gz", CORONAGRAPHSDATADIR);
-        IDprol_fitapo_a = load_fits(fname, "fitapoa", 1);
+        load_fits(fname, "fitapoa", 1, &IDprol_fitapo_a);
     }
 
     IDprol_fitapo_b = image_ID("fitapob");
     if(IDprol_fitapo_b == -1)
     {
         sprintf(fname, "%s/APLCapo_fitapo_b.fits.gz", CORONAGRAPHSDATADIR);
-        IDprol_fitapo_b = load_fits(fname, "fitapob", 1);
+        load_fits(fname, "fitapob", 1, &IDprol_fitapo_b);
     }
 
     IDprol_fitapo_c = image_ID("fitapoc");
     if(IDprol_fitapo_c == -1)
     {
         sprintf(fname, "%s/APLCapo_fitapo_c.fits.gz", CORONAGRAPHSDATADIR);
-        IDprol_fitapo_c = load_fits(fname, "fitapoc", 1);
+        load_fits(fname, "fitapoc", 1, &IDprol_fitapo_c);
     }
 
 
@@ -7852,7 +7852,7 @@ int coronagraph_simul_MULTISTEP_APLC(
     if(IDprol_fitfit == -1)
     {
         sprintf(fname, "%s/APLCapo_fitfit.fits.gz", CORONAGRAPHSDATADIR);
-        IDprol_fitfit = load_fits(fname, "fitfit", 1);
+        load_fits(fname, "fitfit", 1, &IDprol_fitfit);
     }
 
     iisize = data.image[IDprol_init].md[0].size[0];
@@ -10546,7 +10546,7 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                             if(psfsok == 1)
                             {
                                 sprintf(fname1, "psf%02ld", k);
-                                load_fits(fname, fname1, 1);
+                                load_fits(fname, fname1, 1, NULL);
                             }
                         }
 

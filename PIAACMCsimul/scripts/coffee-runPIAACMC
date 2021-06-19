@@ -38,6 +38,19 @@ set -o history -o histexpand
 
 
 
+function exitOK() {
+	echo -e "\n\033[32;1m SUCCESS \033[0m $0 \n"
+	exit
+}
+
+function exitERR() {
+	echo -e "\n\033[31;1m ERROR \033[0m $0 \n"
+	exit 1
+}
+
+
+
+
 
 black='\E[30;40m'
 red='\E[31;40m'
@@ -68,7 +81,7 @@ echo "****** exit script $0"
 echo "****** Manually remove file $errorfile to unlock"
 echo "****** bye !"
 echo ""
-exit
+exit 1
 fi
 }
 
@@ -132,7 +145,7 @@ then
 echo "STATE STOP POINT ($statestop)"
 sleep 1
 cleanup
-exit
+exitOK
 fi
 
 if [ $state -eq $exitpt ]
@@ -140,7 +153,7 @@ then
 echo "$0 REACHED STATE EXIT POINT ($exitpt)" > errorstatus.txt
 echo "$0 REACHED STATE EXIT POINT ($exitpt)"
 cleanup
-exit
+exitOK
 else
 echo "$state neq $exitpt -> CONTINUING"
 fi
@@ -353,7 +366,7 @@ NBARGS=28
 
 if [ "$1" = "helpsteps" ]; then
 	printhelp_designsteps
-	exit
+	exitOK
 fi
 
 
@@ -364,12 +377,12 @@ if [ "$#" -ne $NBARGS ]; then
 	echo "$0: Illegal number of parameters ($NBARGS params required, $# entered)" > $errorfile
 	checkerrorstatus 
 fi
-	exit
+	exitOK
 fi
 
 
 
-
+mkdir -p ./$1
 
 
 # READ CONFIGURATION FILES
@@ -410,6 +423,7 @@ centobs0=$5
 centobs1=$6
 fpmradld=$7
 lambda=$8
+
 
 echo "$9" > $1/conf_PIAAmaterial_name.txt
 
@@ -508,7 +522,7 @@ echo "exitpt = $exitpt"
 
 
 
-mkdir -p ./$1
+
 
 
 
@@ -591,10 +605,10 @@ cp $startupfile test_startupfile.txt
 
 cleanup ()
 {
-rm $startupfile
-rm $fifoname
-rm runPIAACMCfifo*
-rm clistartup*.txt
+rm -f $startupfile
+rm -f $fifoname
+rm -f runPIAACMCfifo*
+rm -f clistartup*.txt
 }
 
 
@@ -666,7 +680,7 @@ cp ./$1/fpm_zonez.fits ./$1/fpm_zonez_step$step.fits
 cp ./$1/fpm_zonea.fits ./$1/fpm_zonea_step$step.fits
 cp ./$1/linoptval.txt ./$1/linoptval_step007.txt
 cleanup
-exit
+exitOK
 fi
 
 
@@ -702,7 +716,7 @@ echo "cp fpm_zonea00_20_001_001.fits fpm_zonea10_20_001_001.fits"
 echo "cp fpm_zonez00_20_001_001.fits fpm_zonez10_20_001_001.fits"
 printf "Copy monochromatic mask to polychromatic extended mask\n" 
 cleanup
-exit
+exitOK
 fi
 
 
@@ -744,7 +758,7 @@ exit_on_error $? "$execnamestring"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step699.fits
 cleanup
-exit
+exitOK
 fi
 
 
@@ -789,7 +803,7 @@ exit_on_error $? "$execnamestring"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step700.fits
 cleanup
-exit
+exitOK
 fi
 
 
@@ -822,7 +836,7 @@ exit_on_error $? "$execnamestring"
 
 mv ./$1/psfi0_starim.fits ./$1/psfi0_step701.fits
 cleanup
-exit
+exitOK
 fi
 fi
 
@@ -849,7 +863,7 @@ EOF
 exit_on_error $? "$execnamestring"
 
 cleanup
-exit
+exitOK
 fi
 
 
@@ -882,7 +896,7 @@ EOF
 exit_on_error $? "$execnamestring"
 
 cleanup
-exit
+exitOK
 fi
 
 
@@ -898,7 +912,7 @@ echo "$datestr  $0  LINE $LINENO    step721  Eval polychromatic contrast for on-
 if [ ! -f ./$1/step007.txt ]
  then
  echo "====================== step 721 requires step 007 ======================================="
- exit
+ exit 1
  else
  echo "721: eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.01 l/D"
 echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7" 
@@ -933,7 +947,7 @@ echo "$datestr  $0  LINE $LINENO    step722  Eval polychromatic contrast for on-
  if [ ! -f ./$1/step007.txt ]
  then
  echo "====================== step 722 requires step 007 ======================================="
- exit
+ exit 1
  else
  echo "722: eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.03 l/D"
 echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7" 
@@ -952,7 +966,7 @@ exit_on_error $? "$execnamestring"
 
 mv ./$1/psfi0_starim.fits ./$1/psfi0_step722.fits
 cleanup
-exit
+exitOK
 fi
 fi
 
@@ -985,7 +999,7 @@ exit_on_error $? "$execnamestring"
 
 mv ./$1/psfi0_starim.fits ./$1/psfi0_step723.fits
 cleanup
-exit
+exitOK
 fi
 fi
 
@@ -1018,7 +1032,7 @@ exit_on_error $? "$execnamestring"
 
 mv ./$1/psfi0_starim.fits ./$1/psfi0_step724.fits
 cleanup
-exit
+exitOK
 fi
 fi
 
@@ -1051,7 +1065,7 @@ exit_on_error $? "$execnamestring"
 
 mv ./$1/psfi0_starim.fits ./$1/psfi0_step725.fits
 cleanup
-exit
+exitOK
 fi
 fi
 
@@ -1093,7 +1107,7 @@ EOF
 exit_on_error $? "$execnamestring"
 
 cleanup
-exit
+exitOK
 fi
 
 
@@ -1116,7 +1130,7 @@ EOF
 exit_on_error $? "$execnamestring"
 
 cleanup
-exit
+exitOK
 fi
 
 
@@ -1151,7 +1165,7 @@ EOF
 exit_on_error $? "$execnamestring"
 
 cleanup
-exit
+exitOK
 fi
 fi
 
@@ -1178,7 +1192,7 @@ EOF
 exit_on_error $? "$execnamestring"
 
 cleanup
-exit
+exitOK
 fi
 
 
@@ -1201,7 +1215,7 @@ EOF
 exit_on_error $? "$execnamestring"
 
 cleanup
-exit
+exitOK
 fi
 
 
@@ -1225,7 +1239,7 @@ EOF
 exit_on_error $? "$execnamestring"
 
 cleanup
-exit
+exitOK
 fi
 
 
@@ -1247,7 +1261,7 @@ EOF
 exit_on_error $? "$execnamestring"
 
 cleanup
-exit
+exitOK
 fi
 
 
@@ -1312,7 +1326,7 @@ EOF
 exit_on_error $? "$execnamestring"
 
 cleanup
-exit
+exitOK
 fi
 
 
@@ -1335,7 +1349,7 @@ EOF
 exit_on_error $? "$execnamestring"
 
 cleanup
-exit
+exitOK
 fi
 
 
@@ -1437,7 +1451,7 @@ PIAACMC_nblambda=1
 PIAACMC_lambda=${lambda}
 
 # load mask if available
-loadfits .errcode 0
+loadfits .errcode 1
 loadfits "_pupmaskload.fits" pupmaskim
 
 coffeepiaacmcsim.run $1 0
@@ -1470,7 +1484,7 @@ then
 echo "STATE STOP POINT (000)"
 sleep 5
 cleanup
-exit
+exitOK
 fi
 
 
@@ -2531,7 +2545,7 @@ step="100"
 
 
 
-    rm initOK_${pid}
+    rm -f initOK_${pid}
 
 
 
@@ -2594,14 +2608,14 @@ exitCLI
 EOF
 exit_on_error $? "$execnamestring"
 
-rm initOK_${pid}
+rm -f initOK_${pid}
 
 
 # clean up threads and temporary files
 for thread in `seq 0 1 ${NBthreadsFPMrespm1}`;
 do
 tmux kill-session -t ${pid}FPMt${thread}n${NBthreadsFPMresp}
-rm script${pid}FPMt${thread}n${NBthreadsFPMresp}
+rm -f script${pid}FPMt${thread}n${NBthreadsFPMresp}
 done
 fi
 
@@ -2676,7 +2690,7 @@ datestr=`date -u +%Y-%m-%d_%H:%M:%S`
 echo "$datestr  $0  LINE $LINENO    step102  END"
 echo "$datestr  $0  LINE $LINENO    step102  END" >> cmdlog.txt
 cleanup
-exit
+exitOK
 fi
 
 
@@ -2697,7 +2711,8 @@ cleanup
 
 
 
-exit
+exitOK
+
 
 
 

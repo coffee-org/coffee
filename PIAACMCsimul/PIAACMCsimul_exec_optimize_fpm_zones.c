@@ -193,7 +193,7 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
 
 
 
-    IDfpmresp = load_fits(fname, "FPMresp", 1);
+    load_fits(fname, "FPMresp", 1, &IDfpmresp);
 
     piaacmcsimul_var.vsize =
         data.image[IDfpmresp].md[0].size[0]; // number of eval pts x2

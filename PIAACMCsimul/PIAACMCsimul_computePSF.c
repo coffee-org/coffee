@@ -168,7 +168,7 @@ errno_t PIAACMCsimul_computePSF(
     IDopderrC = image_ID("OPDerrC");
     if(IDopderrC == -1)
     {
-        IDopderrC = load_fits("OPDerrC.fits", "OPDerrC", 0);
+        load_fits("OPDerrC.fits", "OPDerrC", 0, &IDopderrC);
     }
 
 

@@ -486,7 +486,7 @@ errno_t PIAACMCsimul_run(
                         piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.fnamedescr);
                 printf("LOADING \"%s\"...\n", fnamebestsol);
                 fflush(stdout);
-                IDbestsol = load_fits(fnamebestsol, "fpmbestsol", 0);
+                load_fits(fnamebestsol, "fpmbestsol", 0, &IDbestsol);
             }
 
             // set the name of the stopfile
@@ -539,11 +539,11 @@ errno_t PIAACMCsimul_run(
                     sprintf(fnamebestsol, "%s/fpm_zonez.%s.best.fits",
                             piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.fnamedescr);
 
-                    IDbestsol = load_fits(fnamebestsol, "fpmbestsol", 0);
+                    load_fits(fnamebestsol, "fpmbestsol", 0, &IDbestsol);
                 }
                 else // otherwise load the temporary best solution.  This is probably what always happens
                 {
-                    IDbestsoltmp = load_fits(fnamebestsol, "fpmbestsoltmp", 0);
+                    load_fits(fnamebestsol, "fpmbestsoltmp", 0, &IDbestsoltmp);
                     for(k = 0; k < data.image[IDbestsol].md[0].size[0]; k++)
                     {
                         data.image[IDbestsol].array.D[k] = data.image[IDbestsoltmp].array.D[k];

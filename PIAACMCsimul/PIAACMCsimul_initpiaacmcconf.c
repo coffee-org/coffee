@@ -827,7 +827,7 @@ int PIAACMCsimul_initpiaacmcconf(
         piaacmc[0].CmodesID = image_ID("Cmodes");
         if(piaacmc[0].CmodesID == -1)
         {
-            piaacmc[0].CmodesID = load_fits(fname, "Cmodes", 0);
+            load_fits(fname, "Cmodes", 0, &(piaacmc[0].CmodesID));
         }
         if(piaacmc[0].CmodesID == -1)
         {
@@ -877,7 +877,7 @@ int PIAACMCsimul_initpiaacmcconf(
         piaacmc[0].FmodesID = image_ID("Fmodes");
         if(piaacmc[0].FmodesID == -1)
         {
-            piaacmc[0].FmodesID = load_fits(fname, "Fmodes", 0);
+            load_fits(fname, "Fmodes", 0, &(piaacmc[0].FmodesID));
         }
         if(piaacmc[0].FmodesID == -1)
         {
@@ -933,16 +933,16 @@ int PIAACMCsimul_initpiaacmcconf(
                 || (piaacmc[0].piaa1CmodesID == -1) || (piaacmc[0].piaa1FmodesID == -1))
         {
             sprintf(fname, "%s/piaaref/piaa0Cmodes.fits", piaacmcsimul_var.piaacmcconfdir);
-            piaacmc[0].piaa0CmodesID = load_fits(fname, "piaa0Cmodescoeff", 1);
+            load_fits(fname, "piaa0Cmodescoeff", 1, &(piaacmc[0].piaa0CmodesID));
 
             sprintf(fname, "%s/piaaref/piaa0Fmodes.fits", piaacmcsimul_var.piaacmcconfdir);
-            piaacmc[0].piaa0FmodesID = load_fits(fname, "piaa0Fmodescoeff", 1);
+            load_fits(fname, "piaa0Fmodescoeff", 1, &(piaacmc[0].piaa0FmodesID));
 
             sprintf(fname, "%s/piaaref/piaa1Cmodes.fits", piaacmcsimul_var.piaacmcconfdir);
-            piaacmc[0].piaa1CmodesID = load_fits(fname, "piaa1Cmodescoeff", 1);
+            load_fits(fname, "piaa1Cmodescoeff", 1, &(piaacmc[0].piaa1CmodesID));
 
             sprintf(fname, "%s/piaaref/piaa1Fmodes.fits", piaacmcsimul_var.piaacmcconfdir);
-            piaacmc[0].piaa1FmodesID = load_fits(fname, "piaa1Fmodescoeff", 1);
+            load_fits(fname, "piaa1Fmodescoeff", 1, &(piaacmc[0].piaa1FmodesID));
 
             sprintf(fname, "%s/piaaref/APLCmaskCtransm.txt",
                     piaacmcsimul_var.piaacmcconfdir);
@@ -962,13 +962,18 @@ int PIAACMCsimul_initpiaacmcconf(
             || (piaacmc[0].piaa1CmodesID == -1) || (piaacmc[0].piaa1FmodesID == -1))
     {
         sprintf(fname, "%s/apo2Drad.fits", piaacmcsimul_var.piaacmcconfdir);
-        if(load_fits(fname, "apo2Drad", 1) == -1) // CREATE APODIZATION
+
+        imageID IDtmp1 = -1;
+        load_fits(fname, "apo2Drad", 1, &IDtmp1);
+        if(IDtmp1 == -1) // CREATE APODIZATION
         {
             EXECUTE_SYSTEM_COMMAND("cp %s/piaaref/apo2Drad.fits %s/apo2Drad.fits",
                                    piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
 
             sprintf(fname, "%s/apo2Drad.fits", piaacmcsimul_var.piaacmcconfdir);
-            if(load_fits(fname, "apo2Drad", 1) == -1)
+            imageID IDtmp2 = -1;
+            load_fits(fname, "apo2Drad", 1, &IDtmp2);
+            if(IDtmp2 == -1)
             {
 
                 printf("Creating 2D apodization for idealized circular monochromatic PIAACMC\n");
@@ -1328,7 +1333,7 @@ int PIAACMCsimul_initpiaacmcconf(
             printf("LOADING FILE NAME : \"%s\"  -  %ld %d \n", fname, piaacmctype, loaded);
             fflush(stdout);
 
-            piaacmc[0].zonezID = load_fits(fname, "fpmzt", 1);
+            load_fits(fname, "fpmzt", 1, &(piaacmc[0].zonezID));
             if(piaacmc[0].zonezID == -1)
             {
                 piaacmcsimul_var.CREATE_fpmzt = 1;
@@ -1414,7 +1419,7 @@ int PIAACMCsimul_initpiaacmcconf(
                     piaacmcsimul_var.fnamedescr);
 
             printf("LOADING FILE NAME : \"%s\"\n", fname);
-            piaacmc[0].zoneaID = load_fits(fname, "fpmza", LOADFITS_ERRCODE_IGNORE);
+            load_fits(fname, "fpmza", LOADFITS_ERRCODE_IGNORE, &(piaacmc[0].zoneaID));
 
             if(piaacmc[0].zoneaID == -1)
             {

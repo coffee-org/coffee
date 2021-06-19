@@ -119,7 +119,7 @@ int PIAACMCsimul_eval_poly_design()
     IDopderrC = image_ID("OPDerrC");
     if(IDopderrC == -1)
     {
-        IDopderrC = load_fits("OPDerrC.fits", "OPDerrC", 0);
+          load_fits("OPDerrC.fits", "OPDerrC", 0, &IDopderrC);
     }
 
 

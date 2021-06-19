@@ -285,7 +285,7 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     /// in order to preserve the intensity of the off-axis in the design.
     /// load OAincohc if exist, maybe we've been here before
     sprintf(fname, "%s/OAincohc.fits", piaacmcsimul_var.piaacmcconfdir);
-    IDc = load_fits(fname, "OAincohc", 1);
+    load_fits(fname, "OAincohc", 1, &IDc);
 
 
     if(IDc == -1) // OAincohc does not exist so we have to make it

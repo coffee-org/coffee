@@ -114,7 +114,7 @@ int PIAACMCsimul_loadpiaacmcconf(
                 sprintf(fname, "%s/LyotStop%ld.fits", dname, i);
                 sprintf(imname, "lyotstop%ld", i);
                 printf("Loading \"%s\" as \"%s\"\n", fname, imname);
-                piaacmc[0].IDLyotStop[i] = load_fits(fname, imname, 1);
+                load_fits(fname, imname, 1, &(piaacmc[0].IDLyotStop[i]));
                 //r = fscanf(fp, "%lf   LyotStop_zpos %ld\n", &tmplf, &tmpl);
                 {
                     int fscanfcnt;
@@ -181,36 +181,38 @@ int PIAACMCsimul_loadpiaacmcconf(
 
 
         sprintf(fname, "%s/piaa0Cmodes.fits", dname);
-        piaacmc[0].piaa0CmodesID = load_fits(fname, "piaa0Cmodescoeff", 1);
+        load_fits(fname, "piaa0Cmodescoeff", 1, &(piaacmc[0].piaa0CmodesID));
         if(piaacmc[0].piaa0CmodesID == -1)
         {
             sprintf(fname, "%s/piaaref/piaa0Cmodes.fits", dname);
-            piaacmc[0].piaa0CmodesID = load_fits(fname, "piaa0Cmodescoeff", 1);
+            load_fits(fname, "piaa0Cmodescoeff", 1, &(piaacmc[0].piaa0CmodesID) );
         }
 
 
         sprintf(fname, "%s/piaa0Fmodes.fits", dname);
-        piaacmc[0].piaa0FmodesID = load_fits(fname, "piaa0Fmodescoeff", 1);
+        load_fits(fname, "piaa0Fmodescoeff", 1, &(piaacmc[0].piaa0FmodesID));
         if(piaacmc[0].piaa0FmodesID == -1)
         {
             sprintf(fname, "%s/piaaref/piaa0Fmodes.fits", dname);
-            piaacmc[0].piaa0FmodesID = load_fits(fname, "piaa0Fmodescoeff", 1);
+            load_fits(fname, "piaa0Fmodescoeff", 1, &(piaacmc[0].piaa0FmodesID));
         }
 
         sprintf(fname, "%s/piaa1Cmodes.fits", dname);
-        piaacmc[0].piaa1CmodesID = load_fits(fname, "piaa1Cmodescoeff", 1);
+        load_fits(fname, "piaa1Cmodescoeff", 1, &(piaacmc[0].piaa1CmodesID));
         if(piaacmc[0].piaa1CmodesID == -1)
         {
             sprintf(fname, "%s/piaaref/piaa1Cmodes.fits", dname);
-            piaacmc[0].piaa1CmodesID = load_fits(fname, "piaa1Cmodescoeff", 1);
+            load_fits(fname, "piaa1Cmodescoeff", 1, &(piaacmc[0].piaa1CmodesID));
         }
 
         sprintf(fname, "%s/piaa1Fmodes.fits", dname);
-        piaacmc[0].piaa1FmodesID = load_fits(fname, "piaa1Fmodescoeff", 1);
+        load_fits(fname, "piaa1Fmodescoeff", 1, &(piaacmc[0].piaa1FmodesID));
         if(piaacmc[0].piaa1FmodesID == -1)
         {
+            imageID IDtmp = -1;
             sprintf(fname, "%s/piaaref/piaa1Fmodes.fits", dname);
-            piaacmc[0].piaa1FmodesID = load_fits(fname, "piaa1Fmodescoeff", 1);
+            load_fits(fname, "piaa1Fmodescoeff", 1, &IDtmp);
+            piaacmc[0].piaa1FmodesID = IDtmp;
         }
 
 
@@ -259,12 +261,12 @@ int PIAACMCsimul_update_fnamedescr_conf()
 {
     //WRITE_FILENAME()
     WRITE_FILENAME(piaacmcsimul_var.fnamedescr_conf,
-            "s%d_l%04ld_sr%02ld_nbr%03ld_mr%03ld_ssr%02d_ssm%d_wb%02d",
-            piaacmcsimul_var.PIAACMC_FPMsectors, (long)(1.0e9 * piaacmc[0].lambda + 0.1),
-            (long)(1.0 * piaacmc[0].lambdaB + 0.1), piaacmc[0].NBrings,
-            (long)(100.0 * piaacmcsimul_var.PIAACMC_MASKRADLD + 0.1),
-            piaacmcsimul_var.computePSF_ResolvedTarget,
-            piaacmcsimul_var.computePSF_ResolvedTarget_mode, piaacmc[0].nblambda);
+                   "s%d_l%04ld_sr%02ld_nbr%03ld_mr%03ld_ssr%02d_ssm%d_wb%02d",
+                   piaacmcsimul_var.PIAACMC_FPMsectors, (long)(1.0e9 * piaacmc[0].lambda + 0.1),
+                   (long)(1.0 * piaacmc[0].lambdaB + 0.1), piaacmc[0].NBrings,
+                   (long)(100.0 * piaacmcsimul_var.PIAACMC_MASKRADLD + 0.1),
+                   piaacmcsimul_var.computePSF_ResolvedTarget,
+                   piaacmcsimul_var.computePSF_ResolvedTarget_mode, piaacmc[0].nblambda);
     // debug from Justin
     // printf("s%d_l%04ld_sr%02ld_nbr%03ld_mr%03ld_ssr%02d_ssm%d_wb%02d\n", piaacmcsimul_var.PIAACMC_FPMsectors, (long) (1.0e9*piaacmc[0].lambda + 0.1), (long) (1.0*piaacmc[0].lambdaB + 0.1), piaacmc[0].NBrings, (long) (100.0*piaacmcsimul_var.PIAACMC_MASKRADLD+0.1), piaacmcsimul_var.computePSF_ResolvedTarget, piaacmcsimul_var.computePSF_ResolvedTarget_mode, piaacmc[0].nblambda);
     // fflush(stdout);
@@ -283,11 +285,11 @@ int PIAACMCsimul_update_fnamedescr()
     PIAACMCsimul_update_fnamedescr_conf();
 
     WRITE_FILENAME(piaacmcsimul_var.fnamedescr,
-            "%s.minsag%06ld_maxsag%06ld_fpmregc%08ld_fpmrega%06ld_%s",
-            piaacmcsimul_var.fnamedescr_conf, (long)(1.0e9 * piaacmc[0].fpmminsag - 0.1),
-            (long)(1.0e9 * piaacmc[0].fpmmaxsag + 0.1),
-            (long)(1.0e9 * piaacmc[0].fpmsagreg_coeff + 0.1),
-            (long)(1000.0 * piaacmc[0].fpmsagreg_alpha + 0.1), piaacmc[0].fpmmaterial_name);
+                   "%s.minsag%06ld_maxsag%06ld_fpmregc%08ld_fpmrega%06ld_%s",
+                   piaacmcsimul_var.fnamedescr_conf, (long)(1.0e9 * piaacmc[0].fpmminsag - 0.1),
+                   (long)(1.0e9 * piaacmc[0].fpmmaxsag + 0.1),
+                   (long)(1.0e9 * piaacmc[0].fpmsagreg_coeff + 0.1),
+                   (long)(1000.0 * piaacmc[0].fpmsagreg_alpha + 0.1), piaacmc[0].fpmmaterial_name);
     // debug from Justin
     // printf("Running PIAACMCsimul_update_fnamedescr: %s.minsag%06ld_maxsag%06ld_fpmregc%08ld_fpmrega%06ld_%s\n", piaacmcsimul_var.fnamedescr_conf, (long) (1.0e9*piaacmc[0].fpmminsag - 0.1), (long) (1.0e9*piaacmc[0].fpmmaxsag + 0.1), (long) (1.0e9*piaacmc[0].fpmsagreg_coeff+0.1),  (long) (1000.0*piaacmc[0].fpmsagreg_alpha+0.1), piaacmc[0].fpmmaterial_name);
     // fflush(stdout);

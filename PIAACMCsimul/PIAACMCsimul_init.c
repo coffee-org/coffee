@@ -201,7 +201,7 @@ void PIAACMCsimul_init(
 
     if(file_exists(fname_pupa0) == 1)
     {
-        load_fits(fname_pupa0, "pupa0", 1);
+        load_fits(fname_pupa0, "pupa0", 1, NULL);
     }
 
     IDa = image_ID("pupa0");
@@ -220,7 +220,7 @@ void PIAACMCsimul_init(
         if(ID == -1)
             if(file_exists("telpup.fits") == 1)
             {
-                ID = load_fits("telpup.fits", "telpup", 1);
+                load_fits("telpup.fits", "telpup", 1, &ID);
             }
 
 
@@ -368,7 +368,7 @@ void PIAACMCsimul_init(
     ID = image_ID("prePIAA0mask");
     if(ID == -1)
     {
-        ID = load_fits("prePIAA0mask.fits", "prePIAA0mask", 1);
+        load_fits("prePIAA0mask.fits", "prePIAA0mask", 1, &ID);
     }
     if(ID != -1)
     {
@@ -445,7 +445,7 @@ void PIAACMCsimul_init(
     // ------------------- [OPTIONAL] opaque mask after last elem -----------------------
     // get opaque mask from the file, with a standard filename for the first mask
     // we don't have one in the nominal design
-    ID = load_fits("postPIAA0mask.fits", "postPIAA0mask", LOADFITS_ERRCODE_IGNORE);
+    load_fits("postPIAA0mask.fits", "postPIAA0mask", LOADFITS_ERRCODE_IGNORE, &ID);
     if(ID != -1)
     {
         // tell the design that this element exists (was found on disk)
@@ -516,7 +516,7 @@ void PIAACMCsimul_init(
         // ------------------- elem 4 opaque mask at reflective PIAA M1  -----------------------
         sprintf(optsyst[0].name[elem], "opaque mask at PIAA elem 1");
         optsyst[0].elemtype[elem] = 1; // opaque mask
-        ID = load_fits("piaa1mask.fits", "piaa1mask", LOADFITS_ERRCODE_IGNORE);
+        load_fits("piaa1mask.fits", "piaa1mask", LOADFITS_ERRCODE_IGNORE, &ID);
         if(ID == -1)
         {
             ID = make_disk("piaa1mask", size, size, 0.5 * size, 0.5 * size,

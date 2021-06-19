@@ -153,7 +153,7 @@ int PIAACMCsimul_exec_multizone_fpm_calib()
 
 
     // get the combined focal plane mask response
-    ID = load_fits(fname, "FPMresp", 1);
+    load_fits(fname, "FPMresp", 1, &ID);
     // if it did not exist, create it
     if(ID == -1)
     {
@@ -223,8 +223,8 @@ int PIAACMCsimul_exec_multizone_fpm_calib()
             mzoffset = 0;
             mzstep = 1;
 
-            ID = load_fits(fname, "FPMresp",
-                           1);  // this will always fail in the current state (see line 6606) ************************
+            // this will always fail in the current state (see line 6606) ************************
+            load_fits(fname, "FPMresp", 1, &ID);
             IDcomb = ID;
         }
         else // we're a child tmux thread.
@@ -248,9 +248,11 @@ int PIAACMCsimul_exec_multizone_fpm_calib()
             mzoffset = piaacmcsimul_var.PIAACMC_FPMresp_thread;
             mzstep = piaacmcsimul_var.PIAACMC_FPMresp_mp;
 
-            ID = load_fits(fname, "FPMresp",
-                           1); // may exist from a previous execution with restart
-            IDcomb = load_fits(fnamecomb, "FPMresp", 1); // will always fail
+            // may exist from a previous execution with restart
+            load_fits(fname, "FPMresp", 1, &ID);
+
+            // will always fail
+            load_fits(fnamecomb, "FPMresp", 1, &IDcomb);
         }
         // at this point IDcomb==-1, and in the parent ID==-1 always, and in the child ID==-1 if this is not a restart
         // actually create the FPMresp file either as a part by a child or combined by the parent
@@ -414,7 +416,7 @@ int PIAACMCsimul_exec_multizone_fpm_calib()
                         delete_image_ID("tmpFPMresp");
                         //  list_image_ID();
                         // try to load the final child's partial FPMresp file
-                        ID1 = load_fits(fname, "tmpFPMresp", 1);
+                        load_fits(fname, "tmpFPMresp", 1, &ID1);
                         //  list_image_ID();
                     }
                     // we found this child's partial FPMresp file!

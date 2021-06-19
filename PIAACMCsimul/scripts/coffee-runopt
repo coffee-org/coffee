@@ -33,6 +33,17 @@ set -o history -o histexpand
 
 
 
+function exitOK() {
+	echo -e "\n\033[32;1m SUCCESS \033[0m $0 \n"
+	exit
+}
+
+function exitERR() {
+	echo -e "\n\033[31;1m ERROR \033[0m $0 \n"
+	exit 1
+}
+
+
 
 
 size=1024 # default
@@ -68,14 +79,13 @@ if [ -f ${errorfile} ]; then
 	echo ""
 	if grep -q "REACHED STATE EXIT POINT" "$errorfile"; then
 		echo -e "\033[32;1m****** [$(date)] NORMAL EXIT: script $0 : $(cat ${errorfile})\033[0m"
+		rm $errorfile
+		exitOK
 	else
 		echo "\033[31;1m****** [$(date)] FATAL ERROR: script $0 : $(cat ${errorfile})\033[0m"
+		rm $errorfile
+		exitERR
 	fi
-	echo "****** exit script $0"
-	echo "****** bye !"
-	echo ""
-	rm $errorfile
-	exit
 fi
 }
 
@@ -157,7 +167,7 @@ if [ "$#" -ne $NBARGS ] && [ ! "$1" == "help" ]; then
 	echo "Illegal number of parameters ($NBARGS params required, $# entered)" > $errorfile
 	checkerrorstatus
 fi
-	exit
+	exitERR
 fi
 
 
@@ -316,7 +326,7 @@ fi
 
 if [ $inputmode -eq 0 ]; then
 	echo "ERROR: command $1 not recognized"
-	exit
+	exitERR
 fi
 
 
@@ -676,5 +686,6 @@ if [ $inputmode -eq 3 ]; then
 fi
 
 
+exitOK
 
 

@@ -714,16 +714,16 @@ errno_t PIAACMCsimul_exec(
 
         // load PIAA reference shapes (used for regularization)
         WRITE_FULLFILENAME(fname, "%s/piaa0Cmodes.ref.fits", dirname);
-        load_fits(fname, "piaa0Cmref", 1);
+        load_fits(fname, "piaa0Cmref", 1, NULL);
 
         WRITE_FULLFILENAME(fname, "%s/piaa1Cmodes.ref.fits", dirname);
-        load_fits(fname, "piaa1Cmref", 1);
+        load_fits(fname, "piaa1Cmref", 1, NULL);
 
         WRITE_FULLFILENAME(fname, "%s/piaa0Fmodes.ref.fits", dirname);
-        load_fits(fname, "piaa0Fmref", 1);
+        load_fits(fname, "piaa0Fmref", 1, NULL);
 
         WRITE_FULLFILENAME(fname, "%s/piaa1Fmodes.ref.fits", dirname);
-        load_fits(fname, "piaa1Fmref", 1);
+        load_fits(fname, "piaa1Fmref", 1, NULL);
 
         // we have now saved the starting point of the optimization for future comparison
         // in the <piaacmcconfdir>_linopt directory

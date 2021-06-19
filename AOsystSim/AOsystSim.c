@@ -2828,7 +2828,7 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
 
     IDampmask = make_disk("pupmask", ARRAYSIZE, ARRAYSIZE, 0.5 * ARRAYSIZE,
                           0.5 * ARRAYSIZE, 0.5 * PUPDIAM / pupscale);
-    IDpupil = load_fits(PUPILFILE, "pupilgeom", 0);
+    load_fits(PUPILFILE, "pupilgeom", 0, &IDpupil);
 
     if(IDpupil != -1)
     {
@@ -2923,12 +2923,12 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
             WRITE_FULLFILENAME(wf_fname, "%s/%s%08ld.%09ld.pha.fits", WFDIR, wfin_PREFIX, k, (long)(1.0e12 * LAMBDA + 0.5));
             printf("Loading WF file name : %s\n", wf_fname);
             sprintf(wfimname_pha, "wf%08ld_pha", k);
-            IDwf0 = load_fits(wf_fname, wfimname_pha, 1);
+            load_fits(wf_fname, wfimname_pha, 1, &IDwf0);
 
             WRITE_FULLFILENAME(wf_fname, "%s/%s%08ld.%09ld.amp.fits", WFDIR, wfin_PREFIX, k, (long)(1.0e12 * LAMBDA + 0.5));
             printf("Loading WF file name : %s\n", wf_fname);
             sprintf(wfimname_amp, "wf%08ld_amp", k);
-            IDwf0amp = load_fits(wf_fname, wfimname_amp, 1);
+            load_fits(wf_fname, wfimname_amp, 1, &IDwf0amp);
             if(IDwf0amp == -1)
             {
                 AMPfile = 0;
@@ -2956,13 +2956,13 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
             printf("Loading WF file name : %s\n", wf_fname);
 
             sprintf(wfimname_pha, "wf%08ld_pha", knext);
-            IDwf1 = load_fits(wf_fname, wfimname_pha, 1);
+            load_fits(wf_fname, wfimname_pha, 1, &IDwf1);
 
             WRITE_FULLFILENAME(wf_fname, "%s/%s%08ld.%09ld.amp.fits", WFDIR, wfin_PREFIX, knext,
                                (long)(1.0e12 * LAMBDA + 0.5));
             printf("Loading WF file name : %s\n", wf_fname);
             sprintf(wfimname_amp, "wf%08ld_amp", knext);
-            IDwf1amp = load_fits(wf_fname, wfimname_amp, 1);
+            load_fits(wf_fname, wfimname_amp, 1, &IDwf1amp);
             if(IDwf1amp == -1)
             {
                 AMPfile = 0;
@@ -3907,8 +3907,8 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
         }
         break;
     case 1:
-        IDinOPD = load_fits(INFITSFILENAMEOPD, "inOPD", 1);
-        IDinAMP = load_fits(INFITSFILENAMEAMP, "inAMP", 1);
+        load_fits(INFITSFILENAMEOPD, "inOPD", 1, &IDinOPD);
+        load_fits(INFITSFILENAMEAMP, "inAMP", 1, &IDinAMP);
         break;
     default:
         printf("INMODE value %d not valid\n", INMODE);
