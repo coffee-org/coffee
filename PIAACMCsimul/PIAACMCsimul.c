@@ -60,7 +60,7 @@
 
 
 #include "PIAACMCsimul_run.h"
-
+#include "PIAACMCsimul_rings2sectors.h"
 
 
 
@@ -112,35 +112,6 @@ double f_evalmask(const gsl_vector *v, void *params);
 //#define PIAASIMUL_LOGFUNC0 // top level
 //#define PIAASIMUL_LOGFUNC1 // lower level
 
-
-
-/* =============================================================================================== */
-/* =============================================================================================== */
-/** @name  Command line interface (CLI)
- *  CLI commands
- */
-///@{
-/* =============================================================================================== */
-/* =============================================================================================== */
-
-
-/* =============================================================================================== */
-/*  2. Focal plane mask construction                                                               */
-/* =============================================================================================== */
-
-errno_t PIAACMCsimul_rings2sectors_cli()
-{
-    if(CLI_checkarg(1, 4) + CLI_checkarg(2, 3) + CLI_checkarg(3, 3) == 0)
-    {
-        PIAACMCsimul_rings2sectors(data.cmdargtoken[1].val.string,
-                                   data.cmdargtoken[2].val.string, data.cmdargtoken[3].val.string);
-        return 0;
-    }
-    else
-    {
-        return 1;
-    }
-}
 
 
 /* =============================================================================================== */
@@ -226,38 +197,6 @@ errno_t PIAACMC_FPM_process_cli()
 }
 
 
-/* =============================================================================================== */
-/*  7. High level routines                                                                         */
-/* =============================================================================================== */
-
-errno_t PIAACMCsimul_run_cli()
-{
-    if(CLI_checkarg(1, 3) + CLI_checkarg(2, 2) == 0)
-    {
-        PIAACMCsimul_run(data.cmdargtoken[1].val.string, data.cmdargtoken[2].val.numl);
-        return 0;
-    }
-    else
-    {
-        return 1;
-    }
-}
-
-///@}
-
-
-/*
-void __attribute__((constructor)) libinit_PIAACMCsimul()
-{
-    if(INITSTATUS_PIAACMCsimul == 0)
-    {
-        init_PIAACMCsimul();
-        RegisterModule(__FILE__, "coffee", "PIAACMC system simulation", VERSION_MAJOR,
-                       VERSION_MINOR, VERSION_PATCH);
-        INITSTATUS_PIAACMCsimul = 1;
-    }
-}
-*/
 
 
 
@@ -275,31 +214,20 @@ static errno_t init_module_CLI()
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
                                  "");
 #endif
+    /*
+        strcpy(data.cmd[data.NBcmd].key, "piaacmcsimring2sect");
+        strcpy(data.cmd[data.NBcmd].module, __FILE__);
+        data.cmd[data.NBcmd].fp = PIAACMCsimul_rings2sectors_cli;
+        strcpy(data.cmd[data.NBcmd].info, "turn ring fpm design into sectors");
+        strcpy(data.cmd[data.NBcmd].syntax,
+               "<input ring fpm> <zone-ring table> <output sector fpm>");
+        strcpy(data.cmd[data.NBcmd].example, "piaacmcsimring2sect");
+        strcpy(data.cmd[data.NBcmd].Ccall,
+               "long PIAACMCsimul_rings2sectors(const char *IDin_name, const char *sectfname, const char *IDout_name)");
+        data.NBcmd++;
+    */
 
-    strcpy(data.cmd[data.NBcmd].key, "piaacmcsimring2sect");
-    strcpy(data.cmd[data.NBcmd].module, __FILE__);
-    data.cmd[data.NBcmd].fp = PIAACMCsimul_rings2sectors_cli;
-    strcpy(data.cmd[data.NBcmd].info, "turn ring fpm design into sectors");
-    strcpy(data.cmd[data.NBcmd].syntax,
-           "<input ring fpm> <zone-ring table> <output sector fpm>");
-    strcpy(data.cmd[data.NBcmd].example, "piaacmcsimring2sect");
-    strcpy(data.cmd[data.NBcmd].Ccall,
-           "long PIAACMCsimul_rings2sectors(const char *IDin_name, const char *sectfname, const char *IDout_name)");
-    data.NBcmd++;
-
-
-/*
-    strcpy(data.cmd[data.NBcmd].key, "piaacmcsimrun");
-    strcpy(data.cmd[data.NBcmd].module, __FILE__);
-    data.cmd[data.NBcmd].fp = PIAACMCsimul_run_cli;
-    strcpy(data.cmd[data.NBcmd].info, "Simulate PIAACMC");
-    strcpy(data.cmd[data.NBcmd].syntax,
-           "<configuration index [string]> <mode[int]>");
-    strcpy(data.cmd[data.NBcmd].example, "piaacmcsimrun");
-    strcpy(data.cmd[data.NBcmd].Ccall,
-           "int PIAACMCsimul_run(const char *confindex, long mode)");
-    data.NBcmd++;
-*/
+    CLIADDCMD_PIAACMCsimul__ring2sectors();
 
     CLIADDCMD_PIAACMCsimul__run();
 

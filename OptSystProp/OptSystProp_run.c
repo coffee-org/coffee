@@ -40,13 +40,13 @@
  * optsyst.elemkeepmem	1 if element complex amplitude should be kept in memory after use
  */
 
-errno_t OptSystProp_run(OPTSYST *optsyst,
-                    long      index,
-                    long      elemstart,
-                    long      elemend,
-                    const char     *savedir,
-                    int       sharedmem
-                   )
+errno_t OptSystProp_run(OPTSYST    *optsyst,
+                        long        index,
+                        long        elemstart,
+                        long        elemend,
+                        const char *savedir,
+                        int         sharedmem
+                       )
 {
     char imname[200];
 
@@ -342,9 +342,10 @@ errno_t OptSystProp_run(OPTSYST *optsyst,
         // apply a change in phase, which depends on the mirror shape
         // same chromatic vs. achromatic choice as above, but this time the phase data is chromatic
         // (phase is driven by wavelength!!)
-        if(optsyst[index].elemtype[elem] ==
-                3) // MIRROR SURFACE - STORED AS OPD MAP AS A SINGLE MAP (ACHROMATIC) OR A CUBE (CHROMATIC)
+
+        if(optsyst[index].elemtype[elem] == 3)
         {
+            // MIRROR SURFACE - STORED AS OPD MAP AS A SINGLE MAP (ACHROMATIC) OR A CUBE (CHROMATIC)
             printf("============= Mirror surface =======================\n");
             fflush(stdout);
             ID = optsyst[index].ASPHSURFMarray[optsyst[index].elemarrayindex[elem]].surfID;

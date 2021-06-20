@@ -52,6 +52,7 @@ set(SOURCEFILES
 set(INCLUDEFILES
 	${SRCNAME}.h
     PIAACMCsimul_run.h
+    PIAACMCsimul_rings2sectors.h
 )
 
 set(SCRIPTS

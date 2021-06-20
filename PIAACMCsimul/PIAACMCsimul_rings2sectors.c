@@ -18,6 +18,50 @@
 
 
 
+// Local variables pointers
+static char *inimname;
+static char *secfname;
+static char *outimname;
+
+
+
+static CLICMDARGDEF farg[] =
+{
+    {
+        CLIARG_IMG, ".inimname", "input image: circular mask design", "imin",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &inimname
+    },
+    {
+        CLIARG_STR, ".secfname", "text file specifying which zones belong to which rings", "sec.txt",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &secfname
+    },
+    {
+        CLIARG_STR_NOT_IMG, ".outimname", "output sector mask design", "outim",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &outimname
+    }
+};
+
+static CLICMDDATA CLIcmddata =
+{
+    "ring2sect",
+    "turn ring fpm design into sectors",
+    CLICMD_FIELDS_DEFAULTS
+};
+
+
+// detailed help
+static errno_t help_function()
+{
+    return RETURN_SUCCESS;
+}
+
+
+
+
+
 /**
  * @brief Rings to sectors
  *
@@ -26,7 +70,7 @@
  * @param[out] IDout_name	output sector mask design
  *
  */
-long PIAACMCsimul_rings2sectors(
+imageID PIAACMCsimul_rings2sectors(
     const char *IDin_name,
     const char *sectfname,
     const char *IDout_name
@@ -71,5 +115,37 @@ long PIAACMCsimul_rings2sectors(
     return(IDout);
 }
 
+
+
+
+
+static errno_t compute_function()
+{
+
+
+    INSERT_STD_PROCINFO_COMPUTEFUNC_START
+
+    PIAACMCsimul_rings2sectors(
+        inimname,
+        secfname,
+        outimname
+    );
+
+    INSERT_STD_PROCINFO_COMPUTEFUNC_END
+
+    return RETURN_SUCCESS;
+}
+
+
+
+
+INSERT_STD_FPSCLIfunctions
+
+// Register function in CLI
+errno_t CLIADDCMD_PIAACMCsimul__ring2sectors()
+{
+    INSERT_STD_CLIREGISTERFUNC
+    return RETURN_SUCCESS;
+}
 
 
