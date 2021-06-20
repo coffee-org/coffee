@@ -400,7 +400,7 @@ int PIAACMCsimul_initpiaacmcconf(
             else
             {
                 sprintf(piaacmc[0].fpmmaterial_name, "Mirror");
-                sprintf(fname, "%s/conf_fpmmaterial_name.txt", piaacmcsimul_var.piaacmcconfdir);
+                WRITE_FULLFILENAME(fname, "%s/conf_fpmmaterial_name.txt", piaacmcsimul_var.piaacmcconfdir);
                 printf("Writing %s   piaacmc[0].fpmmaterial_name : %s\n", fname,
                        piaacmc[0].fpmmaterial_name);
                 if((fp = fopen(fname, "w")) != NULL)
@@ -705,7 +705,7 @@ int PIAACMCsimul_initpiaacmcconf(
         else
         {
             sprintf(piaacmc[0].PIAAmaterial_name, "Mirror");
-            sprintf(fname, "%s/conf_PIAAmaterial_name.txt",
+            WRITE_FULLFILENAME(fname, "%s/conf_PIAAmaterial_name.txt",
                     piaacmcsimul_var.piaacmcconfdir);
             if((fp = fopen(fname, "w")) != NULL)
             {
@@ -1081,12 +1081,12 @@ int PIAACMCsimul_initpiaacmcconf(
 
 
                 chname_image_ID("apo", "apo2Drad");
-                sprintf(fname, "%s/apo2Drad.fits", piaacmcsimul_var.piaacmcconfdir);
+                WRITE_FULLFILENAME(fname, "%s/apo2Drad.fits", piaacmcsimul_var.piaacmcconfdir);
                 save_fits("apo2Drad", fname);
 
                 if(piaacmc[0].PIAAmode == 1)
                 {
-                    sprintf(fname, "%s/piaaref/apo2Drad.fits", piaacmcsimul_var.piaacmcconfdir);
+                    WRITE_FULLFILENAME(fname, "%s/piaaref/apo2Drad.fits", piaacmcsimul_var.piaacmcconfdir);
                     save_fits("apo2Drad", fname);
                 }
 
@@ -1101,7 +1101,7 @@ int PIAACMCsimul_initpiaacmcconf(
                     fflush(stdout);
                     saveconf = 1;
 
-                    sprintf(fname, "%s/piaaref/APLCmaskCtransm.txt",
+                    WRITE_FULLFILENAME(fname, "%s/piaaref/APLCmaskCtransm.txt",
                             piaacmcsimul_var.piaacmcconfdir);
                     fp = fopen(fname, "w");
                     fprintf(fp, "%.20f\n", piaacmc[0].fpmaskamptransm);
@@ -1164,16 +1164,16 @@ int PIAACMCsimul_initpiaacmcconf(
 
 
         // make 2D sag maps
-        sprintf(fname, "%s/PIAA_Mshapes.txt", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/PIAA_Mshapes.txt", piaacmcsimul_var.piaacmcconfdir);
         PIAACMCsimul_mkPIAAMshapes_from_RadSag(fname, "piaam0z", "piaam1z");
 
 
         if(piaacmcsimul_var.PIAACMC_save == 1)
         {
-            sprintf(fname, "%s/piaam0z.fits", piaacmcsimul_var.piaacmcconfdir);
+            WRITE_FULLFILENAME(fname, "%s/piaam0z.fits", piaacmcsimul_var.piaacmcconfdir);
             save_fits("piaam0z", fname);
 
-            sprintf(fname, "%s/piaam1z.fits", piaacmcsimul_var.piaacmcconfdir);
+            WRITE_FULLFILENAME(fname, "%s/piaam1z.fits", piaacmcsimul_var.piaacmcconfdir);
             save_fits("piaam1z", fname);
         }
 
@@ -1228,7 +1228,7 @@ int PIAACMCsimul_initpiaacmcconf(
 
         if(piaacmcsimul_var.PIAACMC_save == 1)
         {
-            sprintf(fname, "%s/piaa0Cz.fits", piaacmcsimul_var.piaacmcconfdir);
+            WRITE_FULLFILENAME(fname, "%s/piaa0Cz.fits", piaacmcsimul_var.piaacmcconfdir);
             save_fits("piaa0Cz", fname);
         }
 
@@ -1236,7 +1236,7 @@ int PIAACMCsimul_initpiaacmcconf(
 
         if(piaacmcsimul_var.PIAACMC_save == 1)
         {
-            sprintf(fname, "%s/piaa1Cz.fits", piaacmcsimul_var.piaacmcconfdir);
+            WRITE_FULLFILENAME(fname, "%s/piaa1Cz.fits", piaacmcsimul_var.piaacmcconfdir);
             save_fits("piaa1Cz", fname);
         }
 
@@ -1254,7 +1254,7 @@ int PIAACMCsimul_initpiaacmcconf(
             }
         if(piaacmcsimul_var.PIAACMC_save == 1)
         {
-            sprintf(fname, "%s/piaa0Cres.fits", piaacmcsimul_var.piaacmcconfdir);
+            WRITE_FULLFILENAME(fname, "%s/piaa0Cres.fits", piaacmcsimul_var.piaacmcconfdir);
             save_fits("piaa0Cres", fname);
         }
 
@@ -1275,7 +1275,7 @@ int PIAACMCsimul_initpiaacmcconf(
 
         if(piaacmcsimul_var.PIAACMC_save == 1)
         {
-            sprintf(fname, "%s/piaa1Cres.fits", piaacmcsimul_var.piaacmcconfdir);
+            WRITE_FULLFILENAME(fname, "%s/piaa1Cres.fits", piaacmcsimul_var.piaacmcconfdir);
             save_fits("piaa1Cres", fname);
         }
 
@@ -1320,16 +1320,16 @@ int PIAACMCsimul_initpiaacmcconf(
 
 
 
-        sprintf(fname, "%s/piaaref/piaa0Cmodes.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/piaaref/piaa0Cmodes.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits(data.image[piaacmc[0].piaa0CmodesID].name, fname);
 
-        sprintf(fname, "%s/piaaref/piaa0Fmodes.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/piaaref/piaa0Fmodes.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits(data.image[piaacmc[0].piaa0FmodesID].name, fname);
 
-        sprintf(fname, "%s/piaaref/piaa1Cmodes.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/piaaref/piaa1Cmodes.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits(data.image[piaacmc[0].piaa1CmodesID].name, fname);
 
-        sprintf(fname, "%s/piaaref/piaa1Fmodes.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/piaaref/piaa1Fmodes.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits(data.image[piaacmc[0].piaa1FmodesID].name, fname);
 
         EXECUTE_SYSTEM_COMMAND("cp %s/piaaref/* %s/", piaacmcsimul_var.piaacmcconfdir,
@@ -1603,7 +1603,7 @@ int PIAACMCsimul_initpiaacmcconf(
             piaacmc[0].IDLyotStop[i] = image_ID(name);
             if(piaacmc[0].IDLyotStop[i] == -1)
             {
-                sprintf(fname, "%s/LyotStop%ld.fits", piaacmcsimul_var.piaacmcconfdir, i);
+                WRITE_FULLFILENAME(fname, "%s/LyotStop%ld.fits", piaacmcsimul_var.piaacmcconfdir, i);
                 if((i == 0) && (piaacmc[0].NBLyotStop > 1))
                 {
                     piaacmc[0].IDLyotStop[i] = PIAACMCsimul_mkSimpleLyotStop(name, -0.01, 0.98);
