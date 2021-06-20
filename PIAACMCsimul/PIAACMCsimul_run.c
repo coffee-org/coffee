@@ -464,9 +464,8 @@ errno_t PIAACMCsimul_run(
 
             //EXECUTE_SYSTEM_COMMAND("touch step02.iter%05ld.ttxt", i);
 
-            // actually do the optmization
+            // Perform the optmization
             printf("Execute optimization\n");
-            fflush(stdout);
             {
                 errno_t fret = PIAACMCsimul_exec(confindex, mode);
                 if(fret != RETURN_SUCCESS)
@@ -845,6 +844,7 @@ errno_t PIAACMCsimul_run(
     {
         {
             errno_t fret = PIAACMCsimul_exec(confindex, mode);
+
             if(fret != RETURN_SUCCESS)
             {
                 FUNC_RETURN_FAILURE("Call to function PIAACMCsimul_exec failed");

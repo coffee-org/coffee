@@ -207,49 +207,35 @@ extern OPTPIAACMCDESIGN *piaacmc;
  *
  *
  */
-
 int PIAACMCsimul_initpiaacmcconf(
-    long piaacmctype,
-    double fpmradld,
-    double centobs0,
-    double centobs1,
-    int WFCmode,
-    int load
+    long    piaacmctype,
+    double  fpmradld,
+    double  centobs0,
+    double  centobs1,
+    int     WFCmode,
+    int     load
 )
 {
     FILE *fp;
     float beamradpix;
     long NBpiaacmcdesign = 1;
-    long ii, jj, k, i;
-    double x, y;
     long size, size0;
     long Cmsize;
     long Fmsize;
     imageID ID, ID0, ID1;
-//    long size2;
-    double rad;
-//    imageID IDv1, IDv2;
-    char fname[1500];
-    char name[500];
-    float tmpf;
-    double pha0, t0, t;
     int loaded = 0; // has the configuration been loaded ?
 
     int saveconf = 0; // if 1, save conf at end of this function
     imageID IDv;
-//    double tmplf;
-
-//    int IDlscumul;
-    uint32_t *sizearray;
-
 
     imageID IDapo;
-    long xsize = 0;
-    long ysize = 0;
-    imageID IDapo_PIAA, IDapo_CPA;
-    double coeff;
+    uint32_t xsize = 0;
+    uint32_t ysize = 0;
+    uint64_t xysize = 1;
 
-    imageID IDx, IDy, IDr, IDPA;
+    imageID IDapo_PIAA, IDapo_CPA;
+    //double coeff;
+
 
 
 #ifdef PIAASIMUL_LOGFUNC0
@@ -333,7 +319,7 @@ int PIAACMCsimul_initpiaacmcconf(
 
 
         piaacmc[0].NBLyotStop = 2;
-        for(i = 0; i < 10; i++)
+        for(int i = 0; i < 10; i++)
         {
             piaacmc[0].LyotStop_zpos[i] = 0.0;
             piaacmc[0].IDLyotStop[i] = -1;
@@ -397,25 +383,51 @@ int PIAACMCsimul_initpiaacmcconf(
 
 
 
-
-        sprintf(fname, "%s/conf_fpmmaterial_name.txt", piaacmcsimul_var.piaacmcconfdir);
-        if((fp = fopen(fname, "r")) != NULL)
-        {
-            ret = fscanf(fp, "%s", name);
-            strcpy(piaacmc[0].fpmmaterial_name, name);
-            printf("Reading %s   piaacmc[0].fpmmaterial_name : %s\n", fname,
-                   piaacmc[0].fpmmaterial_name);
-            fclose(fp);
+        {   // read focal plane mask material
+            char fname[STRINGMAXLEN_FULLFILENAME];
+            WRITE_FULLFILENAME(fname,
+                               "%s/conf_fpmmaterial_name.txt",
+                               piaacmcsimul_var.piaacmcconfdir);
+            if((fp = fopen(fname, "r")) != NULL)
+            {
+                char name[200];
+                ret = fscanf(fp, "%s", name);
+                strcpy(piaacmc[0].fpmmaterial_name, name);
+                printf("Reading %s   piaacmc[0].fpmmaterial_name : %s\n", fname,
+                       piaacmc[0].fpmmaterial_name);
+                fclose(fp);
+            }
+            else
+            {
+                sprintf(piaacmc[0].fpmmaterial_name, "Mirror");
+                sprintf(fname, "%s/conf_fpmmaterial_name.txt", piaacmcsimul_var.piaacmcconfdir);
+                printf("Writing %s   piaacmc[0].fpmmaterial_name : %s\n", fname,
+                       piaacmc[0].fpmmaterial_name);
+                if((fp = fopen(fname, "w")) != NULL)
+                {
+                    fprintf(fp, "%s\n", piaacmc[0].fpmmaterial_name);
+                    fclose(fp);
+                }
+                else
+                {
+                    printf("ERROR: cannot create file \"%s\"\n", fname);
+                    exit(0);
+                }
+            }
         }
-        else
-        {
-            sprintf(piaacmc[0].fpmmaterial_name, "Mirror");
-            sprintf(fname, "%s/conf_fpmmaterial_name.txt", piaacmcsimul_var.piaacmcconfdir);
-            printf("Writing %s   piaacmc[0].fpmmaterial_name : %s\n", fname,
-                   piaacmc[0].fpmmaterial_name);
+
+
+        printf("piaacmc[0].fpmmaterial_name : %s\n", piaacmc[0].fpmmaterial_name);
+        piaacmc[0].fpmmaterial_code = OpticsMaterials_code(piaacmc[0].fpmmaterial_name);
+
+        {   // write focal plane mask material
+            char fname[STRINGMAXLEN_FULLFILENAME];
+            WRITE_FULLFILENAME(fname,
+                               "%s/conf_fpmmaterial_code.txt",
+                               piaacmcsimul_var.piaacmcconfdir);
             if((fp = fopen(fname, "w")) != NULL)
             {
-                fprintf(fp, "%s\n", piaacmc[0].fpmmaterial_name);
+                fprintf(fp, "%d\n", piaacmc[0].fpmmaterial_code);
                 fclose(fp);
             }
             else
@@ -423,21 +435,6 @@ int PIAACMCsimul_initpiaacmcconf(
                 printf("ERROR: cannot create file \"%s\"\n", fname);
                 exit(0);
             }
-        }
-
-        printf("piaacmc[0].fpmmaterial_name : %s\n", piaacmc[0].fpmmaterial_name);
-        piaacmc[0].fpmmaterial_code = OpticsMaterials_code(piaacmc[0].fpmmaterial_name);
-
-        sprintf(fname, "%s/conf_fpmmaterial_code.txt", piaacmcsimul_var.piaacmcconfdir);
-        if((fp = fopen(fname, "w")) != NULL)
-        {
-            fprintf(fp, "%d\n", piaacmc[0].fpmmaterial_code);
-            fclose(fp);
-        }
-        else
-        {
-            printf("ERROR: cannot create file \"%s\"\n", fname);
-            exit(0);
         }
 
 
@@ -694,23 +691,46 @@ int PIAACMCsimul_initpiaacmcconf(
 
 
 
-
-    sprintf(fname, "%s/conf_PIAAmaterial_name.txt",
-            piaacmcsimul_var.piaacmcconfdir);
-    if((fp = fopen(fname, "r")) != NULL)
-    {
-        ret = fscanf(fp, "%s", name);
-        strcpy(piaacmc[0].PIAAmaterial_name, name);
-        fclose(fp);
+    {   // read PIAA material
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/conf_PIAAmaterial_name.txt",
+                           piaacmcsimul_var.piaacmcconfdir);
+        if((fp = fopen(fname, "r")) != NULL)
+        {
+            char name[200];
+            ret = fscanf(fp, "%s", name);
+            strcpy(piaacmc[0].PIAAmaterial_name, name);
+            fclose(fp);
+        }
+        else
+        {
+            sprintf(piaacmc[0].PIAAmaterial_name, "Mirror");
+            sprintf(fname, "%s/conf_PIAAmaterial_name.txt",
+                    piaacmcsimul_var.piaacmcconfdir);
+            if((fp = fopen(fname, "w")) != NULL)
+            {
+                fprintf(fp, "%s\n", piaacmc[0].PIAAmaterial_name);
+                fclose(fp);
+            }
+            else
+            {
+                printf("ERROR: cannot create file \"%s\"\n", fname);
+                exit(0);
+            }
+        }
     }
-    else
-    {
-        sprintf(piaacmc[0].PIAAmaterial_name, "Mirror");
-        sprintf(fname, "%s/conf_PIAAmaterial_name.txt",
-                piaacmcsimul_var.piaacmcconfdir);
+
+    printf("piaacmc[0].PIAAmaterial_name = %s\n", piaacmc[0].PIAAmaterial_name);
+    piaacmc[0].PIAAmaterial_code = OpticsMaterials_code(
+                                       piaacmc[0].PIAAmaterial_name);
+
+    {   // write PIAA material
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/conf_PIAAmaterial_code.txt",
+                           piaacmcsimul_var.piaacmcconfdir);
         if((fp = fopen(fname, "w")) != NULL)
         {
-            fprintf(fp, "%s\n", piaacmc[0].PIAAmaterial_name);
+            fprintf(fp, "%d\n", piaacmc[0].PIAAmaterial_code);
             fclose(fp);
         }
         else
@@ -720,31 +740,13 @@ int PIAACMCsimul_initpiaacmcconf(
         }
     }
 
-    printf("piaacmc[0].PIAAmaterial_name = %s\n", piaacmc[0].PIAAmaterial_name);
-    piaacmc[0].PIAAmaterial_code = OpticsMaterials_code(
-                                       piaacmc[0].PIAAmaterial_name);
-
-    sprintf(fname, "%s/conf_PIAAmaterial_code.txt",
-            piaacmcsimul_var.piaacmcconfdir);
-    if((fp = fopen(fname, "w")) != NULL)
-    {
-        fprintf(fp, "%d\n", piaacmc[0].PIAAmaterial_code);
-        fclose(fp);
-    }
-    else
-    {
-        printf("ERROR: cannot create file \"%s\"\n", fname);
-        exit(0);
-    }
-
-
 
     printf("lambda = %g\n", piaacmc[0].lambda);
     printf("LAMBDASTART = %g\n", piaacmcsimul_var.LAMBDASTART);
     printf("LAMBDAEND = %g\n", piaacmcsimul_var.LAMBDAEND);
 
 
-    for(k = 0; k < piaacmc[0].nblambda; k++)
+    for(int k = 0; k < piaacmc[0].nblambda; k++)
     {
         piaacmc[0].lambdaarray[k] = piaacmcsimul_var.LAMBDASTART + (0.5 + k) *
                                     (piaacmcsimul_var.LAMBDAEND - piaacmcsimul_var.LAMBDASTART) /
@@ -761,24 +763,26 @@ int PIAACMCsimul_initpiaacmcconf(
     fflush(stdout);
 
     // x, y, r and PA coordinates in beam (for convenience & speed)
-    IDx = create_2Dimage_ID("xcoord", size, size);
-    IDy = create_2Dimage_ID("ycoord", size, size);
-    IDr = create_2Dimage_ID("rcoord", size, size);
-    IDPA = create_2Dimage_ID("PAcoord", size, size);
-    printf("pre-computing x, y, r, and PA\n");
-    fflush(stdout);
-    // list_image_ID();
-
-    for(ii = 0; ii < size; ii++)
     {
-        for(jj = 0; jj < size; jj++)
+        imageID IDx = create_2Dimage_ID("xcoord", size, size);
+        imageID IDy = create_2Dimage_ID("ycoord", size, size);
+        imageID IDr = create_2Dimage_ID("rcoord", size, size);
+        imageID IDPA = create_2Dimage_ID("PAcoord", size, size);
+        printf("pre-computing x, y, r, and PA\n");
+        fflush(stdout);
+        // list_image_ID();
+
+        for(uint32_t ii = 0; ii < size; ii++)
         {
-            x = (1.0 * ii - 0.5 * size) / beamradpix;
-            y = (1.0 * jj - 0.5 * size) / beamradpix;
-            data.image[IDx].array.F[jj * size + ii] = x;
-            data.image[IDy].array.F[jj * size + ii] = y;
-            data.image[IDr].array.F[jj * size + ii] = sqrt(x * x + y * y);
-            data.image[IDPA].array.F[jj * size + ii] = atan2(y, x);
+            for(uint32_t jj = 0; jj < size; jj++)
+            {
+                float x = (1.0 * ii - 0.5 * size) / beamradpix;
+                float y = (1.0 * jj - 0.5 * size) / beamradpix;
+                data.image[IDx].array.F[jj * size + ii] = x;
+                data.image[IDy].array.F[jj * size + ii] = y;
+                data.image[IDr].array.F[jj * size + ii] = sqrt(x * x + y * y);
+                data.image[IDPA].array.F[jj * size + ii] = atan2(y, x);
+            }
         }
     }
 
@@ -788,19 +792,23 @@ int PIAACMCsimul_initpiaacmcconf(
     for(long iDM = 0; iDM < piaacmc[0].nbDM; iDM++)
     {
         printf("DM # %ld\n", iDM);
-        sprintf(fname, "wfcDM%ld", iDM);
-        piaacmc[0].ID_DM[iDM] = image_ID(
-                                    fname);  // DM image identifier - to be updated later
+
+        char imname[STRINGMAXLEN_IMGNAME];
+        WRITE_IMAGENAME(imname, "wfcDM%ld", iDM);
+
+        // DM image identifier - to be updated later
+        piaacmc[0].ID_DM[iDM] = image_ID(imname);
         printf("ID = %ld", piaacmc[0].ID_DM[iDM]);
 
         if(piaacmc[0].ID_DM[iDM] == -1)
         {
-            read_sharedmem_image(fname);
-            piaacmc[0].ID_DM[iDM] = image_ID(fname);
+            read_sharedmem_image(imname);
+            piaacmc[0].ID_DM[iDM] = image_ID(imname);
         }
 
         if(piaacmc[0].ID_DM[iDM] == -1)
         {
+            uint32_t *sizearray;
             sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
             if(sizearray == NULL) {
                 PRINT_ERROR("malloc returns NULL pointer");
@@ -808,7 +816,7 @@ int PIAACMCsimul_initpiaacmcconf(
             }
             sizearray[0] = size;
             sizearray[1] = size;
-            piaacmc[0].ID_DM[iDM] = create_image_ID(fname, 2, sizearray, _DATATYPE_FLOAT, 1,
+            piaacmc[0].ID_DM[iDM] = create_image_ID(imname, 2, sizearray, _DATATYPE_FLOAT, 1,
                                                     0, 0);
             free(sizearray);
         }
@@ -818,93 +826,102 @@ int PIAACMCsimul_initpiaacmcconf(
     printf("Creating / loading Cmodes and Fmodes ...\n");
     fflush(stdout);
 
+    {   // Cmodes
+        piaacmcsimul_var.CREATE_Cmodes = 0;
+        //   sprintf(fname, "%s/Cmodes.fits", piaacmcsimul_var.piaacmcconfdir);
 
-    piaacmcsimul_var.CREATE_Cmodes = 0;
-    //   sprintf(fname, "%s/Cmodes.fits", piaacmcsimul_var.piaacmcconfdir);
-    sprintf(fname, "ref/Cmodes_%ld.fits", piaacmc[0].size);
-    if(piaacmcsimul_var.FORCE_CREATE_Cmodes == 0)
-    {
-        piaacmc[0].CmodesID = image_ID("Cmodes");
-        if(piaacmc[0].CmodesID == -1)
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "ref/Cmodes_%ld.fits", piaacmc[0].size);
+
+        if(piaacmcsimul_var.FORCE_CREATE_Cmodes == 0)
         {
-            load_fits(fname, "Cmodes", 0, &(piaacmc[0].CmodesID));
+            piaacmc[0].CmodesID = image_ID("Cmodes");
+            if(piaacmc[0].CmodesID == -1)
+            {
+                load_fits(fname, "Cmodes", 0, &(piaacmc[0].CmodesID));
+            }
+            if(piaacmc[0].CmodesID == -1)
+            {
+                piaacmcsimul_var.CREATE_Cmodes = 1;
+            }
         }
-        if(piaacmc[0].CmodesID == -1)
+        else
         {
             piaacmcsimul_var.CREATE_Cmodes = 1;
         }
+
+        if(piaacmcsimul_var.CREATE_Cmodes == 1)
+        {
+            if(piaacmc[0].CmodesID != -1)
+            {
+                delete_image_ID("Cmodes", DELETE_IMAGE_ERRMODE_WARNING);
+            }
+            Cmsize = (long)(beamradpix * 4);
+            if(Cmsize > size)
+            {
+                Cmsize = size;
+            }
+            printf("beamradpix = %f -> Cmsize = %ld\n", beamradpix, Cmsize);
+            // make sure Cmsize if even
+            if(Cmsize % 2 == 1)
+            {
+                Cmsize++;
+            }
+            piaacmc[0].Cmsize = Cmsize;
+            linopt_imtools_makeCosRadModes("Cmodes", Cmsize, piaacmc[0].piaaNBCmodesmax,
+                                           ApoFitCosFact * beamradpix, 2.0);
+            piaacmc[0].CmodesID = image_ID("Cmodes");
+            save_fits("Cmodes", fname);
+
+            EXECUTE_SYSTEM_COMMAND("mv ModesExpr_CosRad.txt %s/",
+                                   piaacmcsimul_var.piaacmcconfdir);
+        }
+        piaacmc[0].NBCmodes = data.image[piaacmc[0].CmodesID].md[0].size[2];
+        piaacmc[0].Cmsize = data.image[piaacmc[0].CmodesID].md[0].size[0];
     }
-    else
-    {
-        piaacmcsimul_var.CREATE_Cmodes = 1;
-    }
-    if(piaacmcsimul_var.CREATE_Cmodes == 1)
-    {
-        if(piaacmc[0].CmodesID != -1)
-        {
-            delete_image_ID("Cmodes", DELETE_IMAGE_ERRMODE_WARNING);
-        }
-        Cmsize = (long)(beamradpix * 4);
-        if(Cmsize > size)
-        {
-            Cmsize = size;
-        }
-        printf("beamradpix = %f -> Cmsize = %ld\n", beamradpix, Cmsize);
-        // make sure Cmsize if even
-        if(Cmsize % 2 == 1)
-        {
-            Cmsize++;
-        }
-        piaacmc[0].Cmsize = Cmsize;
-        linopt_imtools_makeCosRadModes("Cmodes", Cmsize, piaacmc[0].piaaNBCmodesmax,
-                                       ApoFitCosFact * beamradpix, 2.0);
-        piaacmc[0].CmodesID = image_ID("Cmodes");
-        save_fits("Cmodes", fname);
-
-        EXECUTE_SYSTEM_COMMAND("mv ModesExpr_CosRad.txt %s/",
-                               piaacmcsimul_var.piaacmcconfdir);
-    }
-    piaacmc[0].NBCmodes = data.image[piaacmc[0].CmodesID].md[0].size[2];
-    piaacmc[0].Cmsize = data.image[piaacmc[0].CmodesID].md[0].size[0];
 
 
+    {   // Fmodes
+        piaacmcsimul_var.CREATE_Fmodes = 0;
+        //    sprintf(fname, "%s/Fmodes.fits", piaacmcsimul_var.piaacmcconfdir);
 
-    piaacmcsimul_var.CREATE_Fmodes = 0;
-    //    sprintf(fname, "%s/Fmodes.fits", piaacmcsimul_var.piaacmcconfdir);
-    sprintf(fname, "ref/Fmodes_%ld.fits", piaacmc[0].size);
-    if(piaacmcsimul_var.FORCE_CREATE_Fmodes == 0)
-    {
-        piaacmc[0].FmodesID = image_ID("Fmodes");
-        if(piaacmc[0].FmodesID == -1)
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "ref/Fmodes_%ld.fits", piaacmc[0].size);
+
+        if(piaacmcsimul_var.FORCE_CREATE_Fmodes == 0)
         {
-            load_fits(fname, "Fmodes", 0, &(piaacmc[0].FmodesID));
+            piaacmc[0].FmodesID = image_ID("Fmodes");
+            if(piaacmc[0].FmodesID == -1)
+            {
+                load_fits(fname, "Fmodes", 0, &(piaacmc[0].FmodesID));
+            }
+            if(piaacmc[0].FmodesID == -1)
+            {
+                piaacmcsimul_var.CREATE_Fmodes = 1;
+            }
         }
-        if(piaacmc[0].FmodesID == -1)
+        else
         {
             piaacmcsimul_var.CREATE_Fmodes = 1;
         }
-    }
-    else
-    {
-        piaacmcsimul_var.CREATE_Fmodes = 1;
-    }
-    if(piaacmcsimul_var.CREATE_Fmodes == 1)
-    {
-        Fmsize = (long)(beamradpix * 4);
-        if(Fmsize > size)
+        if(piaacmcsimul_var.CREATE_Fmodes == 1)
         {
-            Fmsize = size;
+            Fmsize = (long)(beamradpix * 4);
+            if(Fmsize > size)
+            {
+                Fmsize = size;
+            }
+            piaacmc[0].Fmsize = Fmsize;
+            linopt_imtools_makeCPAmodes("Fmodes",  Fmsize, piaacmc[0].piaaCPAmax, 0.8,
+                                        beamradpix, 2.0, 1);
+            piaacmc[0].FmodesID = image_ID("Fmodes");
+            save_fits("Fmodes", fname);
+            save_fits("cpamodesfreq", "cpamodesfreq.fits");
+            EXECUTE_SYSTEM_COMMAND("mv ModesExpr_CPA.txt %s/", piaacmcsimul_var.piaacmcconfdir);
         }
-        piaacmc[0].Fmsize = Fmsize;
-        linopt_imtools_makeCPAmodes("Fmodes",  Fmsize, piaacmc[0].piaaCPAmax, 0.8,
-                                    beamradpix, 2.0, 1);
-        piaacmc[0].FmodesID = image_ID("Fmodes");
-        save_fits("Fmodes", fname);
-        save_fits("cpamodesfreq", "cpamodesfreq.fits");
-        EXECUTE_SYSTEM_COMMAND("mv ModesExpr_CPA.txt %s/", piaacmcsimul_var.piaacmcconfdir);
+        piaacmc[0].NBFmodes = data.image[piaacmc[0].FmodesID].md[0].size[2];
+        piaacmc[0].Fmsize = data.image[piaacmc[0].FmodesID].md[0].size[0];
     }
-    piaacmc[0].NBFmodes = data.image[piaacmc[0].FmodesID].md[0].size[2];
-    piaacmc[0].Fmsize = data.image[piaacmc[0].FmodesID].md[0].size[0];
 
     printf("DONE Creating / loading Cmodes and Fmodes\n");
     fflush(stdout);
@@ -929,26 +946,70 @@ int PIAACMCsimul_initpiaacmcconf(
 
         EXECUTE_SYSTEM_COMMAND("mkdir -p %s/piaaref/", piaacmcsimul_var.piaacmcconfdir);
 
-        if((piaacmc[0].piaa0CmodesID == -1) || (piaacmc[0].piaa0FmodesID == -1)
-                || (piaacmc[0].piaa1CmodesID == -1) || (piaacmc[0].piaa1FmodesID == -1))
+        if((piaacmc[0].piaa0CmodesID == -1)
+                || (piaacmc[0].piaa0FmodesID == -1)
+                || (piaacmc[0].piaa1CmodesID == -1)
+                || (piaacmc[0].piaa1FmodesID == -1))
         {
-            sprintf(fname, "%s/piaaref/piaa0Cmodes.fits", piaacmcsimul_var.piaacmcconfdir);
-            load_fits(fname, "piaa0Cmodescoeff", 1, &(piaacmc[0].piaa0CmodesID));
+            char fname[STRINGMAXLEN_FULLFILENAME];
 
-            sprintf(fname, "%s/piaaref/piaa0Fmodes.fits", piaacmcsimul_var.piaacmcconfdir);
-            load_fits(fname, "piaa0Fmodescoeff", 1, &(piaacmc[0].piaa0FmodesID));
+            WRITE_FULLFILENAME(
+                fname,
+                "%s/piaaref/piaa0Cmodes.fits",
+                piaacmcsimul_var.piaacmcconfdir
+            );
+            load_fits(
+                fname,
+                "piaa0Cmodescoeff",
+                LOADFITS_ERRMODE_ERROR,
+                &(piaacmc[0].piaa0CmodesID)
+            );
 
-            sprintf(fname, "%s/piaaref/piaa1Cmodes.fits", piaacmcsimul_var.piaacmcconfdir);
-            load_fits(fname, "piaa1Cmodescoeff", 1, &(piaacmc[0].piaa1CmodesID));
+            WRITE_FULLFILENAME(
+                fname,
+                "%s/piaaref/piaa0Fmodes.fits",
+                piaacmcsimul_var.piaacmcconfdir
+            );
+            load_fits(
+                fname,
+                "piaa0Fmodescoeff",
+                LOADFITS_ERRMODE_ERROR,
+                &(piaacmc[0].piaa0FmodesID)
+            );
 
-            sprintf(fname, "%s/piaaref/piaa1Fmodes.fits", piaacmcsimul_var.piaacmcconfdir);
-            load_fits(fname, "piaa1Fmodescoeff", 1, &(piaacmc[0].piaa1FmodesID));
+            WRITE_FULLFILENAME(
+                fname,
+                "%s/piaaref/piaa1Cmodes.fits",
+                piaacmcsimul_var.piaacmcconfdir
+            );
+            load_fits(
+                fname,
+                "piaa1Cmodescoeff",
+                LOADFITS_ERRMODE_ERROR,
+                &(piaacmc[0].piaa1CmodesID)
+            );
 
-            sprintf(fname, "%s/piaaref/APLCmaskCtransm.txt",
-                    piaacmcsimul_var.piaacmcconfdir);
+            WRITE_FULLFILENAME(
+                fname,
+                "%s/piaaref/piaa1Fmodes.fits",
+                piaacmcsimul_var.piaacmcconfdir
+            );
+            load_fits(
+                fname,
+                "piaa1Fmodescoeff",
+                LOADFITS_ERRMODE_ERROR,
+                &(piaacmc[0].piaa1FmodesID)
+            );
+
+            WRITE_FULLFILENAME(
+                fname,
+                "%s/piaaref/APLCmaskCtransm.txt",
+                piaacmcsimul_var.piaacmcconfdir
+            );
             fp = fopen(fname, "r");
             if(fp != NULL)
             {
+                float tmpf = 0.0;
                 ret = fscanf(fp, "%f", &tmpf);
                 piaacmc[0].fpmaskamptransm = tmpf;
                 fclose(fp);
@@ -958,24 +1019,32 @@ int PIAACMCsimul_initpiaacmcconf(
 
 
 
-    if((piaacmc[0].piaa0CmodesID == -1) || (piaacmc[0].piaa0FmodesID == -1)
-            || (piaacmc[0].piaa1CmodesID == -1) || (piaacmc[0].piaa1FmodesID == -1))
+    if((piaacmc[0].piaa0CmodesID == -1)
+            || (piaacmc[0].piaa0FmodesID == -1)
+            || (piaacmc[0].piaa1CmodesID == -1)
+            || (piaacmc[0].piaa1FmodesID == -1))
     {
-        sprintf(fname, "%s/apo2Drad.fits", piaacmcsimul_var.piaacmcconfdir);
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(
+            fname,
+            "%s/apo2Drad.fits",
+            piaacmcsimul_var.piaacmcconfdir
+        );
 
         imageID IDtmp1 = -1;
-        load_fits(fname, "apo2Drad", 1, &IDtmp1);
+        load_fits(fname, "apo2Drad", LOADFITS_ERRMODE_WARNING, &IDtmp1);
         if(IDtmp1 == -1) // CREATE APODIZATION
         {
-            EXECUTE_SYSTEM_COMMAND("cp %s/piaaref/apo2Drad.fits %s/apo2Drad.fits",
-                                   piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
+            EXECUTE_SYSTEM_COMMAND(
+                "cp %s/piaaref/apo2Drad.fits %s/apo2Drad.fits",
+                piaacmcsimul_var.piaacmcconfdir,
+                piaacmcsimul_var.piaacmcconfdir);
 
-            sprintf(fname, "%s/apo2Drad.fits", piaacmcsimul_var.piaacmcconfdir);
+            //sprintf(fname, "%s/apo2Drad.fits", piaacmcsimul_var.piaacmcconfdir);
             imageID IDtmp2 = -1;
-            load_fits(fname, "apo2Drad", 1, &IDtmp2);
+            load_fits(fname, "apo2Drad", LOADFITS_ERRMODE_WARNING, &IDtmp2);
             if(IDtmp2 == -1)
             {
-
                 printf("Creating 2D apodization for idealized circular monochromatic PIAACMC\n");
                 fflush(stdout);
 
@@ -1047,15 +1116,19 @@ int PIAACMCsimul_initpiaacmcconf(
 
         // split apodization in conventional pupil apodizer (apoCPA) and PIAA apodization (apo2Drad_PIAA)
         IDapo = image_ID("apo2Drad");
+        xysize = 1;
         xsize = data.image[IDapo].md[0].size[0];
+        xysize *= xsize;
         ysize = data.image[IDapo].md[0].size[1];
+        xysize *= ysize;
+
         IDapo_PIAA = create_2Dimage_ID("apo2Drad_PIAA", xsize, ysize);
         IDapo_CPA = create_2Dimage_ID("apo2Drad_CPA", xsize, ysize);
 
         if(piaacmc[0].PIAAmode == 0)
         {
-            for(ii = 0; ii < xsize * ysize;
-                    ii++) // everything goes to the conventional apodizer
+            // everything goes to the conventional apodizer
+            for(uint64_t ii = 0; ii < xysize; ii++)
             {
                 data.image[IDapo_PIAA].array.F[ii] = 1.0;
                 data.image[IDapo_CPA].array.F[ii] = data.image[IDapo].array.F[ii];
@@ -1063,12 +1136,16 @@ int PIAACMCsimul_initpiaacmcconf(
         }
         else
         {
-            for(ii = 0; ii < xsize * ysize; ii++)
+            for(uint64_t ii = 0; ii < xysize; ii++)
             {
-                coeff = piaacmc[0].PIAAcoeff; // fraction of apodization done by PIAA - between 0 and 1
-                data.image[IDapo_PIAA].array.F[ii] = pow(data.image[IDapo].array.F[ii], coeff);
-                data.image[IDapo_CPA].array.F[ii] = pow(data.image[IDapo].array.F[ii],
-                                                        1.0 - coeff);
+                // fraction of apodization done by PIAA - between 0 and 1
+                double coeff = piaacmc[0].PIAAcoeff;
+
+                data.image[IDapo_PIAA].array.F[ii] =
+                    pow(data.image[IDapo].array.F[ii], coeff);
+
+                data.image[IDapo_CPA].array.F[ii] =
+                    pow(data.image[IDapo].array.F[ii], 1.0 - coeff);
             }
         }
 
@@ -1105,20 +1182,20 @@ int PIAACMCsimul_initpiaacmcconf(
         size0 = data.image[ID0].md[0].size[0];
         ID1 = create_2Dimage_ID("piaa0zcrop", size0, size0);
         ID = image_ID("piaam0z");
-        for(ii = 0; ii < size0; ii++)
-            for(jj = 0; jj < size0; jj++)
+        for(uint32_t ii = 0; ii < size0; ii++)
+            for(uint32_t jj = 0; jj < size0; jj++)
             {
-                data.image[ID1].array.F[jj * size0 + ii] = data.image[ID].array.F[(jj +
-                        (size - size0) / 2) * size + (ii + (size - size0) / 2)];
+                data.image[ID1].array.F[jj * size0 + ii] =
+                    data.image[ID].array.F[(jj + (size - size0) / 2) * size + (ii + (size - size0) / 2)];
             }
 
         ID1 = create_2Dimage_ID("piaa1zcrop", size0, size0);
         ID = image_ID("piaam1z");
-        for(ii = 0; ii < size0; ii++)
-            for(jj = 0; jj < size0; jj++)
+        for(uint32_t ii = 0; ii < size0; ii++)
+            for(uint32_t jj = 0; jj < size0; jj++)
             {
-                data.image[ID1].array.F[jj * size0 + ii] = data.image[ID].array.F[(jj +
-                        (size - size0) / 2) * size + (ii + (size - size0) / 2)];
+                data.image[ID1].array.F[jj * size0 + ii] =
+                    data.image[ID].array.F[(jj + (size - size0) / 2) * size + (ii + (size - size0) / 2)];
             }
 
         make_disk("maskd", size0, size0, 0.5 * size0, 0.5 * size0, beamradpix);
@@ -1168,12 +1245,12 @@ int PIAACMCsimul_initpiaacmcconf(
         size0 = data.image[ID0].md[0].size[0];
         ID1 = image_ID("piaam0z");
         ID = create_2Dimage_ID("piaa0Cres", size0, size0);
-        for(ii = 0; ii < size0; ii++)
-            for(jj = 0; jj < size0; jj++)
+        for(uint32_t ii = 0; ii < size0; ii++)
+            for(uint32_t jj = 0; jj < size0; jj++)
             {
-                data.image[ID].array.F[jj * size0 + ii] = data.image[ID1].array.F[(jj +
-                        (size - size0) / 2) * size + (ii + (size - size0) / 2)] -
-                        data.image[ID0].array.F[jj * size0 + ii];
+                data.image[ID].array.F[jj * size0 + ii] =
+                    data.image[ID1].array.F[(jj + (size - size0) / 2) * size + (ii + (size - size0) / 2)]
+                    - data.image[ID0].array.F[jj * size0 + ii];
             }
         if(piaacmcsimul_var.PIAACMC_save == 1)
         {
@@ -1188,12 +1265,12 @@ int PIAACMCsimul_initpiaacmcconf(
         size0 = data.image[ID0].md[0].size[0];
         ID1 = image_ID("piaam1z");
         ID = create_2Dimage_ID("piaa1Cres", size0, size0);
-        for(ii = 0; ii < size0; ii++)
-            for(jj = 0; jj < size0; jj++)
+        for(uint32_t ii = 0; ii < size0; ii++)
+            for(uint32_t jj = 0; jj < size0; jj++)
             {
-                data.image[ID].array.F[jj * size0 + ii] = data.image[ID1].array.F[(jj +
-                        (size - size0) / 2) * size + (ii + (size - size0) / 2)] -
-                        data.image[ID0].array.F[jj * size0 + ii];
+                data.image[ID].array.F[jj * size0 + ii] =
+                    data.image[ID1].array.F[(jj + (size - size0) / 2) * size + (ii + (size - size0) / 2)]
+                    - data.image[ID0].array.F[jj * size0 + ii];
             }
 
         if(piaacmcsimul_var.PIAACMC_save == 1)
@@ -1327,13 +1404,18 @@ int PIAACMCsimul_initpiaacmcconf(
         if(piaacmc[0].zonezID == -1)
         {
             PIAACMCsimul_update_fnamedescr();
-            sprintf(fname, "%s/fpm_zonez.%s.fits", piaacmcsimul_var.piaacmcconfdir,
-                    piaacmcsimul_var.fnamedescr);
+
+            char fname[STRINGMAXLEN_FULLFILENAME];
+            WRITE_FULLFILENAME(
+                fname,
+                "%s/fpm_zonez.%s.fits",
+                piaacmcsimul_var.piaacmcconfdir,
+                piaacmcsimul_var.fnamedescr
+            );
 
             printf("LOADING FILE NAME : \"%s\"  -  %ld %d \n", fname, piaacmctype, loaded);
-            fflush(stdout);
 
-            load_fits(fname, "fpmzt", 1, &(piaacmc[0].zonezID));
+            load_fits(fname, "fpmzt", LOADFITS_ERRMODE_WARNING, &(piaacmc[0].zonezID));
             if(piaacmc[0].zonezID == -1)
             {
                 piaacmcsimul_var.CREATE_fpmzt = 1;
@@ -1358,9 +1440,10 @@ int PIAACMCsimul_initpiaacmcconf(
             delete_image_ID("fpmzt", DELETE_IMAGE_ERRMODE_WARNING);
         }
 
-        piaacmc[0].zonezID = create_2Dimage_ID_double("fpmzt", piaacmc[0].focmNBzone,
-                             1);
-        t = 1.0e-9;
+        piaacmc[0].zonezID =
+            create_2Dimage_ID_double("fpmzt", piaacmc[0].focmNBzone,
+                                     1);
+        double t = 1.0e-9;
 
         if(piaacmctype == 0) // idealized focal plane mask
         {
@@ -1368,9 +1451,9 @@ int PIAACMCsimul_initpiaacmcconf(
             fflush(stdout);
 
             // measure dpha/dt
-            t0 = 1.0e-8;
-            pha0 = OpticsMaterials_pha_lambda(piaacmc[0].fpmmaterial_code, t0,
-                                              0.5 * (piaacmcsimul_var.LAMBDASTART + piaacmcsimul_var.LAMBDAEND));
+            double t0 = 1.0e-8;
+            double pha0 = OpticsMaterials_pha_lambda(piaacmc[0].fpmmaterial_code, t0,
+                          0.5 * (piaacmcsimul_var.LAMBDASTART + piaacmcsimul_var.LAMBDAEND));
             // set t to get PI phase
             t = (M_PI / pha0) * t0;
             printf("t = %g m (%lf %g) -> %g %g\n", t, pha0, t0,
@@ -1390,18 +1473,24 @@ int PIAACMCsimul_initpiaacmcconf(
             fflush(stdout);
         }
 
-        for(ii = 0; ii < piaacmc[0].focmNBzone; ii++)
+        for(long ii = 0; ii < piaacmc[0].focmNBzone; ii++)
         {
             data.image[piaacmc[0].zonezID].array.D[ii] = t;
         }
 
-        PIAACMCsimul_update_fnamedescr();
-        sprintf(fname, "%s/fpm_zonez.%s.fits", piaacmcsimul_var.piaacmcconfdir,
+
+        {
+            PIAACMCsimul_update_fnamedescr();
+            char fname[STRINGMAXLEN_FULLFILENAME];
+            WRITE_FULLFILENAME(
+                fname,
+                "%s/fpm_zonez.%s.fits",
+                piaacmcsimul_var.piaacmcconfdir,
                 piaacmcsimul_var.fnamedescr);
 
-        printf("Writing %s\n", fname);
-        fflush(stdout);
-        save_fits("fpmzt", fname);
+            printf("Writing %s\n", fname);
+            save_fits("fpmzt", fname);
+        }
     }
 
 
@@ -1415,8 +1504,13 @@ int PIAACMCsimul_initpiaacmcconf(
         if(piaacmc[0].zoneaID == -1)
         {
             PIAACMCsimul_update_fnamedescr();
-            sprintf(fname, "%s/fpm_zonea.%s.fits", piaacmcsimul_var.piaacmcconfdir,
-                    piaacmcsimul_var.fnamedescr);
+            char fname[STRINGMAXLEN_FULLFILENAME];
+            WRITE_FULLFILENAME(
+                fname,
+                "%s/fpm_zonea.%s.fits",
+                piaacmcsimul_var.piaacmcconfdir,
+                piaacmcsimul_var.fnamedescr
+            );
 
             printf("LOADING FILE NAME : \"%s\"\n", fname);
             load_fits(fname, "fpmza", LOADFITS_ERRMODE_IGNORE, &(piaacmc[0].zoneaID));
@@ -1448,7 +1542,7 @@ int PIAACMCsimul_initpiaacmcconf(
             printf("PHYSICAL MASK ... %ld zones\n", piaacmc[0].focmNBzone);
             fflush(stdout);
 
-            for(ii = 0; ii < piaacmc[0].focmNBzone; ii++)
+            for(long ii = 0; ii < piaacmc[0].focmNBzone; ii++)
             {
                 data.image[piaacmc[0].zoneaID].array.D[ii] = 1.0;
             }
@@ -1456,18 +1550,25 @@ int PIAACMCsimul_initpiaacmcconf(
         else // idealized mask
         {
             printf("IDEALIZED MASK ... %ld zones\n", piaacmc[0].focmNBzone);
-            for(ii = 0; ii < piaacmc[0].focmNBzone; ii++)
+            for(long ii = 0; ii < piaacmc[0].focmNBzone; ii++)
             {
                 data.image[piaacmc[0].zoneaID].array.D[ii] = piaacmc[0].fpmaskamptransm;
             }
         }
 
-        PIAACMCsimul_update_fnamedescr();
-        sprintf(fname, "%s/fpm_zonea.%s.fits", piaacmcsimul_var.piaacmcconfdir,
-                piaacmcsimul_var.fnamedescr);
+        {
+            PIAACMCsimul_update_fnamedescr();
+            char fname[STRINGMAXLEN_FULLFILENAME];
+            WRITE_FULLFILENAME(
+                fname,
+                "%s/fpm_zonea.%s.fits",
+                piaacmcsimul_var.piaacmcconfdir,
+                piaacmcsimul_var.fnamedescr
+            );
 
-        printf("Writing %s\n", fname);
-        save_fits("fpmza", fname);
+            printf("Writing %s\n", fname);
+            save_fits("fpmza", fname);
+        }
     }
 
     //   printf("%d piaacmc[0].fpmaskamptransm = %f       %lf\n", piaacmcsimul_var.CREATE_fpmza, piaacmc[0].fpmaskamptransm, data.image[piaacmc[0].zoneaID].array.D[0]);
@@ -1476,20 +1577,28 @@ int PIAACMCsimul_initpiaacmcconf(
 
     // ============= MAKE LYOT STOPS =======================
     printf("LOADING/CREATING LYOT MASK  - %ld masks  (PIAAmode = %d, %ld x %ld)\n",
-           piaacmc[0].NBLyotStop, piaacmc[0].PIAAmode, xsize, ysize);
+           piaacmc[0].NBLyotStop, piaacmc[0].PIAAmode, (long) xsize, (long) ysize);
     // list_image_ID();
     //size2 = size * size;
 
 
     if(piaacmc[0].PIAAmode == 1)
     {
-        for(i = 0; i < piaacmc[0].NBLyotStop; i++)
+        for(long i = 0; i < piaacmc[0].NBLyotStop; i++)
         {
             printf("LYOT MASK %ld\n", i);
             fflush(stdout);
 
-            sprintf(fname, "%s/LyotStop%ld.fits", piaacmcsimul_var.piaacmcconfdir, i);
-            sprintf(name, "lyotstop%ld", i);
+            char fname[STRINGMAXLEN_FULLFILENAME];
+            WRITE_FULLFILENAME(
+                fname,
+                "%s/LyotStop%ld.fits",
+                piaacmcsimul_var.piaacmcconfdir,
+                i
+            );
+
+            char name[STRINGMAXLEN_IMGNAME];
+            WRITE_IMAGENAME(name, "lyotstop%ld", i);
 
             piaacmc[0].IDLyotStop[i] = image_ID(name);
             if(piaacmc[0].IDLyotStop[i] == -1)
@@ -1516,18 +1625,20 @@ int PIAACMCsimul_initpiaacmcconf(
     }
     else
     {
-        i = 0;
-        sprintf(fname, "%s/LyotStop%ld.fits", piaacmcsimul_var.piaacmcconfdir, i);
-        sprintf(name, "lyotstop%ld", i);
+        long i = 0;
 
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/LyotStop%ld.fits", piaacmcsimul_var.piaacmcconfdir, i);
 
+        char name[STRINGMAXLEN_IMGNAME];
+        WRITE_IMAGENAME(name, "lyotstop%ld", i);
 
         piaacmc[0].IDLyotStop[i] = image_ID(name);
         if(piaacmc[0].IDLyotStop[i] == -1)
         {
             piaacmc[0].IDLyotStop[i] = create_2Dimage_ID(name, xsize, ysize);
             ID = image_ID("pupmaskim");
-            for(ii = 0; ii < xsize * ysize; ii++)
+            for(uint64_t ii = 0; ii < xysize; ii++)
                 if(data.image[ID].array.F[ii] < 0.99999999)
                 {
                     data.image[piaacmc[0].IDLyotStop[i]].array.F[ii] = 0.0;
@@ -1537,12 +1648,12 @@ int PIAACMCsimul_initpiaacmcconf(
                     data.image[piaacmc[0].IDLyotStop[i]].array.F[ii] = 1.0;
                 }
 
-            for(ii = 0; ii < xsize; ii++)
-                for(jj = 0; jj < ysize; jj++)
+            for(uint32_t ii = 0; ii < xsize; ii++)
+                for(uint32_t jj = 0; jj < ysize; jj++)
                 {
-                    x = 1.0 * ii - 0.5 * xsize;
-                    y = 1.0 * jj - 0.5 * ysize;
-                    rad = sqrt(x * x + y * y);
+                    double x = 1.0 * ii - 0.5 * xsize;
+                    double y = 1.0 * jj - 0.5 * ysize;
+                    double rad = sqrt(x * x + y * y);
                     rad /= beamradpix;
                     if(rad < (piaacmc[0].centObs1 + 0.5 / beamradpix))
                     {
