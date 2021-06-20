@@ -35,38 +35,23 @@ extern OPTPIAACMCDESIGN *piaacmc;
 
 int PIAACMCsimul_eval_poly_design()
 {
-    imageID IDopderrC;
-    long nbOPDerr;
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
-    double ldoffset;
+    double ldoffset = 0.01; // default;
+
+    // off-axis point source reference flux
     double valref;
 
     uint32_t xsize, ysize, zsize;
     uint64_t xysize;
 
-    double focscale;
-
-    double *eval_contrastCurve;
-    double *eval_COHcontrastCurve;
-    double *eval_INCcontrastCurve;
-    double *eval_contrastCurve_cnt;
     double eval_sepstepld = 0.2; // in l/D
     double eval_sepmaxld = 20.0; // in l/D
-    long eval_sepNBpt;
 
-    imageID IDps, IDps_re, IDps_im, IDps_COH, IDps_INC, IDopderr, IDrc;
-
-    long NBpt;
-
-    double aveC;
-    double aveC_COH;
-    double aveC_INC;
-    long aveCcnt;
-
-    long OPDmode;
     long size;
+
+
 
     printf("=================================== mode 100 ===================================\n");
 
@@ -99,26 +84,19 @@ int PIAACMCsimul_eval_poly_design()
     //	printf("Loading (optional) OPDerr file\n");
     //	fflush(stdout);
     // load an error if it exists
-    IDopderrC = image_ID("OPDerrC");
+    imageID IDopderrC = image_ID("OPDerrC");
     if(IDopderrC == -1)
     {
         load_fits("OPDerrC.fits", "OPDerrC", 0, &IDopderrC);
     }
 
-
+    long nbOPDerr = 0;
     if(IDopderrC != -1)
     {
         nbOPDerr = data.image[IDopderrC].md[0].size[2];  // number of error arrays
         //printf("INCLUDING %ld OPD ERROR MODES\n", nbOPDerr);
         //fflush(stdout);
     }
-    else
-    {
-        //printf("NO OPD ERROR MODES\n");
-        //fflush(stdout);
-        nbOPDerr = 0;
-    }
-
 
 
     printf("Will add optional OPD error modes (%ld modes)\n", nbOPDerr);
@@ -162,7 +140,6 @@ int PIAACMCsimul_eval_poly_design()
 
 
 
-    ldoffset = 0.01; // default
     {
         variableID IDv = variable_ID("PIAACMC_ldoffset");
         if(IDv != -1)
@@ -173,9 +150,8 @@ int PIAACMCsimul_eval_poly_design()
 
     printf("ldoffset = %f\n", ldoffset);
 
-    // compute off-axis POINT source
 
-    {
+    {   // compute off-axis POINT source reference
         errno_t fret = PIAACMCsimul_computePSF(5.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0, &valref);
         if( fret != RETURN_SUCCESS)
         {
@@ -250,19 +226,19 @@ int PIAACMCsimul_eval_poly_design()
     {   /// compute contrast curve
         imageID ID = image_ID("psfi0");
 
-        focscale = (2.0 * piaacmc[0].beamrad / piaacmc[0].pixscale) / piaacmc[0].size;
+        double focscale = (2.0 * piaacmc[0].beamrad / piaacmc[0].pixscale) / piaacmc[0].size;
         printf("focscale = %f\n", focscale);
-        eval_sepNBpt = (long)(eval_sepmaxld / eval_sepstepld);
-        eval_contrastCurve = (double *) malloc(sizeof(double) * eval_sepNBpt);
-        eval_contrastCurve_cnt = (double *) malloc(sizeof(double) * eval_sepNBpt);
+        long eval_sepNBpt = (long) (eval_sepmaxld / eval_sepstepld);
+        double * eval_contrastCurve = (double *) malloc(sizeof(double) * eval_sepNBpt);
+        double * eval_contrastCurve_cnt = (double *) malloc(sizeof(double) * eval_sepNBpt);
         for(long ri = 0; ri < eval_sepNBpt; ri++)
         {
             eval_contrastCurve[ri] = 0.0;
             eval_contrastCurve_cnt[ri] = 0.0;
         }
 
-        aveC = 0.0;
-        aveCcnt = 0;
+        double aveC = 0.0;
+        long aveCcnt = 0;
 
         for(uint32_t kk = 0; kk < zsize; kk++)
             for(uint32_t ii = 0; ii < xsize; ii++)
@@ -288,90 +264,91 @@ int PIAACMCsimul_eval_poly_design()
                     {
                         aveC +=
                             data.image[ID].array.F[kk * xsize * ysize + jj * xsize + ii] / avpeak;
+
                         aveCcnt++;
                     }
                 }
-    }
 
 
-    PIAACMCsimul_update_fnamedescr();
-    {
-        char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/ContrastCurve_tt000.%s.txt", piaacmcsimul_var.piaacmcconfdir,
-                           piaacmcsimul_var.fnamedescr);
-        FILE * fp = fopen(fname, "w");
-        fprintf(fp, "# Contrast curve\n");
-        fprintf(fp, "# col 1: Angular separation [l/D]\n");
-        fprintf(fp, "# col 2: Contrast value\n");
-        fprintf(fp, "# col 3: Number of points used for contrast measurement\n");
-        fprintf(fp, "\n");
-        for(long ri = 0; ri < eval_sepNBpt; ri++)
+
+        PIAACMCsimul_update_fnamedescr();
         {
-            eval_contrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
-            fprintf(fp, "%10f %10g %10g\n", eval_sepstepld * ri, eval_contrastCurve[ri],
-                    eval_contrastCurve_cnt[ri]);
+            char fname[STRINGMAXLEN_FULLFILENAME];
+            WRITE_FULLFILENAME(fname, "%s/ContrastCurve_tt000.%s.txt", piaacmcsimul_var.piaacmcconfdir,
+                               piaacmcsimul_var.fnamedescr);
+            FILE * fp = fopen(fname, "w");
+            fprintf(fp, "# Contrast curve\n");
+            fprintf(fp, "# col 1: Angular separation [l/D]\n");
+            fprintf(fp, "# col 2: Contrast value\n");
+            fprintf(fp, "# col 3: Number of points used for contrast measurement\n");
+            fprintf(fp, "\n");
+            for(long ri = 0; ri < eval_sepNBpt; ri++)
+            {
+                eval_contrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
+                fprintf(fp, "%10f %10g %10g\n", eval_sepstepld * ri, eval_contrastCurve[ri],
+                        eval_contrastCurve_cnt[ri]);
+            }
+            fclose(fp);
         }
-        fclose(fp);
+
+        free(eval_contrastCurve);
+        free(eval_contrastCurve_cnt);
+
+        PIAACMCsimul_update_fnamedescr();
+        {
+            char fname[STRINGMAXLEN_FULLFILENAME];
+            WRITE_FULLFILENAME(fname, "%s/ContrastVal_tt000.%s.txt", piaacmcsimul_var.piaacmcconfdir,
+                               piaacmcsimul_var.fnamedescr);
+            FILE * fp = fopen(fname, "w");
+            fprintf(fp,
+                    "%10g %10g %4.2f %4.2f %4.2f %4.2f %04ld %02ld %d %03ld %03ld %02d %03ld %02d %d\n",
+                    valref, aveC / aveCcnt, piaacmc[0].fpmaskradld,
+                    piaacmcsimul_var.PIAACMC_MASKRADLD, piaacmc[0].centObs0, piaacmc[0].centObs1,
+                    (long)(piaacmc[0].lambda * 1e9), (long)(piaacmc[0].lambdaB + 0.1),
+                    piaacmcsimul_var.PIAACMC_FPMsectors, piaacmc[0].NBrings, piaacmc[0].focmNBzone,
+                    piaacmc[0].nblambda, (long) 0, piaacmcsimul_var.computePSF_ResolvedTarget,
+                    piaacmcsimul_var.computePSF_ResolvedTarget_mode);
+            fclose(fp);
+        }
     }
-
-    free(eval_contrastCurve);
-    free(eval_contrastCurve_cnt);
-
-    PIAACMCsimul_update_fnamedescr();
-    {
-        char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/ContrastVal_tt000.%s.txt", piaacmcsimul_var.piaacmcconfdir,
-                           piaacmcsimul_var.fnamedescr);
-        FILE * fp = fopen(fname, "w");
-        fprintf(fp,
-                "%10g %10g %4.2f %4.2f %4.2f %4.2f %04ld %02ld %d %03ld %03ld %02d %03ld %02d %d\n",
-                valref, aveC / aveCcnt, piaacmc[0].fpmaskradld,
-                piaacmcsimul_var.PIAACMC_MASKRADLD, piaacmc[0].centObs0, piaacmc[0].centObs1,
-                (long)(piaacmc[0].lambda * 1e9), (long)(piaacmc[0].lambdaB + 0.1),
-                piaacmcsimul_var.PIAACMC_FPMsectors, piaacmc[0].NBrings, piaacmc[0].focmNBzone,
-                piaacmc[0].nblambda, (long) 0, piaacmcsimul_var.computePSF_ResolvedTarget,
-                piaacmcsimul_var.computePSF_ResolvedTarget_mode);
-        fclose(fp);
-    }
-
 
 
 
     // measure pointing sensitivity
-    IDps = create_3Dimage_ID(
-               "starim",
-               piaacmc[0].size,
-               piaacmc[0].size,
-               zsize
-           );
+    imageID IDps = create_3Dimage_ID(
+                       "starim",
+                       piaacmc[0].size,
+                       piaacmc[0].size,
+                       zsize
+                   );
 
-    IDps_re = create_3Dimage_ID(
-                  "starim_re",
-                  piaacmc[0].size,
-                  piaacmc[0].size,
-                  zsize
-              );
-    IDps_im = create_3Dimage_ID(
-                  "starim_im",
-                  piaacmc[0].size,
-                  piaacmc[0].size,
-                  zsize
-              );
+    imageID IDps_re = create_3Dimage_ID(
+                          "starim_re",
+                          piaacmc[0].size,
+                          piaacmc[0].size,
+                          zsize
+                      );
+    imageID IDps_im = create_3Dimage_ID(
+                          "starim_im",
+                          piaacmc[0].size,
+                          piaacmc[0].size,
+                          zsize
+                      );
 
-    IDps_COH = create_3Dimage_ID(
-                   "starimCOH",
-                   piaacmc[0].size,
-                   piaacmc[0].size,
-                   zsize
-               );
-    IDps_INC = create_3Dimage_ID(
-                   "starimINC",
-                   piaacmc[0].size,
-                   piaacmc[0].size,
-                   zsize
-               );
+    imageID IDps_COH = create_3Dimage_ID(
+                           "starimCOH",
+                           piaacmc[0].size,
+                           piaacmc[0].size,
+                           zsize
+                       );
+    imageID IDps_INC = create_3Dimage_ID(
+                           "starimINC",
+                           piaacmc[0].size,
+                           piaacmc[0].size,
+                           zsize
+                       );
 
-    NBpt = 0;
+    long NBpt = 0;
 
     {
         double cval = 0.0;
@@ -512,10 +489,10 @@ int PIAACMCsimul_eval_poly_design()
     //	printf("Adding optional OPD error modes (%ld modes)\n", nbOPDerr);
     //	fflush(stdout);
     // add error modes if any
-    for(OPDmode = 0; OPDmode < nbOPDerr; OPDmode++)
+    for(long OPDmode = 0; OPDmode < nbOPDerr; OPDmode++)
     {
         size = data.image[IDopderrC].md[0].size[0];
-        IDopderr = create_2Dimage_ID("opderr", size, size);
+        imageID IDopderr = create_2Dimage_ID("opderr", size, size);
         // "opderr" is a standard name read by PIAACMCsimul_init
         for(long ii = 0; ii < size * size; ii++)
         {
@@ -569,11 +546,14 @@ int PIAACMCsimul_eval_poly_design()
 
     for(uint64_t ii = 0; ii < xysize * zsize; ii++)
     {
-        data.image[IDps_COH].array.F[ii] = data.image[IDps_re].array.F[ii]
-                                           * data.image[IDps_re].array.F[ii]
-                                           + data.image[IDps_im].array.F[ii] * data.image[IDps_im].array.F[ii];
-        data.image[IDps_INC].array.F[ii] = data.image[IDps].array.F[ii]
-                                           - data.image[IDps_COH].array.F[ii];
+        data.image[IDps_COH].array.F[ii] =
+            data.image[IDps_re].array.F[ii]
+            * data.image[IDps_re].array.F[ii]
+            + data.image[IDps_im].array.F[ii] * data.image[IDps_im].array.F[ii];
+
+        data.image[IDps_INC].array.F[ii] =
+            data.image[IDps].array.F[ii]
+            - data.image[IDps_COH].array.F[ii];
     }
 
 
@@ -613,184 +593,193 @@ int PIAACMCsimul_eval_poly_design()
 
 
 
-    /// compute contrast curve
-    /// measure average contrast value, 2-6 lambda/D
-    focscale = (2.0 * piaacmc[0].beamrad / piaacmc[0].pixscale) / piaacmc[0].size;
-    printf("focscale = %f\n", focscale);
-    eval_sepNBpt = (long)(eval_sepmaxld / eval_sepstepld);
-    eval_contrastCurve = (double *) malloc(sizeof(double) * eval_sepNBpt);
-    eval_COHcontrastCurve = (double *) malloc(sizeof(double) * eval_sepNBpt);
-    eval_INCcontrastCurve = (double *) malloc(sizeof(double) * eval_sepNBpt);
-    eval_contrastCurve_cnt = (double *) malloc(sizeof(double) * eval_sepNBpt);
-    for(long ri = 0; ri < eval_sepNBpt; ri++)
-    {
-        eval_contrastCurve[ri] = 0.0;
-        eval_COHcontrastCurve[ri] = 0.0;
-        eval_INCcontrastCurve[ri] = 0.0;
-        eval_contrastCurve_cnt[ri] = 0.0;
-    }
-
-    aveC = 0.0;
-    aveC_INC = 0.0;
-    aveC_COH = 0.0;
-    aveCcnt = 0;
-
-
-    IDrc = create_3Dimage_ID("_tmp_rc", xsize, ysize, zsize);
-
-
-    for(uint32_t kk = 0; kk < zsize; kk++)
-    {
-        for(uint32_t ii = 0; ii < xsize; ii++)
+    {   /// compute contrast curve
+        /// measure average contrast value, 2-6 lambda/D
+        double focscale = (2.0 * piaacmc[0].beamrad / piaacmc[0].pixscale) / piaacmc[0].size;
+        printf("focscale = %f\n", focscale);
+        long eval_sepNBpt = (long) (eval_sepmaxld / eval_sepstepld);
+        double * eval_contrastCurve = (double *) malloc(sizeof(double) * eval_sepNBpt);
+        double * eval_COHcontrastCurve = (double *) malloc(sizeof(double) * eval_sepNBpt);
+        double * eval_INCcontrastCurve = (double *) malloc(sizeof(double) * eval_sepNBpt);
+        double * eval_contrastCurve_cnt = (double *) malloc(sizeof(double) * eval_sepNBpt);
+        for(long ri = 0; ri < eval_sepNBpt; ri++)
         {
-            for(uint32_t jj = 0; jj < ysize; jj++)
+            eval_contrastCurve[ri] = 0.0;
+            eval_COHcontrastCurve[ri] = 0.0;
+            eval_INCcontrastCurve[ri] = 0.0;
+            eval_contrastCurve_cnt[ri] = 0.0;
+        }
+
+        double aveC = 0.0;
+        double aveC_INC = 0.0;
+        double aveC_COH = 0.0;
+        long aveCcnt = 0;
+
+
+        imageID IDrc = create_3Dimage_ID("_tmp_rc", xsize, ysize, zsize);
+
+
+        for(uint32_t kk = 0; kk < zsize; kk++)
+        {
+            for(uint32_t ii = 0; ii < xsize; ii++)
             {
-                double xc = 1.0 * ii - 0.5 * xsize;
-                double yc = 1.0 * jj - 0.5 * ysize;
-                xc *= focscale;
-                yc *= focscale;
-                double rc = sqrt(xc * xc + yc * yc);
-                data.image[IDrc].array.F[kk * xsize * ysize + jj * xsize + ii] = rc;
-
-                long ri = (long)(rc / eval_sepstepld - 0.5);
-                if(ri < 0)
+                for(uint32_t jj = 0; jj < ysize; jj++)
                 {
-                    ri = 0;
-                }
-                if(ri < eval_sepNBpt)
-                {
-                    eval_contrastCurve[ri] +=
-                        data.image[IDps].array.F[kk * xsize * ysize + jj * xsize + ii] / avpeak;
+                    double xc = 1.0 * ii - 0.5 * xsize;
+                    double yc = 1.0 * jj - 0.5 * ysize;
+                    xc *= focscale;
+                    yc *= focscale;
+                    double rc = sqrt(xc * xc + yc * yc);
+                    data.image[IDrc].array.F[kk * xsize * ysize + jj * xsize + ii] = rc;
 
-                    eval_COHcontrastCurve[ri] +=
-                        data.image[IDps_COH].array.F[kk * xsize * ysize + jj * xsize + ii] / avpeak;
+                    long ri = (long) (rc / eval_sepstepld - 0.5);
+                    if(ri < 0)
+                    {
+                        ri = 0;
+                    }
+                    if(ri < eval_sepNBpt)
+                    {
+                        eval_contrastCurve[ri] +=
+                            data.image[IDps].array.F[kk * xsize * ysize + jj * xsize + ii] / avpeak;
 
-                    eval_INCcontrastCurve[ri] +=
-                        data.image[IDps_INC].array.F[kk * xsize * ysize + jj * xsize + ii] / avpeak;
+                        eval_COHcontrastCurve[ri] +=
+                            data.image[IDps_COH].array.F[kk * xsize * ysize + jj * xsize + ii] / avpeak;
 
-                    eval_contrastCurve_cnt[ri] += 1.0;
-                }
-                if((rc > 2.0) && (rc < 6.0))
-                {
-                    aveC += data.image[IDps].array.F[kk * xsize * ysize + jj * xsize + ii] / avpeak;
+                        eval_INCcontrastCurve[ri] +=
+                            data.image[IDps_INC].array.F[kk * xsize * ysize + jj * xsize + ii] / avpeak;
 
-                    aveC_COH +=
-                        data.image[IDps_COH].array.F[kk * xsize * ysize + jj * xsize + ii] /
-                        avpeak;
+                        eval_contrastCurve_cnt[ri] += 1.0;
+                    }
+                    if((rc > 2.0) && (rc < 6.0))
+                    {
+                        aveC += data.image[IDps].array.F[kk * xsize * ysize + jj * xsize + ii] / avpeak;
 
-                    aveC_INC +=
+                        aveC_COH +=
+                            data.image[IDps_COH].array.F[kk * xsize * ysize + jj * xsize + ii] / avpeak;
 
-                        data.image[IDps_INC].array.F[kk * xsize * ysize + jj * xsize + ii] /
-                        avpeak;
-                    aveCcnt++;
+                        aveC_INC +=
+                            data.image[IDps_INC].array.F[kk * xsize * ysize + jj * xsize + ii] / avpeak;
+                        aveCcnt++;
+                    }
                 }
             }
         }
-    }
 
 
 
 
-    PIAACMCsimul_update_fnamedescr();
-    {
-        char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/ContrastCurveP_extsrc%2ld_sm%d.%s.txt",
-                           piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
-                           piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
-
-        FILE * fp = fopen(fname, "w");
-        float * rcarray = (float *) malloc(sizeof(float) * xsize * ysize * zsize);
-        float drc = 0.2;
-        long rcbinmax = 100;
-        for(long rcbin = 0; rcbin < rcbinmax; rcbin++)
+        PIAACMCsimul_update_fnamedescr();
         {
-            float rcmin = drc * rcbin;
-            float rcmax = drc * (rcbin + 1);
+            char fname[STRINGMAXLEN_FULLFILENAME];
+            WRITE_FULLFILENAME(fname, "%s/ContrastCurveP_extsrc%2ld_sm%d.%s.txt",
+                               piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
+                               piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
 
-            long rc_cnt = 0;
+            FILE * fp = fopen(fname, "w");
+            float * rcarray = (float *) malloc(sizeof(float) * xsize * ysize * zsize);
+            float drc = 0.2;
+            long rcbinmax = 100;
+            for(long rcbin = 0; rcbin < rcbinmax; rcbin++)
+            {
+                float rcmin = drc * rcbin;
+                float rcmax = drc * (rcbin + 1);
 
-            for(uint32_t kk = 0; kk < zsize; kk++)
-                for(uint32_t ii = 0; ii < xsize; ii++)
-                    for(uint32_t jj = 0; jj < ysize; jj++)
-                    {
-                        double rc = data.image[IDrc].array.F[kk * xsize * ysize + jj * xsize + ii];
-                        if((rc > rcmin) && (rc < rcmax))
+                long rc_cnt = 0;
+
+                for(uint32_t kk = 0; kk < zsize; kk++)
+                    for(uint32_t ii = 0; ii < xsize; ii++)
+                        for(uint32_t jj = 0; jj < ysize; jj++)
                         {
-                            rcarray[rc_cnt] = data.image[IDps].array.F[kk * xsize * ysize + jj * xsize + ii]
-                                              / avpeak;
-                            rc_cnt++;
+                            double rc = data.image[IDrc].array.F[kk * xsize * ysize + jj * xsize + ii];
+                            if((rc > rcmin) && (rc < rcmax))
+                            {
+                                rcarray[rc_cnt] =
+                                    data.image[IDps].array.F[kk * xsize * ysize + jj * xsize + ii]
+                                    / avpeak;
+
+                                rc_cnt++;
+                            }
                         }
-                    }
-            quick_sort_float(rcarray, rc_cnt);
+                quick_sort_float(rcarray, rc_cnt);
 
-            float p50 = rcarray[(long)(0.5 * rc_cnt)];
-            float p20 = rcarray[(long)(0.2 * rc_cnt)];
-            fprintf(fp, "%5.2f %12g %12g\n", drc * (rcbin + 0.5), p50, p20);
+                float p50 = rcarray[(long)(0.5 * rc_cnt)];
+                float p20 = rcarray[(long)(0.2 * rc_cnt)];
+                fprintf(fp, "%5.2f %12g %12g\n", drc * (rcbin + 0.5), p50, p20);
+            }
+
+
+            free(rcarray);
+            delete_image_ID("_tmp_rc", DELETE_IMAGE_ERRMODE_WARNING);
+            fclose(fp);
         }
 
-
-        free(rcarray);
-        delete_image_ID("_tmp_rc", DELETE_IMAGE_ERRMODE_WARNING);
-        fclose(fp);
-    }
-
-    delete_image_ID("starimINC", DELETE_IMAGE_ERRMODE_WARNING);
-    delete_image_ID("starimCOH", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("starimINC", DELETE_IMAGE_ERRMODE_WARNING);
+        delete_image_ID("starimCOH", DELETE_IMAGE_ERRMODE_WARNING);
 
 
-    PIAACMCsimul_update_fnamedescr();
-    {
-        char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/ContrastCurve_extsrc%2ld_sm%d.%s.txt",
-                           piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
-                           piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
-
-
-        FILE * fp = fopen(fname, "w");
-        fprintf(fp, "# Contrast curves\n");
-        fprintf(fp, "# col 1 : separation [l/D]\n");
-        fprintf(fp, "# col 2 : contrast, total intensity, radially averaged\n");
-        fprintf(fp, "# col 3 : contrast, Coherent component, radially averaged\n");
-        fprintf(fp, "# col 4 : contrast, incoherent component, radially averaged\n");
-        fprintf(fp, "\n");
-        for(long ri = 0; ri < eval_sepNBpt; ri++)
+        PIAACMCsimul_update_fnamedescr();
         {
-            eval_contrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
-            eval_COHcontrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
-            eval_INCcontrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
-            fprintf(fp, "%10f %10g %10g %10g %10g\n", eval_sepstepld * ri,
-                    eval_contrastCurve[ri], eval_contrastCurve_cnt[ri], eval_COHcontrastCurve[ri],
-                    eval_INCcontrastCurve[ri]);
+            char fname[STRINGMAXLEN_FULLFILENAME];
+            WRITE_FULLFILENAME(fname, "%s/ContrastCurve_extsrc%2ld_sm%d.%s.txt",
+                               piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
+                               piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
+
+
+            FILE * fp = fopen(fname, "w");
+            fprintf(fp, "# Contrast curves\n");
+            fprintf(fp, "# col 1 : separation [l/D]\n");
+            fprintf(fp, "# col 2 : contrast, total intensity, radially averaged\n");
+            fprintf(fp, "# col 3 : contrast, Coherent component, radially averaged\n");
+            fprintf(fp, "# col 4 : contrast, incoherent component, radially averaged\n");
+            fprintf(fp, "\n");
+            for(long ri = 0; ri < eval_sepNBpt; ri++)
+            {
+                eval_contrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
+                eval_COHcontrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
+                eval_INCcontrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
+                fprintf(fp, "%10f %10g %10g %10g %10g\n", eval_sepstepld * ri,
+                        eval_contrastCurve[ri], eval_contrastCurve_cnt[ri], eval_COHcontrastCurve[ri],
+                        eval_INCcontrastCurve[ri]);
+            }
+            fclose(fp);
         }
-        fclose(fp);
-    }
 
-    free(eval_contrastCurve);
-    free(eval_COHcontrastCurve);
-    free(eval_INCcontrastCurve);
-    free(eval_contrastCurve_cnt);
+        free(eval_contrastCurve);
+        free(eval_COHcontrastCurve);
+        free(eval_INCcontrastCurve);
+        free(eval_contrastCurve_cnt);
 
-    PIAACMCsimul_update_fnamedescr();
-    {
-        char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/ContrastVal_extsrc%2ld_sm%d.%s.txt",
-                           piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
-                           piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
-        FILE * fp = fopen(fname, "w");
-        fprintf(fp, "# Contrast value\n");
-        fprintf(fp,
-                "# valref, aveC/aveCcnt, piaacmc[0].fpmaskradld, piaacmcsimul_var.PIAACMC_MASKRADLD, piaacmc[0].centObs0, piaacmc[0].centObs1, (long) (piaacmc[0].lambda*1e9), (long) (piaacmc[0].lambdaB+0.1), piaacmcsimul_var.PIAACMC_FPMsectors, piaacmc[0].NBrings, piaacmc[0].focmNBzone, piaacmc[0].nblambda, (long) (1000.0*ldoffset), piaacmc[0].fpmsagreg_coeff, piaacmcsimul_var.computePSF_ResolvedTarget, piaacmcsimul_var.computePSF_ResolvedTarget_mode\n");
-        fprintf(fp, "#\n");
-        fprintf(fp,
-                "%10g %10g %4.2f %4.2f %4.2f %4.2f %04ld %02ld %d %03ld %03ld %02d %03ld %7.3f %02d %d\n",
-                valref, aveC / aveCcnt, piaacmc[0].fpmaskradld,
-                piaacmcsimul_var.PIAACMC_MASKRADLD, piaacmc[0].centObs0, piaacmc[0].centObs1,
-                (long)(piaacmc[0].lambda * 1e9), (long)(piaacmc[0].lambdaB + 0.1),
-                piaacmcsimul_var.PIAACMC_FPMsectors, piaacmc[0].NBrings, piaacmc[0].focmNBzone,
-                piaacmc[0].nblambda, (long)(1000.0 * ldoffset), piaacmc[0].fpmsagreg_coeff,
-                piaacmcsimul_var.computePSF_ResolvedTarget,
-                piaacmcsimul_var.computePSF_ResolvedTarget_mode);
-        fclose(fp);
+        PIAACMCsimul_update_fnamedescr();
+        {
+            char fname[STRINGMAXLEN_FULLFILENAME];
+            WRITE_FULLFILENAME(fname, "%s/ContrastVal_extsrc%2ld_sm%d.%s.txt",
+                               piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
+                               piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
+            FILE * fp = fopen(fname, "w");
+            fprintf(fp, "# Contrast value\n");
+            fprintf(fp,
+                    "# valref, aveC/aveCcnt, piaacmc[0].fpmaskradld, piaacmcsimul_var.PIAACMC_MASKRADLD, piaacmc[0].centObs0, piaacmc[0].centObs1, (long) (piaacmc[0].lambda*1e9), (long) (piaacmc[0].lambdaB+0.1), piaacmcsimul_var.PIAACMC_FPMsectors, piaacmc[0].NBrings, piaacmc[0].focmNBzone, piaacmc[0].nblambda, (long) (1000.0*ldoffset), piaacmc[0].fpmsagreg_coeff, piaacmcsimul_var.computePSF_ResolvedTarget, piaacmcsimul_var.computePSF_ResolvedTarget_mode\n");
+            fprintf(fp, "#\n");
+            fprintf(fp,
+                    "%10g %10g %4.2f %4.2f %4.2f %4.2f %04ld %02ld %d %03ld %03ld %02d %03ld %7.3f %02d %d\n",
+                    valref,
+                    aveC / aveCcnt,
+                    piaacmc[0].fpmaskradld,
+                    piaacmcsimul_var.PIAACMC_MASKRADLD,
+                    piaacmc[0].centObs0,
+                    piaacmc[0].centObs1,
+                    (long)(piaacmc[0].lambda * 1e9),
+                    (long)(piaacmc[0].lambdaB + 0.1),
+                    piaacmcsimul_var.PIAACMC_FPMsectors,
+                    piaacmc[0].NBrings, piaacmc[0].focmNBzone,
+                    piaacmc[0].nblambda,
+                    (long)(1000.0 * ldoffset),
+                    piaacmc[0].fpmsagreg_coeff,
+                    piaacmcsimul_var.computePSF_ResolvedTarget,
+                    piaacmcsimul_var.computePSF_ResolvedTarget_mode
+                   );
+            fclose(fp);
+        }
     }
 
     return 0;
