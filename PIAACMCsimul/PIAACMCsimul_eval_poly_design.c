@@ -2,13 +2,6 @@
  * @file    PIAAACMCsimul_eval_poly_design.c
  * @brief   Evaluate polychromatic design
  *
- *
- * @author  O. Guyon
- * @date    25 nov 2017
- *
- *
- * @bug No known bugs.
- *
  */
 
 
@@ -52,7 +45,7 @@ int PIAACMCsimul_eval_poly_design()
     double valref;
 
     long ID;
-    char fname[1500];
+//    char fname[1500];
     long xsize, ysize, zsize;
 
     float *peakarray;
@@ -119,7 +112,7 @@ int PIAACMCsimul_eval_poly_design()
     IDopderrC = image_ID("OPDerrC");
     if(IDopderrC == -1)
     {
-          load_fits("OPDerrC.fits", "OPDerrC", 0, &IDopderrC);
+        load_fits("OPDerrC.fits", "OPDerrC", 0, &IDopderrC);
     }
 
 
@@ -184,10 +177,6 @@ int PIAACMCsimul_eval_poly_design()
     printf("ldoffset = %f\n", ldoffset);
 
     // compute off-axis POINT source
-    // debug from Justin
-    printf("Computing off-axis point spread function\n");
-    fflush(stdout);
-    //sleep(10);
 
     {
         errno_t fret = PIAACMCsimul_computePSF(5.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0, &valref);
@@ -197,8 +186,11 @@ int PIAACMCsimul_eval_poly_design()
         }
     }
 
-    sprintf(fname, "%s/psfi0_x50_y00.fits", piaacmcsimul_var.piaacmcconfdir);
-    save_fits("psfi0", fname);
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/psfi0_x50_y00.fits", piaacmcsimul_var.piaacmcconfdir);
+        save_fits("psfi0", fname);
+    }
     //load_fits(fname, "psfi");
 
 
@@ -233,10 +225,6 @@ int PIAACMCsimul_eval_poly_design()
 
 
     // compute on-axis POINT source
-    // debug from Justin
-    printf("Computing on-axis point spread function\n");
-    fflush(stdout);
-    //sleep(10);
     {
         errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 1, &valref);
         if( fret != RETURN_SUCCESS)
@@ -246,8 +234,11 @@ int PIAACMCsimul_eval_poly_design()
     }
 
 
-    sprintf(fname, "%s/psfi0_x00_y00.fits", piaacmcsimul_var.piaacmcconfdir);
-    save_fits("psfi0", fname);
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/psfi0_x00_y00.fits", piaacmcsimul_var.piaacmcconfdir);
+        save_fits("psfi0", fname);
+    }
     //load_fits(fname, "psfi");
 
 
@@ -300,38 +291,44 @@ int PIAACMCsimul_eval_poly_design()
 
 
     PIAACMCsimul_update_fnamedescr();
-    sprintf(fname, "%s/ContrastCurve_tt000.%s.txt", piaacmcsimul_var.piaacmcconfdir,
-            piaacmcsimul_var.fnamedescr);
-    fp = fopen(fname, "w");
-    fprintf(fp, "# Contrast curve\n");
-    fprintf(fp, "# col 1: Angular separation [l/D]\n");
-    fprintf(fp, "# col 2: Contrast value\n");
-    fprintf(fp, "# col 3: Number of points used for contrast measurement\n");
-    fprintf(fp, "\n");
-    for(ri = 0; ri < eval_sepNBpt; ri++)
     {
-        eval_contrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
-        fprintf(fp, "%10f %10g %10g\n", eval_sepstepld * ri, eval_contrastCurve[ri],
-                eval_contrastCurve_cnt[ri]);
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/ContrastCurve_tt000.%s.txt", piaacmcsimul_var.piaacmcconfdir,
+                           piaacmcsimul_var.fnamedescr);
+        fp = fopen(fname, "w");
+        fprintf(fp, "# Contrast curve\n");
+        fprintf(fp, "# col 1: Angular separation [l/D]\n");
+        fprintf(fp, "# col 2: Contrast value\n");
+        fprintf(fp, "# col 3: Number of points used for contrast measurement\n");
+        fprintf(fp, "\n");
+        for(ri = 0; ri < eval_sepNBpt; ri++)
+        {
+            eval_contrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
+            fprintf(fp, "%10f %10g %10g\n", eval_sepstepld * ri, eval_contrastCurve[ri],
+                    eval_contrastCurve_cnt[ri]);
+        }
+        fclose(fp);
     }
-    fclose(fp);
 
     free(eval_contrastCurve);
     free(eval_contrastCurve_cnt);
 
     PIAACMCsimul_update_fnamedescr();
-    sprintf(fname, "%s/ContrastVal_tt000.%s.txt", piaacmcsimul_var.piaacmcconfdir,
-            piaacmcsimul_var.fnamedescr);
-    fp = fopen(fname, "w");
-    fprintf(fp,
-            "%10g %10g %4.2f %4.2f %4.2f %4.2f %04ld %02ld %d %03ld %03ld %02d %03ld %02d %d\n",
-            valref, aveC / aveCcnt, piaacmc[0].fpmaskradld,
-            piaacmcsimul_var.PIAACMC_MASKRADLD, piaacmc[0].centObs0, piaacmc[0].centObs1,
-            (long)(piaacmc[0].lambda * 1e9), (long)(piaacmc[0].lambdaB + 0.1),
-            piaacmcsimul_var.PIAACMC_FPMsectors, piaacmc[0].NBrings, piaacmc[0].focmNBzone,
-            piaacmc[0].nblambda, (long) 0, piaacmcsimul_var.computePSF_ResolvedTarget,
-            piaacmcsimul_var.computePSF_ResolvedTarget_mode);
-    fclose(fp);
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/ContrastVal_tt000.%s.txt", piaacmcsimul_var.piaacmcconfdir,
+                           piaacmcsimul_var.fnamedescr);
+        fp = fopen(fname, "w");
+        fprintf(fp,
+                "%10g %10g %4.2f %4.2f %4.2f %4.2f %04ld %02ld %d %03ld %03ld %02d %03ld %02d %d\n",
+                valref, aveC / aveCcnt, piaacmc[0].fpmaskradld,
+                piaacmcsimul_var.PIAACMC_MASKRADLD, piaacmc[0].centObs0, piaacmc[0].centObs1,
+                (long)(piaacmc[0].lambda * 1e9), (long)(piaacmc[0].lambdaB + 0.1),
+                piaacmcsimul_var.PIAACMC_FPMsectors, piaacmc[0].NBrings, piaacmc[0].focmNBzone,
+                piaacmc[0].nblambda, (long) 0, piaacmcsimul_var.computePSF_ResolvedTarget,
+                piaacmcsimul_var.computePSF_ResolvedTarget_mode);
+        fclose(fp);
+    }
 
 
 
@@ -362,8 +359,12 @@ int PIAACMCsimul_eval_poly_design()
         }
     }
 
-    sprintf(fname, "%s/psfi0_p0.fits", piaacmcsimul_var.piaacmcconfdir);
-    save_fits("psfi0", fname);
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/psfi0_p0.fits", piaacmcsimul_var.piaacmcconfdir);
+        save_fits("psfi0", fname);
+    }
+
     ID = image_ID("psfi0");
     IDre = image_ID("psfre0");
     IDim = image_ID("psfim0");
@@ -389,8 +390,12 @@ int PIAACMCsimul_eval_poly_design()
     }
 
 
-    sprintf(fname, "%s/psfi0_m0.fits", piaacmcsimul_var.piaacmcconfdir);
-    save_fits("psfi0", fname);
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/psfi0_m0.fits", piaacmcsimul_var.piaacmcconfdir);
+        save_fits("psfi0", fname);
+    }
+
     ID = image_ID("psfi0");
     IDre = image_ID("psfre0");
     IDim = image_ID("psfim0");
@@ -415,8 +420,12 @@ int PIAACMCsimul_eval_poly_design()
         valref += 0.25 * cval;
     }
 
-    sprintf(fname, "%s/psfi0_0p.fits", piaacmcsimul_var.piaacmcconfdir);
-    save_fits("psfi0", fname);
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/psfi0_0p.fits", piaacmcsimul_var.piaacmcconfdir);
+        save_fits("psfi0", fname);
+    }
+
     ID = image_ID("psfi0");
     IDre = image_ID("psfre0");
     IDim = image_ID("psfim0");
@@ -443,8 +452,12 @@ int PIAACMCsimul_eval_poly_design()
 
 
 
-    sprintf(fname, "%s/psfi0_0m.fits", piaacmcsimul_var.piaacmcconfdir);
-    save_fits("psfi0", fname);
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/psfi0_0m.fits", piaacmcsimul_var.piaacmcconfdir);
+        save_fits("psfi0", fname);
+    }
+
     ID = image_ID("psfi0");
     IDre = image_ID("psfre0");
     IDim = image_ID("psfim0");
@@ -487,9 +500,13 @@ int PIAACMCsimul_eval_poly_design()
             }
         }
 
-        sprintf(fname, "%s/psfi0_opderr%02ld.fits", piaacmcsimul_var.piaacmcconfdir,
-                OPDmode);
-        save_fits("psfi0", fname);
+        {
+            char fname[STRINGMAXLEN_FULLFILENAME];
+            WRITE_FULLFILENAME(fname, "%s/psfi0_opderr%02ld.fits", piaacmcsimul_var.piaacmcconfdir,
+                               OPDmode);
+            save_fits("psfi0", fname);
+        }
+
         delete_image_ID("opderr", DELETE_IMAGE_ERRMODE_WARNING);
         ID = image_ID("psfi0");
         IDre = image_ID("psfre0");
@@ -531,22 +548,31 @@ int PIAACMCsimul_eval_poly_design()
 
 
     PIAACMCsimul_update_fnamedescr();
-    sprintf(fname, "%s/psfi0_extsrc%2ld_sm%d.%s.fits",
-            piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
-            piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
-    save_fits("starim", fname);
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/psfi0_extsrc%2ld_sm%d.%s.fits",
+                           piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
+                           piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
+        save_fits("starim", fname);
+    }
 
     PIAACMCsimul_update_fnamedescr();
-    sprintf(fname, "%s/psfi0INC_extsrc%2ld_sm%d.%s.fits",
-            piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
-            piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
-    save_fits("starimINC", fname);
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/psfi0INC_extsrc%2ld_sm%d.%s.fits",
+                           piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
+                           piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
+        save_fits("starimINC", fname);
+    }
 
     PIAACMCsimul_update_fnamedescr();
-    sprintf(fname, "%s/psfi0COH_extsrc%2ld_sm%d.%s.fits",
-            piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
-            piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
-    save_fits("starimCOH", fname);
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/psfi0COH_extsrc%2ld_sm%d.%s.fits",
+                           piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
+                           piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
+        save_fits("starimCOH", fname);
+    }
 
 
 
@@ -620,71 +646,77 @@ int PIAACMCsimul_eval_poly_design()
     }
 
     PIAACMCsimul_update_fnamedescr();
-    sprintf(fname, "%s/ContrastCurveP_extsrc%2ld_sm%d.%s.txt",
-            piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
-            piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
-
-    fp = fopen(fname, "w");
-    drc = 0.2;
-    rcbinmax = 100;
-    for(rcbin = 0; rcbin < rcbinmax; rcbin++)
     {
-        rcmin = drc * rcbin;
-        rcmax = drc * (rcbin + 1);
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/ContrastCurveP_extsrc%2ld_sm%d.%s.txt",
+                           piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
+                           piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
 
-        rc_cnt = 0;
+        fp = fopen(fname, "w");
+        drc = 0.2;
+        rcbinmax = 100;
+        for(rcbin = 0; rcbin < rcbinmax; rcbin++)
+        {
+            rcmin = drc * rcbin;
+            rcmax = drc * (rcbin + 1);
 
-        for(kk = 0; kk < zsize; kk++)
-            for(ii = 0; ii < xsize; ii++)
-                for(jj = 0; jj < ysize; jj++)
-                {
-                    rc = data.image[IDrc].array.F[kk * xsize * ysize + jj * xsize + ii];
-                    if((rc > rcmin) && (rc < rcmax))
+            rc_cnt = 0;
+
+            for(kk = 0; kk < zsize; kk++)
+                for(ii = 0; ii < xsize; ii++)
+                    for(jj = 0; jj < ysize; jj++)
                     {
-                        rcarray[rc_cnt] = data.image[IDps].array.F[kk * xsize * ysize + jj * xsize + ii]
-                                          / avpeak;
-                        rc_cnt++;
+                        rc = data.image[IDrc].array.F[kk * xsize * ysize + jj * xsize + ii];
+                        if((rc > rcmin) && (rc < rcmax))
+                        {
+                            rcarray[rc_cnt] = data.image[IDps].array.F[kk * xsize * ysize + jj * xsize + ii]
+                                              / avpeak;
+                            rc_cnt++;
+                        }
                     }
-                }
-        quick_sort_float(rcarray, rc_cnt);
+            quick_sort_float(rcarray, rc_cnt);
 
-        p50 = rcarray[(long)(0.5 * rc_cnt)];
-        p20 = rcarray[(long)(0.2 * rc_cnt)];
-        fprintf(fp, "%5.2f %12g %12g\n", drc * (rcbin + 0.5), p50, p20);
+            p50 = rcarray[(long)(0.5 * rc_cnt)];
+            p20 = rcarray[(long)(0.2 * rc_cnt)];
+            fprintf(fp, "%5.2f %12g %12g\n", drc * (rcbin + 0.5), p50, p20);
+        }
+
+
+        free(rcarray);
+        delete_image_ID("_tmp_rc", DELETE_IMAGE_ERRMODE_WARNING);
+        fclose(fp);
     }
-
-
-    free(rcarray);
-    delete_image_ID("_tmp_rc", DELETE_IMAGE_ERRMODE_WARNING);
-    fclose(fp);
 
     delete_image_ID("starimINC", DELETE_IMAGE_ERRMODE_WARNING);
     delete_image_ID("starimCOH", DELETE_IMAGE_ERRMODE_WARNING);
 
 
     PIAACMCsimul_update_fnamedescr();
-    sprintf(fname, "%s/ContrastCurve_extsrc%2ld_sm%d.%s.txt",
-            piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
-            piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
-
-
-    fp = fopen(fname, "w");
-    fprintf(fp, "# Contrast curves\n");
-    fprintf(fp, "# col 1 : separation [l/D]\n");
-    fprintf(fp, "# col 2 : contrast, total intensity, radially averaged\n");
-    fprintf(fp, "# col 3 : contrast, Coherent component, radially averaged\n");
-    fprintf(fp, "# col 4 : contrast, incoherent component, radially averaged\n");
-    fprintf(fp, "\n");
-    for(ri = 0; ri < eval_sepNBpt; ri++)
     {
-        eval_contrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
-        eval_COHcontrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
-        eval_INCcontrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
-        fprintf(fp, "%10f %10g %10g %10g %10g\n", eval_sepstepld * ri,
-                eval_contrastCurve[ri], eval_contrastCurve_cnt[ri], eval_COHcontrastCurve[ri],
-                eval_INCcontrastCurve[ri]);
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/ContrastCurve_extsrc%2ld_sm%d.%s.txt",
+                           piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
+                           piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
+
+
+        fp = fopen(fname, "w");
+        fprintf(fp, "# Contrast curves\n");
+        fprintf(fp, "# col 1 : separation [l/D]\n");
+        fprintf(fp, "# col 2 : contrast, total intensity, radially averaged\n");
+        fprintf(fp, "# col 3 : contrast, Coherent component, radially averaged\n");
+        fprintf(fp, "# col 4 : contrast, incoherent component, radially averaged\n");
+        fprintf(fp, "\n");
+        for(ri = 0; ri < eval_sepNBpt; ri++)
+        {
+            eval_contrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
+            eval_COHcontrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
+            eval_INCcontrastCurve[ri] /= eval_contrastCurve_cnt[ri] + 0.000001;
+            fprintf(fp, "%10f %10g %10g %10g %10g\n", eval_sepstepld * ri,
+                    eval_contrastCurve[ri], eval_contrastCurve_cnt[ri], eval_COHcontrastCurve[ri],
+                    eval_INCcontrastCurve[ri]);
+        }
+        fclose(fp);
     }
-    fclose(fp);
 
     free(eval_contrastCurve);
     free(eval_COHcontrastCurve);
@@ -692,24 +724,27 @@ int PIAACMCsimul_eval_poly_design()
     free(eval_contrastCurve_cnt);
 
     PIAACMCsimul_update_fnamedescr();
-    sprintf(fname, "%s/ContrastVal_extsrc%2ld_sm%d.%s.txt",
-            piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
-            piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
-    fp = fopen(fname, "w");
-    fprintf(fp, "# Contrast value\n");
-    fprintf(fp,
-            "# valref, aveC/aveCcnt, piaacmc[0].fpmaskradld, piaacmcsimul_var.PIAACMC_MASKRADLD, piaacmc[0].centObs0, piaacmc[0].centObs1, (long) (piaacmc[0].lambda*1e9), (long) (piaacmc[0].lambdaB+0.1), piaacmcsimul_var.PIAACMC_FPMsectors, piaacmc[0].NBrings, piaacmc[0].focmNBzone, piaacmc[0].nblambda, (long) (1000.0*ldoffset), piaacmc[0].fpmsagreg_coeff, piaacmcsimul_var.computePSF_ResolvedTarget, piaacmcsimul_var.computePSF_ResolvedTarget_mode\n");
-    fprintf(fp, "#\n");
-    fprintf(fp,
-            "%10g %10g %4.2f %4.2f %4.2f %4.2f %04ld %02ld %d %03ld %03ld %02d %03ld %7.3f %02d %d\n",
-            valref, aveC / aveCcnt, piaacmc[0].fpmaskradld,
-            piaacmcsimul_var.PIAACMC_MASKRADLD, piaacmc[0].centObs0, piaacmc[0].centObs1,
-            (long)(piaacmc[0].lambda * 1e9), (long)(piaacmc[0].lambdaB + 0.1),
-            piaacmcsimul_var.PIAACMC_FPMsectors, piaacmc[0].NBrings, piaacmc[0].focmNBzone,
-            piaacmc[0].nblambda, (long)(1000.0 * ldoffset), piaacmc[0].fpmsagreg_coeff,
-            piaacmcsimul_var.computePSF_ResolvedTarget,
-            piaacmcsimul_var.computePSF_ResolvedTarget_mode);
-    fclose(fp);
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/ContrastVal_extsrc%2ld_sm%d.%s.txt",
+                           piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
+                           piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
+        fp = fopen(fname, "w");
+        fprintf(fp, "# Contrast value\n");
+        fprintf(fp,
+                "# valref, aveC/aveCcnt, piaacmc[0].fpmaskradld, piaacmcsimul_var.PIAACMC_MASKRADLD, piaacmc[0].centObs0, piaacmc[0].centObs1, (long) (piaacmc[0].lambda*1e9), (long) (piaacmc[0].lambdaB+0.1), piaacmcsimul_var.PIAACMC_FPMsectors, piaacmc[0].NBrings, piaacmc[0].focmNBzone, piaacmc[0].nblambda, (long) (1000.0*ldoffset), piaacmc[0].fpmsagreg_coeff, piaacmcsimul_var.computePSF_ResolvedTarget, piaacmcsimul_var.computePSF_ResolvedTarget_mode\n");
+        fprintf(fp, "#\n");
+        fprintf(fp,
+                "%10g %10g %4.2f %4.2f %4.2f %4.2f %04ld %02ld %d %03ld %03ld %02d %03ld %7.3f %02d %d\n",
+                valref, aveC / aveCcnt, piaacmc[0].fpmaskradld,
+                piaacmcsimul_var.PIAACMC_MASKRADLD, piaacmc[0].centObs0, piaacmc[0].centObs1,
+                (long)(piaacmc[0].lambda * 1e9), (long)(piaacmc[0].lambdaB + 0.1),
+                piaacmcsimul_var.PIAACMC_FPMsectors, piaacmc[0].NBrings, piaacmc[0].focmNBzone,
+                piaacmc[0].nblambda, (long)(1000.0 * ldoffset), piaacmc[0].fpmsagreg_coeff,
+                piaacmcsimul_var.computePSF_ResolvedTarget,
+                piaacmcsimul_var.computePSF_ResolvedTarget_mode);
+        fclose(fp);
+    }
 
     return 0;
 }
