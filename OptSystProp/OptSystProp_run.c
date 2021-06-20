@@ -82,11 +82,10 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
     imsizearray[2] = nblambda;
 
     // WFamp is the standard output of the wave front complex amplitude
-    imageID IDa;
     {
         char imname[STRINGMAXLEN_IMGNAME];
         WRITE_IMAGENAME(imname, "WFamp%ld", index);
-        IDa = image_ID(imname);
+        imageID IDa = image_ID(imname);
         if(IDa == -1)
         {
             IDa = create_image_ID(imname, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0, 0);
@@ -102,14 +101,14 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
     }
 
     // WFpha is the standard output of the wave front complex phase
-    imageID IDp;
+
     {
         char imname[STRINGMAXLEN_IMGNAME];
         WRITE_IMAGENAME(imname, "WFpha%ld", index);
-        IDp = image_ID(imname);
+        imageID IDp = image_ID(imname);
         if(IDp == -1)
         {
-            IDp = create_image_ID(imname, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0, 0);
+            create_image_ID(imname, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0, 0);
             //create_3Dimage_ID(imname, size, size, nblambda);
         }
     }
@@ -221,8 +220,8 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
             copy_image_ID(imnameamp_in, imnameamp_out, sharedmem);
             copy_image_ID(imnamepha_in, imnamepha_out, sharedmem);
         }
-        IDa = image_ID(imnameamp_out);
-        IDp = image_ID(imnamepha_out);
+        imageID IDa = image_ID(imnameamp_out);
+        imageID IDp = image_ID(imnamepha_out);
 
         /// discard element memory after used
         printf("*********** %ld  -> %d\n", elem - 1, optsyst[index].keepMem[elem - 1]);
@@ -511,7 +510,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 imageID IDim = create_3Dimage_ID("dftgridim", size, size, nblambda);
 
                 long gsize = 2 * optsyst[index].DFTgridpad +
-                        1; // grid size, odd number - this is the space between subsampled pixels
+                             1; // grid size, odd number - this is the space between subsampled pixels
 
                 long offset = optsyst[index].DFTgridpad; // offset from box edge to active pixel
 
@@ -524,7 +523,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                             float re = data.image[ID].array.CF[size2 * kl + jj * size + ii].re;
                             float im = data.image[ID].array.CF[size2 * kl + jj * size + ii].im;
                             long ii1 = offset + ((long)(ii / gsize)) *
-                                  gsize; // find the nearest subsampled point to ii,jj
+                                       gsize; // find the nearest subsampled point to ii,jj
                             long jj1 = offset + ((long)(jj / gsize)) * gsize;
                             if((ii1 < size) && (jj1 < size))
                             {
@@ -742,8 +741,12 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                                              data.image[IDa].array.F[kl * size2 + ii];
             }
 
-        printf("Element %ld  [%ld %ld]  Flux = %lf\n", elem, nblambda, size2,
+        printf("Element %ld  [%ld %ld]  Flux = %lf\n",
+               elem,
+               nblambda,
+               (long) size2,
                optsyst[index].flux[elem] / nblambda);
+
         if(isnan(optsyst[index].flux[elem]) != 0)
         {
             exit(0);
@@ -775,7 +778,6 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
         char imnamepha[STRINGMAXLEN_IMGNAME];
         char imnamere[STRINGMAXLEN_IMGNAME];
         char imnameim[STRINGMAXLEN_IMGNAME];
-        double total;
 
 
         printf("COMPUTING FINAL IMAGE AS FFT OF %ld\n", elem - 1);
@@ -839,7 +841,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
             WRITE_IMAGENAME(imname, "psfi%ld", index);
             arith_image_mult(imnameamp, imnameamp, imname); // intensity is amp^2
 
-            total = arith_image_total(imname) /
+            double total = arith_image_total(imname) /
                     nblambda; // total flux "averaged" over wavelength
             printf("TOTAL = %lf\n", total);
 
