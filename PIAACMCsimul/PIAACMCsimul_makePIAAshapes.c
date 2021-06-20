@@ -103,8 +103,6 @@ int PIAACMCsimul_makePIAAshapes(
                 ID = create_2Dimage_ID("piaam0z", size, size);
             }
 
-
-
             uint32_t size0 = data.image[ID0].md[0].size[0];
             uint32_t size1 = data.image[ID1].md[0].size[0];
             for(long ii = 0; ii < size * size; ii++)
