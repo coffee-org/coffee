@@ -98,9 +98,6 @@ errno_t PIAACMCsimul_computePSF(
 
     double normcoeff = 1.0;
 
-    long imindex = 0;
-    long NBimindex = 0;
-
 
     (void) savepsf;
     (void) endelem;
@@ -355,7 +352,7 @@ errno_t PIAACMCsimul_computePSF(
             // which will ultimately be collected into a single long imvect
 
             // image index, counts the number of PSFs we make, one for each point source
-            imindex = 0;
+            long imindex = 0;
 
 
             // xld and yld are the input positions of the input source in lambda/D
@@ -618,7 +615,7 @@ errno_t PIAACMCsimul_computePSF(
             }
 
             /// - Average over all the PSFs we've created to simulate this extended source
-            NBimindex = imindex;
+            long NBimindex = imindex;
             arith_image_cstmult_inplace("psfi0ext", 1.0 / NBimindex);
 
             /// - If \c outsave = 1, save PSF to FITS file
