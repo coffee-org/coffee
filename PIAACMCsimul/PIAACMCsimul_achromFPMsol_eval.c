@@ -51,7 +51,8 @@ double PIAACMCsimul_achromFPMsol_eval(
     outtmp_array, 		/// @param[out] outtmp_array   Output temp array
     long vsize,
     long nbz,
-    long nbl)
+    long nbl
+)
 {
 
 //	long evali;
@@ -92,7 +93,7 @@ double PIAACMCsimul_achromFPMsol_eval(
             for(long evalmz = 0; evalmz < nbz; evalmz++)
             {
                 double evalpha = zonez_array[evalmz] *
-                          dphadz_array[evalk]; // CHANGED sign to + on 2017-12-23 to adopt new sign convention
+                                 dphadz_array[evalk]; // CHANGED sign to + on 2017-12-23 to adopt new sign convention
                 double evalcosp = cos(evalpha);
                 double evalsinp = sin(evalpha);
                 long evalki1 = evalki + (evalmz + 1) * vsize;

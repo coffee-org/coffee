@@ -387,25 +387,11 @@ errno_t PIAACMCsimul_exec(
 
     double fpmradld = 0.95;
 
-
     double scanstepgain = 0.001;
     double valold, oldval;
-
-    int linoptlimflagarray[100];
-    long NBlinoptgain;
-
-    double val1;
-
-//    int iterOK;
     char stopfile[STRINGMAXLEN_FULLFILENAME];
-
-    double alphareg;
-    double bestval = 0.0;
-    imageID IDoptvec = -1;
-
-
     double valContrast;
-    int initbestval = 0;
+
 
 
 
@@ -697,6 +683,7 @@ errno_t PIAACMCsimul_exec(
 
         // val1 is the regularization value for the focal plane mask sag values
         // same as above, but not dependent on position
+        double val1;
         if(piaacmcsimul_var.linopt_REGFPMSAG == 1)
         {
             val1 = PIAACMCsimul_regularization_fpmsag_value();
@@ -829,7 +816,7 @@ errno_t PIAACMCsimul_exec(
         // at this point, we have completed the initialization, and the optimization loop starts
 
 
-        initbestval = 0;
+        int initbestval = 0;
         // file that will track optimization loop progress
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
@@ -843,6 +830,8 @@ errno_t PIAACMCsimul_exec(
         //
         // LINEAR OPTIMIZATION AROUND CURRENT POINT
         //
+
+        double bestval = 0.0;
 
         int iterOK = 1;
         long iter = 0;
@@ -1127,15 +1116,16 @@ errno_t PIAACMCsimul_exec(
 
             // initialize zero "optimal" vector optvec giving direction to move in the search for the min
             arith_image_cstmult("optcoeff0", 0.0, "optvec"); // create optimal vector
-            IDoptvec = image_ID("optvec");
+            imageID IDoptvec = image_ID("optvec");
             // initialize the objective value
             initbestval = 0;
             bestval = valref;
 
-            alphareg = 1.0; // has no effect (see next loop)
+            double alphareg = 1.0; // has no effect (see next loop)
+
 
             // say something here ???
-            NBlinoptgain = 0;
+            long NBlinoptgain = 0;
 
 
             float scangainfact = 1.2;
@@ -1158,7 +1148,7 @@ errno_t PIAACMCsimul_exec(
                 }
 
                 double acoeff1 = 1.0 - fabs(2.0 * (alphareg -
-                                            0.5)); // two lines: from 0,1 to .5,0 to 1,1
+                                                   0.5)); // two lines: from 0,1 to .5,0 to 1,1
 
                 double acoeff2 = 2.0 * alphareg - 1.0; // ranges from -1 to 1
                 if(acoeff2 < 0.0)
@@ -1212,6 +1202,8 @@ errno_t PIAACMCsimul_exec(
                 scangain = 0.001;
                 //              scanstepgain = 0.000001; // TEST
                 //              scangainfact = 1.00001; // TEST
+
+                int linoptlimflagarray[100];
 
                 // while objective value < previous value and we've taken no more than than 90 steps
                 while(linscanOK == 1)
