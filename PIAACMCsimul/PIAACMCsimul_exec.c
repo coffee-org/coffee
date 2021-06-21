@@ -376,7 +376,7 @@ errno_t PIAACMCsimul_exec(
     long mode
 )
 {
-    double valref, val0;
+    double valref;
 
     imageID IDv, ID;
     imageID IDmodes, IDmodes2D;
@@ -384,13 +384,9 @@ errno_t PIAACMCsimul_exec(
     imageID IDm, ID1D, ID1Dref;
 
     double contrastval;
+    double oldval;
 
-    double fpmradld = 0.95;
-
-    double scanstepgain = 0.001;
-    double valold, oldval;
     char stopfile[STRINGMAXLEN_FULLFILENAME];
-    double valContrast;
 
 
 
@@ -493,6 +489,7 @@ errno_t PIAACMCsimul_exec(
         if( (IDv = variable_ID("PIAACMC_centobs1")) != -1)
             centobs1 = data.variable[IDv].value.f;
             */
+    double fpmradld = 0.95;
     if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
         fpmradld = data.variable[IDv].value.f;
@@ -675,7 +672,7 @@ errno_t PIAACMCsimul_exec(
         // note that here we're setting output parameters.
         if(piaacmcsimul_var.linopt_REGPIAASHAPES == 1)
         {
-            val0 = PIAACMCsimul_regularization_PIAAshapes_value();
+            double val0 = PIAACMCsimul_regularization_PIAAshapes_value();
             printf("VALREF = %g + %g -> %g\n", valref, val0, valref + val0);
             valref += val0;
         }
@@ -1295,7 +1292,7 @@ errno_t PIAACMCsimul_exec(
                         }
                     }
                     // store the current objective value for later comparison
-                    valold = contrastval;
+                    double valold = contrastval;
                     // for state tracking and statistics
                     data.image[IDstatus].array.UI16[0] = 23;
 
@@ -1310,13 +1307,13 @@ errno_t PIAACMCsimul_exec(
                             FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
                         }
                     }
-                    valContrast = contrastval; // contrast component of the evaluation metric
+                    double valContrast = contrastval; // contrast component of the evaluation metric
                     // we've now only done the light portion
 
                     // add regularization component of the evaluation metrix
                     // first, compute and add PIAA shape regularization value (val0) if applicable
                     // this is the same as the previous computation of val0
-                    val0 = 0.0;
+                    double val0 = 0.0;
                     if(piaacmcsimul_var.linopt_REGPIAASHAPES == 1)
                     {
                         val0 = PIAACMCsimul_regularization_PIAAshapes_value();
@@ -1422,8 +1419,8 @@ errno_t PIAACMCsimul_exec(
                     }
 
                     // increment our location along the line
-                    scangain +=
-                        scanstepgain; // scanstepgain is an initilizaed function local (currently 0.001)
+                    double scanstepgain = 0.001;
+                    scangain += scanstepgain; // scanstepgain is an initilizaed function local (currently 0.001)
                     scangain *= scangainfact; // causes later steps to be larger
                     // (implicit scangainfact^n for the nth step)
                 }
@@ -1468,7 +1465,7 @@ errno_t PIAACMCsimul_exec(
                             data.image[IDoptvec].array.F[i];
                 }
             }
-            valold = contrastval;
+            //double valold = contrastval;
             // compute contrast metric component -> val using the data object in the latest optimal state
             {
                 errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
@@ -1481,7 +1478,7 @@ errno_t PIAACMCsimul_exec(
             }
             // add PIAA shape regularization component (val0) if applicable
             // same val0 and val1 computations are before, using the latest optimal state
-            val0 = 0.0;
+            double val0 = 0.0;
             if(piaacmcsimul_var.linopt_REGPIAASHAPES == 1)
             {
                 val0 = PIAACMCsimul_regularization_PIAAshapes_value();
