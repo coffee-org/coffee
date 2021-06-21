@@ -63,7 +63,6 @@ extern OPTPIAACMCDESIGN *piaacmc;
  * @param[in]   NBmasks       long  : Number of Lyot stop(s)
  *
 */
-
 double PIAACMCsimul_optimizeLyotStop(
     const char *IDamp_name,
     const char *IDpha_name,
@@ -81,56 +80,23 @@ double PIAACMCsimul_optimizeLyotStop(
     //
     double ratio = 1.0; // output metric... not used yet, currently a placeholder
 
-    imageID ID, IDa, IDp;
     long nblambda; // number of wavelengths, read from input cube
     float *zarray;
-    long l;
-    double zprop;
-
-    char nameamp[500];
-    char namepha[500];
-    //char nameint[500];
-    char fname[500];
-    char fname1[500];
-    long xsize = 0;
-    long ysize = 0;
-    long ii, jj, k, m;
 
     float *rinarray;
     float *routarray;
     float dr = 0.02;
-    //double tot;
 
 
     double *totarray;
     double *tot2array;
-    imageID IDzone;
-    double x, y, r;
-
-    double zbest, valbest, val;
-    long lbest;
 
     imageID IDincohc, IDint, IDmc, IDmc1;
-    //float rsl;
-    //long iter;
-    //long NBiter = 100;
-    //double val1;
-    imageID IDm;
-    char name[500];
-
-    imageID IDre, IDim, IDreg, IDimg;
-    double amp, pha, re, im;
-    float sigma; //, sigma1;
-    int filter_size;
-
-    imageID IDlscumul;
-    imageID IDintg, IDintgg;
 
     float *rarray;
 
-
-    FILE *fp;
     double alpha = 1.01; // norm alpha used to identify best plane
+
 
 #ifdef PIAASIMUL_LOGFUNC0
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
@@ -138,9 +104,6 @@ double PIAACMCsimul_optimizeLyotStop(
 #endif
 
 
-
-    sigma = 0.01 * piaacmc[0].beamrad / piaacmc[0].pixscale;
-    filter_size = (long)(sigma * 2.0);
 
     zarray = (float *) malloc(sizeof(float) * NBz);
     if(zarray == NULL) {
@@ -174,23 +137,25 @@ double PIAACMCsimul_optimizeLyotStop(
 
     routarray[0] = 1.0;
     rinarray[0] = 1.0 - 1.0 / NBmasks;
-    for(m = 1; m < NBmasks; m++)
+    for(long m = 1; m < NBmasks; m++)
     {
         routarray[m] = rinarray[m - 1];
         rinarray[m] = routarray[m] - (1.0 - piaacmc[0].centObs1) / NBmasks;
     }
     rinarray[NBmasks - 1] = 0.0;
 
-    for(m = 0; m < NBmasks; m++)
+    for(long m = 0; m < NBmasks; m++)
     {
         printf("annulus %ld : %f - %f\n", m, routarray[m], rinarray[m]);
     }
 
 
-    IDa = image_ID(IDamp_name);
-    IDp = image_ID(IDpha_name);
-    xsize = data.image[IDa].md[0].size[0];
-    ysize = data.image[IDa].md[0].size[1];
+    imageID IDa = image_ID(IDamp_name);
+//    imageID IDp = image_ID(IDpha_name);
+    uint32_t xsize = data.image[IDa].md[0].size[0];
+    uint32_t ysize = data.image[IDa].md[0].size[1];
+    uint64_t xysize = xsize;
+    xysize *= ysize;
 
 
     rarray = (float *) malloc(sizeof(float) * xsize * ysize);
@@ -212,16 +177,16 @@ double PIAACMCsimul_optimizeLyotStop(
         nblambda = 1;
     }
 
-    IDzone = create_2Dimage_ID("LMzonemap", xsize, ysize);
-    for(ii = 0; ii < xsize; ii++)
-        for(jj = 0; jj < ysize; jj++)
+    imageID IDzone = create_2Dimage_ID("LMzonemap", xsize, ysize);
+    for(uint32_t ii = 0; ii < xsize; ii++)
+        for(uint32_t jj = 0; jj < ysize; jj++)
         {
             data.image[IDzone].array.F[jj * xsize + ii] = -2;
-            x = (1.0 * ii - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
-            y = (1.0 * jj - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
-            r = sqrt(x * x + y * y);
+            double x = (1.0 * ii - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
+            double y = (1.0 * jj - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
+            double r = sqrt(x * x + y * y);
             rarray[jj * xsize + ii] = r;
-            for(m = 0; m < NBmasks; m++)
+            for(long m = 0; m < NBmasks; m++)
                 if((r > rinarray[m] - 0.0001) && (r < routarray[m] + 0.0001))
                 {
                     data.image[IDzone].array.F[jj * xsize + ii] = m;
@@ -229,11 +194,12 @@ double PIAACMCsimul_optimizeLyotStop(
         }
     if(piaacmcsimul_var.PIAACMC_save == 1)
     {
-        sprintf(fname, "%s/LMzonemap.fits", piaacmcsimul_var.piaacmcconfdir);
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/LMzonemap.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits("LMzonemap", fname);
     }
     // initialize zarray
-    for(l = 0; l < NBz; l++)
+    for(long l = 0; l < NBz; l++)
     {
         zarray[l] = zmin + (zmax - zmin) * l / (NBz - 1);
     }
@@ -241,51 +207,58 @@ double PIAACMCsimul_optimizeLyotStop(
     //  save_fits(nameint, fname);
 
 
-    IDre = create_2Dimage_ID("retmpim", xsize, ysize);
-    IDim = create_2Dimage_ID("imtmpim", xsize, ysize);
+    imageID IDre = create_2Dimage_ID("retmpim", xsize, ysize);
+    imageID IDim = create_2Dimage_ID("imtmpim", xsize, ysize);
 
-    ID = create_3Dimage_ID("LMintC", xsize, ysize, NBz);
-    IDintg = create_2Dimage_ID("tmpintg", xsize, ysize);
+    imageID ID_LMintC = create_3Dimage_ID("LMintC", xsize, ysize, NBz);
+    imageID IDintg = create_2Dimage_ID("tmpintg", xsize, ysize);
 
-    for(l = 0; l < NBz; l++)
+    float sigma = 0.01 * piaacmc[0].beamrad / piaacmc[0].pixscale;
+    int filter_size = (long)(sigma * 2.0);
+
+    for(long l = 0; l < NBz; l++)
     {
-        sprintf(nameamp, "LMPamp%02ld", l);
-        sprintf(namepha, "LMPpha%02ld", l);
-        zprop = zarray[l];
+        char nameamp[STRINGMAXLEN_IMGNAME];
+        WRITE_IMAGENAME(nameamp, "LMPamp%02ld", l);
+
+        char namepha[STRINGMAXLEN_IMGNAME];
+        WRITE_IMAGENAME(namepha, "LMPpha%02ld", l);
+
+        double zprop = zarray[l];
         OptSystProp_propagateCube(optsyst, 0, IDamp_name, IDpha_name, nameamp, namepha,
                                   zprop, 0);
 
 
-        IDa = image_ID(nameamp);
-        IDp = image_ID(namepha);
+        imageID IDa1 = image_ID(nameamp);
+        imageID IDp1 = image_ID(namepha);
 
-        for(k = 0; k < nblambda; k++)
+        for(long k = 0; k < nblambda; k++)
         {
-            for(ii = 0; ii < xsize * ysize; ii++)
+            for(uint64_t ii = 0; ii < xysize; ii++)
             {
-                amp = data.image[IDa].array.F[k * xsize * ysize + ii];
-                pha = data.image[IDp].array.F[k * xsize * ysize + ii];
+                double amp = data.image[IDa1].array.F[k * xsize * ysize + ii];
+                double pha = data.image[IDp1].array.F[k * xsize * ysize + ii];
                 data.image[IDre].array.F[ii] = amp * cos(pha);
                 data.image[IDim].array.F[ii] = amp * sin(pha);
             }
-            IDreg = gauss_filter("retmpim", "retmpimg", sigma, filter_size);
-            IDimg = gauss_filter("imtmpim", "imtmpimg", sigma, filter_size);
+            imageID IDreg = gauss_filter("retmpim", "retmpimg", sigma, filter_size);
+            imageID IDimg = gauss_filter("imtmpim", "imtmpimg", sigma, filter_size);
 
-            for(ii = 0; ii < xsize * ysize; ii++)
+            for(uint64_t ii = 0; ii < xysize; ii++)
             {
-                re = data.image[IDreg].array.F[ii];
-                im = data.image[IDimg].array.F[ii];
+                double re = data.image[IDreg].array.F[ii];
+                double im = data.image[IDimg].array.F[ii];
                 data.image[IDintg].array.F[ii] = re * re + im * im;
             }
-            IDintgg = gauss_filter("tmpintg", "tmpintgg", 2.0 * sigma, filter_size);
+            imageID IDintgg = gauss_filter("tmpintg", "tmpintgg", 2.0 * sigma, filter_size);
 
 
-            for(ii = 0; ii < xsize * ysize; ii++)
+            for(uint64_t ii = 0; ii < xysize; ii++)
             {
-                data.image[ID].array.F[l * xsize * ysize + ii] +=
+                data.image[ID_LMintC].array.F[l * xsize * ysize + ii] +=
                     data.image[IDintgg].array.F[ii];
             }
-            //data.image[IDa].array.F[ii]*data.image[IDa].array.F[ii]; //data.image[IDintgg].array.F[ii];
+            //data.image[IDa1].array.F[ii]*data.image[IDa1].array.F[ii]; //data.image[IDintgg].array.F[ii];
 
             delete_image_ID("retmpimg", DELETE_IMAGE_ERRMODE_WARNING);
             delete_image_ID("imtmpimg", DELETE_IMAGE_ERRMODE_WARNING);
@@ -309,25 +282,26 @@ double PIAACMCsimul_optimizeLyotStop(
     delete_image_ID("retmpim", DELETE_IMAGE_ERRMODE_WARNING);
     delete_image_ID("imtmpim", DELETE_IMAGE_ERRMODE_WARNING);
 
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname,  "%s/LMintC.fits", piaacmcsimul_var.piaacmcconfdir);
+        save_fits("LMintC", fname);
+    }
 
-    sprintf(fname,  "%s/LMintC.fits", piaacmcsimul_var.piaacmcconfdir);
-    save_fits("LMintC", fname);
 
 
-
-
-    for(l = 0; l < NBz; l++)
-        for(m = 0; m < NBmasks; m++)
+    for(long l = 0; l < NBz; l++)
+        for(long m = 0; m < NBmasks; m++)
         {
             totarray[l * NBmasks + m] = 0.0;
             tot2array[l * NBmasks + m] = 0.0;
         }
 
-    for(l = 0; l < NBz; l++)
+    for(long l = 0; l < NBz; l++)
     {
-        for(ii = 0; ii < xsize * ysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
-            m = (long)(data.image[IDzone].array.F[ii] + 0.1);
+            long m = (long) (data.image[IDzone].array.F[ii] + 0.1);
 
             if((m > -1) && (m < NBmasks) && (rarray[ii] < 1.0)
                     && (rarray[ii] > 0.9 * piaacmc[0].centObs1))
@@ -342,87 +316,98 @@ double PIAACMCsimul_optimizeLyotStop(
 
     IDmc = create_2Dimage_ID("Lcomb", xsize, ysize);
     IDmc1 = create_2Dimage_ID("LcombOA", xsize, ysize);
-    for(ii = 0; ii < xsize * ysize; ii++)
+    for(uint64_t ii = 0; ii < xysize; ii++)
     {
         data.image[IDmc1].array.F[ii] = 0.0;
     }
 
-    sprintf(fname1, "%s/LyotMasks_zpos.txt", piaacmcsimul_var.piaacmcconfdir);
-    fp = fopen(fname1, "w");
-    IDint = image_ID("LMintC");
-    for(m = 0; m < NBmasks; m++)
     {
-        valbest = 0.0;
-        lbest = 0;
-        zbest = 0.0;
-        for(l = 0; l < NBz; l++)
+        char fname1[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname1, "%s/LyotMasks_zpos.txt", piaacmcsimul_var.piaacmcconfdir);
+        FILE * fp = fopen(fname1, "w");
+        IDint = image_ID("LMintC");
+        for(long m = 0; m < NBmasks; m++)
         {
-            val =  tot2array[l * NBmasks + m] / pow(totarray[l * NBmasks + m], alpha);
-            printf("MASK %ld   z(%ld)= %f  ->  %g   ( %g %g) \n", m, l, zarray[l], val,
-                   tot2array[l * NBmasks + m], totarray[l * NBmasks + m]);
-            if(val > valbest)
+            double valbest = 0.0;
+            long lbest = 0;
+            double zbest = 0.0;
+            for(long l = 0; l < NBz; l++)
             {
-                valbest = val;
-                zbest = zarray[l];
-                lbest = l;
+                double val =  tot2array[l * NBmasks + m] / pow(totarray[l * NBmasks + m], alpha);
+                printf("MASK %ld   z(%ld)= %f  ->  %g   ( %g %g) \n", m, l, zarray[l], val,
+                       tot2array[l * NBmasks + m], totarray[l * NBmasks + m]);
+                if(val > valbest)
+                {
+                    valbest = val;
+                    zbest = zarray[l];
+                    lbest = l;
+                }
             }
-        }
-        printf(" ==========  MASK %ld   BEST CONJUGATION : %ld %f (%g)\n", m, lbest,
-               zbest, valbest);
-        piaacmc[0].LyotStop_zpos[m] = zbest; // relative to starting plane
-        fprintf(fp, "%02ld %f\n", lbest, zbest);
+            printf(" ==========  MASK %ld   BEST CONJUGATION : %ld %f (%g)\n", m, lbest,
+                   zbest, valbest);
+            piaacmc[0].LyotStop_zpos[m] = zbest; // relative to starting plane
+            fprintf(fp, "%02ld %f\n", lbest, zbest);
 
-        for(ii = 0; ii < xsize * ysize; ii++)
-            if(m == data.image[IDzone].array.F[ii])
-            {
-                data.image[IDmc].array.F[ii] = data.image[IDint].array.F[lbest * xsize * ysize +
-                                               ii];
-                data.image[IDmc1].array.F[ii] = data.image[IDincohc].array.F[lbest * xsize *
-                                                ysize + ii];
-            }
+            for(uint64_t ii = 0; ii < xysize; ii++)
+                if(m == data.image[IDzone].array.F[ii])
+                {
+                    data.image[IDmc].array.F[ii] = data.image[IDint].array.F[lbest * xsize * ysize +
+                                                   ii];
+                    data.image[IDmc1].array.F[ii] = data.image[IDincohc].array.F[lbest * xsize *
+                                                    ysize + ii];
+                }
+        }
+        fclose(fp);
     }
-    fclose(fp);
 
     if(piaacmcsimul_var.PIAACMC_save == 1)
     {
-        sprintf(fname, "%s/Lcomb.fits", piaacmcsimul_var.piaacmcconfdir);
+        char fname[STRINGMAXLEN_FULLFILENAME];
+
+        WRITE_FULLFILENAME(fname, "%s/Lcomb.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits("Lcomb", fname);
-        sprintf(fname, "%s/LcombOA.fits", piaacmcsimul_var.piaacmcconfdir);
+
+        WRITE_FULLFILENAME(fname, "%s/LcombOA.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits("LcombOA", fname);
     }
 
 
     /// call PIAACMCsimul_mkLyotMask()
-    ID = PIAACMCsimul_mkLyotMask("LcombOA", "Lcomb", "LMzonemap", throughput,
-                                 "LMask");
+    imageID IDlyotmask = PIAACMCsimul_mkLyotMask("LcombOA", "Lcomb", "LMzonemap", throughput,
+                         "LMask");
 
     if(piaacmcsimul_var.PIAACMC_save == 1)
     {
-        sprintf(fname, "%s/LMask.fits", piaacmcsimul_var.piaacmcconfdir);
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/LMask.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits("LMask", fname);
     }
+
     delete_image_ID("Lcomb", DELETE_IMAGE_ERRMODE_WARNING);
 
-    IDlscumul = create_2Dimage_ID("LMcumul", xsize, ysize);
-    for(ii = 0; ii < xsize * ysize; ii++)
+    imageID IDlscumul = create_2Dimage_ID("LMcumul", xsize, ysize);
+    for(uint64_t ii = 0; ii < xysize; ii++)
     {
         data.image[IDlscumul].array.F[ii] = 1.0;
     }
 
-    for(m = 0; m < NBmasks; m++)
+    for(long m = 0; m < NBmasks; m++)
     {
-        sprintf(name, "optLM%02ld", m);
-        IDm = create_2Dimage_ID(name, xsize, ysize);
-        for(ii = 0; ii < xsize; ii++)
-            for(jj = 0; jj < ysize; jj++)
+        char name[STRINGMAXLEN_IMGNAME];
+        WRITE_IMAGENAME(name, "optLM%02ld", m);
+
+        imageID IDm = create_2Dimage_ID(name, xsize, ysize);
+
+        for(uint32_t ii = 0; ii < xsize; ii++)
+            for(uint32_t jj = 0; jj < ysize; jj++)
             {
-                x = (1.0 * ii - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
-                y = (1.0 * jj - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
-                r = sqrt(x * x + y * y);
+                double x = (1.0 * ii - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
+                double y = (1.0 * jj - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
+                double r = sqrt(x * x + y * y);
 
                 if((r > rinarray[m] - dr) && (r < routarray[m] + dr))
                 {
-                    data.image[IDm].array.F[jj * xsize + ii] = data.image[ID].array.F[jj * xsize +
+                    data.image[IDm].array.F[jj * xsize + ii] = data.image[IDlyotmask].array.F[jj * xsize +
                             ii];
                 }
                 else
@@ -431,12 +416,12 @@ double PIAACMCsimul_optimizeLyotStop(
                 }
             }
         if(m == 0)
-            for(ii = 0; ii < xsize; ii++)
-                for(jj = 0; jj < ysize; jj++)
+            for(uint32_t ii = 0; ii < xsize; ii++)
+                for(uint32_t jj = 0; jj < ysize; jj++)
                 {
-                    x = (1.0 * ii - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
-                    y = (1.0 * jj - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
-                    r = sqrt(x * x + y * y);
+                    double x = (1.0 * ii - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
+                    double y = (1.0 * jj - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
+                    double r = sqrt(x * x + y * y);
                     if(r > 1.0)
                     {
                         data.image[IDm].array.F[jj * xsize + ii] = 0.0;
@@ -444,15 +429,18 @@ double PIAACMCsimul_optimizeLyotStop(
                 }
 
 
-        for(ii = 0; ii < xsize * ysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
             data.image[IDm].array.F[ii] *= data.image[IDlscumul].array.F[ii];
             data.image[IDlscumul].array.F[ii] = data.image[IDm].array.F[ii];
         }
 
 
-        sprintf(fname, "%s/optLM%02ld.fits", piaacmcsimul_var.piaacmcconfdir, m);
-        save_fits(name, fname);
+        {
+            char fname[STRINGMAXLEN_FULLFILENAME];
+            WRITE_FULLFILENAME(fname, "%s/optLM%02ld.fits", piaacmcsimul_var.piaacmcconfdir, m);
+            save_fits(name, fname);
+        }
     }
 
 
