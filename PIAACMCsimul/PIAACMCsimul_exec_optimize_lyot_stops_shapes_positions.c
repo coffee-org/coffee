@@ -63,45 +63,33 @@ long PIAACMCsimul_optimizeLyotStop_offaxis_min(
     const char *IDincohc_name
 )
 {
-    long IDincohc;
-
-    long IDindex;
-    long IDminflux;
-    long ii, jj, kk;
-    long xsize = 0;
-    long ysize = 0;
-    long xysize = 0;
-    double minv;
-    long minindex;
-    double tmpv;
-    long NBz;
-
-
 #ifdef PIAASIMUL_LOGFUNC0
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
                                  "");
 #endif
 
 
-    IDincohc = image_ID(IDincohc_name);
+    imageID IDincohc = image_ID(IDincohc_name);
 
-    xsize = data.image[IDincohc].md[0].size[0];
-    ysize = data.image[IDincohc].md[0].size[1];
-    xysize = xsize * ysize;
-    NBz = data.image[IDincohc].md[0].size[2];
+    uint32_t xsize = data.image[IDincohc].md[0].size[0];
+    uint32_t ysize = data.image[IDincohc].md[0].size[1];
+    uint64_t xysize = xsize;
+    xysize *= ysize;
 
-    IDindex = create_2Dimage_ID("oals_index", xsize, ysize);
-    IDminflux = create_2Dimage_ID("oals_val", xsize, ysize);
+    uint32_t NBz = data.image[IDincohc].md[0].size[2];
 
-    for(ii = 0; ii < xsize; ii++)
-        for(jj = 0; jj < ysize; jj++)
+    imageID IDindex = create_2Dimage_ID("oals_index", xsize, ysize);
+    imageID IDminflux = create_2Dimage_ID("oals_val", xsize, ysize);
+
+    for(uint32_t ii = 0; ii < xsize; ii++)
+        for(uint32_t jj = 0; jj < ysize; jj++)
         {
-            minv = data.image[IDincohc].array.F[jj * xsize + ii];
-            minindex = 0;
+            float minv = data.image[IDincohc].array.F[jj * xsize + ii];
+            uint32_t minindex = 0;
 
-            for(kk = 1; kk < NBz; kk++)
+            for(uint32_t kk = 1; kk < NBz; kk++)
             {
-                tmpv = data.image[IDincohc].array.F[kk * xysize + jj * xsize + ii];
+                float tmpv = data.image[IDincohc].array.F[kk * xysize + jj * xsize + ii];
                 if(tmpv < minv)
                 {
                     minv = tmpv;
@@ -109,7 +97,7 @@ long PIAACMCsimul_optimizeLyotStop_offaxis_min(
                 }
             }
             data.image[IDminflux].array.F[jj * xsize + ii] = minv;
-            data.image[IDindex].array.F[jj * xsize + ii] = minindex;
+            data.image[IDindex].array.F[jj * xsize + ii] = (float) minindex;
         }
 
     save_fits("oals_index", "test_oals_index.fits");
@@ -117,13 +105,6 @@ long PIAACMCsimul_optimizeLyotStop_offaxis_min(
 
     return 0;
 }
-
-
-
-
-
-
-
 
 
 
@@ -147,23 +128,8 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
-    long elem, elem0;
-    long ls, NBpropstep, k;
-    double oaoffset; // off-axis offset for Lyot stop optimization
-    double zmin, zmax;
-    char fnamea[500];
-    char fnamep[500];
-    double lstransm;
-    long NBincpt, k1;
-    long ii;
-    long xsize = 0;
-    long ysize = 0;
-    long NBkr, kr;
+ //   double oaoffset; // off-axis offset for Lyot stop optimization
     imageID ID1, IDa, IDc;
-    char fname[1000];
-    long cnt;
-    char fptestname[1000];
-    FILE *fptest;
 
     printf("=================================== mode 005 ===================================\n");
     // load some more cli variables
@@ -191,14 +157,14 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     /// ### Load CLI variables as appropriate
 
     /// - <- **PIAACMC_nbpropstep** : # of propagation steps along the beam
-    NBpropstep = 150;
+    long NBpropstep = 150;
     if((IDv = variable_ID("PIAACMC_nbpropstep")) != -1)
     {
         NBpropstep = (long) data.variable[IDv].value.f + 0.01;
     }
 
     /// - <- **PIAACMC_lstransm** : desired Lyot stop transmission
-    lstransm = 0.85;
+    double lstransm = 0.85;
     if((IDv = variable_ID("PIAACMC_lstransm")) != -1)
     {
         lstransm = (double) data.variable[IDv].value.f;
@@ -217,7 +183,8 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     printf("=========== %ld elements ======================================================\n",
            optsyst[0].NBelem);
     // find the ID of the "post focal plane mask pupil" element
-    for(elem = 0; elem < optsyst[0].NBelem; elem++)
+    long elem0 = 0;
+    for(long elem = 0; elem < optsyst[0].NBelem; elem++)
     {
         if(strcmp("post focal plane mask pupil", optsyst[0].name[elem]) == 0)
         {
@@ -240,7 +207,7 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     /// Multiple off-axis sources are propagated and the corresponding intensities added
     /// - -> **OAincohc**  Output incoherent image (3D)
 
-    oaoffset = 20.0; // off axis amplitude
+    double oaoffset = 20.0; // off axis amplitude
     // compute the reference on-axis PSF
     {
         double cval = 0.0;
@@ -252,22 +219,25 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     }
 
     // filenames of the complex amplitude and phase in the post FPM pupil plane indexed by elem0
-    sprintf(fnamea, "WFamp0_%03ld", elem0);
-    sprintf(fnamep, "WFpha0_%03ld", elem0);
+    char fnamea[STRINGMAXLEN_IMGNAME];
+    WRITE_IMAGENAME(fnamea, "WFamp0_%03ld", elem0);
+
+    char fnamep[STRINGMAXLEN_IMGNAME];
+    WRITE_IMAGENAME(fnamep, "WFpha0_%03ld", elem0);
 
     printf("elem0 = %ld\n", elem0);
 
     // args for the PIAACMCsimul_CA2propCubeInt function
 
     // set range of propagation
-    zmin = piaacmc[0].LyotZmin;
-    zmax = piaacmc[0].LyotZmax;
+    float zmin = piaacmc[0].LyotZmin;
+    float zmax = piaacmc[0].LyotZmax;
 
     // args that determine "extended" off-axis source
     // number of off-axis sources on each circle
-    NBincpt = 15;
+    long NBincpt = 15;
     // number of circle radii
-    NBkr = 5;
+    long NBkr = 5;
 
     // propagate complex amplitude in a range from zmin to zmax, where 0 is elem0
     // computes the diffracted light from the on-axis source
@@ -276,29 +246,33 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     // complex amplitude at elem0, only used to determine image size
     IDa = image_ID(fnamea);
 
-    xsize = data.image[IDa].md[0].size[0];
-    ysize = data.image[IDa].md[0].size[1];
+    uint32_t xsize = data.image[IDa].md[0].size[0];
+    uint32_t ysize = data.image[IDa].md[0].size[1];
+    uint64_t xysize = xsize;
+    xysize *= ysize;
 
     /// OAincohc is the summed light "all" from off-axis sources in the pupil,
     /// including the on-axis source(!),
     /// giving intensity contribution of all off-axis sources
     /// in order to preserve the intensity of the off-axis in the design.
     /// load OAincohc if exist, maybe we've been here before
-    sprintf(fname, "%s/OAincohc.fits", piaacmcsimul_var.piaacmcconfdir);
-    load_fits(fname, "OAincohc", 1, &IDc);
-
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/OAincohc.fits", piaacmcsimul_var.piaacmcconfdir);
+        load_fits(fname, "OAincohc", 1, &IDc);
+    }
 
     if(IDc == -1) // OAincohc does not exist so we have to make it
     {
         // create image to receive sum
         IDc = create_3Dimage_ID("OAincohc", xsize, ysize, NBpropstep);
 
-        cnt = 0; // initialize counter so later we can normalize by number of sources
+        long cnt = 0; // initialize counter so later we can normalize by number of sources
         // loop over radii
-        for(kr = 0; kr < NBkr; kr++)
+        for(long kr = 0; kr < NBkr; kr++)
         {
             // loop over points at current radius
-            for(k1 = 0; k1 < NBincpt; k1++)
+            for(long k1 = 0; k1 < NBincpt; k1++)
             {
                 // compute PSF for a point at this angle with scaled offset
                 // PIAACMCsimul_computePSF changes fnamea and fnamep (in call to OptSystProp_run)!
@@ -317,28 +291,33 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
                 // propagate that elem0 from zmin to zmax with new PSF
                 ID1 = PIAACMCsimul_CA2propCubeInt(fnamea, fnamep, zmin, zmax, NBpropstep,
                                                   "iproptmp");
-                for(ii = 0; ii < xsize * ysize; ii++) // ii is indexing x-y plane
-                    for(k = 0; k < NBpropstep;
-                            k++) // k is indexing z-direction. adding to IDc which looks right
-                    {
+                for(uint64_t ii = 0; ii < xysize; ii++) // ii is indexing x-y plane
+                {
+                    for(long k = 0; k < NBpropstep; k++)
+                    {   // k is indexing z-direction. adding to IDc which looks right
                         data.image[IDc].array.F[k * xsize * ysize + ii] += data.image[ID1].array.F[k *
                                 xsize * ysize + ii];
                     }
+                }
                 delete_image_ID("iproptmp", DELETE_IMAGE_ERRMODE_WARNING);
                 cnt ++;
             }
         }
         // scale by the number of sources to give average
-        for(ii = 0; ii < xsize * ysize; ii++)
-            for(k = 0; k < NBpropstep; k++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
+        {
+            for(long k = 0; k < NBpropstep; k++)
             {
                 data.image[IDc].array.F[k * xsize * ysize + ii] /= cnt;
             }
+        }
 
 
-        sprintf(fname, "%s/OAincohc.fits", piaacmcsimul_var.piaacmcconfdir);
-        // save the final result
-        save_fits("OAincohc", fname);
+        {   // save the final result
+            char fname[STRINGMAXLEN_FULLFILENAME];
+            WRITE_FULLFILENAME(fname, "%s/OAincohc.fits", piaacmcsimul_var.piaacmcconfdir);
+            save_fits("OAincohc", fname);
+        }
     }
 
 
@@ -371,24 +350,27 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     PIAACMCsimul_optimizeLyotStop(fnamea, fnamep, "OAincohc", zmin, zmax, lstransm,
                                   NBpropstep, piaacmc[0].NBLyotStop);
 
-    sprintf(fptestname, "conj_test.txt");
-    fptest = fopen(fptestname, "w");
-    fprintf(fptest, "# Optimal Lyot stop conjugations\n");
-    fprintf(fptest, "# \n");
-    fprintf(fptest, "# DO NOT EDIT THIS FILE\n");
-    fprintf(fptest, "# Written by %s in %s\n", __FUNCTION__, __FILE__);
-    fprintf(fptest, "# \n");
-    fprintf(fptest,
-            "# Lyot stop index   zmin   zmax    LyotStop_zpos    elemZpos[elem0]\n");
-    for(ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
     {
-        fprintf(fptest, "%5ld  %f  %f     %f  %f\n", ls, zmin, zmax,
-                piaacmc[0].LyotStop_zpos[ls], optsyst[0].elemZpos[elem0]);
+        char fptestname[STRINGMAXLEN_FILENAME];
+        WRITE_FILENAME(fptestname, "conj_test.txt");
+        FILE * fptest = fopen(fptestname, "w");
+        fprintf(fptest, "# Optimal Lyot stop conjugations\n");
+        fprintf(fptest, "# \n");
+        fprintf(fptest, "# DO NOT EDIT THIS FILE\n");
+        fprintf(fptest, "# Written by %s in %s\n", __FUNCTION__, __FILE__);
+        fprintf(fptest, "# \n");
+        fprintf(fptest,
+                "# Lyot stop index   zmin   zmax    LyotStop_zpos    elemZpos[elem0]\n");
+        for(long ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
+        {
+            fprintf(fptest, "%5ld  %f  %f     %f  %f\n", ls, zmin, zmax,
+                    piaacmc[0].LyotStop_zpos[ls], optsyst[0].elemZpos[elem0]);
+        }
+        fclose(fptest);
     }
-    fclose(fptest);
 
     // convert Lyot stop position from relative to elem0 to absolute
-    for(ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
+    for(long ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
     {
         piaacmc[0].LyotStop_zpos[ls] += optsyst[0].elemZpos[elem0];
     }
@@ -396,7 +378,7 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     // and we're done!  save.
     PIAACMCsimul_savepiaacmcconf(piaacmcsimul_var.piaacmcconfdir);
     // copy to the final Lyot stop file for this mode
-    for(ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
+    for(long ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
     {
         EXECUTE_SYSTEM_COMMAND("cp ./%s/optLM%02ld.fits ./%s/LyotStop%ld.fits",
                                piaacmcsimul_var.piaacmcconfdir, ls, piaacmcsimul_var.piaacmcconfdir, ls);
