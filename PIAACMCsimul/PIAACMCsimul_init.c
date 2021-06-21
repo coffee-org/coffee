@@ -184,7 +184,7 @@ void PIAACMCsimul_init(
 
     elem = 0;
     // ------------------- elem 0: input pupil -----------------------
-    sprintf(optsyst[0].name[elem], "input pupil");
+    snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "input pupil");
     optsyst[0].elemtype[elem] = 1; // pupil mask
     // input pupil from file - will always exist
     char fname_pupa0[STRINGMAXLEN_FULLFILENAME];
@@ -209,10 +209,6 @@ void PIAACMCsimul_init(
     if(IDa == -1) // if pupil does not exist, use circular one (this occurs in initial design steps)
     {
         printf("CREATING INPUT PUPIL\n");
-        if(IDa != -1)
-        {
-            delete_image_ID("pupa0", DELETE_IMAGE_ERRMODE_WARNING);
-        }
         IDa = create_3Dimage_ID("pupa0", size, size, nblambda);
 
         imageID IDr = image_ID("rcoord");
@@ -312,7 +308,7 @@ void PIAACMCsimul_init(
         // save_fits("TTm", fname);
 
         // finish the definition of the TT mirror specifying various properties
-        sprintf(optsyst[0].name[elem], "TT mirror");
+        snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "TT mirror");
         optsyst[0].elemtype[elem] = 3; // reflective mirror
 
         optsyst[0].elemarrayindex[elem] = 0;
@@ -337,7 +333,7 @@ void PIAACMCsimul_init(
     for(int iDM = 0; iDM < design[index].nbDM; iDM++)
     {
         // ----------------- DM (s) -----------------------------------------------
-        sprintf(optsyst[0].name[elem], "DM %d", iDM);
+        snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "DM %d", iDM);
         optsyst[0].elemtype[elem] = 3; // reflective element
         optsyst[0].elemarrayindex[elem] = 3 + iDM; // index
 
@@ -370,7 +366,7 @@ void PIAACMCsimul_init(
         {
             // tell the design that this element exists (was found on disk)
             design[index].prePIAA0mask = 1;
-            sprintf(optsyst[0].name[elem], "pupil plane apodizer");
+            snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "pupil plane apodizer");
             optsyst[0].elemtype[elem] = 1; // opaque mask
             optsyst[0].elemarrayindex[elem] = ID;
             optsyst[0].elemZpos[elem] = design[index].prePIAA0maskpos;
@@ -391,7 +387,7 @@ void PIAACMCsimul_init(
 
         // ------------------- elem 2:  PIAA M/L 0  -----------------------
         // (M/L is "mirror or lens" - in our case it's a mirror)
-        sprintf(optsyst[0].name[elem], "PIAA optics 0");
+        snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "PIAA optics 0");
         optsyst[0].elemtype[elem] = 3; // reflective PIAA M0
         // this is an aspheric mirror, so we need actual sag shapes
         optsyst[0].elemarrayindex[elem] = 1; // index = 1 implied aspheric
@@ -442,7 +438,7 @@ void PIAACMCsimul_init(
         {
             // tell the design that this element exists (was found on disk)
             design[index].postPIAA0mask = 1;
-            sprintf(optsyst[0].name[elem], "opaque mask after PIAA element 0");
+            snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "opaque mask after PIAA element 0");
             optsyst[0].elemtype[elem] = 1; // opaque mask
             optsyst[0].elemarrayindex[elem] = ID;
             optsyst[0].elemZpos[elem] =
@@ -465,7 +461,7 @@ void PIAACMCsimul_init(
 
         // add one more mirror and mask
         // ------------------- elem 3: reflective PIAA M1  -----------------------
-        sprintf(optsyst[0].name[elem], "PIAA optics 1");
+        snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "PIAA optics 1");
         optsyst[0].elemtype[elem] = 3; // reflective PIAA M1
         optsyst[0].elemarrayindex[elem] = 2;
         optsyst[0].elemZpos[elem] = design[index].PIAA0pos + design[index].PIAAsep;
@@ -498,7 +494,7 @@ void PIAACMCsimul_init(
 
 
         // ------------------- elem 4 opaque mask at reflective PIAA M1  -----------------------
-        sprintf(optsyst[0].name[elem], "opaque mask at PIAA elem 1");
+        snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "opaque mask at PIAA elem 1");
         optsyst[0].elemtype[elem] = 1; // opaque mask
         {
             imageID ID;
@@ -520,7 +516,7 @@ void PIAACMCsimul_init(
     // --------------------  elem 5: focal plane mask ------------------------
     if((variable_ID("PIAACMC_NOFPM")) == -1)
     {
-        sprintf(optsyst[0].name[elem], "post focal plane mask pupil");
+        snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "post focal plane mask pupil");
         optsyst[0].elemtype[elem] = 5; // focal plane mask
         optsyst[0].elemarrayindex[elem] = 0;
 
@@ -575,7 +571,7 @@ void PIAACMCsimul_init(
         if(design[index].invPIAAmode == 2) // inv PIAA -> Lyot stops
         {
             // --------------------  elem 8: inv PIAA1 ------------------------
-            sprintf(optsyst[0].name[elem], "invPIAA optics 1");
+            snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "invPIAA optics 1");
 
             if(design[index].PIAAmaterial_code == 0) // mirror
             {
@@ -593,7 +589,7 @@ void PIAACMCsimul_init(
             elem++;
 
             // --------------------  elem 9: inv PIAA0 ------------------------
-            sprintf(optsyst[0].name[elem], "invPIAA optics 0");
+            snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "invPIAA optics 0");
 
             if(design[index].PIAAmaterial_code == 0) //  mirror
             {
@@ -617,7 +613,7 @@ void PIAACMCsimul_init(
     // add Lyot masks as specified in the design
     for(long i = 0; i < design[index].NBLyotStop; i++)
     {
-        sprintf(optsyst[0].name[elem], "Lyot mask %ld", i);
+        snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "Lyot mask %ld", i);
         optsyst[0].elemtype[elem] = 1; // Lyot mask
         optsyst[0].elemarrayindex[elem] = design[index].IDLyotStop[i];
         printf("elem %ld  Lyot mask %ld : %ld\n", elem, i, design[index].IDLyotStop[i]);
@@ -634,7 +630,7 @@ void PIAACMCsimul_init(
         if(design[index].invPIAAmode == 1) // Lyot masks -> inv PIAA
         {
             // --------------------  elem 8: inv PIAA1 ------------------------
-            sprintf(optsyst[0].name[elem], "invPIAA optics 1");
+            snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "invPIAA optics 1");
             if(design[index].PIAAmaterial_code == 0) // mirror
             {
                 optsyst[0].elemtype[elem] = 3;    // reflective PIAA M/L 1
@@ -649,7 +645,7 @@ void PIAACMCsimul_init(
             elem++;
 
             // --------------------  elem 9: inv PIAA0 ------------------------
-            sprintf(optsyst[0].name[elem], "invPIAA optics 0");
+            snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "invPIAA optics 0");
             if(design[index].PIAAmaterial_code == 0) //  mirror
             {
                 optsyst[0].elemtype[elem] = 3;    // reflective PIAA M/L 0
@@ -672,7 +668,7 @@ void PIAACMCsimul_init(
         // --------------------  elem 9: back end mask  ------------------------
         // not in WFIRST design, skipping, but it looks very straightforward
 
-        sprintf(optsyst[0].name[elem], "back end pupil stop  (rad = %f)",
+        snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "back end pupil stop  (rad = %f)",
                 design[index].pupoutmaskrad);
 
         optsyst[0].elemtype[elem] = 1;
