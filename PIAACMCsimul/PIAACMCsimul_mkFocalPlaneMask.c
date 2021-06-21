@@ -66,7 +66,6 @@ if mode is invalid number, no focal plane mask, AND assume 1-fpm is computed
 
  zone numbering starts here from 1 (zone 1 = outermost ring)
 */
-
 long PIAACMCsimul_mkFocalPlaneMask(
     const char *IDzonemap_name,
     const char *ID_name,
@@ -74,28 +73,13 @@ long PIAACMCsimul_mkFocalPlaneMask(
     int saveMask
 )
 {
-//    double eps = 1.0e-12;
-    imageID ID, IDm;
-    imageID IDz;
-    imageID IDsag, IDzone;
     uint32_t size;
-    long nblambda;
-    long k;
 
-    int_fast32_t ii1, jj1;
-    long iii, jjj;
-
-    double fpscale; // [m/pix]
-    long zi;
-    double t, a, amp;
+  //  double fpscale; // [m/pix]
     uint64_t size2;
-//    double re, im;
-    float pha, cospha, sinpha;
-    double retmp, imtmp, ttmp, zonetmp;
 
     uint_fast8_t CentCone = 0;
     uint_fast8_t OuterCone = 0;
-    char fname[1500];
 
     double *tarray;
     double *aarray;
@@ -103,12 +87,7 @@ long PIAACMCsimul_mkFocalPlaneMask(
     double *cosphaarray;
     double *sinphaarray;
 
-//    time_t tnow;
-//    struct tm *uttime;
-//    struct timespec timenow;
-
     long NBsubPix = 64;
-
     int FPMmode = 0; // 1 if using 1-fpm
 
 
@@ -124,13 +103,13 @@ long PIAACMCsimul_mkFocalPlaneMask(
 
     size = optsyst[0].size;
     size2 = size * size;
-    nblambda = optsyst[0].nblambda;
+    int nblambda = optsyst[0].nblambda;
 
 
-    IDz = image_ID(IDzonemap_name);
-    ID = create_3DCimage_ID(ID_name, size, size, nblambda);
-    IDsag = create_3Dimage_ID("fpmsag", size, size, nblambda);
-    IDzone = create_3Dimage_ID("fpmzone", size, size, nblambda);
+    imageID IDz = image_ID(IDzonemap_name);
+    imageID ID = create_3DCimage_ID(ID_name, size, size, nblambda);
+    imageID IDsag = create_3Dimage_ID("fpmsag", size, size, nblambda);
+    imageID IDzone = create_3Dimage_ID("fpmzone", size, size, nblambda);
 
 
     if(piaacmc[0].NBrings > 2)
@@ -158,7 +137,7 @@ long PIAACMCsimul_mkFocalPlaneMask(
     }
 
     // pixel scale [m/pix] at first wavelength in array
-    fpscale = (2.0 * piaacmc[0].beamrad / piaacmc[0].pixscale) / piaacmc[0].size /
+    double fpscale = (2.0 * piaacmc[0].beamrad / piaacmc[0].pixscale) / piaacmc[0].size /
               piaacmc[0].fpzfactor * optsyst[0].lambdaarray[0] * piaacmc[0].Fratio;
     printf("piaacmc[0].fpmRad = %g m    fpscale[0] = %g m/pix   mode = %d\n",
            piaacmc[0].fpmRad, fpscale, mode);
@@ -198,7 +177,7 @@ long PIAACMCsimul_mkFocalPlaneMask(
     }
 
     // precompute zones phase shifts
-    printf("Precompute zones phase shifts  %ld zones, %ld wavelengths\n",
+    printf("Precompute zones phase shifts  %ld zones, %d wavelengths\n",
            piaacmc[0].focmNBzone, nblambda);
     fflush(stdout);
 
@@ -207,8 +186,8 @@ long PIAACMCsimul_mkFocalPlaneMask(
 
 
 
-    for(k = 0; k < nblambda; k++)
-        for(zi = 0; zi < piaacmc[0].focmNBzone; zi++)
+    for(int k = 0; k < nblambda; k++)
+        for(long zi = 0; zi < piaacmc[0].focmNBzone; zi++)
         {
             //printf("lamdba %3ld  zone %4ld   ", k, zi);
             //fflush(stdout);
@@ -260,11 +239,11 @@ long PIAACMCsimul_mkFocalPlaneMask(
     {
         #pragma omp for
 # endif
-        for(k = 0; k < nblambda; k++)
+        for(int k = 0; k < nblambda; k++)
         {
             fpscale = (2.0 * piaacmc[0].beamrad / piaacmc[0].pixscale) / piaacmc[0].size /
                       piaacmc[0].fpzfactor * optsyst[0].lambdaarray[k] * piaacmc[0].Fratio;
-            printf("LAMBDA %3ld / %3ld = %10.5g m    SCALE = %10.5g m/pix   size=%4ul  rad=%g\n",
+            printf("LAMBDA %3d / %3d = %10.5g m    SCALE = %10.5g m/pix   size=%4ul  rad=%g\n",
                    k, nblambda, optsyst[0].lambdaarray[k], fpscale, size, piaacmc[0].fpmRad);
             printf("Zone 0 amplitude [%ld]: %lf\n", piaacmc[0].zoneaID,
                    data.image[piaacmc[0].zoneaID].array.D[0]);
@@ -291,13 +270,12 @@ long PIAACMCsimul_mkFocalPlaneMask(
                     r = sqrt(x * x + y * y); // [m]
 
                     // default
-                    t = 0.0;
-                    a = 1.0;
-                    pha = 0.0;
-                    cospha = 1.0;
-                    sinpha = 0.0;
-                    amp = 1.0;
-
+                    double t = 0.0;
+                    double a = 1.0;
+                    float pha = 0.0;
+                    float cospha = 1.0;
+                    float sinpha = 0.0;
+                    double amp = 1.0;
 
 
                     if(OuterCone == 1)
@@ -325,13 +303,13 @@ long PIAACMCsimul_mkFocalPlaneMask(
                         //       printf("pix outercone ...");
                         //      fflush(stdout);
 
-                        retmp = 0.0;
-                        imtmp = 0.0;
-                        ttmp = 0.0;
-                        zonetmp = 0.0;
-                        for(iii = 0; iii < NBsubPix; iii++)
+                        double retmp = 0.0;
+                        double imtmp = 0.0;
+                        double ttmp = 0.0;
+                        double zonetmp = 0.0;
+                        for(long iii = 0; iii < NBsubPix; iii++)
                         {
-                            for(jjj = 0; jjj < NBsubPix; jjj++)
+                            for(long jjj = 0; jjj < NBsubPix; jjj++)
                             {
                                 // physical coordinates on mask
                                 // x and y in [m]
@@ -339,7 +317,7 @@ long PIAACMCsimul_mkFocalPlaneMask(
                                 y = (1.0 * jj - size / 2 + 1.0 * (0.5 + jjj) / NBsubPix - 0.5) * fpscale;
                                 r = sqrt(x * x + y * y); // [m]
 
-                                zi = 0; // default
+                                long zi = 0; // default
                                 cospha = 1.0;
                                 sinpha = 0.0;
                                 amp = 1.0;
@@ -358,11 +336,14 @@ long PIAACMCsimul_mkFocalPlaneMask(
                                     }
 
 
-                                ii1 = (long)((0.5 + 0.5 * x / piaacmc[0].fpmRad *
-                                              piaacmcsimul_var.FPMSCALEFACTOR) * piaacmc[0].fpmarraysize + 0.5);
-                                jj1 = (long)((0.5 + 0.5 * y / piaacmc[0].fpmRad *
-                                              piaacmcsimul_var.FPMSCALEFACTOR) * piaacmc[0].fpmarraysize + 0.5);
-                                if((ii1 > -1) && (ii1 < piaacmc[0].fpmarraysize) && (jj1 > -1)
+                                long ii1 = (long) ((0.5 + 0.5 * x / piaacmc[0].fpmRad *
+                                                    piaacmcsimul_var.FPMSCALEFACTOR) * piaacmc[0].fpmarraysize + 0.5);
+                                long jj1 = (long) ((0.5 + 0.5 * y / piaacmc[0].fpmRad *
+                                                    piaacmcsimul_var.FPMSCALEFACTOR) * piaacmc[0].fpmarraysize + 0.5);
+
+                                if((ii1 > -1)
+                                        && (ii1 < piaacmc[0].fpmarraysize)
+                                        && (jj1 > -1)
                                         && (jj1 < piaacmc[0].fpmarraysize))
                                 {
                                     if(CentCone == 1)
@@ -482,20 +463,23 @@ long PIAACMCsimul_mkFocalPlaneMask(
         //save_fits("fpmsag", "tmp_fpmsag.fits");
 
         PIAACMCsimul_update_fnamedescr();
-        sprintf(fname, "%s/fpm_sagmap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
-                piaacmcsimul_var.fnamedescr);
+
+        char fname[STRINGMAXLEN_FULLFILENAME];
+
+        WRITE_FULLFILENAME(fname, "%s/fpm_sagmap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
+                           piaacmcsimul_var.fnamedescr);
         save_fits("fpmsag", fname);
 
-
         /* save zones */
-        sprintf(fname, "%s/fpm_zonemap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
-                piaacmcsimul_var.fnamedescr);
+        WRITE_FULLFILENAME(fname, "%s/fpm_zonemap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
+                           piaacmcsimul_var.fnamedescr);
         save_fits("fpmzone", fname);
 
 
+
         /* save mask transmission */
-        IDm = create_3DCimage_ID("fpmCA", size, size, nblambda);
-        for(k = 0; k < nblambda; k++)
+        imageID IDm = create_3DCimage_ID("fpmCA", size, size, nblambda);
+        for(int k = 0; k < nblambda; k++)
             for(uint32_t ii = 0; ii < size; ii++)
                 for(uint32_t jj = 0; jj < size; jj++)
                 {
@@ -510,12 +494,15 @@ long PIAACMCsimul_mkFocalPlaneMask(
         mk_amph_from_complex("fpmCA", "tfpma", "tfpmp", 0);
         delete_image_ID("fpmCA", DELETE_IMAGE_ERRMODE_WARNING);
 
-        sprintf(fname, "%s/fpm_CAampmap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
-                piaacmcsimul_var.fnamedescr);
+
+        WRITE_FULLFILENAME(fname, "%s/fpm_CAampmap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
+                           piaacmcsimul_var.fnamedescr);
         save_fits("tfpma", fname);
-        sprintf(fname, "%s/fpm_CAphamap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
-                piaacmcsimul_var.fnamedescr);
+
+        WRITE_FULLFILENAME(fname, "%s/fpm_CAphamap2D.%s.fits.gz", piaacmcsimul_var.piaacmcconfdir,
+                           piaacmcsimul_var.fnamedescr);
         save_fits("tfpmp", fname);
+
         delete_image_ID("tfpma", DELETE_IMAGE_ERRMODE_WARNING);
         delete_image_ID("tfpmp", DELETE_IMAGE_ERRMODE_WARNING);
     }
