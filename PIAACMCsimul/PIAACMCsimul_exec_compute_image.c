@@ -47,10 +47,6 @@ errno_t PIAACMCsimul_exec_compute_image()
     double centobs0 = 0.3;
     double centobs1 = 0.2;
     int PIAACMC_WFCmode = 0;
-    uint32_t *sizearray;
-    // FILE *fp;
-    imageID IDopderrC;
-    long sizecrop;
     double xpos, ypos, fval;
     int initscene;
     imageID IDscene;
@@ -128,15 +124,17 @@ errno_t PIAACMCsimul_exec_compute_image()
     if(fp != NULL)
     {
         printf("RUNNING PSF LOOP COMPUTATION\n");
+
+        uint32_t *sizearray;
         sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
         sizearray[0] = piaacmc[0].size;
         sizearray[1] = piaacmc[0].size;
 
-        IDopderrC = create_image_ID("opderr", 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0);
+        imageID IDopderrC = create_image_ID("opderr", 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0);
         COREMOD_MEMORY_image_set_createsem("opderr", 10);
         free(sizearray);
 
-        sizecrop = piaacmc[0].size / 16;
+        long sizecrop = piaacmc[0].size / 16;
         sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 3);
         sizearray[0] = sizecrop;
         sizearray[1] = sizecrop;
