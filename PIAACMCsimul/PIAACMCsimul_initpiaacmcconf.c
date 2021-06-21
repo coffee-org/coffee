@@ -246,10 +246,19 @@ int PIAACMCsimul_initpiaacmcconf(
 
     // Create required directories
     int ret;
+
     ret = mkdir("testdir", 0777);  // test files, output from code
+    (void) ret;
+
     ret = mkdir("conf",    0777);  // configuration
+    (void) ret;
+
     ret = mkdir("status",  0777);  // status
+    (void) ret;
+
     ret = mkdir("ref",     0777);  // reference files
+    (void) ret;
+
     ret = mkdir("log",     0777);  // log
     (void) ret;
 
@@ -399,7 +408,7 @@ int PIAACMCsimul_initpiaacmcconf(
             }
             else
             {
-                sprintf(piaacmc[0].fpmmaterial_name, "Mirror");
+                snprintf(piaacmc[0].fpmmaterial_name, STRINGMAXLEN_PIAACMCSIMUL_MATERIALNAME, "Mirror");
                 WRITE_FULLFILENAME(fname, "%s/conf_fpmmaterial_name.txt", piaacmcsimul_var.piaacmcconfdir);
                 printf("Writing %s   piaacmc[0].fpmmaterial_name : %s\n", fname,
                        piaacmc[0].fpmmaterial_name);
@@ -704,9 +713,9 @@ int PIAACMCsimul_initpiaacmcconf(
         }
         else
         {
-            sprintf(piaacmc[0].PIAAmaterial_name, "Mirror");
+            snprintf(piaacmc[0].PIAAmaterial_name, STRINGMAXLEN_PIAACMCSIMUL_MATERIALNAME, "Mirror");
             WRITE_FULLFILENAME(fname, "%s/conf_PIAAmaterial_name.txt",
-                    piaacmcsimul_var.piaacmcconfdir);
+                               piaacmcsimul_var.piaacmcconfdir);
             if((fp = fopen(fname, "w")) != NULL)
             {
                 fprintf(fp, "%s\n", piaacmc[0].PIAAmaterial_name);
@@ -1102,7 +1111,7 @@ int PIAACMCsimul_initpiaacmcconf(
                     saveconf = 1;
 
                     WRITE_FULLFILENAME(fname, "%s/piaaref/APLCmaskCtransm.txt",
-                            piaacmcsimul_var.piaacmcconfdir);
+                                       piaacmcsimul_var.piaacmcconfdir);
                     fp = fopen(fname, "w");
                     fprintf(fp, "%.20f\n", piaacmc[0].fpmaskamptransm);
                     fclose(fp);

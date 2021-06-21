@@ -134,6 +134,7 @@ typedef struct
 // *****************************************************************************************************
 
 
+#define STRINGMAXLEN_PIAACMCSIMUL_MATERIALNAME 10
 
 //
 // this structure holds parameters to be optimized in the PIAACMC diffractive design
@@ -234,7 +235,7 @@ typedef struct
     double fpmOuterConeRadld; // outer radius (end of outer cone) [lambda/D]
     double fpmOuterConeRad; // [m]
     long fpmarraysize;
-    char fpmmaterial_name[10];
+    char fpmmaterial_name[STRINGMAXLEN_PIAACMCSIMUL_MATERIALNAME];
     int fpmmaterial_code;
 
     // Mask description

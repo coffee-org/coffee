@@ -184,7 +184,7 @@ int PIAACMCsimul_init_geomPIAA_rad(
         //  innerprof_cumul = (double*) malloc(sizeof(double)*NBistep);
 
         int dir = 1; // initial direction
-        int odir = 1;
+        int odir;
 
         double t0;
         while(fabs(verr)>1.0e-9)
@@ -243,7 +243,7 @@ int PIAACMCsimul_init_geomPIAA_rad(
         NBistep = piaacmc[0].NBradpts-iioffset;
 
         int dir = 1; // initial direction
-        int odir = 1;
+        int odir;
 
         double t0;
         while(fabs(verr)>1.0e-9)
