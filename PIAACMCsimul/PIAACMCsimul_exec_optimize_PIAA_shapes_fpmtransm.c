@@ -47,12 +47,9 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
-    //long NBiter = 1000;
 
-
-    long mz, k;
     long ID_CPAfreq;
-    long kmaxC, kmaxF;
+//    long kmaxC, kmaxF;
 
 
 
@@ -123,7 +120,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
         }
 
 
-        kmaxC = data.image[piaacmc[0].piaa0CmodesID].md[0].size[0];
+        long kmaxC = data.image[piaacmc[0].piaa0CmodesID].md[0].size[0];
         if((IDv = variable_ID("PIAACMC_maxoptCterm")) != -1)
         {
             kmaxC = (long) data.variable[IDv].value.f + 0.01;
@@ -134,7 +131,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
         }
 
 
-        kmaxF = data.image[piaacmc[0].piaa0FmodesID].md[0].size[0];
+        long kmaxF = data.image[piaacmc[0].piaa0FmodesID].md[0].size[0];
         if((IDv = variable_ID("PIAACMC_maxoptFterm")) != -1)
         {
             kmaxF = (long) data.variable[IDv].value.f + 0.01;
@@ -235,7 +232,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
         {
             if(variable_ID("PIAACMC_mzOPT") != -1) // optimize zones
             {
-                for(mz = 0; mz < data.image[piaacmc[0].zonezID].md[0].size[0]; mz++)
+                for(uint32_t mz = 0; mz < data.image[piaacmc[0].zonezID].md[0].size[0]; mz++)
                 {
                     piaacmcsimul_var.linopt_paramtype[piaacmcsimul_var.linopt_number_param] =
                         _DATATYPE_DOUBLE;
@@ -254,7 +251,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
         }
 
 
-        for(k = 0; k < kmaxC; k++)
+        for(long k = 0; k < kmaxC; k++)
         {
             piaacmcsimul_var.linopt_paramtype[piaacmcsimul_var.linopt_number_param] =
                 _DATATYPE_FLOAT;
@@ -270,7 +267,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
             piaacmcsimul_var.linopt_number_param++;
         }
 
-        for(k = 0; k < kmaxC; k++)
+        for(long k = 0; k < kmaxC; k++)
         {
             piaacmcsimul_var.linopt_paramtype[piaacmcsimul_var.linopt_number_param] =
                 _DATATYPE_FLOAT;
@@ -286,7 +283,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
             piaacmcsimul_var.linopt_number_param++;
         }
 
-        for(k = 0; k < kmaxF; k++)
+        for(long k = 0; k < kmaxF; k++)
         {
             piaacmcsimul_var.linopt_paramtype[piaacmcsimul_var.linopt_number_param] =
                 _DATATYPE_FLOAT;
@@ -302,7 +299,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
             piaacmcsimul_var.linopt_number_param++;
         }
 
-        for(k = 0; k < kmaxF; k++)
+        for(long k = 0; k < kmaxF; k++)
         {
             piaacmcsimul_var.linopt_paramtype[piaacmcsimul_var.linopt_number_param] =
                 _DATATYPE_FLOAT;

@@ -58,15 +58,13 @@ int PIAACMCsimul_exec_optimize_fpmtransmission()
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
+
     double range, stepsize;
     FILE *fp;
-    int loopOK;
-    double valbest;
-    long iter;
     long NBiter = 1000;
     double parambest[10000]; // for scanning
     double paramref[10000];
-    char fnamelog[500];
+    char fnamelog[STRINGMAXLEN_FULLFILENAME];
 
     printf("=================================== mode 002 ===================================\n");
 
@@ -102,11 +100,11 @@ int PIAACMCsimul_exec_optimize_fpmtransmission()
 
 
     /// ### Scan parameter value
-    sprintf(fnamelog, "%s/result_fpmt.log", piaacmcsimul_var.piaacmcconfdir);
+    WRITE_FULLFILENAME(fnamelog, "%s/result_fpmt.log", piaacmcsimul_var.piaacmcconfdir);
     fp = fopen(fnamelog, "w");
     fclose(fp);
 
-    for(iter = 0; iter < NBiter; iter++)
+    for(long iter = 0; iter < NBiter; iter++)
     {
         // starting point of march
         piaacmc[0].fpmaskamptransm = paramref[0] - range;
@@ -114,8 +112,8 @@ int PIAACMCsimul_exec_optimize_fpmtransmission()
         // store current value as best
         parambest[0] = piaacmc[0].fpmaskamptransm;
 
-        loopOK = 1;
-        valbest = 1.0;
+        int loopOK = 1;
+        double valbest = 1.0;
 
         /// While within the search loop :
         while(loopOK == 1)
