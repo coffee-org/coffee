@@ -382,33 +382,27 @@ errno_t PIAACMCsimul_exec(
     imageID IDmodes, IDmodes2D;
 
     imageID IDm, ID1D, ID1Dref;
-    long size1Dvec, size1Dvec0;
 
-
-    double val;
+    double contrastval;
 
     double fpmradld = 0.95;
 
 
-    double scangain;
     double scanstepgain = 0.001;
-    int linscanOK;
     double valold, oldval;
-    double bestgain;
+
     int linoptlimflagarray[100];
     long NBlinoptgain;
 
     double val1;
 
-    int iterOK;
+//    int iterOK;
     char stopfile[STRINGMAXLEN_FULLFILENAME];
 
     double alphareg;
     double bestval = 0.0;
     imageID IDoptvec = -1;
 
-    double acoeff0, acoeff1, acoeff2;
-    float scangainfact;
 
     double valContrast;
     int initbestval = 0;
@@ -549,7 +543,7 @@ errno_t PIAACMCsimul_exec(
         break;
 
     case 3 :
-        val = PIAACMCsimul_exec_computePSF_no_fpm();
+        PIAACMCsimul_exec_computePSF_no_fpm();
         break;
 
     case 4 :
@@ -745,8 +739,8 @@ errno_t PIAACMCsimul_exec(
             save_fits("vecDHref", fname);
         }
         // get and copy size of vecDHref, 'cause we're manipulating size1Dvec
-        size1Dvec = data.image[ID].md[0].nelement;
-        size1Dvec0 = size1Dvec;
+        long size1Dvec = data.image[ID].md[0].nelement;
+        long size1Dvec0 = size1Dvec;
 
         // PIAA shapes regularization
         // if regularization is turned on, the size of the evaluation vector is increased to include PIAA shape coefficients, in addition to complex amplitude in focal plane
@@ -850,7 +844,7 @@ errno_t PIAACMCsimul_exec(
         // LINEAR OPTIMIZATION AROUND CURRENT POINT
         //
 
-        iterOK = 1;
+        int iterOK = 1;
         long iter = 0;
         oldval = 1.0;
         data.image[IDstatus].array.UI16[0] = 9;
@@ -860,6 +854,9 @@ errno_t PIAACMCsimul_exec(
         //  and something about NBlinoptgain ???????
         while(iterOK == 1)
         {
+            double bestgain = 0.0;
+
+
             // for state tracking and statistics
             data.image[IDstatus].array.UI16[0] = 10;
             printf("Iteration %ld/%ld\n", iter, piaacmcsimul_var.linopt_NBiter);
@@ -973,7 +970,7 @@ errno_t PIAACMCsimul_exec(
                         {
                             errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
                                                                    piaacmcsimul_var.computePSF_ResolvedTarget,
-                                                                   piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &val);
+                                                                   piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &contrastval);
                             if( fret != RETURN_SUCCESS)
                             {
                                 FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
@@ -986,7 +983,7 @@ errno_t PIAACMCsimul_exec(
                         {
                             errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
                                                                    piaacmcsimul_var.computePSF_ResolvedTarget,
-                                                                   piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &val);
+                                                                   piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &contrastval);
                             if( fret != RETURN_SUCCESS)
                             {
                                 FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
@@ -1006,7 +1003,7 @@ errno_t PIAACMCsimul_exec(
                                 "# %5ld/%5ld %5d/%5ld %6ld %6ld    %20.15g %20.15g %20.15g      %20.15g\n",
                                 iter, piaacmcsimul_var.linopt_NBiter, i, piaacmcsimul_var.linopt_number_param,
                                 data.image[ID].md[0].nelement, size1Dvec, piaacmcsimul_var.linopt_paramdelta[i],
-                                val, valref, bestval);
+                                contrastval, valref, bestval);
                         fclose(fp);
                     }
                     // re-package vector into 1D array and add regularization terms
@@ -1141,7 +1138,7 @@ errno_t PIAACMCsimul_exec(
             NBlinoptgain = 0;
 
 
-            scangainfact = 1.2;
+            float scangainfact = 1.2;
             //alphascaninit = 0;
             // for state tracking and statistics
             data.image[IDstatus].array.UI16[0] = 19;
@@ -1154,16 +1151,16 @@ errno_t PIAACMCsimul_exec(
             for(alphareg = 0.0; alphareg < 1.01; alphareg += 0.2)
             {
                 // produce piecewise linear interoplation coefficients
-                acoeff0 = 1.0 - 2.0 * alphareg; // ranges from -1 to 1
+                double acoeff0 = 1.0 - 2.0 * alphareg; // ranges from -1 to 1
                 if(acoeff0 < 0.0)
                 {
                     acoeff0 = 0.0;    // clip to 0 to 1, = 0 if alphareg > 0.5
                 }
 
-                acoeff1 = 1.0 - fabs(2.0 * (alphareg -
+                double acoeff1 = 1.0 - fabs(2.0 * (alphareg -
                                             0.5)); // two lines: from 0,1 to .5,0 to 1,1
 
-                acoeff2 = 2.0 * alphareg - 1.0; // ranges from -1 to 1
+                double acoeff2 = 2.0 * alphareg - 1.0; // ranges from -1 to 1
                 if(acoeff2 < 0.0)
                 {
                     acoeff2 = 0.0;    // clip to 0 to 1, = 0 if alphareg < 0.5
@@ -1199,11 +1196,11 @@ errno_t PIAACMCsimul_exec(
                 data.image[IDstatus].array.UI16[0] = 21;
 
                 // do linear scan along the direction optcoeff from current parameter location
-                linscanOK = 1;
+                int linscanOK = 1;
                 // size of step in this direction
-                scangain = 0.0; //scanstepgain; overriden below
-                val = 100000000000.0; // initialize minimization objective to a big number
-                bestgain = 0.0;
+                double scangain = 0.0; //scanstepgain; overriden below
+                contrastval = 100000000000.0; // initialize minimization objective to a big number
+                //double bestgain = 0.0;
                 // iteration counter of steps in the current direction optcoeff
                 int k = 0;
 
@@ -1306,7 +1303,7 @@ errno_t PIAACMCsimul_exec(
                         }
                     }
                     // store the current objective value for later comparison
-                    valold = val;
+                    valold = contrastval;
                     // for state tracking and statistics
                     data.image[IDstatus].array.UI16[0] = 23;
 
@@ -1315,13 +1312,13 @@ errno_t PIAACMCsimul_exec(
                     {
                         errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
                                                                piaacmcsimul_var.computePSF_ResolvedTarget,
-                                                               piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &val);
+                                                               piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &contrastval);
                         if( fret != RETURN_SUCCESS)
                         {
                             FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
                         }
                     }
-                    valContrast = val; // contrast component of the evaluation metric
+                    valContrast = contrastval; // contrast component of the evaluation metric
                     // we've now only done the light portion
 
                     // add regularization component of the evaluation metrix
@@ -1331,7 +1328,7 @@ errno_t PIAACMCsimul_exec(
                     if(piaacmcsimul_var.linopt_REGPIAASHAPES == 1)
                     {
                         val0 = PIAACMCsimul_regularization_PIAAshapes_value();
-                        val += val0;
+                        contrastval += val0;
                     }
 
                     // add sag regularization (val1) if applicable, as before
@@ -1339,7 +1336,7 @@ errno_t PIAACMCsimul_exec(
                     if(piaacmcsimul_var.linopt_REGFPMSAG == 1)
                     {
                         val1 = PIAACMCsimul_regularization_fpmsag_value();;
-                        val += val1;
+                        contrastval += val1;
                     }
                     // val is now our complete objective!! Yay!!
 
@@ -1354,13 +1351,13 @@ errno_t PIAACMCsimul_exec(
                         // printf the first part of the line reporting current values
                         fprintf(fp,
                                 "##  [ %5ld / %5ld ]   %5.3f  %12lf  %12g   (reg = %12g [%1d] %12g [%1d]   contrast = %20g)       [%d] [%ld]",
-                                iter, piaacmcsimul_var.linopt_NBiter, alphareg, scangain, val, val0,
+                                iter, piaacmcsimul_var.linopt_NBiter, alphareg, scangain, contrastval, val0,
                                 piaacmcsimul_var.linopt_REGPIAASHAPES, val1, piaacmcsimul_var.linopt_REGFPMSAG,
                                 valContrast, linoptlimflagarray[k], piaacmcsimul_var.linopt_number_param);
 
                         // now add text indicating status and complete line
                         // and store all parameters for the current best solution
-                        if((val < bestval) || (initbestval == 0))
+                        if((contrastval < bestval) || (initbestval == 0))
                         {
                             for(long i = 0; i < piaacmcsimul_var.linopt_number_param; i++)
                                 if(piaacmcsimul_var.linopt_paramtype[i] == _DATATYPE_FLOAT)
@@ -1372,7 +1369,7 @@ errno_t PIAACMCsimul_exec(
                                     data.image[IDoptvec].array.F[i] = (float) *
                                                                       (piaacmcsimul_var.linopt_paramval[i]);
                                 }
-                            bestval = val;
+                            bestval = contrastval;
                             if(initbestval == 0)
                             {
                                 fprintf(fp, " ===== START POINT =====\n");
@@ -1414,7 +1411,7 @@ errno_t PIAACMCsimul_exec(
                     k++; // next step
 
                     // test to see if we're no longer getting better
-                    if(val < valold)
+                    if(contrastval < valold)
                     {
                         linscanOK = 1; // if we're getting better keep going
                         // bestgain = scangain;
@@ -1479,12 +1476,12 @@ errno_t PIAACMCsimul_exec(
                             data.image[IDoptvec].array.F[i];
                 }
             }
-            valold = val;
+            valold = contrastval;
             // compute contrast metric component -> val using the data object in the latest optimal state
             {
                 errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
                                                        piaacmcsimul_var.computePSF_ResolvedTarget,
-                                                       piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &val);
+                                                       piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &contrastval);
                 if( fret != RETURN_SUCCESS)
                 {
                     FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
@@ -1496,7 +1493,7 @@ errno_t PIAACMCsimul_exec(
             if(piaacmcsimul_var.linopt_REGPIAASHAPES == 1)
             {
                 val0 = PIAACMCsimul_regularization_PIAAshapes_value();
-                val += val0;
+                contrastval += val0;
             }
 
             // add sag regularization component if applicable
@@ -1504,14 +1501,14 @@ errno_t PIAACMCsimul_exec(
             if(piaacmcsimul_var.linopt_REGFPMSAG == 1)
             {
                 val1 = PIAACMCsimul_regularization_fpmsag_value();;
-                val += val1;
+                contrastval += val1;
             }
 
             // now val is the objective including any desired regularization terms using the
             // latest optimal solution
 
 
-            printf("gain: %lf -> val = %20g\n", bestgain, val);
+            printf("gain: %lf -> val = %20g\n", bestgain, contrastval);
             // for state tracking and statistics
             data.image[IDstatus].array.UI16[0] = 27;
 
@@ -1574,14 +1571,14 @@ errno_t PIAACMCsimul_exec(
                     printf("ERROR: cannot open file \"%s\"\n", fname);
                     exit(0);
                 }
-                fprintf(fp, "-> %5ld    %20g <- %20g \n", iter, val, valref);
-                printf("%5ld %20g %20g \n", iter, val, valref);
+                fprintf(fp, "-> %5ld    %20g <- %20g \n", iter, contrastval, valref);
+                printf("%5ld %20g %20g \n", iter, contrastval, valref);
                 fflush(stdout);
                 fclose(fp);
             }
 
             // save current best value and reference value in globals
-            piaacmcsimul_var.PIAACMCSIMUL_VAL = val;
+            piaacmcsimul_var.PIAACMCSIMUL_VAL = contrastval;
             piaacmcsimul_var.PIAACMCSIMUL_VALREF = valref;
 
 
@@ -1633,7 +1630,7 @@ errno_t PIAACMCsimul_exec(
             }
             if(iter > 2)
             {
-                if(val > 0.98 *
+                if(contrastval > 0.98 *
                         oldval) // if after second iteration and we'be improved by less than 10%
                 {
                     iterOK = 0;
@@ -1647,7 +1644,7 @@ errno_t PIAACMCsimul_exec(
 
 
             // set up for next iteration
-            oldval = val;
+            oldval = contrastval;
             iter++;
 
             printf("END OF LOOP ITERATION\n");
