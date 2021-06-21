@@ -128,7 +128,14 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
- //   double oaoffset; // off-axis offset for Lyot stop optimization
+
+    // args that determine "extended" off-axis source
+    // number of off-axis sources on each circle
+    long NBincpt = 15;
+    // number of circle radii
+    long NBkr = 5;
+
+
     imageID ID1, IDa, IDc;
 
     printf("=================================== mode 005 ===================================\n");
@@ -207,7 +214,6 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     /// Multiple off-axis sources are propagated and the corresponding intensities added
     /// - -> **OAincohc**  Output incoherent image (3D)
 
-    double oaoffset = 20.0; // off axis amplitude
     // compute the reference on-axis PSF
     {
         double cval = 0.0;
@@ -233,11 +239,7 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     float zmin = piaacmc[0].LyotZmin;
     float zmax = piaacmc[0].LyotZmax;
 
-    // args that determine "extended" off-axis source
-    // number of off-axis sources on each circle
-    long NBincpt = 15;
-    // number of circle radii
-    long NBkr = 5;
+
 
     // propagate complex amplitude in a range from zmin to zmax, where 0 is elem0
     // computes the diffracted light from the on-axis source
@@ -278,10 +280,19 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
                 // PIAACMCsimul_computePSF changes fnamea and fnamep (in call to OptSystProp_run)!
                 {
                     double cval = 0.0;
-                    errno_t fret = PIAACMCsimul_computePSF(oaoffset * (1.0 + kr) / NBkr * cos(
-                            2.0 * M_PI * k1 / NBincpt),
-                                                           oaoffset * (1.0 + kr) / NBkr * sin(2.0 * M_PI * k1 / NBincpt), 0,
-                                                           optsyst[0].NBelem, 0, 0, 0, 0, &cval);
+                    double oaoffset = 20.0; // off axis amplitude
+
+                    errno_t fret =
+                        PIAACMCsimul_computePSF(oaoffset * (1.0 + kr) / NBkr * cos( 2.0 * M_PI * k1 / NBincpt),
+                                                oaoffset * (1.0 + kr) / NBkr * sin(2.0 * M_PI * k1 / NBincpt),
+                                                0,
+                                                optsyst[0].NBelem,
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                &cval
+                                               );
                     if( fret != RETURN_SUCCESS)
                     {
                         FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
