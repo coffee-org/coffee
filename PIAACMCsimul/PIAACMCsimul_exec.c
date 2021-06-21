@@ -384,7 +384,6 @@ errno_t PIAACMCsimul_exec(
     imageID IDm, ID1D, ID1Dref;
 
     double contrastval;
-    double oldval;
 
     char stopfile[STRINGMAXLEN_FULLFILENAME];
 
@@ -680,16 +679,17 @@ errno_t PIAACMCsimul_exec(
 
         // val1 is the regularization value for the focal plane mask sag values
         // same as above, but not dependent on position
-        double val1;
+//        double val1;
         if(piaacmcsimul_var.linopt_REGFPMSAG == 1)
         {
-            val1 = PIAACMCsimul_regularization_fpmsag_value();
+            double val1 = PIAACMCsimul_regularization_fpmsag_value();
             valref += val1;
         }
-        else
+  /*      else
         {
             val1 = 0.0;
-        }
+        }*/
+
         // At this point all we've done is compute the overall performance metric including
         // regularization in valref.
 
@@ -813,7 +813,6 @@ errno_t PIAACMCsimul_exec(
         // at this point, we have completed the initialization, and the optimization loop starts
 
 
-        int initbestval = 0;
         // file that will track optimization loop progress
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
@@ -832,7 +831,7 @@ errno_t PIAACMCsimul_exec(
 
         int iterOK = 1;
         long iter = 0;
-        oldval = 1.0;
+        double oldval = 1.0;
         data.image[IDstatus].array.UI16[0] = 9;
 
         // while # of iterations < piaacmcsimul_var.linopt_NBiter
@@ -1115,7 +1114,7 @@ errno_t PIAACMCsimul_exec(
             arith_image_cstmult("optcoeff0", 0.0, "optvec"); // create optimal vector
             imageID IDoptvec = image_ID("optvec");
             // initialize the objective value
-            initbestval = 0;
+            int initbestval = 0;
             bestval = valref;
 
             double alphareg = 1.0; // has no effect (see next loop)
@@ -1321,7 +1320,7 @@ errno_t PIAACMCsimul_exec(
                     }
 
                     // add sag regularization (val1) if applicable, as before
-                    val1 = 0.0;
+                    double val1 = 0.0;
                     if(piaacmcsimul_var.linopt_REGFPMSAG == 1)
                     {
                         val1 = PIAACMCsimul_regularization_fpmsag_value();;
@@ -1478,15 +1477,15 @@ errno_t PIAACMCsimul_exec(
             }
             // add PIAA shape regularization component (val0) if applicable
             // same val0 and val1 computations are before, using the latest optimal state
-            double val0 = 0.0;
+            // double val0 = 0.0;
             if(piaacmcsimul_var.linopt_REGPIAASHAPES == 1)
             {
-                val0 = PIAACMCsimul_regularization_PIAAshapes_value();
+                double val0 = PIAACMCsimul_regularization_PIAAshapes_value();
                 contrastval += val0;
             }
 
             // add sag regularization component if applicable
-            val1 = 0.0;
+            double val1 = 0.0;
             if(piaacmcsimul_var.linopt_REGFPMSAG == 1)
             {
                 val1 = PIAACMCsimul_regularization_fpmsag_value();;
