@@ -86,7 +86,7 @@ int PIAACMCsimul_init_geomPIAA_rad(
     double *piaaM1z;
     double r0c, r1c, dx, dist, y3, r0n, slope, dz;
 
-    char fname[500];
+    char fname[STRINGMAXLEN_FULLFILENAME];
 
 #ifdef PIAASIMUL_LOGFUNC0
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__, "");
@@ -311,7 +311,7 @@ int PIAACMCsimul_init_geomPIAA_rad(
 
 
 
-    sprintf(fname, "%s/pup01.prof", piaacmcsimul_var.piaacmcconfdir);
+    WRITE_FULLFILENAME(fname, "%s/pup01.prof", piaacmcsimul_var.piaacmcconfdir);
     fp = fopen(fname, "w");
     for(ii=0; ii<piaacmc[0].NBradpts; ii++)
     {
@@ -457,7 +457,7 @@ int PIAACMCsimul_init_geomPIAA_rad(
         piaaM1z[i+1] = piaaM1z[i] + slope*(piaar10[i+1]-r1c)*piaacmc[0].beamrad;
     }
 
-    sprintf(fname, "%s/PIAA_Mshapes.txt", piaacmcsimul_var.piaacmcconfdir);
+    WRITE_FULLFILENAME(fname, "%s/PIAA_Mshapes.txt", piaacmcsimul_var.piaacmcconfdir);
     fp = fopen(fname, "w");
     for(ii=0; ii<piaacmc[0].NBradpts; ii++)
         fprintf(fp, "%18.16f %18.16f %18.16f %18.16f\n", piaar00[ii]*piaacmc[0].beamrad, piaaM0z[ii], piaar10[ii]*piaacmc[0].beamrad, piaaM1z[ii]);

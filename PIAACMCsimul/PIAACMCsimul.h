@@ -19,7 +19,7 @@
 typedef struct
 {
 
-    char piaacmcconfdir[300];          ///  Current configuration directory
+    char piaacmcconfdir[STRINGMAXLEN_DIRNAME];          ///  Current configuration directory
     int optsystinit;
 
     int FORCE_CREATE_Cmodes;
