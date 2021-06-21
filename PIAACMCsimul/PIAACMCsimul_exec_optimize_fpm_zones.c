@@ -65,7 +65,7 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
     double centobs0 = 0.3;
     double centobs1 = 0.2;
 
-    char stopfile[500];
+    char stopfile[STRINGMAXLEN_FULLFILENAME];
 
 
 
@@ -73,7 +73,7 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
     long k;
 
     //imageID IDstatus;
-    char fname[1500];
+    char fname[STRINGMAXLEN_FULLFILENAME];
 
     FILE *fp;
 
@@ -91,7 +91,7 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
 
 
     // set the name of the stopfile
-    sprintf(stopfile, "%s/stoploop13.txt", piaacmcsimul_var.piaacmcconfdir);
+    WRITE_FULLFILENAME(stopfile, "%s/stoploop13.txt", piaacmcsimul_var.piaacmcconfdir);
 
 
 
@@ -134,7 +134,7 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
     //data.image[IDstatus].array.UI16[0] = 1;
 
     // tracking diagnostic, giving the total flux in each plane
-    sprintf(fname, "%s/tmp_flux.txt", piaacmcsimul_var.piaacmcconfdir);
+    WRITE_FULLFILENAME(fname, "%s/tmp_flux.txt", piaacmcsimul_var.piaacmcconfdir);
     fp = fopen(fname, "r");
     for(elem = 0; elem < optsyst[0].NBelem; elem++)
     {
@@ -188,7 +188,7 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
 
     // get the FPMresp array computed in mode 11
     PIAACMCsimul_update_fnamedescr_conf();
-    sprintf(fname, "%s/FPMresp%d.%s.fits", piaacmcsimul_var.piaacmcconfdir,
+    WRITE_FULLFILENAME(fname, "%s/FPMresp%d.%s.fits", piaacmcsimul_var.piaacmcconfdir,
             piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr_conf);
 
 
@@ -229,7 +229,7 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
     //data.image[IDstatus].array.UI16[0] = 3;
 
     // read the contrast normalization factor into CnormFactor
-    sprintf(fname, "%s/CnormFactor.txt", piaacmcsimul_var.piaacmcconfdir);
+    WRITE_FULLFILENAME(fname, "%s/CnormFactor.txt", piaacmcsimul_var.piaacmcconfdir);
     fp = fopen(fname, "r");
     {
         int fscanfcnt;
