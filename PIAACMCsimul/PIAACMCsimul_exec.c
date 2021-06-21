@@ -417,15 +417,6 @@ errno_t PIAACMCsimul_exec(
 
 
 
-#ifdef PIAASIMUL_LOGFUNC0
-    sprintf(flogcomment, "%s %ld", confindex, mode);
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
-                                 flogcomment);
-#endif
-
-
-
-
     piaacmcsimul_var.linopt_REGPIAASHAPES = 0;
 
     piaacmcsimul_var.linopt_piaa0C_regcoeff = 0.0e-7;
@@ -504,8 +495,8 @@ errno_t PIAACMCsimul_exec(
 
 
     // set the result directories
-    sprintf(piaacmcsimul_var.piaacmcconfdir, "%s", confindex);
-    sprintf(data.SAVEDIR, "%s", piaacmcsimul_var.piaacmcconfdir);
+    snprintf(piaacmcsimul_var.piaacmcconfdir, STRINGMAXLEN_DIRNAME, "%s", confindex);
+    snprintf(data.SAVEDIR, STRINGMAXLEN_DIRNAME, "%s", piaacmcsimul_var.piaacmcconfdir);
 
 
     piaacmcsimul_var.linopt_NBiter       = 1000;
@@ -712,11 +703,14 @@ errno_t PIAACMCsimul_exec(
 
         // val1 is the regularization value for the focal plane mask sag values
         // same as above, but not dependent on position
-        val1 = 0.0;
         if(piaacmcsimul_var.linopt_REGFPMSAG == 1)
         {
             val1 = PIAACMCsimul_regularization_fpmsag_value();
             valref += val1;
+        }
+        else
+        {
+            val1 = 0.0;
         }
         // At this point all we've done is compute the overall performance metric including
         // regularization in valref.
