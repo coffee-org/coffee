@@ -112,12 +112,6 @@ errno_t PIAACMCsimul_computePSF(
     // size of one side of each image array
     uint32_t size = piaacmc[0].size;
 
-    // number of pixels in each image
-//    uint64_t size2 = size * size;
-
-    //printf("Loading (optional) OPDerr file\n");
-    //fflush(stdout);
-
     // load an error if it exists
     imageID IDopderrC = image_ID("OPDerrC");
     long nbOPDerr = 0;
@@ -126,9 +120,6 @@ errno_t PIAACMCsimul_computePSF(
         load_fits("OPDerrC.fits", "OPDerrC", 0, &IDopderrC);
     }
 
-
-
-
     if(IDopderrC != -1)
     {
         uint8_t naxis = data.image[IDopderrC].md[0].naxis;
@@ -136,19 +127,10 @@ errno_t PIAACMCsimul_computePSF(
         {
             nbOPDerr = data.image[IDopderrC].md[0].size[2];    // number of error arrays
         }
-        else
-        {
-            nbOPDerr = 0;
-        }
         printf("INCLUDING %ld OPD ERROR MODES\n", nbOPDerr);
         fflush(stdout);
     }
-    else
-    {
-        //printf("NO OPD ERROR MODES\n");
-        //fflush(stdout);
-        nbOPDerr = 0;
-    }
+
     // focal plane plate scale in lambda/D per pixel
     focscale = (2.0 * piaacmc[0].beamrad / piaacmc[0].pixscale) / piaacmc[0].size;
 
