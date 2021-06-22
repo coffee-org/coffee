@@ -336,8 +336,7 @@ static errno_t init_module_CLI()
     // add atexit functions here
     atexit(PIAACMCsimul_free);
 
-    return 0;
-
+    return RETURN_SUCCESS;
 }
 
 

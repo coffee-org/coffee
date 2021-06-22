@@ -404,6 +404,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
 
             if(ID == -1)
             {
+                list_image_ID();
                 FUNC_RETURN_FAILURE("image ID not found");
             }
 

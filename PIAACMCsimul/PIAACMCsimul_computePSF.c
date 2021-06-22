@@ -242,13 +242,15 @@ errno_t PIAACMCsimul_computePSF(
     {
         /// Compute the PSF as the complex amplitude for the evaluation points on the focal plane
         /// for a given FPM zone thickness based on the FPMresp array computed in mode 11
-        PIAACMCsimul_achromFPMsol_eval(piaacmcsimul_var.fpmresp_array,
-                                       piaacmcsimul_var.zonez_array,
-                                       piaacmcsimul_var.dphadz_array,
-                                       piaacmcsimul_var.outtmp_array,
-                                       piaacmcsimul_var.vsize,
-                                       data.image[piaacmc[0].zonezID].md[0].size[0],
-                                       optsyst[0].nblambda);
+        PIAACMCsimul_achromFPMsol_eval(
+            piaacmcsimul_var.fpmresp_array,
+            piaacmcsimul_var.zonez_array,
+            piaacmcsimul_var.dphadz_array,
+            piaacmcsimul_var.outtmp_array,
+            piaacmcsimul_var.vsize,
+            data.image[piaacmc[0].zonezID].md[0].size[0],
+            optsyst[0].nblambda
+        );
 
 //		printf("FAST FPMresp CALLED\n");
 //		sleep(1000000);//TEST
@@ -416,7 +418,7 @@ errno_t PIAACMCsimul_computePSF(
                 //save_fits("psfi0", fname);
                 imindex++;
 
-
+                DEBUG_TRACEPOINT(" ");
                 // do the same for the third point
 
                 pha = 4.0 * M_PI / 3.0; // 2/3 around the circle

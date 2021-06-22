@@ -52,7 +52,7 @@ extern OPTPIAACMCDESIGN *piaacmc;
  * @note Index allows multiple configurations, but it's always 0.  Nonzero values are untested
  *
  */
-void PIAACMCsimul_init(
+errno_t PIAACMCsimul_init(
     OPTPIAACMCDESIGN *design,
     long index,
     double TTxld,
@@ -717,9 +717,8 @@ void PIAACMCsimul_init(
         fclose(fp);
     }
 
-
-
-
     piaacmcsimul_var.optsystinit = 1;
+
+    return RETURN_SUCCESS;
 }
 

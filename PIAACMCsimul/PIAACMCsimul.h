@@ -296,7 +296,7 @@ void  PIAACMCsimul_free(void);
 /**
  * @brief initializes the optsyst structure to simulate reflective PIAACMC system
  */
-void PIAACMCsimul_init(OPTPIAACMCDESIGN *design, long index, double TTxld,
+errno_t PIAACMCsimul_init(OPTPIAACMCDESIGN *design, long index, double TTxld,
                        double TTyld);
 
 
