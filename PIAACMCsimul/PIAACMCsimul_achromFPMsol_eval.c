@@ -2,13 +2,6 @@
  * @file    PIAACMCsimul_achromFPMsol_eval.c
  * @brief   PIAA-type coronagraph design, run
  *
- * Can design both APLCMC and PIAACMC coronagraphs
- *
- * @author  O. Guyon
- * @date    2017-12-23
- *
- *
- * @bug No known bugs.
  *
  */
 
@@ -18,6 +11,8 @@
 #include <stdio.h>
 #include <math.h>
 
+
+#include "CommandLineInterface/CLIcore.h"
 
 #include "OptSystProp/OptSystProp.h"
 #include "PIAACMCsimul/PIAACMCsimul.h"
@@ -54,7 +49,7 @@ double PIAACMCsimul_achromFPMsol_eval(
     long nbl
 )
 {
-
+    DEBUG_TRACE_FSTART();
 //	long evali;
 //	long evalk, evalki, evalki1, evalmz, evalii, evalii1, evalii2, evalkv;
 //	double evalcosp, evalsinp, evalre, evalim, evalre1, evalim1, evalpha;
@@ -154,6 +149,7 @@ double PIAACMCsimul_achromFPMsol_eval(
     //  evalval /= vsize*nbl;
 
     // note that evalval is prop to bumber of spectral channels x number of evaluation pixels
+    DEBUG_TRACE_FEXIT();
     return evalval;
 }
 

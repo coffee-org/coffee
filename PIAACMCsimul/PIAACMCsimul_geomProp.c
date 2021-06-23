@@ -4,8 +4,6 @@
  *
  * Uses local slopes of sag map to propagate (un-corrected intensity only) a beam
  *
- * @bug No known bugs.
- *
  */
 
 
@@ -63,7 +61,6 @@ extern OPTPIAACMCDESIGN *piaacmc;
  * @param[in]	kstep			float : step size in input pupil [pixel]
  * @param[in]	rlim			float : clear aperture radius (don't compute outside this value) [pixel]
 */
-
 long PIAACMCsimul_geomProp(
     const char *IDin_name,
     const char *IDsag_name,
@@ -77,22 +74,22 @@ long PIAACMCsimul_geomProp(
     float rlim
 )
 {
+    DEBUG_TRACE_FSTART();
 
 
-    long IDin = image_ID(IDin_name);
-    long xsize = data.image[IDin].md[0].size[0];
-    long ysize = data.image[IDin].md[0].size[1];
+    imageID IDin = image_ID(IDin_name);
+    uint32_t xsize = data.image[IDin].md[0].size[0];
+    uint32_t ysize = data.image[IDin].md[0].size[1];
 
-    long IDsag = image_ID(IDsag_name);
+    imageID IDsag = image_ID(IDsag_name);
 
-    long IDout = create_2Dimage_ID(IDout_name, xsize, ysize);
-    long IDoutcnt = create_2Dimage_ID(IDoutcnt_name, xsize, ysize);
+    imageID IDout = create_2Dimage_ID(IDout_name, xsize, ysize);
+    imageID IDoutcnt = create_2Dimage_ID(IDoutcnt_name, xsize, ysize);
 
     printf("kstep = %f\n", kstep);
 
-    float x, y;
-    for ( x = 0.5*xsize-rlim; x < 0.5*xsize+rlim; x += kstep )
-        for ( y = 0.5*ysize-rlim; y < 0.5*ysize+rlim; y += kstep )
+    for (float x = 0.5*xsize-rlim; x < 0.5*xsize+rlim; x += kstep )
+        for (float y = 0.5*ysize-rlim; y < 0.5*ysize+rlim; y += kstep )
         {
             long ii0 = (long) (x+0.5);
             long jj0 = (long) (y+0.5);
@@ -116,7 +113,7 @@ long PIAACMCsimul_geomProp(
                 exit(0);
             }
             if(iimax>xsize-1) {
-                printf("ERROR %s line %d : iimax = %ld > %ld  ii0 = %ld\n", __FILE__, __LINE__, iimax, xsize-1, ii0);
+                printf("ERROR %s line %d : iimax = %ld > %ld  ii0 = %ld\n", __FILE__, __LINE__, iimax, (long) (xsize-1), ii0);
                 exit(0);
             }
 
@@ -125,7 +122,7 @@ long PIAACMCsimul_geomProp(
                 exit(0);
             }
             if(jjmax>ysize-1) {
-                printf("ERROR %s line %d : jjmax = %ld > %ld  jj0 = %ld\n", __FILE__, __LINE__, jjmax, ysize-1, jj0);
+                printf("ERROR %s line %d : jjmax = %ld > %ld  jj0 = %ld\n", __FILE__, __LINE__, jjmax, (long) (ysize-1), jj0);
                 exit(0);
             }
 
@@ -175,7 +172,8 @@ long PIAACMCsimul_geomProp(
         }
 
 
-    return(IDout);
+    DEBUG_TRACE_FEXIT();
+    return IDout;
 }
 
 

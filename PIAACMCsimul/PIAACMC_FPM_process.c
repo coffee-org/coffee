@@ -23,25 +23,22 @@
 
 
 
-
-
-
-long PIAACMC_FPM_process(
+errno_t PIAACMC_FPM_process(
     const char *FPMsag_name,
     const char *zonescoord_name,
     long NBexp,
     const char *outname
 )
 {
-    long IDin;
+    DEBUG_TRACE_FSTART();
+
+    imageID IDin;
     long NBzones;
     int atype;
 
     double *sagarray_in;
     double *sagarray_out;
-    long zone;
     double sagmax, sagmin;
-    long k;
     long NBsagsteps;
 
     double *sagstepval;
@@ -49,7 +46,7 @@ long PIAACMC_FPM_process(
     FILE *fpout;
 
 
-	(void) zonescoord_name;
+    (void) zonescoord_name;
 
 #ifdef PIAASIMUL_LOGFUNC0
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
@@ -63,16 +60,16 @@ long PIAACMC_FPM_process(
 
     switch(atype)
     {
-        case _DATATYPE_DOUBLE:
-            printf("atype = _DATATYPE_DOUBLE\n");
-            break;
-        case _DATATYPE_FLOAT:
-            printf("atype = _DATATYPE_FLOAT\n");
-            break;
-        default :
-            printf("ERROR: atype not supported\n");
-            exit(0);
-            break;
+    case _DATATYPE_DOUBLE:
+        printf("atype = _DATATYPE_DOUBLE\n");
+        break;
+    case _DATATYPE_FLOAT:
+        printf("atype = _DATATYPE_FLOAT\n");
+        break;
+    default :
+        printf("ERROR: atype not supported\n");
+        exit(0);
+        break;
     }
 
     printf("%ld zones\n", NBzones);
@@ -80,7 +77,7 @@ long PIAACMC_FPM_process(
     sagarray_out = (double *) malloc(sizeof(double) * NBzones);
 
 
-    for(zone = 0; zone < NBzones; zone++)
+    for(long zone = 0; zone < NBzones; zone++)
     {
         if(atype == _DATATYPE_FLOAT)
         {
@@ -94,7 +91,7 @@ long PIAACMC_FPM_process(
 
     sagmin = sagarray_in[0];
     sagmax = sagarray_in[0];
-    for(zone = 1; zone < NBzones; zone++)
+    for(long zone = 1; zone < NBzones; zone++)
     {
         if(sagarray_in[zone] < sagmin)
         {
@@ -109,7 +106,7 @@ long PIAACMC_FPM_process(
     printf("Sag range [um]  :   %10.8f  ->  %10.8f\n", sagmin * 1.0e6,
            sagmax * 1.0e6);
     NBsagsteps = 2;
-    for(k = 1; k < NBexp; k++)
+    for(long k = 1; k < NBexp; k++)
     {
         NBsagsteps *= 2;
     }
@@ -119,7 +116,7 @@ long PIAACMC_FPM_process(
     fp = fopen("saglevels.dat", "w");
 
     sagstepval = (double *) malloc(sizeof(double) * NBsagsteps);
-    for(k = 0; k < NBsagsteps; k++)
+    for(long k = 0; k < NBsagsteps; k++)
     {
         sagstepval[k] = sagmin + (sagmax - sagmin) * k / NBsagsteps + 0.5 *
                         (sagmax - sagmin) / NBsagsteps;
@@ -133,9 +130,9 @@ long PIAACMC_FPM_process(
 
 
     //for(zone=0; zone<NBzones; zone++)
-    for(zone = 0; zone < NBzones; zone++)
+    for(long zone = 0; zone < NBzones; zone++)
     {
-        k = (long)((sagarray_in[zone] - sagmin) / ((sagmax - sagmin) / NBsagsteps));
+        long k = (long)((sagarray_in[zone] - sagmin) / ((sagmax - sagmin) / NBsagsteps));
         if(sagarray_in[zone] > sagstepval[NBsagsteps - 1])
         {
             k = NBsagsteps - 1;
@@ -150,7 +147,8 @@ long PIAACMC_FPM_process(
     free(sagarray_in);
     free(sagarray_out);
 
-    return 0;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 

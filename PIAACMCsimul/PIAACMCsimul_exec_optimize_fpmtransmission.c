@@ -52,8 +52,10 @@ is between 0 and 1
 
 Uses single on-axis light source
 **/
-int PIAACMCsimul_exec_optimize_fpmtransmission()
+errno_t PIAACMCsimul_exec_optimize_fpmtransmission()
 {
+    DEBUG_TRACE_FSTART();
+
     imageID IDv;
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
@@ -186,5 +188,6 @@ int PIAACMCsimul_exec_optimize_fpmtransmission()
         piaacmcsimul_var.piaacmcconfdir);  // save final result to disk
     piaacmcsimul_var.FORCE_CREATE_fpmza = 0; // turning off to be good citizens
 
-    return 0;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }

@@ -86,6 +86,8 @@ errno_t PIAACMCsimul_computePSF(
     double *contrastval /// @param[out]  contrastval *double : contrast value
 )
 {
+    DEBUG_TRACE_FSTART();
+
     // how to measure quality
     float focscale; // l/D per pix
     float scoringIWA = 1.5;
@@ -1022,6 +1024,7 @@ errno_t PIAACMCsimul_computePSF(
 
     *contrastval = avContrast;
 
+    DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;
 }
 

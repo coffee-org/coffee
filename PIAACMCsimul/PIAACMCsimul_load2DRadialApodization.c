@@ -2,10 +2,6 @@
  * @file    PIAACMCsimul_load2DRadialApodization.c
  * @brief   PIAA-type coronagraph design
  *
- * Can design both APLCMC and PIAACMC coronagraphs
- *
- *
- * @bug No known bugs.
  *
  */
 
@@ -39,12 +35,14 @@ extern PIAACMCsimul_varType piaacmcsimul_var;
 // load and fit radial apodization profile
 // modal basis is mk(r) : cos(r*k*M_PI/1.3)
 //
-uint_fast8_t PIAACMCsimul_load2DRadialApodization(
+errno_t PIAACMCsimul_load2DRadialApodization(
     const char *IDapo_name,
     float beamradpix,
     const char *IDapofit_name
 )
 {
+    DEBUG_TRACE_FSTART();
+
     long kmax = 10;
     float eps = 1.0e-4;
     int debug = 0;
@@ -128,7 +126,8 @@ uint_fast8_t PIAACMCsimul_load2DRadialApodization(
     delete_image_ID("fitmaskapo", DELETE_IMAGE_ERRMODE_WARNING);
 
 
-    return 0;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 

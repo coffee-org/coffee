@@ -62,10 +62,12 @@ extern OPTPIAACMCDESIGN *piaacmc;
 /**
  * @param[out]  IDname  Name of output image
  */
-long PIAACMCsimul_mkFPM_zonemap(
+imageID PIAACMCsimul_mkFPM_zonemap(
     const char *IDname
 )
 {
+    DEBUG_TRACE_FSTART();
+
     FILE *fp;
     char fname[STRINGMAXLEN_FULLFILENAME];
     uint32_t *sizearray;
@@ -435,5 +437,6 @@ long PIAACMCsimul_mkFPM_zonemap(
     printf("NUMBER OF ZONES = %ld\n", piaacmc[0].focmNBzone); //TEST
 
 
+    DEBUG_TRACE_FEXIT();
     return ID;
 }

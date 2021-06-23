@@ -47,8 +47,10 @@ Vary these zpos, looking for the best contrast returned by PIAACMCsimul_computeP
 
 Search is performed by iterative refined marching
 **/
-int PIAACMCsimul_exec_optimize_lyot_stop_position()
+errno_t PIAACMCsimul_exec_optimize_lyot_stop_position()
 {
+    DEBUG_TRACE_FSTART();
+
     imageID IDv;
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
@@ -216,6 +218,8 @@ int PIAACMCsimul_exec_optimize_lyot_stop_position()
     }
     PIAACMCsimul_savepiaacmcconf(piaacmcsimul_var.piaacmcconfdir);
 
-    return 0;
+
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 

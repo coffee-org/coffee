@@ -38,11 +38,13 @@ extern OPTPIAACMCDESIGN *piaacmc;
 /// piaa0Cz + piaa0Fz -> piaam0z
 ///
 
-int PIAACMCsimul_makePIAAshapes(
+errno_t PIAACMCsimul_makePIAAshapes(
     OPTPIAACMCDESIGN *design,
     long index
 )
 {
+    DEBUG_TRACE_FSTART();
+
 #ifdef PIAASIMUL_LOGFUNC0
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
                                  "");
@@ -182,13 +184,13 @@ int PIAACMCsimul_makePIAAshapes(
                     }
                 }
                 double ri0 = OpticsMaterials_n(design[index].PIAAmaterial_code,
-                                        design[index].lambda); // refractive index at central lambda
+                                               design[index].lambda); // refractive index at central lambda
                 double sag2opd_coeff0 = (ri0 - 1.0) / 2.0;
                 for(long k = 0; k < design[index].nblambda; k++)
                 {
                     // sag to OPD coeff
                     double ri = OpticsMaterials_n(design[index].PIAAmaterial_code,
-                                           piaacmc[0].lambdaarray[k]); // refractive index
+                                                  piaacmc[0].lambdaarray[k]); // refractive index
                     double sag2opd_coeff = (ri - 1.0) / 2.0;
                     fprintf(fpri, "%g %.16f %.16f %.16f %.16f\n", piaacmc[0].lambdaarray[k], ri,
                             ri0, sag2opd_coeff, sag2opd_coeff / sag2opd_coeff0);
@@ -303,13 +305,13 @@ int PIAACMCsimul_makePIAAshapes(
                     }
                 }
                 double ri0 = OpticsMaterials_n(design[index].PIAAmaterial_code,
-                                        design[index].lambda); // refractive index at central lambda
+                                               design[index].lambda); // refractive index at central lambda
                 double sag2opd_coeff0 = (ri0 - 1.0) / 2.0;
                 for(long k = 0; k < piaacmc[0].nblambda; k++)
                 {
                     // sag to OPD coeff
                     double ri = OpticsMaterials_n(design[index].PIAAmaterial_code,
-                                           piaacmc[0].lambdaarray[k]); // refractive index
+                                                  piaacmc[0].lambdaarray[k]); // refractive index
                     double sag2opd_coeff = (ri - 1.0) / 2.0;
                     fprintf(fpri, "%g %.16f %.16f %.16f %.16f\n", piaacmc[0].lambdaarray[k], ri,
                             ri0, sag2opd_coeff, sag2opd_coeff / sag2opd_coeff0);
@@ -337,6 +339,7 @@ int PIAACMCsimul_makePIAAshapes(
         }
     }
 
+    DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;
 }
 

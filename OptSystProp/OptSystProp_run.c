@@ -44,6 +44,8 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                         int         sharedmem
                        )
 {
+    DEBUG_TRACE_FSTART();
+
     long size;
     long nblambda;
     uint64_t size2;
@@ -337,6 +339,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 printf("ERROR: Surface ID does not exist\n");
                 printf("   %s %d\n", __FILE__, __LINE__);
                 printf("   Function %s return FAILURE\n", __func__);
+                DEBUG_TRACE_FEXIT();
                 return RETURN_FAILURE;
             }
 
@@ -843,7 +846,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
             arith_image_mult(imnameamp, imnameamp, imname); // intensity is amp^2
 
             double total = arith_image_total(imname) /
-                    nblambda; // total flux "averaged" over wavelength
+                           nblambda; // total flux "averaged" over wavelength
             printf("TOTAL = %lf\n", total);
 
 
@@ -862,6 +865,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
 
     free(imsizearray);
 
+    DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;
 }
 

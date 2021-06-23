@@ -76,7 +76,9 @@ imageID PIAACMCsimul_rings2sectors(
     const char *IDout_name
 )
 {
-    long IDin, IDout;
+    DEBUG_TRACE_FSTART();
+
+    imageID IDin, IDout;
     FILE *fp;
     long nbring, nbzone;
     long tmpl1, tmpl2;
@@ -112,6 +114,7 @@ imageID PIAACMCsimul_rings2sectors(
 
     printf("%ld zones in %ld rings\n", nbzone, nbring);
 
+    DEBUG_TRACE_FEXIT();
     return(IDout);
 }
 

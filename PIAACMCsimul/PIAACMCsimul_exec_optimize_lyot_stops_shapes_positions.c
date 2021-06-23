@@ -58,11 +58,12 @@ extern OPTPIAACMCDESIGN *piaacmc;
  * @param[out] test_oals_index.fits      FITS : z-index for each pixel of the 2D output minimum
  *
 */
-
-long PIAACMCsimul_optimizeLyotStop_offaxis_min(
+errno_t PIAACMCsimul_optimizeLyotStop_offaxis_min(
     const char *IDincohc_name
 )
 {
+    DEBUG_TRACE_FSTART();
+
 #ifdef PIAASIMUL_LOGFUNC0
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
                                  "");
@@ -103,7 +104,8 @@ long PIAACMCsimul_optimizeLyotStop_offaxis_min(
     save_fits("oals_index", "test_oals_index.fits");
     save_fits("oals_val", "test_oals_val.fits");
 
-    return 0;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 
@@ -124,6 +126,8 @@ long PIAACMCsimul_optimizeLyotStop_offaxis_min(
   */
 errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
 {
+    DEBUG_TRACE_FSTART();
+
     imageID IDv;
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
@@ -395,6 +399,7 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
                                piaacmcsimul_var.piaacmcconfdir, ls, piaacmcsimul_var.piaacmcconfdir, ls);
     }
 
+    DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;
 }
 

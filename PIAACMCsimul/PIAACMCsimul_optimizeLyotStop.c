@@ -74,6 +74,8 @@ double PIAACMCsimul_optimizeLyotStop(
     long NBmasks
 )
 {
+    DEBUG_TRACE_FSTART();
+
     // initial guess places Lyot stops regularly from zmin to zmax
     // light propagates from zmin to zmax
     // we start with a single mask in zmax, and work back
@@ -455,6 +457,7 @@ double PIAACMCsimul_optimizeLyotStop(
 
     delete_image_ID("LMzonemap", DELETE_IMAGE_ERRMODE_WARNING);
 
+    DEBUG_TRACE_FEXIT();
     return(ratio);
 }
 

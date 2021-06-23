@@ -214,18 +214,7 @@ static errno_t init_module_CLI()
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
                                  "");
 #endif
-    /*
-        strcpy(data.cmd[data.NBcmd].key, "piaacmcsimring2sect");
-        strcpy(data.cmd[data.NBcmd].module, __FILE__);
-        data.cmd[data.NBcmd].fp = PIAACMCsimul_rings2sectors_cli;
-        strcpy(data.cmd[data.NBcmd].info, "turn ring fpm design into sectors");
-        strcpy(data.cmd[data.NBcmd].syntax,
-               "<input ring fpm> <zone-ring table> <output sector fpm>");
-        strcpy(data.cmd[data.NBcmd].example, "piaacmcsimring2sect");
-        strcpy(data.cmd[data.NBcmd].Ccall,
-               "long PIAACMCsimul_rings2sectors(const char *IDin_name, const char *sectfname, const char *IDout_name)");
-        data.NBcmd++;
-    */
+
 
     CLIADDCMD_PIAACMCsimul__ring2sectors();
 

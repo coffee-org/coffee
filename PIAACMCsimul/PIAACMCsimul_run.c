@@ -248,6 +248,7 @@ errno_t PIAACMCsimul_run(
     long mode					/// @param[in] mode			operation to be executed
 )
 {
+    DEBUG_TRACE_FSTART();
 
 #ifdef PIAASIMUL_LOGFUNC0
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
@@ -855,6 +856,7 @@ errno_t PIAACMCsimul_run(
 
     free(piaacmc);
 
+    DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;
 }
 

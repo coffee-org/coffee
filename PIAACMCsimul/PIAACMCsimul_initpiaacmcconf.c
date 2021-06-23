@@ -207,7 +207,7 @@ extern OPTPIAACMCDESIGN *piaacmc;
  *
  *
  */
-int PIAACMCsimul_initpiaacmcconf(
+errno_t PIAACMCsimul_initpiaacmcconf(
     long    piaacmctype,
     double  fpmradld,
     double  centobs0,
@@ -216,6 +216,8 @@ int PIAACMCsimul_initpiaacmcconf(
     int     load
 )
 {
+    DEBUG_TRACE_FSTART();
+
     FILE *fp;
     float beamradpix;
     long NBpiaacmcdesign = 1;
@@ -1684,7 +1686,7 @@ int PIAACMCsimul_initpiaacmcconf(
         PIAACMCsimul_savepiaacmcconf(piaacmcsimul_var.piaacmcconfdir);
     }
 
-
-    return(0);
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 

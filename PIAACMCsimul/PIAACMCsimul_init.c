@@ -59,6 +59,8 @@ errno_t PIAACMCsimul_init(
     double TTyld
 )
 {
+    DEBUG_TRACE_FSTART();
+
     long size;
     long nblambda;
     uint64_t size2;
@@ -669,7 +671,7 @@ errno_t PIAACMCsimul_init(
         // not in WFIRST design, skipping, but it looks very straightforward
 
         snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "back end pupil stop  (rad = %f)",
-                design[index].pupoutmaskrad);
+                 design[index].pupoutmaskrad);
 
         optsyst[0].elemtype[elem] = 1;
         {
@@ -719,6 +721,7 @@ errno_t PIAACMCsimul_init(
 
     piaacmcsimul_var.optsystinit = 1;
 
+    DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;
 }
 

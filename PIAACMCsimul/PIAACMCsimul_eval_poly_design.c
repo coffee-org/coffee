@@ -33,8 +33,10 @@ extern OPTPIAACMCDESIGN *piaacmc;
 
 
 
-int PIAACMCsimul_eval_poly_design()
+errno_t PIAACMCsimul_eval_poly_design()
 {
+    DEBUG_TRACE_FSTART();
+
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
@@ -782,7 +784,8 @@ int PIAACMCsimul_eval_poly_design()
         }
     }
 
-    return 0;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 

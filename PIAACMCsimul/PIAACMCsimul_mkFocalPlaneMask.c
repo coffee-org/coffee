@@ -66,16 +66,18 @@ if mode is invalid number, no focal plane mask, AND assume 1-fpm is computed
 
  zone numbering starts here from 1 (zone 1 = outermost ring)
 */
-long PIAACMCsimul_mkFocalPlaneMask(
+imageID PIAACMCsimul_mkFocalPlaneMask(
     const char *IDzonemap_name,
     const char *ID_name,
     int mode,
     int saveMask
 )
 {
+    DEBUG_TRACE_FSTART();
+
     uint32_t size;
 
-  //  double fpscale; // [m/pix]
+    //  double fpscale; // [m/pix]
     uint64_t size2;
 
     uint_fast8_t CentCone = 0;
@@ -138,7 +140,7 @@ long PIAACMCsimul_mkFocalPlaneMask(
 
     // pixel scale [m/pix] at first wavelength in array
     double fpscale = (2.0 * piaacmc[0].beamrad / piaacmc[0].pixscale) / piaacmc[0].size /
-              piaacmc[0].fpzfactor * optsyst[0].lambdaarray[0] * piaacmc[0].Fratio;
+                     piaacmc[0].fpzfactor * optsyst[0].lambdaarray[0] * piaacmc[0].Fratio;
     printf("piaacmc[0].fpmRad = %g m    fpscale[0] = %g m/pix   mode = %d\n",
            piaacmc[0].fpmRad, fpscale, mode);
 
@@ -516,5 +518,6 @@ long PIAACMCsimul_mkFocalPlaneMask(
     free(sinphaarray);
 
 
+    DEBUG_TRACE_FEXIT();
     return(ID);
 }

@@ -278,7 +278,7 @@ void __attribute__((constructor)) libinit_PIAACMCsimul();
  * Registers command line interface (CLI) commands
  *
  */
-int_fast8_t init_PIAACMCsimul();
+errno_t init_PIAACMCsimul();
 
 
 //static void PIAACMCsimul_logFunctionCall(char *LogFileName,
@@ -303,22 +303,22 @@ errno_t PIAACMCsimul_init(OPTPIAACMCDESIGN *design, long index, double TTxld,
 /**
  * @brief initializes configuration
  */
-int PIAACMCsimul_initpiaacmcconf(long piaacmctype, double fpmradld,
+errno_t PIAACMCsimul_initpiaacmcconf(long piaacmctype, double fpmradld,
                                  double centobs0, double centobs1, int WFCmode, int load);
 
 
-int PIAACMCsimul_update_fnamedescr_conf();
-int PIAACMCsimul_update_fnamedescr();
+errno_t PIAACMCsimul_update_fnamedescr_conf();
+errno_t PIAACMCsimul_update_fnamedescr();
 
 /**
  * @brief Save configuration
  */
-int PIAACMCsimul_savepiaacmcconf(const char *dname);
+errno_t PIAACMCsimul_savepiaacmcconf(const char *dname);
 
 /**
  * @brief Load configuration
  */
-int PIAACMCsimul_loadpiaacmcconf(const char *dname);
+errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname);
 
 
 ///@}
@@ -335,12 +335,12 @@ int PIAACMCsimul_loadpiaacmcconf(const char *dname);
 /* =============================================================================================== */
 /* =============================================================================================== */
 
-long PIAACMCsimul_mkFPM_zonemap(const char *IDname);
+imageID PIAACMCsimul_mkFPM_zonemap(const char *IDname);
 
 long PIAACMCsimul_rings2sectors(const char *IDin_name, const char *sectfname,
                                 const char *IDout_name);
 
-long PIAACMCsimul_mkFocalPlaneMask(const char *IDzonemap_name,
+imageID PIAACMCsimul_mkFocalPlaneMask(const char *IDzonemap_name,
                                    const char *ID_name,  int mode, int saveMask);
 
 ///@}
@@ -356,15 +356,15 @@ long PIAACMCsimul_mkFocalPlaneMask(const char *IDzonemap_name,
 /* =============================================================================================== */
 /* =============================================================================================== */
 
-uint_fast8_t PIAACMCsimul_load2DRadialApodization(const char *IDapo_name,
+errno_t PIAACMCsimul_load2DRadialApodization(const char *IDapo_name,
         float beamradpix, const char *IDapofit_name);
 
-int PIAACMCsimul_init_geomPIAA_rad(const char *IDapofit_name);
+errno_t PIAACMCsimul_init_geomPIAA_rad(const char *IDapofit_name);
 
-int PIAACMCsimul_mkPIAAMshapes_from_RadSag(const char *fname,
+errno_t PIAACMCsimul_mkPIAAMshapes_from_RadSag(const char *fname,
         const char *ID_PIAAM0_name, const char *ID_PIAAM1_name);
 
-int PIAACMCsimul_makePIAAshapes(OPTPIAACMCDESIGN *design, long index);
+errno_t PIAACMCsimul_makePIAAshapes(OPTPIAACMCDESIGN *design, long index);
 
 ///@}
 
@@ -379,13 +379,13 @@ int PIAACMCsimul_makePIAAshapes(OPTPIAACMCDESIGN *design, long index);
 /* =============================================================================================== */
 /* =============================================================================================== */
 
-long PIAACMCsimul_mkSimpleLyotStop(const char *ID_name, float rin, float rout);
+imageID PIAACMCsimul_mkSimpleLyotStop(const char *ID_name, float rin, float rout);
 
 double PIAACMCsimul_optimizeLyotStop(const char *IDamp_name,
                                      const char *IDpha_name, const char *IDincoh_name, float zmin, float zmax,
                                      double throughput, long NBz, long NBmasks);
 
-long PIAACMCsimul_mkLyotMask(const char *IDincoh_name, const char *IDmc_name,
+imageID PIAACMCsimul_mkLyotMask(const char *IDincoh_name, const char *IDmc_name,
                              const char *IDzone_name, double throughput, const char *IDout_name);
 
 long PIAACMCsimul_geomProp(const char *IDin_name, const char *IDsag_name,
@@ -408,7 +408,7 @@ double PIAACMCsimul_achromFPMsol_eval(double *fpmresp_array,
                                       double *zonez_array, double *dphadz_array, double *outtmp_array, long vsize,
                                       long nbz, long nbl);
 
-double PIAACMCsimul_achromFPMsol_eval_zonezderivative(long zone,
+errno_t PIAACMCsimul_achromFPMsol_eval_zonezderivative(long zone,
         double *fpmresp_array, double *zonez_array, double *dphadz_array,
         double *outtmp_array, long vsize, long nbz, long nbl);
 
@@ -431,7 +431,7 @@ long PIAACMC_FPMresp_resample(const char *FPMresp_in_name,
 /* =============================================================================================== */
 
 
-long PIAACMC_FPM_process(const char *FPMsag_name, const char *zonescoord_name,
+errno_t PIAACMC_FPM_process(const char *FPMsag_name, const char *zonescoord_name,
                          long NBexp, const char *outname);
 
 long PIAACMC_FPMresp_resample(const char *FPMresp_in_name,
@@ -463,16 +463,25 @@ errno_t PIAACMCsimul_run(const char *confindex, long mode);
 
 
 errno_t PIAACMCsimul_exec_compute_image();
-int PIAACMCsimul_exec_optimize_lyot_stop_position();
-int PIAACMCsimul_exec_optimize_fpmtransmission();
-double PIAACMCsimul_exec_computePSF_no_fpm();
-int PIAACMCsimul_exec_optimize_PIAA_shapes();
-int PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions();
-int PIAACMCsimul_exec_multizone_fpm_calib();
-int PIAACMCsimul_exec_optimize_fpm_zones();
-int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm();
 
-int PIAACMCsimul_measure_transm_curve();
+errno_t PIAACMCsimul_exec_optimize_lyot_stop_position();
+
+errno_t PIAACMCsimul_exec_optimize_fpmtransmission();
+
+double PIAACMCsimul_exec_computePSF_no_fpm();
+
+errno_t PIAACMCsimul_exec_optimize_PIAA_shapes();
+
+int PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions();
+
+errno_t PIAACMCsimul_exec_multizone_fpm_calib();
+
+errno_t PIAACMCsimul_exec_optimize_fpm_zones();
+
+errno_t PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm();
+
+errno_t PIAACMCsimul_measure_transm_curve();
+
 int PIAACMCsimul_eval_poly_design();
 
 

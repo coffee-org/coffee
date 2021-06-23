@@ -56,6 +56,8 @@ extern OPTPIAACMCDESIGN *piaacmc;
 
 static double PIAACMCsimul_regularization_PIAAshapes_value()
 {
+    DEBUG_TRACE_FSTART();
+
     double value = 0.0;
     imageID IDref;
     imageID ID;
@@ -186,7 +188,7 @@ static double PIAACMCsimul_regularization_PIAAshapes_value()
         value += tmp * tmp;
     }
 
-
+    DEBUG_TRACE_FEXIT();
     return value;
 }
 
@@ -200,6 +202,8 @@ static double PIAACMCsimul_regularization_PIAAshapes_value()
 
 static double PIAACMCsimul_regularization_fpmsag_value()
 {
+    DEBUG_TRACE_FSTART();
+
     double regvalue;  // output regularization value
     imageID IDzonez;     // image: zone sag values
 
@@ -218,6 +222,7 @@ static double PIAACMCsimul_regularization_fpmsag_value()
         regvalue += tmp * tmp;
     }
 
+    DEBUG_TRACE_FEXIT();
     return regvalue;
 }
 
@@ -234,6 +239,8 @@ static long PIAACMCsimul_regularization_PIAAshapes_add1Dvector(
     long index0
 )
 {
+    DEBUG_TRACE_FSTART();
+
     long vindex;  // index in output vector
 
     imageID IDref;
@@ -343,6 +350,7 @@ static long PIAACMCsimul_regularization_PIAAshapes_add1Dvector(
         vindex++;
     }
 
+    DEBUG_TRACE_FEXIT();
     return vindex;
 }
 
@@ -376,6 +384,8 @@ errno_t PIAACMCsimul_exec(
     long mode
 )
 {
+    DEBUG_TRACE_FSTART();
+
     double valref;
 
     imageID IDv, ID;
@@ -685,10 +695,10 @@ errno_t PIAACMCsimul_exec(
             double val1 = PIAACMCsimul_regularization_fpmsag_value();
             valref += val1;
         }
-  /*      else
-        {
-            val1 = 0.0;
-        }*/
+        /*      else
+              {
+                  val1 = 0.0;
+              }*/
 
         // At this point all we've done is compute the overall performance metric including
         // regularization in valref.
@@ -1654,6 +1664,7 @@ errno_t PIAACMCsimul_exec(
     // PIAACMCsimul_savepiaacmcconf("piaacmc1");
     //exit(0);
 
+    DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;
 }
 

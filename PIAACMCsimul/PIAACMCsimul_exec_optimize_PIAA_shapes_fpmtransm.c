@@ -41,15 +41,16 @@ extern OPTPIAACMCDESIGN *piaacmc;
  *
  */
 
-int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
+errno_t PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
 {
+    DEBUG_TRACE_FSTART();
+
     imageID IDv;
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
 
-    long ID_CPAfreq;
-//    long kmaxC, kmaxF;
+    imageID ID_CPAfreq;
 
 
 
@@ -319,7 +320,8 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
         piaacmcsimul_var.FORCE_MAKE_PIAA1shape = 1;
     }
 
-    return 0;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 

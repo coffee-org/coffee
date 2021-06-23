@@ -32,10 +32,12 @@ extern PIAACMCsimul_varType piaacmcsimul_var;
  * this function only works for circular PIAA
  * uses radial PIAACMC design to initialize PIAA optics shapes and focal plane mask
  */
-int PIAACMCsimul_init_geomPIAA_rad(
+errno_t PIAACMCsimul_init_geomPIAA_rad(
     const char *IDapofit_name
 )
 {
+    DEBUG_TRACE_FSTART();
+
     double *pup0;
     double *pup1;
     double *flux0cumul;
@@ -512,8 +514,8 @@ int PIAACMCsimul_init_geomPIAA_rad(
     free(piaar01);
     free(piaar11);
 
-
-    return(0);
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 

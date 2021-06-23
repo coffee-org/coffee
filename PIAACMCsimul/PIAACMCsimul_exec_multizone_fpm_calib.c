@@ -45,8 +45,10 @@ extern OPTPIAACMCDESIGN *piaacmc;
    (where each mask zone is completely tranparent)
    *
    */
-int PIAACMCsimul_exec_multizone_fpm_calib()
+errno_t PIAACMCsimul_exec_multizone_fpm_calib()
 {
+    DEBUG_TRACE_FSTART();
+
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
@@ -673,8 +675,8 @@ int PIAACMCsimul_exec_multizone_fpm_calib()
     piaacmcsimul_var.focmMode = -1;
 
 
-
-    return 0;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 

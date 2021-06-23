@@ -3,12 +3,6 @@
  * @brief   Compute on-axis PSF with no focal plane mask
  *
  *
- * @author  O. Guyon
- * @date    25 nov 2017
- *
- *
- * @bug No known bugs.
- *
  */
 
 
@@ -56,6 +50,8 @@ extern OPTPIAACMCDESIGN *piaacmc;
 
 double PIAACMCsimul_exec_computePSF_no_fpm()
 {
+    DEBUG_TRACE_FSTART();
+
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
@@ -104,6 +100,7 @@ double PIAACMCsimul_exec_computePSF_no_fpm()
     PIAACMCsimul_savepiaacmcconf( piaacmcsimul_var.piaacmcconfdir);
     piaacmcsimul_var.FORCE_CREATE_fpmza = 0;
 
+    DEBUG_TRACE_FEXIT();
     return val;
 }
 

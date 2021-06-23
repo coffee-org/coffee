@@ -42,10 +42,12 @@ extern OPTPIAACMCDESIGN *piaacmc;
 
 
 
-int PIAACMCsimul_loadpiaacmcconf(
+errno_t PIAACMCsimul_loadpiaacmcconf(
     const char *dname
 )
 {
+    DEBUG_TRACE_FSTART();
+
     FILE *fp;
     char fname[STRINGMAXLEN_FULLFILENAME];
 
@@ -84,14 +86,14 @@ int PIAACMCsimul_loadpiaacmcconf(
                     fprintf(stderr,
                             "Error: fscanf reached end of file, no matching characters, no matching failure\n");
                 }
-                return RETURN_FAILURE;
+                abort();
             }
             else if(fscanfcnt != 1)
             {
                 fprintf(stderr,
                         "Error: fscanf successfully matched and assigned %i input items, 1 expected\n",
                         fscanfcnt);
-                return RETURN_FAILURE;
+                abort();
             }
             piaacmc[0].NBradpts = tmpl;
         }
@@ -127,14 +129,14 @@ int PIAACMCsimul_loadpiaacmcconf(
                             fprintf(stderr,
                                     "Error: fscanf reached end of file, no matching characters, no matching failure\n");
                         }
-                        return RETURN_FAILURE;
+                        abort();
                     }
                     else if(fscanfcnt != 2)
                     {
                         fprintf(stderr,
                                 "Error: fscanf successfully matched and assigned %i input items, 2 expected\n",
                                 fscanfcnt);
-                        return RETURN_FAILURE;
+                        abort();
                     }
                     piaacmc[0].LyotStop_zpos[i] = tmplf;
                 }
@@ -157,14 +159,14 @@ int PIAACMCsimul_loadpiaacmcconf(
                         fprintf(stderr,
                                 "Error: fscanf reached end of file, no matching characters, no matching failure\n");
                     }
-                    return RETURN_FAILURE;
+                    abort();
                 }
                 else if(fscanfcnt != 2)
                 {
                     fprintf(stderr,
                             "Error: fscanf successfully matched and assigned %i input items, 2 expected\n",
                             fscanfcnt);
-                    return RETURN_FAILURE;
+                    abort();
                 }
 
                 piaacmc[0].LyotStop_zpos[i] = tmplf;
@@ -226,14 +228,14 @@ int PIAACMCsimul_loadpiaacmcconf(
                     fprintf(stderr,
                             "Error: fscanf reached end of file, no matching characters, no matching failure\n");
                 }
-                return RETURN_FAILURE;
+                abort();
             }
             else if(fscanfcnt != 1)
             {
                 fprintf(stderr,
                         "Error: fscanf successfully matched and assigned %i input items, 1 expected\n",
                         fscanfcnt);
-                return RETURN_FAILURE;
+                abort();
             }
 
             piaacmc[0].fpmaskamptransm = tmpf;
@@ -243,7 +245,8 @@ int PIAACMCsimul_loadpiaacmcconf(
         fclose(fp);
     }
 
-    return(0);
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 
@@ -251,8 +254,10 @@ int PIAACMCsimul_loadpiaacmcconf(
 /** @brief Assemble focal plane mask configuration name
  *
  */
-int PIAACMCsimul_update_fnamedescr_conf()
+errno_t PIAACMCsimul_update_fnamedescr_conf()
 {
+    DEBUG_TRACE_FSTART();
+
     //WRITE_FILENAME()
     WRITE_FILENAME(
         piaacmcsimul_var.fnamedescr_conf,
@@ -267,7 +272,8 @@ int PIAACMCsimul_update_fnamedescr_conf()
         piaacmc[0].nblambda
     );
 
-    return EXIT_SUCCESS;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 
@@ -275,8 +281,10 @@ int PIAACMCsimul_update_fnamedescr_conf()
  *
  *
  */
-int PIAACMCsimul_update_fnamedescr()
+errno_t PIAACMCsimul_update_fnamedescr()
 {
+    DEBUG_TRACE_FSTART();
+
     PIAACMCsimul_update_fnamedescr_conf();
 
     WRITE_FILENAME(
@@ -290,7 +298,8 @@ int PIAACMCsimul_update_fnamedescr()
         piaacmc[0].fpmmaterial_name
     );
 
-    return EXIT_SUCCESS;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 
@@ -301,8 +310,11 @@ int PIAACMCsimul_update_fnamedescr()
 // Save PIAACMC optical design
 //
 
-int PIAACMCsimul_savepiaacmcconf(const char *dname)
+errno_t PIAACMCsimul_savepiaacmcconf(const char *dname)
 {
+    DEBUG_TRACE_FSTART();
+
+
     char fname[STRINGMAXLEN_FULLFILENAME];
 
 
@@ -439,7 +451,8 @@ int PIAACMCsimul_savepiaacmcconf(const char *dname)
     save_fits("fpmsagmapHR", fname);
     delete_image_ID("fpmsagmapHR", DELETE_IMAGE_ERRMODE_WARNING);
 
-    return(0);
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 

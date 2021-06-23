@@ -45,15 +45,15 @@ long PIAACMCsimul_CA2propCubeInt(
     const char *IDout_name
 )
 {
+    DEBUG_TRACE_FSTART();
+
     imageID IDout;
-    long l;
-    long xsize = 0;
-    long ysize = 0;
-    long ii;
-    long nblambda, k;
+    long nblambda;
     float *zarray;
     float zprop;
 
+    uint32_t xsize;
+    uint32_t ysize;
 
 #ifdef PIAASIMUL_LOGFUNC0
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
@@ -96,14 +96,14 @@ long PIAACMCsimul_CA2propCubeInt(
         abort(); // or handle error in other ways
     }
 
-    for(l = 0; l < NBz; l++)
+    for(long l = 0; l < NBz; l++)
     {
         zarray[l] = zmin + (zmax - zmin) * l / (NBz - 1);
     }
 
 
 
-    for(l = 0; l < NBz; l++)
+    for(long l = 0; l < NBz; l++)
     {
         printf("l = %ld/%ld\n", l, NBz);
         fflush(stdout);
@@ -117,8 +117,8 @@ long PIAACMCsimul_CA2propCubeInt(
 
 
         // write intensity
-        for(k = 0; k < nblambda; k++)
-            for(ii = 0; ii < xsize * ysize; ii++)
+        for(long k = 0; k < nblambda; k++)
+            for(long ii = 0; ii < xsize * ysize; ii++)
             {
                 data.image[IDout].array.F[l * xsize * ysize + ii] += data.image[IDa].array.F[ii]
                         * data.image[IDa].array.F[k * xsize * ysize + ii];
@@ -134,6 +134,7 @@ long PIAACMCsimul_CA2propCubeInt(
     delete_image_ID("retmpim", DELETE_IMAGE_ERRMODE_WARNING);
     delete_image_ID("imtmpim", DELETE_IMAGE_ERRMODE_WARNING);
 
+    DEBUG_TRACE_FEXIT();
     return IDout;
 }
 
