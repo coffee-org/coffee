@@ -22,12 +22,12 @@
 
 
 
-int_fast8_t init_OptSystProp()
+errno_t init_OptSystProp()
 {
     // add atexit functions here
 
 
-    return 0;
+    return RETURN_SUCCESS;
 
 }
 

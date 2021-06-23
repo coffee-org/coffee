@@ -101,20 +101,26 @@ errno_t PIAACMCsimul_exec_compute_image()
     piaacmcsimul_var.FORCE_CREATE_fpmza = 1;
 
     // main initialization function to set up the piaacmc structure
-    PIAACMCsimul_initpiaacmcconf(
-        piaacmcsimul_var.PIAACMC_fpmtype,
-        fpmradld,
-        centobs0,
-        centobs1,
-        PIAACMC_WFCmode,
-        1
-    );
+    if(PIAACMCsimul_initpiaacmcconf(
+                piaacmcsimul_var.PIAACMC_fpmtype,
+                fpmradld,
+                centobs0,
+                centobs1,
+                PIAACMC_WFCmode,
+                1
+            ) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
+    }
 
     // make the mirror or lenses shapes
-    PIAACMCsimul_makePIAAshapes(
+    if(PIAACMCsimul_makePIAAshapes(
         piaacmc,
         0
-    );
+    ) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
+    }
 
     // use 1-fpm normalization for efficiency
     optsyst[0].FOCMASKarray[0].mode = 1;

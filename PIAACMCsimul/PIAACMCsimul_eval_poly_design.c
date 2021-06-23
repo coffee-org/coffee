@@ -36,6 +36,7 @@ extern OPTPIAACMCDESIGN *piaacmc;
 errno_t PIAACMCsimul_eval_poly_design()
 {
     DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FUNC");
 
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
@@ -121,17 +122,29 @@ errno_t PIAACMCsimul_eval_poly_design()
 
     piaacmcsimul_var.FORCE_CREATE_fpmza = 1;
 
-    // debug from Justin
-    //printf("Initializing PIAACMC configuration\n");
-    //fflush(stdout);
-    //sleep(10);
-    PIAACMCsimul_initpiaacmcconf(piaacmcsimul_var.PIAACMC_fpmtype, fpmradld,
-                                 centobs0, centobs1, 0, 1);
+
+
+    {
+        errno_t fret = PIAACMCsimul_initpiaacmcconf(
+                           piaacmcsimul_var.PIAACMC_fpmtype,
+                           fpmradld,
+                           centobs0, centobs1,
+                           0,
+                           1);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
+        }
+    }
 
 
 
 
-    PIAACMCsimul_makePIAAshapes(piaacmc, 0);
+    if(PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
+    }
+
     optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm
 
     //        valref = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0);
@@ -501,7 +514,15 @@ errno_t PIAACMCsimul_eval_poly_design()
             data.image[IDopderr].array.F[ii] = data.image[IDopderrC].array.F[size * size *
                                                OPDmode + ii];
         }
-        PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0); // add error to the data
+
+        {
+            errno_t fret = PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0); // add error to the data
+            if( fret != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
+            }
+
+        }
 
         {
             double cval = 0.0;

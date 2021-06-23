@@ -1,6 +1,9 @@
 #ifndef _OPTSYSTPROP_H
 #define _OPTSYSTPROP_H
 
+#ifndef __STDC_LIB_EXT1__
+typedef int errno_t;
+#endif
 
 // ************************************************************************
 // ------------------- DEFINITION OF OPTICAL ELEMENTS ---------------------
@@ -101,7 +104,10 @@ typedef struct {
     FOCMASK FOCMASKarray[OPTSYST_ELEM_MAXNB];
 
     int elemtype[OPTSYST_ELEM_MAXNB]; // element type
-    int elemarrayindex[OPTSYST_ELEM_MAXNB]; // if element is DM or aspheric surface, this is the index in the corresponding array of elements, otherwise, this is the image index
+
+    // if element is DM or aspheric surface, this is the index in the corresponding array of elements, otherwise, this is the image index
+    int elemarrayindex[OPTSYST_ELEM_MAXNB];
+
     double flux[OPTSYST_ELEM_MAXNB]; // total flux AFTER element
     double elemZpos[OPTSYST_ELEM_MAXNB]; // position along beam
     int keepMem[OPTSYST_ELEM_MAXNB]; // set to 1 if memory should be kept, 0 otherwise
@@ -117,13 +123,13 @@ typedef struct {
 
 
 
-int_fast8_t init_OptSystProp();
+errno_t init_OptSystProp();
 
 
 
-int OptSystProp_propagateCube(OPTSYST *optsyst, long index, const char *IDin_amp_name, const char *IDin_pha_name, const char *IDout_amp_name, const char *IDout_pha_name, double zprop, int sharedmem);
+errno_t OptSystProp_propagateCube(OPTSYST *optsyst, long index, const char *IDin_amp_name, const char *IDin_pha_name, const char *IDout_amp_name, const char *IDout_pha_name, double zprop, int sharedmem);
 
-int OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long elemend, const char *savedir, int sharedmem);
+errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long elemend, const char *savedir, int sharedmem);
 
 
 #endif

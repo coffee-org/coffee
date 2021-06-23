@@ -120,9 +120,20 @@ errno_t PIAACMCsimul_exec_optimize_fpm_zones()
     //    data.image[IDstatus].array.UI16[0] = 0;
 
     // usual initialization
-    PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 1);
-    PIAACMCsimul_makePIAAshapes(piaacmc, 0);
-    PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0);
+    if(PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 1) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
+    }
+
+    if(PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
+    }
+
+    if(PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
+    }
 
     // set current state for statistical tracking
     //data.image[IDstatus].array.UI16[0] = 1;
@@ -148,14 +159,14 @@ errno_t PIAACMCsimul_exec_optimize_fpm_zones()
                 fprintf(stderr,
                         "Error: fscanf reached end of file, no matching characters, no matching failure\n");
             }
-            return RETURN_FAILURE;
+            FUNC_RETURN_FAILURE("Call to fscanf failed");
         }
         else if(fscanfcnt != 3)
         {
             fprintf(stderr,
                     "Error: fscanf successfully matched and assigned %i input items, 3 expected\n",
                     fscanfcnt);
-            return RETURN_FAILURE;
+            FUNC_RETURN_FAILURE("Call to fscanf failed");
         }
 
         // scale flux to current number of lambda
@@ -240,14 +251,14 @@ errno_t PIAACMCsimul_exec_optimize_fpm_zones()
                 fprintf(stderr,
                         "Error: fscanf reached end of file, no matching characters, no matching failure\n");
             }
-            return RETURN_FAILURE;
+            FUNC_RETURN_FAILURE("Call to fscanf failed");
         }
         else if(fscanfcnt != 1)
         {
             fprintf(stderr,
                     "Error: fscanf successfully matched and assigned %i input items, 1 expected\n",
                     fscanfcnt);
-            return RETURN_FAILURE;
+            FUNC_RETURN_FAILURE("Call to fscanf failed");
         }
     }
     //ret = fscanf(fp, "%lf", &piaacmcsimul_var.CnormFactor);

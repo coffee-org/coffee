@@ -48,7 +48,7 @@ extern OPTPIAACMCDESIGN *piaacmc;
 
 */
 
-double PIAACMCsimul_exec_computePSF_no_fpm()
+errno_t PIAACMCsimul_exec_computePSF_no_fpm( double *outval)
 {
     DEBUG_TRACE_FSTART();
 
@@ -76,15 +76,38 @@ double PIAACMCsimul_exec_computePSF_no_fpm()
 
 
     // init as in mode 0
-    PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 1);
-    PIAACMCsimul_makePIAAshapes(piaacmc, 0);
+    {
+        errno_t fret = PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 1);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
+        }
+    }
+
+    {
+        errno_t fret = PIAACMCsimul_makePIAAshapes(piaacmc, 0);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
+        }
+    }
+
+
     optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm
 
     piaacmcsimul_var.linopt_paramrefval[0] = piaacmc[0].fpmaskamptransm;
 
     piaacmc[0].fpmaskamptransm = -1.0;  // Remove focal plane mask
     piaacmcsimul_var.FORCE_CREATE_fpmza = 1;
-    PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 0);
+
+    {
+        errno_t fret = PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 0);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
+        }
+    }
+
     // compute the PSF for an on-axis source, all optical elements
     {
         errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &val);
@@ -96,11 +119,35 @@ double PIAACMCsimul_exec_computePSF_no_fpm()
 
     // restore original configuration
     piaacmc[0].fpmaskamptransm = piaacmcsimul_var.linopt_paramrefval[0];
-    PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 0);
-    PIAACMCsimul_savepiaacmcconf( piaacmcsimul_var.piaacmcconfdir);
+
+    {
+        errno_t fret = PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 0);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
+        }
+    }
+
+    {
+        errno_t fret = PIAACMCsimul_savepiaacmcconf( piaacmcsimul_var.piaacmcconfdir);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_savepiaacmcconf failed");
+        }
+    }
+
     piaacmcsimul_var.FORCE_CREATE_fpmza = 0;
 
+    if(outval == NULL)
+    {
+        DEBUG_TRACEPOINT("FOUT %f -> NULL", val);
+    }
+    else
+    {   *outval = val;
+        DEBUG_TRACEPOINT("FOUT %f -> return ptr", val);
+    }
+
     DEBUG_TRACE_FEXIT();
-    return val;
+    return RETURN_SUCCESS;
 }
 

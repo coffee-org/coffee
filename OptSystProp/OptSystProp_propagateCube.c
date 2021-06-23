@@ -21,7 +21,7 @@
 
 
 
-int OptSystProp_propagateCube(
+errno_t OptSystProp_propagateCube(
     OPTSYST *optsyst,
     long index,
     const char *IDin_amp_name,
@@ -32,6 +32,9 @@ int OptSystProp_propagateCube(
     int sharedmem
 )
 {
+    DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG prop %s %s -> %s %s, dist = %lf", IDin_amp_name, IDin_pha_name, IDout_amp_name, IDout_pha_name, zprop);
+
     printf("propagating by %lf m\n", zprop);
 
     imageID IDin_amp = image_ID(IDin_amp_name);
@@ -105,7 +108,7 @@ int OptSystProp_propagateCube(
     data.image[IDout_amp].md[0].write = 0;
     data.image[IDout_pha].md[0].write = 0;
 
-
-    return 0;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 

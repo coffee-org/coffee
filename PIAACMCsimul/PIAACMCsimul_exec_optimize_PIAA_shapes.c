@@ -66,7 +66,11 @@ errno_t PIAACMCsimul_exec_optimize_PIAA_shapes()
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
-    PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 1);
+    if(PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 1) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
+    }
+    
     piaacmcsimul_var.LINOPT = 1; // perform linear optimization
     /*if((IDv = variable_ID("PIAACMC_nbiter")) != -1)
     {

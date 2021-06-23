@@ -468,7 +468,7 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stop_position();
 
 errno_t PIAACMCsimul_exec_optimize_fpmtransmission();
 
-double PIAACMCsimul_exec_computePSF_no_fpm();
+errno_t PIAACMCsimul_exec_computePSF_no_fpm(double *outval);
 
 errno_t PIAACMCsimul_exec_optimize_PIAA_shapes();
 

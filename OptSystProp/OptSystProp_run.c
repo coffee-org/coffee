@@ -418,12 +418,15 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 for(long kl = 0; kl < nblambda; kl++)
                 {
                     // get the indices of refraction, n0 for ambient index, n1 for the lens index etc.
+
                     double n0 = OpticsMaterials_n(
                                     optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].mat0,
                                     optsyst[index].lambdaarray[kl]);
+
                     double n1 = OpticsMaterials_n(
                                     optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].mat1,
                                     optsyst[index].lambdaarray[kl]);
+
                     // set the resulting wavelength-dependent phase coefficient
                     optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl] =
                         2.0 * M_PI * (n0 - n1) / optsyst[index].lambdaarray[kl];

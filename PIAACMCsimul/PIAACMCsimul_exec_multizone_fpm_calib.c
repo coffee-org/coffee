@@ -90,7 +90,10 @@ errno_t PIAACMCsimul_exec_multizone_fpm_calib()
         }
     */
     // initialize
-    PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 1);
+    if(PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 1) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
+    }
 
     printf("piaacmcconfdir     : %s\n", piaacmcsimul_var.piaacmcconfdir);
     printf("SCORINGMASKTYPE    : %d\n", piaacmcsimul_var.SCORINGMASKTYPE);
@@ -178,7 +181,10 @@ errno_t PIAACMCsimul_exec_multizone_fpm_calib()
             piaacmcsimul_var.FORCE_CREATE_fpmzt = 1;
             piaacmcsimul_var.FORCE_CREATE_fpmza = 1;
 
-            PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 1);
+            if(PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 1) != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
+            }
         }
         else
         {
@@ -188,7 +194,10 @@ errno_t PIAACMCsimul_exec_multizone_fpm_calib()
             piaacmcsimul_var.FORCE_CREATE_fpmzt = 0;
             piaacmcsimul_var.FORCE_CREATE_fpmza = 0;
 
-            PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 1);
+            if(PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 1) != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
+            }
         }
 
 
@@ -287,23 +296,38 @@ errno_t PIAACMCsimul_exec_multizone_fpm_calib()
                                        piaacmcsimul_var.LAMBDAEND) * piaacmc[0].Fratio *
                                 piaacmcsimul_var.PIAACMC_MASKRADLD; // piaacmcsimul_var.PIAACMC_MASKRADLD l/D radius at central lambda
             // initialize the optical system
-            PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 0);
+            if(PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 0) != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
+            }
+
 
             //     printf("-------------------------- STEP 0005a  piaacmc[0].focmNBzone  =  %ld   (%ld)\n", piaacmc[0].focmNBzone, piaacmc[0].NBrings);
             //            sleep(3);
 
             // computes or loads the piaa optics from the piaacmc structure
-            PIAACMCsimul_makePIAAshapes(piaacmc, 0);
+            if(PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
+            }
+
+
             //   printf("-------------------------- STEP 0005b  piaacmc[0].focmNBzone  =  %ld   (%ld)\n", piaacmc[0].focmNBzone, piaacmc[0].NBrings);
             //          sleep(3);
 
             // initialize the optical system to be on axis
-            PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0);
+            if(PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0) != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
+            }
             // printf("-------------------------- STEP 0005c  piaacmc[0].focmNBzone  =  %ld   (%ld)\n", piaacmc[0].focmNBzone, piaacmc[0].NBrings);
             //        sleep(3);
 
             // make the shapes again why?  *****************************************
-            PIAACMCsimul_makePIAAshapes(piaacmc, 0);
+            if(PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
+            }
 
             /*               printf("piaacmc[0].NBrings =                             %ld\n", piaacmc[0].NBrings);
                             printf("piaacmc[0].focmNBzone =                          %ld\n", piaacmc[0].focmNBzone);

@@ -345,11 +345,17 @@ errno_t PIAACMCsimul_computePSF(
             // initialize first point source, which sets optsyst
             if(extmode == 0)
             {
-                PIAACMCsimul_init(piaacmc, 0, xld, yld);
+                if( PIAACMCsimul_init(piaacmc, 0, xld, yld) != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to function PIAACMCsimul_init failed");
+                }
             }
             else
             {
-                PIAACMCsimul_init(piaacmc, 0, xld + rad1, yld);
+                if(PIAACMCsimul_init(piaacmc, 0, xld + rad1, yld) != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to function PIAACMCsimul_init failed");
+                }
             }
 
             PIAACMCsimul_makePIAAshapes(piaacmc, 0);
@@ -391,7 +397,15 @@ errno_t PIAACMCsimul_computePSF(
                 // do the same for the second point
 
                 double pha = 2.0 * M_PI / 3.0; // 1/3 around the circle
-                PIAACMCsimul_init(piaacmc, 0, xld + rad1 * cos(pha), yld + rad1 * sin(pha));
+
+                {
+                    errno_t fret = PIAACMCsimul_init(piaacmc, 0, xld + rad1 * cos(pha), yld + rad1 * sin(pha));
+                    if(fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
+                    }
+                }
+
                 PIAACMCsimul_makePIAAshapes(piaacmc, 0);
 
                 {
@@ -424,7 +438,14 @@ errno_t PIAACMCsimul_computePSF(
                 // do the same for the third point
 
                 pha = 4.0 * M_PI / 3.0; // 2/3 around the circle
-                PIAACMCsimul_init(piaacmc, 0, xld + rad1 * cos(pha), yld + rad1 * sin(pha));
+                {
+                    errno_t fret = PIAACMCsimul_init(piaacmc, 0, xld + rad1 * cos(pha), yld + rad1 * sin(pha));
+                    if(fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
+                    }
+                }
+
                 PIAACMCsimul_makePIAAshapes(piaacmc, 0);
 
                 {
@@ -459,7 +480,13 @@ errno_t PIAACMCsimul_computePSF(
             {
                 // keep going for the other three points if desired, on the outer radius
                 double pha = M_PI / 3.0;
-                PIAACMCsimul_init(piaacmc, 0, xld + rad2 * cos(pha), yld + rad2 * sin(pha));
+                {
+                    errno_t fret = PIAACMCsimul_init(piaacmc, 0, xld + rad2 * cos(pha), yld + rad2 * sin(pha));
+                    if( fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
+                    }
+                }
                 PIAACMCsimul_makePIAAshapes(piaacmc, 0);
 
                 {
@@ -490,8 +517,18 @@ errno_t PIAACMCsimul_computePSF(
 
 
                 pha = 2.0 * M_PI / 3.0 + M_PI / 3.0;
-                PIAACMCsimul_init(piaacmc, 0, xld + rad2 * cos(pha), yld + rad2 * sin(pha));
-                PIAACMCsimul_makePIAAshapes(piaacmc, 0);
+                {
+                    errno_t fret = PIAACMCsimul_init(piaacmc, 0, xld + rad2 * cos(pha), yld + rad2 * sin(pha));
+                    if( fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
+                    }
+                }
+
+                if(PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
+                }
 
                 {
                     errno_t fret = OptSystProp_run(
@@ -520,8 +557,19 @@ errno_t PIAACMCsimul_computePSF(
 
 
                 pha = 4.0 * M_PI / 3.0 + M_PI / 3.0;
-                PIAACMCsimul_init(piaacmc, 0, xld + rad2 * cos(pha), yld + rad2 * sin(pha));
-                PIAACMCsimul_makePIAAshapes(piaacmc, 0);
+
+                {
+                    errno_t fret = PIAACMCsimul_init(piaacmc, 0, xld + rad2 * cos(pha), yld + rad2 * sin(pha));
+                    if( fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
+                    }
+                }
+
+                if( PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
+                }
 
                 {
                     errno_t fret = OptSystProp_run(
@@ -569,8 +617,19 @@ errno_t PIAACMCsimul_computePSF(
                     data.image[IDopderr].array.F[ii] = data.image[IDopderrC].array.F[size * size *
                                                        OPDmode + ii];
                 }
-                PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0); // add error to the data
-                PIAACMCsimul_makePIAAshapes(piaacmc, 0);
+
+                {
+                    errno_t fret = PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0); // add error to the data
+                    if( fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
+                    }
+                }
+
+                if(PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
+                }
 
                 {
                     errno_t fret = OptSystProp_run(
@@ -798,10 +857,21 @@ errno_t PIAACMCsimul_computePSF(
             // initialize first point source, which sets optsyst
 
             /// calls PIAACMCsimul_init()
-            PIAACMCsimul_init(piaacmc, 0, xld, yld);
+            {
+                errno_t fret = PIAACMCsimul_init(piaacmc, 0, xld, yld);
+                if( fret != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
+                }
+            }
 
             /// calls PIAACMCsimul_makePIAAshapes()
-            PIAACMCsimul_makePIAAshapes(piaacmc, 0);
+
+            if( PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
+            }
+
 
 
 

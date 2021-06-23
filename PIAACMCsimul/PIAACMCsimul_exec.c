@@ -535,7 +535,7 @@ errno_t PIAACMCsimul_exec(
         break;
 
     case 3 :
-        PIAACMCsimul_exec_computePSF_no_fpm();
+        PIAACMCsimul_exec_computePSF_no_fpm(NULL);
         break;
 
     case 4 :

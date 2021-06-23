@@ -60,6 +60,7 @@ errno_t PIAACMCsimul_init(
 )
 {
     DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG %ld %f %f", index, TTxld, TTyld);
 
     long size;
     long nblambda;
@@ -387,6 +388,7 @@ errno_t PIAACMCsimul_init(
         // shape/sag for the first aspheric mirror
         imageID IDpiaam0z = image_ID("piaam0z");  // nominal sag (mirror equivalent)
 
+
         // ------------------- elem 2:  PIAA M/L 0  -----------------------
         // (M/L is "mirror or lens" - in our case it's a mirror)
         snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "PIAA optics 0");
@@ -410,18 +412,29 @@ errno_t PIAACMCsimul_init(
         else // lens
         {
             optsyst[0].elemtype[elem] = 4;
+
             optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].surfID =
                 image_ID("piaar0zsag"); //IDpiaar0zsag;
+
             optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat0 = 100;
+
             optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat1 =
                 design[0].PIAAmaterial_code; // vacuum
         }
         // make sure the above did something
-        if(optsyst[0].ASPHSURFMarray[1].surfID == -1)
+        if(optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID == -1)
         {
-            printf("ERROR: surface 0 not identified\n");
-            list_image_ID();
-            exit(0);
+            FUNC_RETURN_FAILURE("ERROR: PIAA surface 0 not identified\n");
+        }
+        else
+        {
+            // confirming we have something
+            DEBUG_TRACEPOINT(
+                "PIAA0: aspheric element %ld arrayindex %d ID %ld",
+                elem,
+                optsyst[0].elemarrayindex[elem],
+                optsyst[0].ASPHSURFMarray[1].surfID
+            );
         }
         elem++;
     }
@@ -475,19 +488,32 @@ errno_t PIAACMCsimul_init(
         else // lens
         {
             optsyst[0].elemtype[elem] = 4;
-            optsyst[0].ASPHSURFRarray[2].surfID = image_ID("piaar1zsag"); //IDpiaar0zsag;
+
+            optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].surfID =
+                image_ID("piaar1zsag"); //IDpiaar0zsag;
+
+
             optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat0 = 100; // vacuum
             optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat1 =
                 design[0].PIAAmaterial_code;
         }
 
-
-        if(optsyst[0].ASPHSURFMarray[2].surfID == -1)
+        // make sure the above did something
+        if(optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID == -1)
         {
-            printf("ERROR: surface 1 not identified\n");
-            list_image_ID();
-            exit(0);
+            FUNC_RETURN_FAILURE("ERROR: PIAA surface 0 not identified\n");
         }
+        else
+        {
+            // confirming we have something
+            DEBUG_TRACEPOINT(
+                "PIAA1: aspheric element %ld arrayindex %d ID %ld",
+                elem,
+                optsyst[0].elemarrayindex[elem],
+                optsyst[0].ASPHSURFMarray[1].surfID
+            );
+        }
+
         //       fprintf(fp,"%02ld  %f    PIAAM1\n", elem, optsyst[0].elemZpos[elem]);
         elem++;
 
