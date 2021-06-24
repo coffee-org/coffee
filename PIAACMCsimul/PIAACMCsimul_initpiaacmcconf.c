@@ -271,7 +271,7 @@ errno_t PIAACMCsimul_initpiaacmcconf(
     if(piaacmc == NULL)
     {
         DEBUG_TRACEPOINT("Allocating piaacmc");
-        
+
         piaacmc = (OPTPIAACMCDESIGN *) malloc(sizeof(OPTPIAACMCDESIGN) *
                                               NBpiaacmcdesign);
         if(piaacmc == NULL) {
@@ -358,7 +358,10 @@ errno_t PIAACMCsimul_initpiaacmcconf(
 
         if((fp = fopen("conf/conf_peakPSF.txt", "r")) != NULL)
         {
-            ret = fscanf(fp, "%f", &piaacmc[0].peakPSF);
+            if(fscanf(fp, "%f", &piaacmc[0].peakPSF) != 1)
+            {
+                FUNC_RETURN_FAILURE("Cannot read value from file conf/conf_peakPSF.txt");
+            }
             fclose(fp);
         }
         else
@@ -405,10 +408,16 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             if((fp = fopen(fname, "r")) != NULL)
             {
                 char name[200];
-                ret = fscanf(fp, "%s", name);
-                strcpy(piaacmc[0].fpmmaterial_name, name);
-                printf("Reading %s   piaacmc[0].fpmmaterial_name : %s\n", fname,
-                       piaacmc[0].fpmmaterial_name);
+                if(fscanf(fp, "%200s", name) == 1)
+                {
+                    strcpy(piaacmc[0].fpmmaterial_name, name);
+                    printf("Reading %s   piaacmc[0].fpmmaterial_name : %s\n", fname,
+                           piaacmc[0].fpmmaterial_name);
+                }
+                else
+                {
+                    FUNC_RETURN_FAILURE("Cannot read value from file %s", fname);
+                }
                 fclose(fp);
             }
             else
@@ -1040,14 +1049,18 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             fp = fopen(fname, "r");
             if(fp != NULL)
             {
+                // if file not found, this is not a failure - it will be created below
                 float tmpf = 0.0;
-                ret = fscanf(fp, "%f", &tmpf);
-                piaacmc[0].fpmaskamptransm = tmpf;
+                if(fscanf(fp, "%f", &tmpf) == 1)
+                {
+                    piaacmc[0].fpmaskamptransm = tmpf;
+                }
+                else
+                {
+                    // but if file exists, value should be readable
+                    FUNC_RETURN_FAILURE("Cannot read value from file %s", fname);
+                }
                 fclose(fp);
-            }
-            else
-            {
-                FUNC_RETURN_FAILURE("Call to fopen failed: cannot open %s in read mode", fname);
             }
         }
     }
