@@ -416,10 +416,11 @@ errno_t PIAACMCsimul_init(
             optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].surfID =
                 image_ID("piaar0zsag"); //IDpiaar0zsag;
 
+            // vacuum
             optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat0 = 100;
 
             optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat1 =
-                design[0].PIAAmaterial_code; // vacuum
+                design[0].PIAAmaterial_code;
         }
         // make sure the above did something
         if(optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID == -1)
@@ -433,7 +434,7 @@ errno_t PIAACMCsimul_init(
                 "PIAA0: aspheric element %ld arrayindex %d ID %ld",
                 elem,
                 optsyst[0].elemarrayindex[elem],
-                optsyst[0].ASPHSURFMarray[1].surfID
+                optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID
             );
         }
         elem++;
@@ -483,7 +484,7 @@ errno_t PIAACMCsimul_init(
 
         if(design[index].PIAAmaterial_code == 0) // mirror
         {
-            optsyst[0].ASPHSURFMarray[2].surfID = IDpiaam1z;
+            optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID = IDpiaam1z;
         }
         else // lens
         {
@@ -510,7 +511,7 @@ errno_t PIAACMCsimul_init(
                 "PIAA1: aspheric element %ld arrayindex %d ID %ld",
                 elem,
                 optsyst[0].elemarrayindex[elem],
-                optsyst[0].ASPHSURFMarray[1].surfID
+                optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID
             );
         }
 

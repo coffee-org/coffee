@@ -231,10 +231,7 @@ imageID PIAACMCsimul_mkFocalPlaneMask(
     //fflush(stdout);
 
 
-    double x, y, r; // in meter
-    x = 0.0;
-    y = 0.0;
-    r = 0.0;
+
 
 # ifdef HAVE_LIBGOMP
     #pragma omp parallel default(shared) private(ii, jj, x, y, r, retmp, imtmp, iii, jjj, ii1, jj1, zi, t, a, fpscale, amp, pha, cospha, sinpha, ttmp, zonetmp)
@@ -267,14 +264,14 @@ imageID PIAACMCsimul_mkFocalPlaneMask(
                 {
                     //printf("[ %4ld %4ld ] ", ii, jj);
 
-                    x = (1.0 * ii - size / 2) * fpscale; // [m]
-                    y = (1.0 * jj - size / 2) * fpscale; // [m]
-                    r = sqrt(x * x + y * y); // [m]
+                    double x = (1.0 * ii - size / 2) * fpscale; // [m]
+                    double y = (1.0 * jj - size / 2) * fpscale; // [m]
+                    double r = sqrt(x * x + y * y); // [m]
 
                     // default
                     double t = 0.0;
                     double a = 1.0;
-                    float pha = 0.0;
+  //                  float pha = 0.0;
                     float cospha = 1.0;
                     float sinpha = 0.0;
                     double amp = 1.0;
@@ -285,9 +282,9 @@ imageID PIAACMCsimul_mkFocalPlaneMask(
                         if((r > 0.9 * piaacmc[0].fpmRad)
                                 && (r < piaacmc[0].fpmOuterConeRad)) // outer cone
                         {
-                            t = piaacmc[0].fpmOuterConeZ * (piaacmc[0].fpmOuterConeRad - r) /
+                            double t = piaacmc[0].fpmOuterConeZ * (piaacmc[0].fpmOuterConeRad - r) /
                                 (piaacmc[0].fpmOuterConeRad - piaacmc[0].fpmRad);
-                            pha = OpticsMaterials_pha_lambda(piaacmc[0].fpmmaterial_code, t,
+                            double pha = OpticsMaterials_pha_lambda(piaacmc[0].fpmmaterial_code, t,
                                                              optsyst[0].lambdaarray[k]);
                             cospha = cosf(pha);
                             sinpha = sinf(pha);
@@ -315,9 +312,9 @@ imageID PIAACMCsimul_mkFocalPlaneMask(
                             {
                                 // physical coordinates on mask
                                 // x and y in [m]
-                                x = (1.0 * ii - size / 2 + 1.0 * (0.5 + iii) / NBsubPix - 0.5) * fpscale;
-                                y = (1.0 * jj - size / 2 + 1.0 * (0.5 + jjj) / NBsubPix - 0.5) * fpscale;
-                                r = sqrt(x * x + y * y); // [m]
+                                double x = (1.0 * ii - size / 2 + 1.0 * (0.5 + iii) / NBsubPix - 0.5) * fpscale;
+                                double y = (1.0 * jj - size / 2 + 1.0 * (0.5 + jjj) / NBsubPix - 0.5) * fpscale;
+                                double r = sqrt(x * x + y * y); // [m]
 
                                 long zi = 0; // default
                                 cospha = 1.0;
@@ -357,7 +354,7 @@ imageID PIAACMCsimul_mkFocalPlaneMask(
                                                     (piaacmc[0].fpmminsag + piaacmc[0].fpmmaxsag) - piaacmc[0].fpmCentConeZ);
                                             // piaacmc[0].fpmCentConeZ*(piaacmc[0].fpmCentConeRad-r)/(piaacmc[0].fpmCentConeRad); //piaacmc[0].fpmCentConeZ
                                             a = 1.0;
-                                            pha = OpticsMaterials_pha_lambda(piaacmc[0].fpmmaterial_code, t,
+                                            double pha = OpticsMaterials_pha_lambda(piaacmc[0].fpmmaterial_code, t,
                                                                              optsyst[0].lambdaarray[k]);
                                             cospha = cosf(pha);
                                             sinpha = sinf(pha);

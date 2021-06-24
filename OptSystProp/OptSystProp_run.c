@@ -399,9 +399,9 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
             fflush(stdout);
 
             imageID ID = optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].surfID;
-            printf("index %ld    %d surface ID : %ld \n", index,
-                   optsyst[index].elemarrayindex[elem], ID);
-            fflush(stdout);
+            DEBUG_TRACEPOINT("index %ld  elem %ld  %d surface ID : %ld \n",
+                             index, elem,
+                             optsyst[index].elemarrayindex[elem], ID);
 
             DEBUG_TRACEPOINT("refractive surface ID %ld", (long) ID);
 

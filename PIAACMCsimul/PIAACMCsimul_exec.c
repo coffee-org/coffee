@@ -1532,10 +1532,9 @@ errno_t PIAACMCsimul_exec(
             }
 
             // add sag regularization component if applicable
-            double val1 = 0.0;
             if(piaacmcsimul_var.linopt_REGFPMSAG == 1)
             {
-                val1 = PIAACMCsimul_regularization_fpmsag_value();;
+                double val1 = PIAACMCsimul_regularization_fpmsag_value();;
                 contrastval += val1;
             }
 
