@@ -408,7 +408,7 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             if((fp = fopen(fname, "r")) != NULL)
             {
                 char name[199];
-                if(fscanf(fp, "%200s", name) == 1)
+                if(fscanf(fp, "%199s", name) == 1)
                 {
                     strcpy(piaacmc[0].fpmmaterial_name, name);
                     printf("Reading %s   piaacmc[0].fpmmaterial_name : %s\n", fname,
@@ -433,8 +433,7 @@ errno_t PIAACMCsimul_initpiaacmcconf(
                 }
                 else
                 {
-                    printf("ERROR: cannot create file \"%s\"\n", fname);
-                    exit(0);
+                    FUNC_RETURN_FAILURE("Cannot create file \"%s\"", fname);
                 }
             }
         }
@@ -721,8 +720,14 @@ errno_t PIAACMCsimul_initpiaacmcconf(
         if((fp = fopen(fname, "r")) != NULL)
         {
             char name[200];
-            ret = fscanf(fp, "%s", name);
-            strcpy(piaacmc[0].PIAAmaterial_name, name);
+            if(fscanf(fp, "%199s", name) == 1)
+            {
+                strcpy(piaacmc[0].PIAAmaterial_name, name);
+            }
+            else
+            {
+                FUNC_RETURN_FAILURE("Cannot read value from file %s", fname);
+            }
             fclose(fp);
         }
         else
@@ -737,8 +742,7 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             }
             else
             {
-                printf("ERROR: cannot create file \"%s\"\n", fname);
-                exit(0);
+                FUNC_RETURN_FAILURE("Cannot create file \"%s\"", fname);
             }
         }
     }
