@@ -963,54 +963,71 @@ errno_t PIAACMCsimul_initpiaacmcconf(
                 || (piaacmc[0].piaa1FmodesID == -1))
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
+            errno_t fret;
 
             WRITE_FULLFILENAME(
                 fname,
                 "%s/piaaref/piaa0Cmodes.fits",
                 piaacmcsimul_var.piaacmcconfdir
             );
-            load_fits(
-                fname,
-                "piaa0Cmodescoeff",
-                LOADFITS_ERRMODE_ERROR,
-                &(piaacmc[0].piaa0CmodesID)
-            );
+            fret = load_fits(
+                       fname,
+                       "piaa0Cmodescoeff",
+                       LOADFITS_ERRMODE_ERROR,
+                       &(piaacmc[0].piaa0CmodesID)
+                   );
+            if(fret != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to load_fits failed");
+            }
 
             WRITE_FULLFILENAME(
                 fname,
                 "%s/piaaref/piaa0Fmodes.fits",
                 piaacmcsimul_var.piaacmcconfdir
             );
-            load_fits(
-                fname,
-                "piaa0Fmodescoeff",
-                LOADFITS_ERRMODE_ERROR,
-                &(piaacmc[0].piaa0FmodesID)
-            );
+            fret = load_fits(
+                       fname,
+                       "piaa0Fmodescoeff",
+                       LOADFITS_ERRMODE_ERROR,
+                       &(piaacmc[0].piaa0FmodesID)
+                   );
+            if(fret != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to load_fits failed");
+            }
 
             WRITE_FULLFILENAME(
                 fname,
                 "%s/piaaref/piaa1Cmodes.fits",
                 piaacmcsimul_var.piaacmcconfdir
             );
-            load_fits(
-                fname,
-                "piaa1Cmodescoeff",
-                LOADFITS_ERRMODE_ERROR,
-                &(piaacmc[0].piaa1CmodesID)
-            );
+            fret = load_fits(
+                       fname,
+                       "piaa1Cmodescoeff",
+                       LOADFITS_ERRMODE_ERROR,
+                       &(piaacmc[0].piaa1CmodesID)
+                   );
+            if(fret != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to load_fits failed");
+            }
 
             WRITE_FULLFILENAME(
                 fname,
                 "%s/piaaref/piaa1Fmodes.fits",
                 piaacmcsimul_var.piaacmcconfdir
             );
-            load_fits(
-                fname,
-                "piaa1Fmodescoeff",
-                LOADFITS_ERRMODE_ERROR,
-                &(piaacmc[0].piaa1FmodesID)
-            );
+            fret = load_fits(
+                       fname,
+                       "piaa1Fmodescoeff",
+                       LOADFITS_ERRMODE_ERROR,
+                       &(piaacmc[0].piaa1FmodesID)
+                   );
+            if(fret != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to load_fits failed");
+            }
 
             WRITE_FULLFILENAME(
                 fname,
@@ -1024,6 +1041,10 @@ errno_t PIAACMCsimul_initpiaacmcconf(
                 ret = fscanf(fp, "%f", &tmpf);
                 piaacmc[0].fpmaskamptransm = tmpf;
                 fclose(fp);
+            }
+            else
+            {
+                FUNC_RETURN_FAILURE("Call to fopen failed");
             }
         }
     }
@@ -1042,8 +1063,16 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             piaacmcsimul_var.piaacmcconfdir
         );
 
+
         imageID IDtmp1 = -1;
-        load_fits(fname, "apo2Drad", LOADFITS_ERRMODE_WARNING, &IDtmp1);
+
+
+        if(load_fits(fname, "apo2Drad", LOADFITS_ERRMODE_WARNING, &IDtmp1) != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to load_fits failed");
+        }
+
+
         if(IDtmp1 == -1) // CREATE APODIZATION
         {
             EXECUTE_SYSTEM_COMMAND(
@@ -1053,7 +1082,11 @@ errno_t PIAACMCsimul_initpiaacmcconf(
 
             //sprintf(fname, "%s/apo2Drad.fits", piaacmcsimul_var.piaacmcconfdir);
             imageID IDtmp2 = -1;
-            load_fits(fname, "apo2Drad", LOADFITS_ERRMODE_WARNING, &IDtmp2);
+            if(load_fits(fname, "apo2Drad", LOADFITS_ERRMODE_WARNING, &IDtmp2) != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to load_fits failed");
+            }
+
             if(IDtmp2 == -1)
             {
                 printf("Creating 2D apodization for idealized circular monochromatic PIAACMC\n");
@@ -1683,7 +1716,10 @@ errno_t PIAACMCsimul_initpiaacmcconf(
 
     if(saveconf == 1)
     {
-        PIAACMCsimul_savepiaacmcconf(piaacmcsimul_var.piaacmcconfdir);
+        if(PIAACMCsimul_savepiaacmcconf(piaacmcsimul_var.piaacmcconfdir) != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_savepiaacmcconf failed");
+        }
     }
 
     DEBUG_TRACE_FEXIT();
