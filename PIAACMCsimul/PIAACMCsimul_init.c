@@ -390,7 +390,7 @@ errno_t PIAACMCsimul_init(
 
 
         // ------------------- elem 2:  PIAA M/L 0  -----------------------
-        // (M/L is "mirror or lens" - in our case it's a mirror)
+        // (M/L is "mirror or lens" )
         snprintf(optsyst[0].name[elem], STRINGMAXLEN_OPTSYST_ELEMNAME, "PIAA optics 0");
         optsyst[0].elemtype[elem] = 3; // reflective PIAA M0
         // this is an aspheric mirror, so we need actual sag shapes
@@ -402,19 +402,29 @@ errno_t PIAACMCsimul_init(
             "============ (2) PIAA0pos = %f ==================\n",
             optsyst[0].elemZpos[elem]
         );
-//        sleep(5);
+
         // set up the element properties
         if(design[index].PIAAmaterial_code == 0) // mirror
             // specify the sag array, put in data global by routine named something like createPIAA_mirror_shapes
         {
+            DEBUG_TRACEPOINT("Element is mirror");
             optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID = IDpiaam0z;
+            if(optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID == -1)
+            {
+                FUNC_RETURN_FAILURE("PIAA mirror surface 0 not identified");
+            }
         }
         else // lens
         {
             optsyst[0].elemtype[elem] = 4;
 
-            optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].surfID =
-                image_ID("piaar0zsag"); //IDpiaar0zsag;
+            DEBUG_TRACEPOINT("Element is lens");
+            optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].surfID = image_ID("piaar0zsag");
+            //IDpiaar0zsag;
+            if(optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].surfID == -1)
+            {
+                FUNC_RETURN_FAILURE("PIAA lens surface 0 not identified");
+            }
 
             // vacuum
             optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat0 = 100;
@@ -422,21 +432,7 @@ errno_t PIAACMCsimul_init(
             optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat1 =
                 design[0].PIAAmaterial_code;
         }
-        // make sure the above did something
-        if(optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID == -1)
-        {
-            FUNC_RETURN_FAILURE("ERROR: PIAA surface 0 not identified\n");
-        }
-        else
-        {
-            // confirming we have something
-            DEBUG_TRACEPOINT(
-                "PIAA0: aspheric element %ld arrayindex %d ID %ld",
-                elem,
-                optsyst[0].elemarrayindex[elem],
-                optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID
-            );
-        }
+
         elem++;
     }
 
@@ -485,6 +481,10 @@ errno_t PIAACMCsimul_init(
         if(design[index].PIAAmaterial_code == 0) // mirror
         {
             optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID = IDpiaam1z;
+            if(optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID == -1)
+            {
+                FUNC_RETURN_FAILURE("PIAA mirror surface 0 not identified");
+            }
         }
         else // lens
         {
@@ -493,28 +493,15 @@ errno_t PIAACMCsimul_init(
             optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].surfID =
                 image_ID("piaar1zsag"); //IDpiaar0zsag;
 
+            if(optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].surfID == -1)
+            {
+                FUNC_RETURN_FAILURE("PIAA lens surface 0 not identified");
+            }
 
             optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat0 = 100; // vacuum
             optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat1 =
                 design[0].PIAAmaterial_code;
         }
-
-        // make sure the above did something
-        if(optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID == -1)
-        {
-            FUNC_RETURN_FAILURE("ERROR: PIAA surface 0 not identified\n");
-        }
-        else
-        {
-            // confirming we have something
-            DEBUG_TRACEPOINT(
-                "PIAA1: aspheric element %ld arrayindex %d ID %ld",
-                elem,
-                optsyst[0].elemarrayindex[elem],
-                optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID
-            );
-        }
-
         //       fprintf(fp,"%02ld  %f    PIAAM1\n", elem, optsyst[0].elemZpos[elem]);
         elem++;
 

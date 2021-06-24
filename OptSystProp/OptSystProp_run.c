@@ -399,7 +399,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
             fflush(stdout);
 
             imageID ID = optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].surfID;
-            DEBUG_TRACEPOINT("index %ld  elem %ld  %d surface ID : %ld \n",
+            DEBUG_TRACEPOINT("index %ld  elem %ld  %d surface ID : %ld",
                              index, elem,
                              optsyst[index].elemarrayindex[elem], ID);
 

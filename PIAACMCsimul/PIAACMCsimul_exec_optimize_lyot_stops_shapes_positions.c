@@ -2,13 +2,6 @@
  * @file    PIAAACMCsimul_exec_optimize_lyot_stops_shapes_positions.c
  * @brief   PIAA-type coronagraph design, execute compute image
  *
- *
- * @author  O. Guyon
- * @date    25 nov 2017
- *
- *
- * @bug No known bugs.
- *
  */
 
 
@@ -133,14 +126,8 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     double centobs0 = 0.3;
     double centobs1 = 0.2;
 
-    // args that determine "extended" off-axis source
-    // number of off-axis sources on each circle
-    long NBincpt = 15;
-    // number of circle radii
-    long NBkr = 5;
 
-
-    imageID ID1, IDa, IDc;
+    imageID IDa, IDc;
 
     printf("=================================== mode 005 ===================================\n");
     // load some more cli variables
@@ -247,7 +234,7 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
 
     // propagate complex amplitude in a range from zmin to zmax, where 0 is elem0
     // computes the diffracted light from the on-axis source
-    ID1 = PIAACMCsimul_CA2propCubeInt(fnamea, fnamep, zmin, zmax, NBpropstep,
+    PIAACMCsimul_CA2propCubeInt(fnamea, fnamep, zmin, zmax, NBpropstep,
                                       "iproptmp");
     // complex amplitude at elem0, only used to determine image size
     IDa = image_ID(fnamea);
@@ -274,9 +261,20 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
         IDc = create_3Dimage_ID("OAincohc", xsize, ysize, NBpropstep);
 
         long cnt = 0; // initialize counter so later we can normalize by number of sources
+
+
+
+
+        // number of circle radii
+        long NBkr = 5;
+
+
         // loop over radii
         for(long kr = 0; kr < NBkr; kr++)
         {
+            // number of off-axis sources on each circle
+            long NBincpt = 15;
+
             // loop over points at current radius
             for(long k1 = 0; k1 < NBincpt; k1++)
             {
@@ -304,7 +302,7 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
                 }
 
                 // propagate that elem0 from zmin to zmax with new PSF
-                ID1 = PIAACMCsimul_CA2propCubeInt(fnamea, fnamep, zmin, zmax, NBpropstep,
+                imageID ID1 = PIAACMCsimul_CA2propCubeInt(fnamea, fnamep, zmin, zmax, NBpropstep,
                                                   "iproptmp");
                 for(uint64_t ii = 0; ii < xysize; ii++) // ii is indexing x-y plane
                 {
@@ -356,7 +354,10 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     /// ### Compute image that has the min along z of OAincohc at each x,y
     /// Function PIAACMCsimul_optimizeLyotStop_offaxis_min() computes minimal intensity image.
     ///
-    PIAACMCsimul_optimizeLyotStop_offaxis_min("OAincohc");
+    if(PIAACMCsimul_optimizeLyotStop_offaxis_min("OAincohc") != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call PIAACMCsimul_optimizeLyotStop_offaxis_min to failed");
+    }
 
     /// ### Optimize Lyot stops
 

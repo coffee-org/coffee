@@ -44,6 +44,7 @@ errno_t PIAACMCsimul_makePIAAshapes(
 )
 {
     DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG %ld", index);
 
 #ifdef PIAASIMUL_LOGFUNC0
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
@@ -56,7 +57,7 @@ errno_t PIAACMCsimul_makePIAAshapes(
     // ============ construct PIAA shapes from fitting coefficients ==================
 
 
-
+    DEBUG_TRACEPOINT("PIAAmode %d", piaacmc[0].PIAAmode);
     if(piaacmc[0].PIAAmode == 1)
     {
 
@@ -93,7 +94,7 @@ errno_t PIAACMCsimul_makePIAAshapes(
 
 
 
-
+        DEBUG_TRACEPOINT("piaacmcsimul_var.MAKE_PIAA0shape %d", piaacmcsimul_var.MAKE_PIAA0shape);
         if(piaacmcsimul_var.MAKE_PIAA0shape == 1)
         {
             // assemble piaa0z and piaa1z images
@@ -147,6 +148,7 @@ errno_t PIAACMCsimul_makePIAAshapes(
             imageID IDpiaam0z = ID;
 
             // make lense shapes if applicable
+            DEBUG_TRACEPOINT("PIAA material code = %d", design[index].PIAAmaterial_code);
             if(design[index].PIAAmaterial_code != 0) // refractive PIAA
             {
                 // if piaar0zsag does not exist or is wrong size, create it
@@ -179,8 +181,7 @@ errno_t PIAACMCsimul_makePIAAshapes(
                     WRITE_FULLFILENAME(fname, "%s/ri_array.txt", piaacmcsimul_var.piaacmcconfdir);
                     if((fpri = fopen(fname, "w")) == NULL)
                     {
-                        printf("ERROR: cannot open file \"%s\"\n", fname);
-                        exit(0);
+                        FUNC_RETURN_FAILURE("Cannot create file %s", fname);
                     }
                 }
                 double ri0 = OpticsMaterials_n(design[index].PIAAmaterial_code,
@@ -212,7 +213,7 @@ errno_t PIAACMCsimul_makePIAAshapes(
                     {
                         save_fl_fits("piaar0zsag", fname);
                     }
-                    printf("Saved piaar0zsag to %s\n", fname);
+                    DEBUG_TRACEPOINT("Saved piaar0zsag to %s", fname);
                 }
             }
 

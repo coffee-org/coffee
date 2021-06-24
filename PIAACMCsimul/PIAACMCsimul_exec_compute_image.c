@@ -50,10 +50,8 @@ errno_t PIAACMCsimul_exec_compute_image()
     double centobs1 = 0.2;
     int PIAACMC_WFCmode = 0;
     double xpos, ypos, fval;
-    int initscene;
     imageID IDscene;
     imageID ID;
-    long iter;
     imageID IDpsfi0;
     double valref;
 
@@ -150,7 +148,7 @@ errno_t PIAACMCsimul_exec_compute_image()
         IDpsfi0 = create_image_ID("psfiout0", 3, sizearray, _DATATYPE_FLOAT, 1, 0, 0);
         free(sizearray);
 
-        iter = 0;
+        long iter = 0;
         while(iter < 10)
         {
             {
@@ -193,7 +191,7 @@ errno_t PIAACMCsimul_exec_compute_image()
         FILE * fpscene = fopen("SCENE.txt", "r");
         if(fpscene != NULL)
         {
-            initscene = 0;
+            int initscene = 0;
             // for each source in the scene, read position and flux
             while(fscanf(fpscene, "%lf %lf %lf\n", &xpos, &ypos, &fval) == 3)
             {

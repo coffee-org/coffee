@@ -180,7 +180,7 @@ errno_t PIAACMCsimul_loadpiaacmcconf(
         load_fits(fname, "piaa0Cmodescoeff", 1, &(piaacmc[0].piaa0CmodesID));
         if(piaacmc[0].piaa0CmodesID == -1)
         {
-            sprintf(fname, "%s/piaaref/piaa0Cmodes.fits", dname);
+            WRITE_FULLFILENAME(fname, "%s/piaaref/piaa0Cmodes.fits", dname);
             load_fits(fname, "piaa0Cmodescoeff", 1, &(piaacmc[0].piaa0CmodesID) );
         }
 
@@ -189,7 +189,7 @@ errno_t PIAACMCsimul_loadpiaacmcconf(
         load_fits(fname, "piaa0Fmodescoeff", 1, &(piaacmc[0].piaa0FmodesID));
         if(piaacmc[0].piaa0FmodesID == -1)
         {
-            sprintf(fname, "%s/piaaref/piaa0Fmodes.fits", dname);
+            WRITE_FULLFILENAME(fname, "%s/piaaref/piaa0Fmodes.fits", dname);
             load_fits(fname, "piaa0Fmodescoeff", 1, &(piaacmc[0].piaa0FmodesID));
         }
 
@@ -197,7 +197,7 @@ errno_t PIAACMCsimul_loadpiaacmcconf(
         load_fits(fname, "piaa1Cmodescoeff", 1, &(piaacmc[0].piaa1CmodesID));
         if(piaacmc[0].piaa1CmodesID == -1)
         {
-            sprintf(fname, "%s/piaaref/piaa1Cmodes.fits", dname);
+            WRITE_FULLFILENAME(fname, "%s/piaaref/piaa1Cmodes.fits", dname);
             load_fits(fname, "piaa1Cmodescoeff", 1, &(piaacmc[0].piaa1CmodesID));
         }
 
