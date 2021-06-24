@@ -377,9 +377,10 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
         {
             double F0 = flux0cumul[i];
 
-            assert(ii < piaacmc[0].NBradpts);
-            while((flux1cumul[ii]<flux0cumul[i])
-                    && (ii<piaacmc[0].NBradpts))
+
+            while((ii<piaacmc[0].NBradpts)
+                    && (flux1cumul[ii]<flux0cumul[i])
+                 )
             {
                 ii++;
             }
@@ -413,9 +414,8 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
         {
             double F0 = flux1cumul[i];
 
-            assert(ii < piaacmc[0].NBradpts);
-            while((flux0cumul[ii]<flux1cumul[i])
-                    && (ii<piaacmc[0].NBradpts))
+            while( (ii<piaacmc[0].NBradpts)
+                    && (flux0cumul[ii]<flux1cumul[i]))
             {
                 ii++;
             }
