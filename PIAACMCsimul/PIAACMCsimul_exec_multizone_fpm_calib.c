@@ -54,8 +54,7 @@ errno_t PIAACMCsimul_exec_multizone_fpm_calib()
     double centobs1 = 0.2;
 
     // spreading computations over multiple processes for resp matrix
-    long mzoffset = 0;
-    long mzstep = 1;
+
 
 
     printf("=================================== mode 011 ===================================\n");
@@ -135,6 +134,9 @@ errno_t PIAACMCsimul_exec_multizone_fpm_calib()
     // if it did not exist, create it
     if(ID_FPMresp == -1)
     {
+        long mzoffset;
+        long mzstep;
+
         // get the number of tmux threads from cli
 
         piaacmcsimul_var.PIAACMC_FPMresp_mp = 1;
@@ -504,43 +506,42 @@ errno_t PIAACMCsimul_exec_multizone_fpm_calib()
                          sleep(100);
                     */
 
-                    assert(ID1 != -1);
-                    if(ID1 != -1) // this should always be true
+
+                    // ID1 is now != -1
+
+                    mzstep = piaacmcsimul_var.PIAACMC_FPMresp_mp; // total number of tmux threads
+                    mzoffset = thr; // the thread number of the child that just delivered its result
+                    // insert the partial result of child thr into the combined FPMresp array
+                    // be sure to skip the first line 'cause we already set it to be the light the went around the FPM
+                    for(long mz = 1 + mzoffset; mz < piaacmc[0].focmNBzone + 1;
+                            mz += mzstep) // loop over zone, do every PIAACMC_FPMresp_mp line
                     {
-                        mzstep = piaacmcsimul_var.PIAACMC_FPMresp_mp; // total number of tmux threads
-                        mzoffset = thr; // the thread number of the child that just delivered its result
-                        // insert the partial result of child thr into the combined FPMresp array
-                        // be sure to skip the first line 'cause we already set it to be the light the went around the FPM
-                        for(long mz = 1 + mzoffset; mz < piaacmc[0].focmNBzone + 1;
-                                mz += mzstep) // loop over zone, do every PIAACMC_FPMresp_mp line
-                        {
 
-                            printf("mz = %ld    %ld %ld\n", mz, IDfpmresp, ID1);
-                            fflush(stdout);
-                            for(int k = 0; k < piaacmc[0].nblambda; k++)
-                            {   // for each wavelenth
-                                for(uint32_t ii = 0; ii < data.image[ID_FPMresp].md[0].size[0]; ii++)
-                                {   // for each evaluation point
-                                    // index of this evaluation point and wavelength and zone
-                                    // tmpl1 = k*(nzones+1)*nEvaluationPoints) + zoneIndex*nEvaluationPoints + evaluationPoint
-                                    long tmpl1 =
-                                        k * (data.image[piaacmc[0].zonezID].md[0].size[0] + 1) * data.image[ID_FPMresp].md[0].size[0]
-                                        + mz * data.image[ID_FPMresp].md[0].size[0] + ii;
+                        printf("mz = %ld    %ld %ld\n", mz, IDfpmresp, ID1);
+                        fflush(stdout);
+                        for(int k = 0; k < piaacmc[0].nblambda; k++)
+                        {   // for each wavelenth
+                            for(uint32_t ii = 0; ii < data.image[ID_FPMresp].md[0].size[0]; ii++)
+                            {   // for each evaluation point
+                                // index of this evaluation point and wavelength and zone
+                                // tmpl1 = k*(nzones+1)*nEvaluationPoints) + zoneIndex*nEvaluationPoints + evaluationPoint
+                                long tmpl1 =
+                                    k * (data.image[piaacmc[0].zonezID].md[0].size[0] + 1) * data.image[ID_FPMresp].md[0].size[0]
+                                    + mz * data.image[ID_FPMresp].md[0].size[0] + ii;
 
-                                    // set the combined array value from the partial file (both are same shape and size, of course)
-                                    data.image[IDfpmresp].array.D[tmpl1] = data.image[ID1].array.D[tmpl1];
+                                // set the combined array value from the partial file (both are same shape and size, of course)
+                                data.image[IDfpmresp].array.D[tmpl1] = data.image[ID1].array.D[tmpl1];
 
-                                    // subtract the current zone value from the first zone line, which contained all light
-                                    // (with no mask).  Eventually this will contain only light that misses the FPM.
-                                    data.image[IDfpmresp].array.D[k * (data.image[piaacmc[0].zonezID].md[0].size[0]
-                                                                       + 1)*data.image[ID_FPMresp].md[0].size[0] + ii] -= data.image[ID1].array.D[tmpl1];
-                                }
+                                // subtract the current zone value from the first zone line, which contained all light
+                                // (with no mask).  Eventually this will contain only light that misses the FPM.
+                                data.image[IDfpmresp].array.D[k * (data.image[piaacmc[0].zonezID].md[0].size[0]
+                                                                   + 1)*data.image[ID_FPMresp].md[0].size[0] + ii] -= data.image[ID1].array.D[tmpl1];
                             }
                         }
-
-                        // we're done with the partial array, so delete it
-                        delete_image_ID("tmpFPMresp", DELETE_IMAGE_ERRMODE_WARNING);
                     }
+
+                    // we're done with the partial array, so delete it
+                    delete_image_ID("tmpFPMresp", DELETE_IMAGE_ERRMODE_WARNING);
 
                 }
                 // write out the current state of the combined FPMresp file

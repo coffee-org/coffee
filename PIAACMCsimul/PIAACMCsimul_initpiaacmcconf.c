@@ -217,6 +217,7 @@ errno_t PIAACMCsimul_initpiaacmcconf(
 )
 {
     DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG %ld %f %f %f %d %d", piaacmctype, fpmradld, centobs0, centobs1, WFCmode, load);
 
     FILE *fp;
     float beamradpix;
@@ -269,6 +270,8 @@ errno_t PIAACMCsimul_initpiaacmcconf(
 
     if(piaacmc == NULL)
     {
+        DEBUG_TRACEPOINT("Allocating piaacmc");
+        
         piaacmc = (OPTPIAACMCDESIGN *) malloc(sizeof(OPTPIAACMCDESIGN) *
                                               NBpiaacmcdesign);
         if(piaacmc == NULL) {
@@ -973,7 +976,7 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             fret = load_fits(
                        fname,
                        "piaa0Cmodescoeff",
-                       LOADFITS_ERRMODE_ERROR,
+                       LOADFITS_ERRMODE_WARNING,
                        &(piaacmc[0].piaa0CmodesID)
                    );
             if(fret != RETURN_SUCCESS)
@@ -989,7 +992,7 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             fret = load_fits(
                        fname,
                        "piaa0Fmodescoeff",
-                       LOADFITS_ERRMODE_ERROR,
+                       LOADFITS_ERRMODE_WARNING,
                        &(piaacmc[0].piaa0FmodesID)
                    );
             if(fret != RETURN_SUCCESS)
@@ -1005,7 +1008,7 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             fret = load_fits(
                        fname,
                        "piaa1Cmodescoeff",
-                       LOADFITS_ERRMODE_ERROR,
+                       LOADFITS_ERRMODE_WARNING,
                        &(piaacmc[0].piaa1CmodesID)
                    );
             if(fret != RETURN_SUCCESS)
@@ -1021,7 +1024,7 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             fret = load_fits(
                        fname,
                        "piaa1Fmodescoeff",
-                       LOADFITS_ERRMODE_ERROR,
+                       LOADFITS_ERRMODE_WARNING,
                        &(piaacmc[0].piaa1FmodesID)
                    );
             if(fret != RETURN_SUCCESS)
@@ -1044,13 +1047,14 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             }
             else
             {
-                FUNC_RETURN_FAILURE("Call to fopen failed");
+                FUNC_RETURN_FAILURE("Call to fopen failed: cannot open %s in read mode", fname);
             }
         }
     }
 
 
-
+    // If above files could not be loaded, create them
+    //
     if((piaacmc[0].piaa0CmodesID == -1)
             || (piaacmc[0].piaa0FmodesID == -1)
             || (piaacmc[0].piaa1CmodesID == -1)
@@ -1095,8 +1099,13 @@ errno_t PIAACMCsimul_initpiaacmcconf(
                 // first iteration: half size image, 2x zoom, without pupil mask
                 create_variable_ID("DFTZFACTOR", 2);
                 create_variable_ID("PNBITER", 15);
-                coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix * 0.5,
-                                             piaacmc[0].centObs1, "apotmp1", size / 2, "NULLim");
+
+                if(coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix * 0.5,
+                                                piaacmc[0].centObs1, "apotmp1", size / 2, "NULLim") != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to coronagraph_make_2Dprolateld failed");
+                }
+
 
                 // expand solution to full size
                 basic_resizeim("apotmp1", "apostart", size, size);
@@ -1105,23 +1114,33 @@ errno_t PIAACMCsimul_initpiaacmcconf(
                 // full size, 4x zoom
                 create_variable_ID("DFTZFACTOR", 4);
                 create_variable_ID("PNBITER", 5);
-                coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix,
-                                             piaacmc[0].centObs1, "apo", size, "pupmaskim");
+                if(coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix,
+                                                piaacmc[0].centObs1, "apo", size, "pupmaskim") != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to coronagraph_make_2Dprolateld failed");
+                }
+
 
                 // full size, 8x zoom
                 chname_image_ID("apo", "apostart");
                 create_variable_ID("DFTZFACTOR", 8);
                 create_variable_ID("PNBITER", 5);
-                coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix,
-                                             piaacmc[0].centObs1, "apo", size, "pupmaskim");
+                if(coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix,
+                                                piaacmc[0].centObs1, "apo", size, "pupmaskim") != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to coronagraph_make_2Dprolateld failed");
+                }
 
 
                 // full size, 16x zoom
                 chname_image_ID("apo", "apostart");
                 create_variable_ID("DFTZFACTOR", 16);
                 create_variable_ID("PNBITER", 10);
-                coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix,
-                                             piaacmc[0].centObs1, "apo", size, "pupmaskim");
+                if(coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix,
+                                                piaacmc[0].centObs1, "apo", size, "pupmaskim") != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to coronagraph_make_2Dprolateld failed");
+                }
 
 
                 chname_image_ID("apo", "apo2Drad");

@@ -124,6 +124,9 @@ static errno_t PIAACMCsimul_setparam_variables(
     long mode
 )
 {
+    DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG %s %ld", confindex, mode);
+
     variableID IDv = -1;
 
     // PIAACMC design mask radius in l/D
@@ -201,16 +204,19 @@ static errno_t PIAACMCsimul_setparam_variables(
         piaacmcsimul_var.PIAACMC_fpmtype = (int)(data.variable[IDv].value.f + 0.1);
     }
 
-    PIAACMCsimul_initpiaacmcconf(
-        piaacmcsimul_var.PIAACMC_fpmtype,
-        fpmradld,
-        centobs0,
-        centobs1,
-        0,
-        1
-    );
+    if(PIAACMCsimul_initpiaacmcconf(
+                piaacmcsimul_var.PIAACMC_fpmtype,
+                fpmradld,
+                centobs0,
+                centobs1,
+                0,
+                1
+            ) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
+    }
 
-
+    DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;
 }
 
@@ -249,6 +255,7 @@ errno_t PIAACMCsimul_run(
 )
 {
     DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG %s mode %ld", confindex, mode);
 
 #ifdef PIAASIMUL_LOGFUNC0
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
@@ -259,7 +266,10 @@ errno_t PIAACMCsimul_run(
 
 
     // read various cli variables, possibly setting globals
-    PIAACMCsimul_setparam_variables(confindex, mode);
+    if(PIAACMCsimul_setparam_variables(confindex, mode) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to function PIAACMCsimul_setparam_variables failed");
+    }
 
 
 
@@ -844,6 +854,7 @@ errno_t PIAACMCsimul_run(
     else
     {
         {
+            DEBUG_TRACEPOINT("running exec function");
             errno_t fret = PIAACMCsimul_exec(confindex, mode);
 
             if(fret != RETURN_SUCCESS)

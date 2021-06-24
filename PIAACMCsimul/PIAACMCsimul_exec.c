@@ -212,8 +212,7 @@ static double PIAACMCsimul_regularization_fpmsag_value()
     regvalue = 0.0;
     IDzonez = piaacmc[0].zonezID;
 
-    long zoneindex;
-    for(zoneindex = 0; zoneindex < data.image[IDzonez].md[0].size[0]; zoneindex++)
+    for(long zoneindex = 0; zoneindex < data.image[IDzonez].md[0].size[0]; zoneindex++)
     {
         // compute the square of (sag/coeff)^alpha
         double tmp;
@@ -385,6 +384,7 @@ errno_t PIAACMCsimul_exec(
 )
 {
     DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG %s %ld", confindex, mode);
 
     double valref;
 
@@ -527,43 +527,73 @@ errno_t PIAACMCsimul_exec(
         break;
 
     case 1 :
-        PIAACMCsimul_exec_optimize_lyot_stop_position();
+        if(PIAACMCsimul_exec_optimize_lyot_stop_position() != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_optimize_lyot_stop_position failed");
+        }
         break;
 
     case 2 :
-        PIAACMCsimul_exec_optimize_fpmtransmission();
+        if(PIAACMCsimul_exec_optimize_fpmtransmission() != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_optimize_fpmtransmission failed");
+        }
         break;
 
     case 3 :
-        PIAACMCsimul_exec_computePSF_no_fpm(NULL);
+        if(PIAACMCsimul_exec_computePSF_no_fpm(NULL) != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_computePSF_no_fpm failed");
+        }
         break;
 
     case 4 :
-        PIAACMCsimul_exec_optimize_PIAA_shapes();
+        if(PIAACMCsimul_exec_optimize_PIAA_shapes() != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_optimize_PIAA_shapes failed");
+        }
         break;
 
     case 5 :
-        PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions();
+        if(PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions() != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions failed");
+        }
         break;
 
     case 11 :
-        PIAACMCsimul_exec_multizone_fpm_calib();
+        if(PIAACMCsimul_exec_multizone_fpm_calib() != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_multizone_fpm_calib failed");
+        }
         break;
 
     case 13 :
-        PIAACMCsimul_exec_optimize_fpm_zones();
+        if(PIAACMCsimul_exec_optimize_fpm_zones() != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_optimize_fpm_zones failed");
+        }
         break;
 
     case 40 :
-        PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm();
+        if(PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm() != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm failed");
+        }
         break;
 
     case 100 : // evaluate current design: polychromatic contrast, pointing sensitivity
-        PIAACMCsimul_eval_poly_design();
+        if(PIAACMCsimul_eval_poly_design() != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_eval_poly_design failed");
+        }
         break;
 
     case 101 :
-        PIAACMCsimul_measure_transm_curve();
+        if(PIAACMCsimul_measure_transm_curve() != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_measure_transm_curve failed");
+        }
         break;
 
 
@@ -608,7 +638,11 @@ errno_t PIAACMCsimul_exec(
         data.image[IDstatus].array.UI16[0] = 5;
 
         // Compute Reference on-axis performance contrast (valref)
-        PIAACMCsimul_makePIAAshapes(piaacmc, 0);
+        if(PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
+        }
+
         optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm
         {
             errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
@@ -626,7 +660,10 @@ errno_t PIAACMCsimul_exec(
             char dirname[STRINGMAXLEN_DIRNAME];
 
             WRITE_DIRNAME(dirname, "%s_linopt", piaacmcsimul_var.piaacmcconfdir);
-            PIAACMCsimul_savepiaacmcconf(dirname);
+            if(PIAACMCsimul_savepiaacmcconf(dirname) != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_savepiaacmcconf failed");
+            }
 
             // import configuration from _linopt directory
             EXECUTE_SYSTEM_COMMAND("rsync -au --progress %s/* ./%s/", dirname,
