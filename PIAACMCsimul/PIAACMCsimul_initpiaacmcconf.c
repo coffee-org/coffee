@@ -407,7 +407,7 @@ errno_t PIAACMCsimul_initpiaacmcconf(
                                piaacmcsimul_var.piaacmcconfdir);
             if((fp = fopen(fname, "r")) != NULL)
             {
-                char name[200];
+                char name[199];
                 if(fscanf(fp, "%200s", name) == 1)
                 {
                     strcpy(piaacmc[0].fpmmaterial_name, name);

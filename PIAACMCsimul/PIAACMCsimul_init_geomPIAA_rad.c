@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <assert.h>
 
 
 // milk includes
@@ -38,12 +39,7 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
 {
     DEBUG_TRACE_FSTART();
 
-    double *pup0;
-    double *pup1;
-    double *flux0cumul;
-    double *flux1cumul;
-
-    long IDcoeff;
+    imageID IDcoeff;
     long nbcoeff;
     FILE *fp;
     double total;
@@ -73,25 +69,25 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
 #endif
 
 
-    pup0 = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts);
+    double * pup0 = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts);
     if(pup0 == NULL) {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    pup1 = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts);
+    double * pup1 = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts);
     if(pup1 == NULL) {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    flux0cumul = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts);
+    double * flux0cumul = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts);
     if(flux0cumul == NULL) {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    flux1cumul = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts);
+    double * flux1cumul = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts);
     if(flux1cumul == NULL) {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
@@ -186,11 +182,12 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
         //  innerprof_cumul = (double*) malloc(sizeof(double)*NBistep);
 
         int dir = 1; // initial direction
-        int odir;
+
 
         double t0;
         while(fabs(verr)>1.0e-9)
         {
+            int odir;
             t0 = 0.0;
             //t0cnt = 0.0;
             for(long ii=0; ii<NBistep; ii++)
@@ -380,8 +377,12 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
         {
             double F0 = flux0cumul[i];
 
-            while((flux1cumul[ii]<flux0cumul[i])&&(ii<piaacmc[0].NBradpts))
+            assert(ii < piaacmc[0].NBradpts);
+            while((flux1cumul[ii]<flux0cumul[i])
+                    && (ii<piaacmc[0].NBradpts))
+            {
                 ii++;
+            }
 
             double F1 = flux1cumul[ii-1];
             double F2 = flux1cumul[ii];
@@ -412,8 +413,12 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
         {
             double F0 = flux1cumul[i];
 
-            while((flux0cumul[ii]<flux1cumul[i])&&(ii<piaacmc[0].NBradpts))
+            assert(ii < piaacmc[0].NBradpts);
+            while((flux0cumul[ii]<flux1cumul[i])
+                    && (ii<piaacmc[0].NBradpts))
+            {
                 ii++;
+            }
 
             double F1 = flux0cumul[ii-1];
             double F2 = flux0cumul[ii];
