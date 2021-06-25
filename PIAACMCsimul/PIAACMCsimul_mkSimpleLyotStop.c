@@ -2,18 +2,6 @@
  * @file    PIAACMCsimul_mkSimpleLyotStop.c
  * @brief   PIAA-type coronagraph design, run
  *
- * Can design both APLCMC and PIAACMC coronagraphs
- *
- *
- * ## Change log
- * - 20180323  Guyon   minor syntax cleanup
- *
- *
- * @author  O. Guyon
- *
- *
- * @bug No known bugs.
- *
  */
 
 
@@ -59,12 +47,14 @@ extern PIAACMCsimul_varType piaacmcsimul_var;
 /* =============================================================================================== */
 
 // transmits between rin and rout
-long PIAACMCsimul_mkSimpleLyotStop(
+imageID PIAACMCsimul_mkSimpleLyotStop(
     const char *ID_name,
     float rin,
     float rout
 )
 {
+    DEBUG_TRACE_FSTART();
+
     uint32_t size;
     uint64_t size2;
     imageID ID, IDr;
@@ -94,7 +84,8 @@ long PIAACMCsimul_mkSimpleLyotStop(
             }
         }
 
-    return(ID);
+    DEBUG_TRACE_FEXIT();
+    return ID;
 }
 
 

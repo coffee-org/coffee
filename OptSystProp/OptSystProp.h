@@ -1,6 +1,9 @@
 #ifndef _OPTSYSTPROP_H
 #define _OPTSYSTPROP_H
 
+#ifndef __STDC_LIB_EXT1__
+typedef int errno_t;
+#endif
 
 // ************************************************************************
 // ------------------- DEFINITION OF OPTICAL ELEMENTS ---------------------
@@ -57,6 +60,8 @@ typedef struct {
 } FOCMASK;
 
 
+#define OPTSYST_ELEM_MAXNB            100
+#define STRINGMAXLEN_OPTSYST_ELEMNAME 100
 
 //
 // *****************************************************************************************************
@@ -69,11 +74,11 @@ typedef struct {
 //
 // optical elements are applied sequentially, and consist of amplitude and phase cubes (1 slize per lambda)
 // types of elements :
-// 1: static opaque mask, defined by image identifyer 
+// 1: static opaque mask, defined by image identifyer
 // 2: -
 // 3: reflective aspheric surface. Defined by OPD map (used for mirrors, including deformable mirrors)
 // 4: refractive aspheric surface. Defined by OPD map, material type (index of refraction) before and after surface
-// 5: focal plane mask 
+// 5: focal plane mask
 //
 typedef struct {
 
@@ -87,25 +92,28 @@ typedef struct {
 
     // =============== OPTICAL ELEMENTS ===================
     long NBelem; // number of optical elements
-    char name[100][100];
+    char name[OPTSYST_ELEM_MAXNB][STRINGMAXLEN_OPTSYST_ELEMNAME];
 
     long NB_asphsurfm; // max number of aspheric mirrors
-    ASPHSURFM ASPHSURFMarray[100];
+    ASPHSURFM ASPHSURFMarray[OPTSYST_ELEM_MAXNB];
 
     long NB_asphsurfr; // max number of aspheric refractive surfaces
-    ASPHSURFR ASPHSURFRarray[100];
+    ASPHSURFR ASPHSURFRarray[OPTSYST_ELEM_MAXNB];
 
     long NB_focmask; // max number of focal plane masks
-    FOCMASK FOCMASKarray[100];
+    FOCMASK FOCMASKarray[OPTSYST_ELEM_MAXNB];
 
-    int elemtype[100]; // element type
-    int elemarrayindex[100]; // if element is DM or aspheric surface, this is the index in the corresponding array of elements, otherwise, this is the image index
-    double flux[100]; // total flux AFTER element
-    double elemZpos[100]; // position along beam
-    int keepMem[100]; // set to 1 if memory should be kept, 0 otherwise
+    int elemtype[OPTSYST_ELEM_MAXNB]; // element type
+
+    // if element is DM or aspheric surface, this is the index in the corresponding array of elements, otherwise, this is the image index
+    int elemarrayindex[OPTSYST_ELEM_MAXNB];
+
+    double flux[OPTSYST_ELEM_MAXNB]; // total flux AFTER element
+    double elemZpos[OPTSYST_ELEM_MAXNB]; // position along beam
+    int keepMem[OPTSYST_ELEM_MAXNB]; // set to 1 if memory should be kept, 0 otherwise
     // this is what is used for propagations, created from info above
-    long elem_amp_ID_array[100]; // amplitude map identifyer, multiplicative
-    long elem_pha_ID_array[100]; // phase map identifyer, additive
+    long elem_amp_ID_array[OPTSYST_ELEM_MAXNB]; // amplitude map identifyer, multiplicative
+    long elem_pha_ID_array[OPTSYST_ELEM_MAXNB]; // phase map identifyer, additive
 
     int endmode; // 0: compute PSF at the end of the sequence, 1: no PSF
 
@@ -115,13 +123,13 @@ typedef struct {
 
 
 
-int_fast8_t init_OptSystProp();
+errno_t init_OptSystProp();
 
 
 
-int OptSystProp_propagateCube(OPTSYST *optsyst, long index, const char *IDin_amp_name, const char *IDin_pha_name, const char *IDout_amp_name, const char *IDout_pha_name, double zprop, int sharedmem);
+errno_t OptSystProp_propagateCube(OPTSYST *optsyst, long index, const char *IDin_amp_name, const char *IDin_pha_name, const char *IDout_amp_name, const char *IDout_pha_name, double zprop, int sharedmem);
 
-int OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long elemend, const char *savedir, int sharedmem);
+errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long elemend, const char *savedir, int sharedmem);
 
 
 #endif

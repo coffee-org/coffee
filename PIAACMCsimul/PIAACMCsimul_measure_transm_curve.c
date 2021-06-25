@@ -5,12 +5,6 @@
  */
 
 
-/* =============================================================================================== */
-/* =============================================================================================== */
-/*                                        HEADER FILES                                             */
-/* =============================================================================================== */
-/* =============================================================================================== */
-
 // System includes
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,20 +20,6 @@
 #include "PIAACMCsimul/PIAACMCsimul.h"
 
 
-/* =============================================================================================== */
-/* =============================================================================================== */
-/*                                      DEFINES, MACROS                                            */
-/* =============================================================================================== */
-/* =============================================================================================== */
-
-
-
-/* =============================================================================================== */
-/* =============================================================================================== */
-/*                                  GLOBAL DATA DECLARATION                                        */
-/* =============================================================================================== */
-/* =============================================================================================== */
-
 // externs
 extern PIAACMCsimul_varType piaacmcsimul_var;
 
@@ -51,27 +31,23 @@ extern OPTPIAACMCDESIGN *piaacmc;
 
 
 
-/* =============================================================================================== */
-/* =============================================================================================== */
-/*                                    FUNCTIONS SOURCE CODE                                        */
-/* =============================================================================================== */
-/* =============================================================================================== */
-
 /**
  * ---
  *
  * ## Mode 101: Measure transmission as a function of angular separation
  *
  */
-int PIAACMCsimul_measure_transm_curve()
+errno_t PIAACMCsimul_measure_transm_curve()
 {
+    DEBUG_TRACE_FSTART();
+
     imageID IDv;
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
     //double valref;
-    char fname[1500];
-    char fnametransm[1500];
+//    char fname[1500];
+//    char fnametransm[1500];
 
     printf("=================================== mode 101 ===================================\n");
 
@@ -103,14 +79,30 @@ int PIAACMCsimul_measure_transm_curve()
     optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm
 
 
-    PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0);
-    sprintf(fname, "!%s/psfi0test_x00_y00.fits", piaacmcsimul_var.piaacmcconfdir);
-    save_fits("psfi0", fname);
+    {
+        double cval = 0.0;
+        errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0, &cval);
+        if( fret != RETURN_SUCCESS)
+        {
+            printf("ERROR  [ %s %s %d ]\n", __FILE__, __func__, __LINE__);
+            printf("    Call to PIAACMCsimul_computePSF failed\n");
+            printf("    Function %s returns FAILURE\n", __func__);
+            return RETURN_FAILURE;
+        }
+    }
 
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/psfi0test_x00_y00.fits", piaacmcsimul_var.piaacmcconfdir);
+        save_fits("psfi0", fname);
+    }
+
+
+    char fnametransm[STRINGMAXLEN_FULLFILENAME];
     PIAACMCsimul_update_fnamedescr();
-    sprintf(fnametransm, "%s/transmCurve_sm%d.%s.txt",
-            piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.SCORINGMASKTYPE,
-            piaacmcsimul_var.fnamedescr);
+    WRITE_FULLFILENAME(fnametransm, "%s/transmCurve_sm%d.%s.txt",
+                       piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.SCORINGMASKTYPE,
+                       piaacmcsimul_var.fnamedescr);
 
     FILE *fpt;
     fpt = fopen(fnametransm, "w");
@@ -124,10 +116,18 @@ int PIAACMCsimul_measure_transm_curve()
         long xsize, ysize, zsize;
         double val;
 
-        //valref = 
-        PIAACMCsimul_computePSF(xld, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0);
+        //valref =
+        {
+            double cval = 0.0;
+            errno_t fret = PIAACMCsimul_computePSF(xld, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &cval);
+            if( fret != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+            }
+        }
+
         ID = image_ID("psfi0");
-        //            sprintf(fname, "!psfi0transm_%04.1f.fits", xld);
+        //            sprintf(fname, "psfi0transm_%04.1f.fits", xld);
         //           save_fits("psfi0", fname);
         printf("ID = %ld\n", ID);
         xsize = data.image[ID].md[0].size[0];
@@ -158,7 +158,7 @@ int PIAACMCsimul_measure_transm_curve()
         fpt = fopen(fnametransm, "a");
         fprintf(fpt, "%10f %.18f\n", xld, val);
         fclose(fpt);
-        delete_image_ID("psfi0");
+        delete_image_ID("psfi0", DELETE_IMAGE_ERRMODE_WARNING);
 
         stepld = 0.001;
         stepld += 0.1 * xld;
@@ -168,7 +168,8 @@ int PIAACMCsimul_measure_transm_curve()
         }
     }
 
-    return 0;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 

@@ -38,15 +38,16 @@ extern OPTPIAACMCDESIGN *piaacmc;
  * ## Mode 4: Optimize PIAA optics shapes, cosine modes only (not currently used, replaced by mode 40. skipping)
  *
  */
-int PIAACMCsimul_exec_optimize_PIAA_shapes()
+errno_t PIAACMCsimul_exec_optimize_PIAA_shapes()
 {
+    DEBUG_TRACE_FSTART();
+
     imageID IDv;
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
     //long NBiter = 1000;
     long kmax;
-    long k;
 
 
     printf("=================================== mode 004 ===================================\n");
@@ -65,7 +66,11 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes()
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
-    PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 1);
+    if(PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 1) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
+    }
+    
     piaacmcsimul_var.LINOPT = 1; // perform linear optimization
     /*if((IDv = variable_ID("PIAACMC_nbiter")) != -1)
     {
@@ -88,7 +93,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes()
     }
 
     piaacmcsimul_var.linopt_number_param = 0;
-    for(k = 0; k < kmax; k++)
+    for(long k = 0; k < kmax; k++)
     {
         piaacmcsimul_var.linopt_paramtype[piaacmcsimul_var.linopt_number_param] =
             _DATATYPE_FLOAT;
@@ -104,7 +109,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes()
         piaacmcsimul_var.linopt_number_param++;
     }
 
-    for(k = 0; k < kmax; k++)
+    for(long k = 0; k < kmax; k++)
     {
         piaacmcsimul_var.linopt_paramtype[piaacmcsimul_var.linopt_number_param] =
             _DATATYPE_FLOAT;
@@ -123,6 +128,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes()
     piaacmcsimul_var.FORCE_MAKE_PIAA1shape = 1;
 
 
-    return 0;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 

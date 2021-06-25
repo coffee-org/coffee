@@ -18,47 +18,16 @@
 
 
 
-
 #define SBUFFERSIZE 2000
 
-//static int INITSTATUS_OptSystProp = 0;
 
 
-
-// CLI commands
-//
-// function CLI_checkarg used to check arguments
-// 1: float
-// 2: long
-// 3: string
-// 4: existing image
-//
-
-
-
-
-/*
-void __attribute__ ((constructor)) libinit_OptSystProp()
-{
-	if ( INITSTATUS_OptSystProp == 0 )
-	{
-		init_OptSystProp();
-		RegisterModule(__FILE__, "coffee", "Optical propagation through system");
-		INITSTATUS_OptSystProp = 1;
-	}
-}
-*/
-
-
-
-
-
-int_fast8_t init_OptSystProp()
+errno_t init_OptSystProp()
 {
     // add atexit functions here
 
 
-    return 0;
+    return RETURN_SUCCESS;
 
 }
 

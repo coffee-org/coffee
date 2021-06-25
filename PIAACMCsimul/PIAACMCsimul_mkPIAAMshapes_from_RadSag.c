@@ -20,6 +20,10 @@
 #include <math.h>
 #include <malloc.h>
 
+# ifdef _OPENMP
+# include <omp.h>
+# endif
+
 
 #include "CommandLineInterface/CLIcore.h"
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -54,33 +58,26 @@ extern OPTPIAACMCDESIGN *piaacmc;
  * @brief Make PIAA OPD screens from radial sag profile
  *
  */
-
-int PIAACMCsimul_mkPIAAMshapes_from_RadSag(
+errno_t PIAACMCsimul_mkPIAAMshapes_from_RadSag(
     const char *fname,
     const char *ID_PIAAM0_name,
     const char *ID_PIAAM1_name
 )
 {
-    FILE *fp;
+    DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT_LOG("FARG %s %s %s", fname, ID_PIAAM0_name, ID_PIAAM1_name);
+
     long size;
-    long ii, jj;
-    long ID_PIAAM0, ID_PIAAM1;
+    imageID ID_PIAAM0, ID_PIAAM1;
 
-    long k;
-
-    double x, y, r;
 
     double *r0array;
     double *z0array;
     double *r1array;
     double *z1array;
 
-    double alpha;
-    double r00, r01;
-    double val;
 
     double beamradpix;
-//    int ret;
 
 #ifdef PIAASIMUL_LOGFUNC0
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
@@ -120,20 +117,33 @@ int PIAACMCsimul_mkPIAAMshapes_from_RadSag(
         abort(); // or handle error in other ways
     }
 
-    fp = fopen(fname, "r");
-    for(k = 0; k < piaacmc[0].NBradpts; k++)
     {
-        int ret = fscanf(fp, "%lf %lf %lf %lf\n", &r0array[k], &z0array[k], &r1array[k],
-                         &z1array[k]);
-        (void) ret;
+        // Read sag file
+        DEBUG_TRACEPOINT("read sag radial profile %s", fname);
+
+        FILE * fp = fopen(fname, "r");
+        if(fp != NULL)
+        {
+            for(long k = 0; k < piaacmc[0].NBradpts; k++)
+            {
+                int ret = fscanf(fp, "%lf %lf %lf %lf\n", &r0array[k], &z0array[k], &r1array[k],
+                                 &z1array[k]);
+                (void) ret;
+            }
+            fclose(fp);
+        }
+        else
+        {
+            FUNC_RETURN_FAILURE("Cannot read file %s", fname);
+        }
+
     }
-    fclose(fp);
 
     //  for(k=0;k<nbpt;k++)
     //  printf("%ld %.8lf %.8lf %.8lf %.8lf\n", k, r0array[k], z0array[k], r1array[k], z1array[k]);
 
 
-    for(k = 0; k < piaacmc[0].NBradpts; k++)
+    for(long k = 0; k < piaacmc[0].NBradpts; k++)
     {
         z1array[k] -= piaacmc[0].PIAAsep;
     }
@@ -146,42 +156,44 @@ int PIAACMCsimul_mkPIAAMshapes_from_RadSag(
 
     printf("\n\n");
 
-# ifdef HAVE_LIBGOMP
-    #pragma omp parallel default(shared) private(ii, jj, x, y, r, k, r00, r01, alpha, val)
+
+# ifdef _OPENMP
+    #pragma omp parallel
     {
 # endif
 
 
-# ifdef HAVE_LIBGOMP
+# ifdef _OPENMP
         #pragma omp for
 # endif
-        for(ii = 0; ii < size; ii++)
+        for(long ii = 0; ii < size; ii++)
         {
             //      printf("\r %ld / %ld     ", ii, size);
             //fflush(stdout);
 
 
-            for(jj = 0; jj < size; jj++)
+            for(long jj = 0; jj < size; jj++)
             {
-                x = (1.0 * ii - 0.5 * size) / beamradpix;
-                y = (1.0 * jj - 0.5 * size) / beamradpix;
-                r = sqrt(x * x + y * y) * piaacmc[0].beamrad;
+                double x = (1.0 * ii - 0.5 * size) / beamradpix;
+                double y = (1.0 * jj - 0.5 * size) / beamradpix;
+                double r = sqrt(x * x + y * y) * piaacmc[0].beamrad;
 
                 if(r < piaacmc[0].r0lim * piaacmc[0].beamrad)
                 {
-                    k = 1;
-                    while((r0array[k] < r) && (k < piaacmc[0].NBradpts - 2))
+                    long k = 1;
+                    while((k < piaacmc[0].NBradpts - 2)
+                            && (r0array[k] < r))
                     {
                         k++;
                     }
-                    r00 = r0array[k - 1];
-                    r01 = r0array[k];
-                    alpha = (r - r00) / (r01 - r00);
+                    double r00 = r0array[k - 1];
+                    double r01 = r0array[k];
+                    double alpha = (r - r00) / (r01 - r00);
                     if(alpha > 1.0)
                     {
                         alpha = 1.0;
                     }
-                    val = (1.0 - alpha) * z0array[k - 1] + alpha * z0array[k];
+                    double val = (1.0 - alpha) * z0array[k - 1] + alpha * z0array[k];
                     data.image[ID_PIAAM0].array.F[jj * size + ii] = val;
                 }
                 else
@@ -191,19 +203,20 @@ int PIAACMCsimul_mkPIAAMshapes_from_RadSag(
 
                 if(r < piaacmc[0].r1lim * piaacmc[0].beamrad)
                 {
-                    k = 1;
-                    while((r1array[k] < r) && (k < piaacmc[0].NBradpts - 2))
+                    long k = 1;
+                    while((k < piaacmc[0].NBradpts - 2)
+                            && (r1array[k] < r))
                     {
                         k++;
                     }
-                    r00 = r1array[k - 1];
-                    r01 = r1array[k];
-                    alpha = (r - r00) / (r01 - r00);
+                    double r00 = r1array[k - 1];
+                    double r01 = r1array[k];
+                    double alpha = (r - r00) / (r01 - r00);
                     if(alpha > 1.0)
                     {
                         alpha = 1.0;
                     }
-                    val = (1.0 - alpha) * z1array[k - 1] + alpha * z1array[k];
+                    double val = (1.0 - alpha) * z1array[k - 1] + alpha * z1array[k];
                     data.image[ID_PIAAM1].array.F[jj * size + ii] = -val; //-piaacmc[0].PIAAsep);
                 }
                 else
@@ -212,7 +225,7 @@ int PIAACMCsimul_mkPIAAMshapes_from_RadSag(
                 }
             }
         }
-# ifdef HAVE_LIBGOMP
+# ifdef _OPENMP
     }
 # endif
 
@@ -225,7 +238,8 @@ int PIAACMCsimul_mkPIAAMshapes_from_RadSag(
     free(r1array);
     free(z1array);
 
-    return 0;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 

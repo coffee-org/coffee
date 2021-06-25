@@ -5,8 +5,6 @@
  * Can design both APLCMC and PIAACMC coronagraphs
  *
  *
- * @bug No known bugs.
- *
  */
 
 
@@ -40,75 +38,117 @@ extern OPTSYST *optsyst;
 extern OPTPIAACMCDESIGN *piaacmc;
 
 
+// forward declaration
+errno_t PIAACMCsimul_run(
+    const char *confindex,
+    long mode
+);
+
+
+
+// Local variables pointers
+static char *confindex;
+static uint32_t *mode;
+
+
+static CLICMDARGDEF farg[] =
+{
+    {
+        CLIARG_STR, ".confindex", "configuration index", "000",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &confindex
+    },
+    {
+        CLIARG_LONG, ".mode", "mode", "0",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &mode
+    }
+};
+
+static CLICMDDATA CLIcmddata =
+{
+    "run",
+    "Simulate PIAACMC",
+    CLICMD_FIELDS_DEFAULTS
+};
+
+
+// detailed help
+static errno_t help_function()
+{
+    return RETURN_SUCCESS;
+}
 
 
 
 
 
-/*
-    entry point for PIAACMCsimul from the cli
-*/
-int PIAACMCsimul_run(
-    const char
-    *confindex,		/// @param[in] confindex	configuration index (sets name of directory for results)
-    long mode					/// @param[in] mode			operation to be executed
+static errno_t compute_function()
+{
+    errno_t rval = 0;
+
+    INSERT_STD_PROCINFO_COMPUTEFUNC_START
+
+    rval = PIAACMCsimul_run(confindex,*mode);
+
+    INSERT_STD_PROCINFO_COMPUTEFUNC_END
+
+    return rval;
+}
+
+
+
+
+INSERT_STD_FPSCLIfunctions
+
+// Register function in CLI
+errno_t CLIADDCMD_PIAACMCsimul__run()
+{
+    INSERT_STD_CLIREGISTERFUNC
+    return RETURN_SUCCESS;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+static errno_t PIAACMCsimul_setparam_variables(
+    const char *confindex,
+    long mode
 )
 {
-    long i;
-    FILE *fp;
-    char fname[1500];
-    char fname1[1500];
-    char fnamebestval[1500];
-    double bestval = 1.0;
-    long k;
-    int fOK = 0;
-    int bOK = 0;
-    int zeroST = 0;
-//    int r;
-    int loopOK;
-    char stopfile[500];
-    long IDv;
-    long IDbestsoltmp, IDbestsol;
-    char fnamebestsol[1500];
-    int loopin = 0;
-    struct timeval start, end;
-    long secs_used, micros_used;
+    DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG %s %ld", confindex, mode);
 
-    double prob1;
-    double sag0; // sag to change OPD by 1 wave at central wavelength
-    long cnt00, cnt0;
+    variableID IDv = -1;
 
-    double searchtime = 3600.0 * 10.0; // [second] default 10 hours
-
-#ifdef PIAASIMUL_LOGFUNC0
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
-                                 "");
-#endif
-
-    piaacmc = NULL; // set the pointer to the piaacmc structure to null
-
-
-    IDbestsol = -1; // data array index of current best solution
-
-
-    // read various cli variables, possibly setting globals
+    // PIAACMC design mask radius in l/D
     if((IDv = variable_ID("PIAACMC_MASKRADLD")) != -1)
     {
         piaacmcsimul_var.PIAACMC_MASKRADLD = data.variable[IDv].value.f;
     }
 
-
+    // sectors
     if((IDv = variable_ID("PIAACMC_FPMsectors")) != -1)
     {
         piaacmcsimul_var.PIAACMC_FPMsectors = (long) data.variable[IDv].value.f + 0.01;
     }
     printf("PIAACMC_FPMsectors = %d\n", piaacmcsimul_var.PIAACMC_FPMsectors);
 
+
     if((IDv = variable_ID("SCORINGMASKTYPE")) != -1)
     {
         piaacmcsimul_var.SCORINGMASKTYPE = (long) data.variable[IDv].value.f + 0.01;
     }
     printf("SCORINGMASKTYPE = %d\n", piaacmcsimul_var.SCORINGMASKTYPE);
+
 
     if((IDv = variable_ID("PIAACMC_save")) != -1)
     {
@@ -123,17 +163,17 @@ int PIAACMCsimul_run(
         piaacmcsimul_var.computePSF_ResolvedTarget = (long)(data.variable[IDv].value.f +
                 0.01);
     }
+
+
     if((IDv = variable_ID("PIAACMC_extmode")) != -1)
     {
         piaacmcsimul_var.computePSF_ResolvedTarget_mode = (long)(
                     data.variable[IDv].value.f + 0.01);
     }
 
-
     printf("mode = %ld\n", mode);
     fflush(stdout);
-    // debug from Justin
-    sleep(10);
+
 
 
     double fpmradld = 0.95;  // default
@@ -141,7 +181,7 @@ int PIAACMCsimul_run(
     double centobs1 = 0.2;
 
     // set the result directories
-    sprintf(piaacmcsimul_var.piaacmcconfdir, "%s", confindex);
+    WRITE_DIRNAME(piaacmcsimul_var.piaacmcconfdir, "%s", confindex);
 
     // load some more cli variables
     if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
@@ -164,29 +204,86 @@ int PIAACMCsimul_run(
         piaacmcsimul_var.PIAACMC_fpmtype = (int)(data.variable[IDv].value.f + 0.1);
     }
 
-    PIAACMCsimul_initpiaacmcconf(piaacmcsimul_var.PIAACMC_fpmtype, fpmradld,
-                                 centobs0, centobs1, 0, 1);
+    if(PIAACMCsimul_initpiaacmcconf(
+                piaacmcsimul_var.PIAACMC_fpmtype,
+                fpmradld,
+                centobs0,
+                centobs1,
+                0,
+                1
+            ) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
+    }
+
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
+}
 
 
 
-    // compute the material thickness producing a lambda phase shift at the center of the spectral band
-    sag0 = 1.0;
+static double read_searchtime()
+{
+    double searchtime = 3600.0 * 10.0; // [second] default 10 hours
+    FILE *fp;
+    char fname[STRINGMAXLEN_FILENAME];
+
+    WRITE_FILENAME(fname,  "searchtime.txt");
+    fp = fopen(fname, "r");
+    if(fp != NULL)
+    {
+        int r = fscanf(fp, "%lf\n", &searchtime);
+        (void) r;
+        fclose(fp);
+    }
+
+    printf("searchtime = %f sec\n", searchtime);
+    fflush(stdout);
+
+    return searchtime;
+}
+
+
+
+
+/*
+    entry point for PIAACMCsimul from the cli
+*/
+errno_t PIAACMCsimul_run(
+    const char *confindex,		/// @param[in] confindex	configuration index (sets name of directory for results)
+    long mode					/// @param[in] mode			operation to be executed
+)
+{
+    DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG %s mode %ld", confindex, mode);
+
+#ifdef PIAASIMUL_LOGFUNC0
+    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
+                                 "");
+#endif
+
+    piaacmc = NULL; // set the pointer to the piaacmc structure to null
+
+
+    // read various cli variables, possibly setting globals
+    if(PIAACMCsimul_setparam_variables(confindex, mode) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to function PIAACMCsimul_setparam_variables failed");
+    }
+
 
 
     // mode 13: optimize focal plane mask zones only, setting the sag values for each mask zone
     // This outer loop is to choose more different starting points for the exec loop
     if(mode == 13) // loop to keep looking for optimal solution
     {
-        sprintf(fname, "searchtime.txt");
-        fp = fopen(fname, "r");
-        if(fp != NULL)
-        {
-            int r = fscanf(fp, "%lf\n", &searchtime);
-            (void) r;
-            fclose(fp);
-        }
+        double bestval = 1.0;
+        int loopin = 0;
 
 
+        double searchtime = read_searchtime();
+
+        int loopOK;
         if(searchtime < 0.1)
         {
             loopOK = 0;
@@ -195,18 +292,30 @@ int PIAACMCsimul_run(
         {
             loopOK = 1;
         }
-
-
         printf("loopOK = %d\n", loopOK);
         fflush(stdout);
 
-
+        struct timeval start;
         gettimeofday(&start, NULL);
-        i = 0;
+
+
+        // set the name of the stopfile
+        char stopfile[STRINGMAXLEN_FILENAME];
+        WRITE_FILENAME(stopfile,
+                       "%s/stoploop13.txt",
+                       piaacmcsimul_var.piaacmcconfdir
+                      );
+
+        int loopiter = 0;
+        imageID IDbestsol = -1; // data array index of current best solution
+
+        double sag0; // sag to change OPD by 1 wave at central wavelength
+        // compute the material thickness producing a lambda phase shift at the center of the spectral band
+        sag0 = 1.0;
 
         // while not exceed searchtime or no stop file
         // EXECUTE_SYSTEM_COMMAND("touch start.loop.ttxt");
-        while((loopOK == 1) && (i < 1000000))
+        while((loopOK == 1) && (loopiter < 1000000))
         {
             printf("LOOP start\n");
             fflush(stdout);
@@ -214,22 +323,13 @@ int PIAACMCsimul_run(
             //EXECUTE_SYSTEM_COMMAND("touch start.iter%05ld.ttxt", i);
 
             // read in the real searchtime nominally set by the bash script
-            sprintf(fname, "searchtime.txt");
-            fp = fopen(fname, "r");
-            if(fp != NULL)
-            {
-                int r = fscanf(fp, "%lf\n", &searchtime);
-                (void) r;
-                fclose(fp);
-            }
+            searchtime = read_searchtime();
 
-            printf("searchtime = %f sec\n", searchtime);
-            fflush(stdout);
 
             //EXECUTE_SYSTEM_COMMAND("touch step00.iter%05ld.ttxt", i);
 
             loopin = 1; // loop has been initialized
-            if((i < 1))
+            if((loopiter < 1))
             {
                 piaacmcsimul_var.MODampl = 0.0;    // MODampl is a global
             }
@@ -254,11 +354,10 @@ int PIAACMCsimul_run(
             // zeroST = 1 => starting point is a mask that has no sag: blank focal plane mask
             // zeroST = 2 => starting point is best solution found so far
             //
-
-
-            cnt00 = 0;
-            cnt0 = 0;
-            if((i > 1) && (ran1() > 0.5))
+            long cnt00 = 0;
+            long cnt0 = 0;
+            int zeroST = 0; // default
+            if((loopiter > 1) && (ran1() > 0.5))
             {
                 if((ran1() > 0.5) && (IDbestsol != -1))
                 {
@@ -266,7 +365,7 @@ int PIAACMCsimul_run(
                     printf("[%d] Adopting best solution as starting point\n", __LINE__);
                     fflush(stdout);
                     // copy the best solution to the current zoneID of array of sags
-                    for(k = 0; k < data.image[piaacmc[0].zonezID].md[0].size[0]; k++)
+                    for(uint32_t k = 0; k < data.image[piaacmc[0].zonezID].md[0].size[0]; k++)
                     {
                         data.image[piaacmc[0].zonezID].array.D[k] = data.image[IDbestsol].array.D[k];
                     }
@@ -279,22 +378,18 @@ int PIAACMCsimul_run(
                     list_image_ID();
                     fflush(stdout);
                     // zero out the current zoneID of array of sags
-                    for(k = 0; k < data.image[piaacmc[0].zonezID].md[0].size[0]; k++)
+                    for(uint32_t k = 0; k < data.image[piaacmc[0].zonezID].md[0].size[0]; k++)
                     {
                         data.image[piaacmc[0].zonezID].array.D[k] = 0.0;
                     }
                 }
-            }
-            else
-            {
-                zeroST = 0;
             }
 
             //EXECUTE_SYSTEM_COMMAND("touch step01.iter%05ld.ttxt", i);
 
             // zeroST = 3 => starting point is best solution found so far.  Same as zeroST=2
             // this flags that it's this value 'cause it's third iteration
-            if(i == 3)
+            if(loopiter == 3)
             {
                 if(IDbestsol != -1)
                 {
@@ -302,7 +397,7 @@ int PIAACMCsimul_run(
                     fflush(stdout);
 
                     zeroST = 3;
-                    for(k = 0; k < data.image[piaacmc[0].zonezID].md[0].size[0]; k++)
+                    for(uint32_t k = 0; k < data.image[piaacmc[0].zonezID].md[0].size[0]; k++)
                     {
                         data.image[piaacmc[0].zonezID].array.D[k] = data.image[IDbestsol].array.D[k];
                     }
@@ -316,23 +411,23 @@ int PIAACMCsimul_run(
                     list_image_ID();
                     fflush(stdout);
                     // zero out the current zoneID of array of sags
-                    for(k = 0; k < data.image[piaacmc[0].zonezID].md[0].size[0]; k++)
+                    for(uint32_t k = 0; k < data.image[piaacmc[0].zonezID].md[0].size[0]; k++)
                     {
                         data.image[piaacmc[0].zonezID].array.D[k] = 0.0;
                     }
                 }
             }
 
-            if(i > 0)
+            if(loopiter > 0)
             {
                 EXECUTE_SYSTEM_COMMAND("echo \"%g  %ld\" > sag0.txt", sag0,
                                        (long) data.image[piaacmc[0].zonezID].md[0].size[0]);
 
                 // randomly select regions that are abs()>sag0/2 and push them back toward zero
-                prob1 = pow(ran1(),
-                            8.0); // probability that each zone is pushed back toward zero
+                // probability that each zone is pushed back toward zero
+                double prob1 = pow(ran1(), 8.0);
 
-                for(k = 0; k < data.image[piaacmc[0].zonezID].md[0].size[0]; k++)
+                for(uint32_t k = 0; k < data.image[piaacmc[0].zonezID].md[0].size[0]; k++)
                 {
                     if(data.image[piaacmc[0].zonezID].array.D[k] > sag0 / 2.0)
                     {
@@ -358,38 +453,52 @@ int PIAACMCsimul_run(
                 printf("Write sag values to file fpsagtest.txt\n");
                 fflush(stdout);
 
-                fp = fopen("fpsagtest.txt", "w");
-                fprintf(fp, "# %9.6f\n", sag0 * 1.0e6);
-                fprintf(fp, "#    %5ld    %5ld    %5ld\n", cnt0, cnt00,
-                        (long) data.image[piaacmc[0].zonezID].md[0].size[0]);
-                for(k = 0; k < data.image[piaacmc[0].zonezID].md[0].size[0]; k++)
                 {
-                    fprintf(fp, "%5ld %9.6f\n", k,
-                            data.image[piaacmc[0].zonezID].array.D[k] * 1.0e6);
+                    FILE *fp;
+
+                    fp = fopen("fpsagtest.txt", "w");
+                    fprintf(fp, "# %9.6f\n", sag0 * 1.0e6);
+                    fprintf(fp, "#    %5ld    %5ld    %5ld\n", cnt0, cnt00,
+                            (long) data.image[piaacmc[0].zonezID].md[0].size[0]);
+                    for(uint32_t k = 0; k < data.image[piaacmc[0].zonezID].md[0].size[0]; k++)
+                    {
+                        fprintf(fp,
+                                "%5ld %9.6f\n",
+                                (long) k,
+                                data.image[piaacmc[0].zonezID].array.D[k] * 1.0e6);
+                    }
+                    fclose(fp);
                 }
-                fclose(fp);
 
 
             }
 
             //EXECUTE_SYSTEM_COMMAND("touch step02.iter%05ld.ttxt", i);
 
-            // actually do the optmization
+            // Perform the optmization
             printf("Execute optimization\n");
-            fflush(stdout);
-            PIAACMCsimul_exec(confindex, mode);
-            bOK = 0; // initialize have better value flag for printing "best" in a nice place
+            {
+                errno_t fret = PIAACMCsimul_exec(confindex, mode);
+                if(fret != RETURN_SUCCESS)
+                {
+                    FUNC_RETURN_FAILURE("Call to function PIAACMCsimul_exec failed");
+                }
+            }
 
-            printf("%g m  -> %g rad\n", sag0,
-                   (double) OpticsMaterials_pha_lambda(piaacmc[0].fpmmaterial_code, sag0,
-                           piaacmc[0].lambda));
+
+            printf("%g m  -> %g rad\n",
+                   sag0,
+                   (double) OpticsMaterials_pha_lambda(piaacmc[0].fpmmaterial_code, sag0, piaacmc[0].lambda)
+                  );
             fflush(stdout);
 
             sag0 = sag0 / (OpticsMaterials_pha_lambda(piaacmc[0].fpmmaterial_code, sag0,
                            piaacmc[0].lambda) / 2.0 / M_PI);
-            printf("======================= sag0 = %g m  -> %g rad\n", sag0,
-                   (double) OpticsMaterials_pha_lambda(piaacmc[0].fpmmaterial_code, sag0,
-                           (double) piaacmc[0].lambda));
+
+            printf("======================= sag0 = %g m  -> %g rad\n",
+                   sag0,
+                   (double) OpticsMaterials_pha_lambda(piaacmc[0].fpmmaterial_code, sag0, (double) piaacmc[0].lambda)
+                  );
 
 
 
@@ -398,29 +507,47 @@ int PIAACMCsimul_run(
             // if there is no best _solution_, load the current solution
             if(IDbestsol == -1)
             {
+                char fnamebestsol[STRINGMAXLEN_FILENAME];
+
                 PIAACMCsimul_update_fnamedescr();
-                sprintf(fnamebestsol, "%s/fpm_zonez.%s.best.fits",
-                        piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.fnamedescr);
+
+                WRITE_FILENAME(fnamebestsol,
+                               "%s/fpm_zonez.%s.best.fits",
+                               piaacmcsimul_var.piaacmcconfdir,
+                               piaacmcsimul_var.fnamedescr
+                              );
+
                 printf("LOADING \"%s\"...\n", fnamebestsol);
                 fflush(stdout);
-                IDbestsol = load_fits(fnamebestsol, "fpmbestsol", 0);
+
+                load_fits(fnamebestsol,
+                          "fpmbestsol",
+                          LOADFITS_ERRMODE_IGNORE,
+                          &IDbestsol
+                         );
             }
 
-            // set the name of the stopfile
-            sprintf(stopfile, "%s/stoploop13.txt", piaacmcsimul_var.piaacmcconfdir);
 
             //EXECUTE_SYSTEM_COMMAND("touch step03.iter%05ld.ttxt", i);
 
 
-            // on first iteration load the best _value_ if it exists
-            if(i == 0)
-            {
-                PIAACMCsimul_update_fnamedescr();
-                sprintf(fnamebestval, "%s/mode13.%s.bestval.txt",
-                        piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.fnamedescr);
+            PIAACMCsimul_update_fnamedescr();
 
+            char fnamebestval[STRINGMAXLEN_FILENAME];
+            WRITE_FILENAME(fnamebestval,
+                           "%s/mode13.%s.bestval.txt",
+                           piaacmcsimul_var.piaacmcconfdir,
+                           piaacmcsimul_var.fnamedescr
+                          );
+
+
+            // on first iteration load the best _value_ if it exists
+            if(loopiter == 0)
+            {
+                FILE *fp;
                 printf("READING FILE \"%s\"\n", fnamebestval);
                 fflush(stdout);
+
                 fp = fopen(fnamebestval, "r");
                 if(fp != NULL)
                 {
@@ -433,81 +560,142 @@ int PIAACMCsimul_run(
 
             //EXECUTE_SYSTEM_COMMAND("touch step04.iter%05ld.ttxt", i);
 
-            printf("\n\n\n\n======= val = %g [%g]\n", piaacmcsimul_var.PIAACMCSIMUL_VAL,
+            printf("\n\n\n\n======= val = %g [%g]\n",
+                   piaacmcsimul_var.PIAACMCSIMUL_VAL,
                    bestval);
             fflush(stdout);
 
-            if(piaacmcsimul_var.PIAACMCSIMUL_VAL <
-                    bestval) // piaacmcsimul_var.PIAACMCSIMUL_VAL was set in PIAACMCsimul_exec()
+
+            // Check if the best solution should be updated
+            // piaacmcsimul_var.PIAACMCSIMUL_VAL was set in PIAACMCsimul_exec()
+            int bOK = 0; // initialize have better value flag for printing "best" in a nice place
+            if(piaacmcsimul_var.PIAACMCSIMUL_VAL < bestval)
             {
                 //EXECUTE_SYSTEM_COMMAND("touch step05.iter%05ld.ttxt", i);
 
                 // we have a better solution!
                 bOK = 1;
                 bestval = piaacmcsimul_var.PIAACMCSIMUL_VAL; // record it
-                printf("============================================================   SAVING BEST MASK SOLUTION -> fpm_zonez.[name].best.fits\n");
-                fflush(stdout);
+                printf("========================================= \
+                       SAVING BEST MASK SOLUTION -> fpm_zonez.[name].best.fits\n");
 
-                // if a previous best solution has not been identified with an index, set its index
-                // by loading the current best solution.  This probably never happens
-                if(IDbestsol == -1)
+
+
                 {
                     PIAACMCsimul_update_fnamedescr();
-                    sprintf(fnamebestsol, "%s/fpm_zonez.%s.best.fits",
-                            piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.fnamedescr);
 
-                    IDbestsol = load_fits(fnamebestsol, "fpmbestsol", 0);
-                }
-                else // otherwise load the temporary best solution.  This is probably what always happens
-                {
-                    IDbestsoltmp = load_fits(fnamebestsol, "fpmbestsoltmp", 0);
-                    for(k = 0; k < data.image[IDbestsol].md[0].size[0]; k++)
+                    char fnamebestsol[STRINGMAXLEN_FILENAME];
+                    WRITE_FILENAME(fnamebestsol,
+                                   "%s/fpm_zonez.%s.best.fits",
+                                   piaacmcsimul_var.piaacmcconfdir,
+                                   piaacmcsimul_var.fnamedescr
+                                  );
+
+                    // if a previous best solution has not been identified with an index, set its index
+                    // by loading the current best solution.  This probably never happens
+                    if(IDbestsol == -1)
                     {
-                        data.image[IDbestsol].array.D[k] = data.image[IDbestsoltmp].array.D[k];
+                        load_fits(fnamebestsol,
+                                  "fpmbestsol",
+                                  LOADFITS_ERRMODE_IGNORE,
+                                  &IDbestsol
+                                 );
                     }
-                    delete_image_ID("fpmbestsoltmp");
+                    else // otherwise load the temporary best solution.  This is probably what always happens
+                    {
+                        imageID IDbestsoltmp;
+                        load_fits(fnamebestsol,
+                                  "fpmbestsoltmp",
+                                  LOADFITS_ERRMODE_IGNORE,
+                                  &IDbestsoltmp
+                                 );
+
+                        for(uint32_t k = 0; k < data.image[IDbestsol].md[0].size[0]; k++)
+                        {
+                            data.image[IDbestsol].array.D[k] = data.image[IDbestsoltmp].array.D[k];
+                        }
+
+                        delete_image_ID("fpmbestsoltmp",
+                                        DELETE_IMAGE_ERRMODE_WARNING);
+                    }
                 }
 
-                // fname1 is the name of the current solution, which is now the best solution
-                PIAACMCsimul_update_fnamedescr();
-                sprintf(fname1, "%s/fpm_zonez.%s.fits", piaacmcsimul_var.piaacmcconfdir,
-                        piaacmcsimul_var.fnamedescr);
 
-                // fnamebestsol is the name of the stored best solution, should always be the same
-                // as the name in line 8599 (if(IDbestsol==-1)...)
-                PIAACMCsimul_update_fnamedescr();
-                sprintf(fnamebestsol, "%s/fpm_zonez.%s.best.fits",
-                        piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.fnamedescr);
 
-                // copy the current solution to the best solution
+
                 {
-                    char cmdstring[5000];
-                    sprintf("cp %s %s", fname1, fnamebestsol);
-                    EXECUTE_SYSTEM_COMMAND("%s", cmdstring);
-                    EXECUTE_SYSTEM_COMMAND("echo \"%s\" > cmdlogtest.txt", cmdstring);
+                    // fname1 is the name of the current solution, which is now the best solution
+                    PIAACMCsimul_update_fnamedescr();
+
+                    char fname1[STRINGMAXLEN_FILENAME];
+                    WRITE_FILENAME(fname1,
+                                   "%s/fpm_zonez.%s.fits",
+                                   piaacmcsimul_var.piaacmcconfdir,
+                                   piaacmcsimul_var.fnamedescr
+                                  );
+
+
+                    // fnamebestsol is the name of the stored best solution, should always be the same
+                    // as the name in line 8599 (if(IDbestsol==-1)...)
+                    PIAACMCsimul_update_fnamedescr();
+
+                    char fnamebestsol[STRINGMAXLEN_FILENAME];
+                    WRITE_FILENAME(fnamebestsol,
+                                   "%s/fpm_zonez.%s.best.fits",
+                                   piaacmcsimul_var.piaacmcconfdir,
+                                   piaacmcsimul_var.fnamedescr
+                                  );
+
+                    // copy the current solution to the best solution
+                    EXECUTE_SYSTEM_COMMAND("cp %s %s", fname1, fnamebestsol);
+                    EXECUTE_SYSTEM_COMMAND(
+                        "echo \"cp %s %s\" > cmdlogtest.txt",
+                        fname1,
+                        fnamebestsol
+                    );
+
+
+                    WRITE_FILENAME(fname1,
+                                   "%s/fpm_sagmapHR.%s.fits",
+                                   piaacmcsimul_var.piaacmcconfdir,
+                                   piaacmcsimul_var.fnamedescr
+                                  );
+
+                    WRITE_FILENAME(fnamebestsol,
+                                   "%s/fpm_sagmapHR.%s.best.fits",
+                                   piaacmcsimul_var.piaacmcconfdir,
+                                   piaacmcsimul_var.fnamedescr
+                                  );
+
+                    EXECUTE_SYSTEM_COMMAND("cp %s %s", fname1, fnamebestsol);
+                    EXECUTE_SYSTEM_COMMAND(
+                        "echo \"cp %s %s\" > cmdlogtest1.txt",
+                        fname1,
+                        fnamebestsol
+                    );
                 }
 
-                sprintf(fname1, "%s/fpm_sagmapHR.%s.fits", piaacmcsimul_var.piaacmcconfdir,
-                        piaacmcsimul_var.fnamedescr);
-                sprintf(fnamebestsol, "%s/fpm_sagmapHR.%s.best.fits",
-                        piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.fnamedescr);
                 {
-                    char cmdstring[5000];
-                    sprintf(cmdstring, "cp %s %s", fname1, fnamebestsol);
-                    EXECUTE_SYSTEM_COMMAND("%s", cmdstring);
-                    EXECUTE_SYSTEM_COMMAND("echo \"%s\" > cmdlogtest1.txt", cmdstring);
+                    // write new best value in file
+                    FILE *fp;
+
+                    fp = fopen(fnamebestval, "w");
+                    fprintf(fp,
+                            "%30g %d %04ld %02ld %03ld %5.2f %02d %d %s %02d %07.3f\n",
+                            bestval,
+                            piaacmcsimul_var.PIAACMC_FPMsectors,
+                            (long)(1.0e9 * piaacmc[0].lambda + 0.1),
+                            (long)(1.0 * piaacmc[0].lambdaB + 0.1),
+                            piaacmc[0].NBrings,
+                            piaacmcsimul_var.PIAACMC_MASKRADLD,
+                            piaacmcsimul_var.computePSF_ResolvedTarget,
+                            piaacmcsimul_var.computePSF_ResolvedTarget_mode,
+                            piaacmc[0].fpmmaterial_name,
+                            piaacmc[0].nblambda,
+                            piaacmc[0].fpmsagreg_coeff
+                           );
+                    fclose(fp);
                 }
-
-
-                // write new best value in file
-                fp = fopen(fnamebestval, "w");
-                fprintf(fp, "%30g %d %04ld %02ld %03ld %5.2f %02d %d %s %02d %07.3f\n", bestval,
-                        piaacmcsimul_var.PIAACMC_FPMsectors, (long)(1.0e9 * piaacmc[0].lambda + 0.1),
-                        (long)(1.0 * piaacmc[0].lambdaB + 0.1), piaacmc[0].NBrings,
-                        piaacmcsimul_var.PIAACMC_MASKRADLD, piaacmcsimul_var.computePSF_ResolvedTarget,
-                        piaacmcsimul_var.computePSF_ResolvedTarget_mode, piaacmc[0].fpmmaterial_name,
-                        piaacmc[0].nblambda, piaacmc[0].fpmsagreg_coeff);
-                fclose(fp);
 
                 // advertise the existence of new best solution via file signaling.  Currently no listeners?
                 EXECUTE_SYSTEM_COMMAND("touch %s/newbestsol.txt",
@@ -516,46 +704,55 @@ int PIAACMCsimul_run(
                 //EXECUTE_SYSTEM_COMMAND("touch step06.iter%05ld.ttxt", i);
             }
 
+
             // Add current solution (possibly not best) to the mode13...opt.txt file
-            PIAACMCsimul_update_fnamedescr();
-            sprintf(fname, "%s/mode13.%s.opt.txt", piaacmcsimul_var.piaacmcconfdir,
-                    piaacmcsimul_var.fnamedescr);
-            printf("Add current solution (possibly not best) to file: %s\n", fname);
-            fflush(stdout);
-
-            // first time through, open mode13...opt.txt for additional writing
-            // for additional writing.  possibly redundant on next line.
-            if(fOK == 0)
+            if (1)
             {
+                FILE *fp;
+
+                PIAACMCsimul_update_fnamedescr();
+
+                char fname[STRINGMAXLEN_FILENAME];
+                WRITE_FILENAME(fname,
+                               "%s/mode13.%s.opt.txt",
+                               piaacmcsimul_var.piaacmcconfdir,
+                               piaacmcsimul_var.fnamedescr
+                              );
+
+                printf("Add current solution (possibly not best) to file: %s\n", fname);
+
+                //EXECUTE_SYSTEM_COMMAND("touch step07.iter%05ld.ttxt", i);
+
+                // open mode13...opt.txt for adding and write current value
                 fp = fopen(fname, "a");
+                fprintf(fp,
+                        "%10d %20.5g   %16.5g -> %16.5g   (%16.5g) %d %5ld/%5ld [%12g %2d %12g %12g  %12g]",
+                        loopiter,
+                        piaacmcsimul_var.MODampl,
+                        piaacmcsimul_var.PIAACMCSIMUL_VALREF,
+                        piaacmcsimul_var.PIAACMCSIMUL_VAL,
+                        bestval,
+                        zeroST,
+                        cnt0,
+                        cnt00,
+                        piaacmcsimul_var.CnormFactor,
+                        piaacmc[0].nblambda, optsyst[0].flux[0],
+                        piaacmcsimul_var.SCORINGTOTAL,
+                        piaacmcsimul_var.PIAACMCSIMUL_VAL0
+                       );
+                if(bOK == 1) // mark it as best if it is
+                {
+                    fprintf(fp, " BEST\n");
+                }
+                else
+                {
+                    fprintf(fp, "\n");
+                }
                 fclose(fp);
-                fOK = 1;
             }
 
-            //EXECUTE_SYSTEM_COMMAND("touch step07.iter%05ld.ttxt", i);
 
-            // open mode13...opt.txt for adding and write current value
-            fp = fopen(fname, "a");
-            fprintf(fp,
-                    "%10ld %20.5g   %16.5g -> %16.5g   (%16.5g) %d %5ld/%5ld [%12g %2d %12g %12g  %12g]",
-                    i, piaacmcsimul_var.MODampl, piaacmcsimul_var.PIAACMCSIMUL_VALREF,
-                    piaacmcsimul_var.PIAACMCSIMUL_VAL, bestval, zeroST, cnt0, cnt00,
-                    piaacmcsimul_var.CnormFactor, piaacmc[0].nblambda, optsyst[0].flux[0],
-                    piaacmcsimul_var.SCORINGTOTAL, piaacmcsimul_var.PIAACMCSIMUL_VAL0);
-            if(bOK == 1) // mark it as best if it is
-            {
-                fprintf(fp, " BEST\n");
-            }
-            else
-            {
-                fprintf(fp, "\n");
-            }
-            fclose(fp);
-
-            // if( piaacmcsimul_var.PIAACMCSIMUL_VAL > piaacmcsimul_var.PIAACMCSIMUL_VALREF )
-            //	exit(0);
-
-            i++; // increment iteration counter (!!)
+            loopiter++; // increment iteration counter
 
             // stop iterations if stopfile exists
             if(file_exists(stopfile) == 1)
@@ -571,38 +768,44 @@ int PIAACMCsimul_run(
             }
 
 
-            fflush(stdout);
-
-            //EXECUTE_SYSTEM_COMMAND("touch step08.iter%05ld.ttxt", i);
-
-            gettimeofday(&end, NULL);
-
-            printf("start: %ld secs, %ld usecs\n", (long) start.tv_sec,
-                   (long) start.tv_usec);
-            printf("end: %ld secs, %ld usecs\n", (long) end.tv_sec, (long) end.tv_usec);
-
-            secs_used = (end.tv_sec - start.tv_sec); //avoid overflow by subtracting first
-            micros_used = ((secs_used * 1000000) + end.tv_usec) - (start.tv_usec);
-
-            fp = fopen("timeused.txt", "w");
-            fprintf(fp, "# Time used vs. time limit\n");
-            fprintf(fp, "# Time limit can be written in file searchtime.txt\n");
-            fprintf(fp, "\n");
-            fprintf(fp, "%12.3f    %12.3f\n", 1.0e-6 * micros_used, searchtime);
-            fclose(fp);
-
-            //EXECUTE_SYSTEM_COMMAND("touch step09.iter%05ld.ttxt", i);
-
-            // check to see if time has run out
-            if(micros_used > 1000000.0 * searchtime) // searchtime is in seconds
+            // update timing : write used time in timeused.txt
+            // and check to see if time has run out
+            if (1)
             {
-                loopOK = 0; // stop loop flag
-                EXECUTE_SYSTEM_COMMAND("touch stop.time_elapsed.ttxt");
+                //EXECUTE_SYSTEM_COMMAND("touch step08.iter%05ld.ttxt", i);
+                long secs_used, micros_used;
+
+                struct timeval end;
+                gettimeofday(&end, NULL);
+
+                printf("start: %ld secs, %ld usecs\n", (long) start.tv_sec,
+                       (long) start.tv_usec);
+                printf("end: %ld secs, %ld usecs\n", (long) end.tv_sec, (long) end.tv_usec);
+
+                secs_used = (end.tv_sec - start.tv_sec); //avoid overflow by subtracting first
+                micros_used = ((secs_used * 1000000) + end.tv_usec) - (start.tv_usec);
+
+                FILE *fp;
+                fp = fopen("timeused.txt", "w");
+                fprintf(fp, "# Time used vs. time limit\n");
+                fprintf(fp, "# Time limit can be written in file searchtime.txt\n");
+                fprintf(fp, "\n");
+                fprintf(fp, "%12.3f    %12.3f\n", 1.0e-6 * micros_used, searchtime);
+                fclose(fp);
+
+
+                //EXECUTE_SYSTEM_COMMAND("touch step09.iter%05ld.ttxt", i);
+
+                // check to see if time has run out
+                if(micros_used > 1000000.0 * searchtime) // searchtime is in seconds
+                {
+                    loopOK = 0; // stop loop flag
+                    EXECUTE_SYSTEM_COMMAND("touch stop.time_elapsed.ttxt");
+                }
+                //EXECUTE_SYSTEM_COMMAND("touch step10.iter%05ld.ttxt", i);
             }
 
-            //EXECUTE_SYSTEM_COMMAND("touch step10.iter%05ld.ttxt", i);
             printf("End of loop\n");
-            fflush(stdout);
         }
 
 
@@ -611,51 +814,61 @@ int PIAACMCsimul_run(
         if(loopin == 1)
         {
             printf("piaacmcconfdir              : %s\n", piaacmcsimul_var.piaacmcconfdir);
-            fflush(stdout);
-
             printf("computePSF_ResolvedTarget   : %d\n",
                    piaacmcsimul_var.computePSF_ResolvedTarget);
-            fflush(stdout);
-
-
             printf("computePSF_ResolvedTarget_mode   : %d\n",
                    piaacmcsimul_var.computePSF_ResolvedTarget_mode);
-            fflush(stdout);
-
             printf("PIAACMC_FPMsectors   : %d\n", piaacmcsimul_var.PIAACMC_FPMsectors);
-            fflush(stdout);
-
             printf("(long) (10.0*PIAACMC_MASKRADLD+0.1)   : %ld\n",
                    (long)(10.0 * piaacmcsimul_var.PIAACMC_MASKRADLD + 0.1));
-            fflush(stdout);
-
             printf("piaacmc[0].NBrings   : %ld\n", piaacmc[0].NBrings);
-            fflush(stdout);
-
             printf("piaacmc[0].nblambda   : %d\n", piaacmc[0].nblambda);
             fflush(stdout);
 
-            // copy current solution to best solution ************************** why?
-            PIAACMCsimul_update_fnamedescr();
-            sprintf(fname1, "%s/fpm_zonez.%s.fits", piaacmcsimul_var.piaacmcconfdir,
-                    piaacmcsimul_var.fnamedescr);
 
-            PIAACMCsimul_update_fnamedescr();
-            sprintf(fnamebestsol, "%s/fpm_zonez.%s.best.fits",
-                    piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.fnamedescr);
+            {
+                // copy current solution to best solution ************************** why?
+                char fname[STRINGMAXLEN_FILENAME];
+                char fnamebestsol[STRINGMAXLEN_FILENAME];
 
-            EXECUTE_SYSTEM_COMMAND("cp %s %s", fnamebestsol, fname1);
+                PIAACMCsimul_update_fnamedescr();
+
+                WRITE_FILENAME(fname,
+                               "%s/fpm_zonez.%s.fits",
+                               piaacmcsimul_var.piaacmcconfdir,
+                               piaacmcsimul_var.fnamedescr
+                              );
+
+                PIAACMCsimul_update_fnamedescr();
+
+                WRITE_FILENAME(fnamebestsol,
+                               "%s/fpm_zonez.%s.best.fits",
+                               piaacmcsimul_var.piaacmcconfdir,
+                               piaacmcsimul_var.fnamedescr
+                              );
+
+                EXECUTE_SYSTEM_COMMAND("cp %s %s", fnamebestsol, fname);
+            }
         }
     }
     else
     {
-        PIAACMCsimul_exec(confindex, mode);
+        {
+            DEBUG_TRACEPOINT("running exec function");
+            errno_t fret = PIAACMCsimul_exec(confindex, mode);
+
+            if(fret != RETURN_SUCCESS)
+            {
+                FUNC_RETURN_FAILURE("Call to function PIAACMCsimul_exec failed");
+            }
+        }
     }
 
 
     free(piaacmc);
 
-    return 0;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 

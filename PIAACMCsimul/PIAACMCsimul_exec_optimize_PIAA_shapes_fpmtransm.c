@@ -41,18 +41,16 @@ extern OPTPIAACMCDESIGN *piaacmc;
  *
  */
 
-int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
+errno_t PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
 {
+    DEBUG_TRACE_FSTART();
+
     imageID IDv;
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
-    //long NBiter = 1000;
 
-
-    long mz, k;
-    long ID_CPAfreq;
-    long kmaxC, kmaxF;
+    imageID ID_CPAfreq;
 
 
 
@@ -99,9 +97,13 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
 
     if(0) // TEST
     {
-        double valref;
+        double valref = 0.0;
 
-        valref = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 1);
+        errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 1, &valref);
+        if( fret != RETURN_SUCCESS)
+        {
+            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+        }
         printf("valref = %g\n", valref);
         printf("EXEC CASE 40 COMPLETED\n");
     }
@@ -119,7 +121,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
         }
 
 
-        kmaxC = data.image[piaacmc[0].piaa0CmodesID].md[0].size[0];
+        long kmaxC = data.image[piaacmc[0].piaa0CmodesID].md[0].size[0];
         if((IDv = variable_ID("PIAACMC_maxoptCterm")) != -1)
         {
             kmaxC = (long) data.variable[IDv].value.f + 0.01;
@@ -130,7 +132,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
         }
 
 
-        kmaxF = data.image[piaacmc[0].piaa0FmodesID].md[0].size[0];
+        long kmaxF = data.image[piaacmc[0].piaa0FmodesID].md[0].size[0];
         if((IDv = variable_ID("PIAACMC_maxoptFterm")) != -1)
         {
             kmaxF = (long) data.variable[IDv].value.f + 0.01;
@@ -195,7 +197,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
             ID_CPAfreq = image_ID("cpamodesfreq");
             if(ID_CPAfreq == -1)
             {
-                ID_CPAfreq = load_fits("cpamodesfreq.fits", "cpamodesfreq", 2);
+                load_fits("cpamodesfreq.fits", "cpamodesfreq", LOADFITS_ERRMODE_EXIT, &ID_CPAfreq);
             }
         }
 
@@ -231,7 +233,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
         {
             if(variable_ID("PIAACMC_mzOPT") != -1) // optimize zones
             {
-                for(mz = 0; mz < data.image[piaacmc[0].zonezID].md[0].size[0]; mz++)
+                for(uint32_t mz = 0; mz < data.image[piaacmc[0].zonezID].md[0].size[0]; mz++)
                 {
                     piaacmcsimul_var.linopt_paramtype[piaacmcsimul_var.linopt_number_param] =
                         _DATATYPE_DOUBLE;
@@ -250,7 +252,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
         }
 
 
-        for(k = 0; k < kmaxC; k++)
+        for(long k = 0; k < kmaxC; k++)
         {
             piaacmcsimul_var.linopt_paramtype[piaacmcsimul_var.linopt_number_param] =
                 _DATATYPE_FLOAT;
@@ -266,7 +268,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
             piaacmcsimul_var.linopt_number_param++;
         }
 
-        for(k = 0; k < kmaxC; k++)
+        for(long k = 0; k < kmaxC; k++)
         {
             piaacmcsimul_var.linopt_paramtype[piaacmcsimul_var.linopt_number_param] =
                 _DATATYPE_FLOAT;
@@ -282,7 +284,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
             piaacmcsimul_var.linopt_number_param++;
         }
 
-        for(k = 0; k < kmaxF; k++)
+        for(long k = 0; k < kmaxF; k++)
         {
             piaacmcsimul_var.linopt_paramtype[piaacmcsimul_var.linopt_number_param] =
                 _DATATYPE_FLOAT;
@@ -298,7 +300,7 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
             piaacmcsimul_var.linopt_number_param++;
         }
 
-        for(k = 0; k < kmaxF; k++)
+        for(long k = 0; k < kmaxF; k++)
         {
             piaacmcsimul_var.linopt_paramtype[piaacmcsimul_var.linopt_number_param] =
                 _DATATYPE_FLOAT;
@@ -318,7 +320,8 @@ int PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
         piaacmcsimul_var.FORCE_MAKE_PIAA1shape = 1;
     }
 
-    return 0;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 

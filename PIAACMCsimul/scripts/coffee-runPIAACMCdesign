@@ -1,5 +1,39 @@
 #!/usr/bin/env bash
 
+# exit on error
+set -e 
+
+# debug mode
+set -x
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+
+
+# milk exit on error
+export MILK_ERROREXIT="1"
+
+# function to check previous command return code and exit if not successful
+exit_on_error() {
+    exit_code=$1
+    last_command=${@:2}
+    if [ $exit_code -ne 0 ]; then
+        >&2 echo -e "\n\033[31;1m EXIT on ERROR \033[0m \"${last_command}\" command failed with exit code ${exit_code}.\n"
+        exit $exit_code
+    fi
+}
+
+# enable !! command completion
+set -o history -o histexpand
+
+
+
+
+function exitOK() {
+	echo -e "\n\033[32;1m SUCCESS \033[0m $0 \n"
+	exit
+}
+
+
+
 # number of arguments to script
 NBARGS=0
 
@@ -270,7 +304,7 @@ set_pupil=0
 function mkPupClear1024 {
     exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
     cp $exampledir/pup_clear_1024_200.fits.gz pup_1024.fits.gz
-    rm pup_1024.fits 2> /dev/null
+    rm -f pup_1024.fits
     gunzip pup_1024.fits.gz
     coin="0.0"
     coout="0.0"
@@ -281,7 +315,7 @@ function mkPupClear1024 {
 function loadPup_WFIRST1024 {
     exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
     cp $exampledir/pup_WFIRST1024.fits.gz pup_1024.fits.gz
-    rm pup_1024.fits 2> /dev/null
+    rm -f pup_1024.fits
     gunzip pup_1024.fits.gz
     coin="0.3"
     coout="0.29"
@@ -294,7 +328,7 @@ function loadPup_WFIRST1024 {
 function loadPup_Subaru1024 {
     exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
     cp $exampledir/pupSubaru_native_1024_200.fits.gz pup_1024.fits.gz
-    rm pup_1024.fits 2> /dev/null
+    rm -f pup_1024.fits
     gunzip pup_1024.fits.gz
     coin="0.29"
     coout="0.2"
@@ -306,7 +340,7 @@ function loadPup_Subaru1024 {
 function loadPup_MagAOX1024 {
     exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
     cp $exampledir/pupMagAOXM_1024_200.fits.gz pup_1024.fits.gz
-    rm pup_1024.fits 2> /dev/null
+    rm -f pup_1024.fits
     gunzip pup_1024.fits.gz
     #coin="0.33"
     coin="0.31"
@@ -321,7 +355,7 @@ function loadPup_MagAOX1024 {
 function loadPup_Subaru2048 {
     exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
     cp $exampledir/pupSubaruM_2048.fits.gz pup_2048.fits.gz
-    rm pup_2048.fits 2> /dev/null
+    rm -f pup_2048.fits
     gunzip pup_2048.fits.gz
     coin="0.29"
     coout="0.2"
@@ -334,7 +368,7 @@ function loadPup_Subaru2048 {
 function loadPup_seg3rings1024 {
     exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
     cp $exampledir/pup_seg3rings_1024.fits.gz pup_1024.fits.gz
-    rm pup_1024.fits 2> /dev/null
+    rm -f pup_1024.fits
     gunzip pup_1024.fits.gz
     coin="0.3"
     coout="0.22"
@@ -348,7 +382,7 @@ function loadPup_seg3rings1024 {
 function loadPup_LUVOIR1024 {
     exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
     cp $exampledir/pupLUVOIRap6.1024.208.fits.gz pup_1024.fits.gz
-    rm pup_1024.fits 2> /dev/null
+    rm -f pup_1024.fits
     gunzip pup_1024.fits.gz
     coin="0.11"
     pupoutmaskrad="0.98"
@@ -358,7 +392,7 @@ function loadPup_LUVOIR1024 {
 function loadPup_LUVOIR2048 {
     exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
     cp $exampledir/pupLUVOIRap6.2048.474.fits.gz pup_2048.fits.gz
-    rm pup_2048.fits 2> /dev/null
+    rm -f pup_2048.fits
     gunzip pup_2048.fits.gz
     coin="0.11"
     pupoutmaskrad="0.98"
@@ -368,7 +402,7 @@ function loadPup_LUVOIR2048 {
 function loadPup_LUVOIR4096 {
     exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
     cp $exampledir/pupLUVOIRap6.4096.948.fits.gz pup_4096.fits.gz
-    rm pup_4096.fits 2> /dev/null
+    rm -f pup_4096.fits
     gunzip pup_4096.fits.gz
     coin="0.11"
     pupoutmaskrad="0.98"
@@ -407,7 +441,7 @@ function SetOptParam {
 # ===================================================================================
 
 
-rm LOOPMODE.txt &> /dev/null
+rm -f LOOPMODE.txt
 
 function printHELP {
     echo "------------------------------------------------------------------------"
@@ -576,12 +610,12 @@ while getopts :hs:apSm:e:lCcr:q:L FLAG; do
             else
                 printHELP1
             fi
-            exit
+            exitOK
         ;;
         s)
             echo "CHANGING SOURCE DIRECTORY to $OPTARG"
             echo "$OPTARG" > ./conf/conf_srcdir.txt
-            exit
+            exitOK
         ;;
         a) # APLCMC design
             echo "setting APLC mode (no PIAA optics)"
@@ -593,13 +627,13 @@ while getopts :hs:apSm:e:lCcr:q:L FLAG; do
             echo "$prePIAA0maskpos" > ./conf/conf_prePIAA0maskpos.txt
             pupoutmaskrad="1.0"
             echo "$pupoutmaskrad" > ./conf/conf_pupoutmaskrad.txt
-            exit
+            exitOK
         ;;
         p) # PIAACMC design
             APLCMC="0"
             PIAAmode="1"
             echo "$PIAAmode" > ./conf/conf_PIAAmode.txt
-            exit
+            exitOK
         ;;
         m)
             mSTEP=$OPTARG
@@ -618,24 +652,24 @@ while getopts :hs:apSm:e:lCcr:q:L FLAG; do
             OptionSelected="1"
         ;;
         C)
-            coffee-runclean -l 0 &> /dev/null
-            exit
+            coffee-runclean -l 0
+            exitOK
         ;;
         c)
-            coffee-runclean -l 1 &> /dev/null
-            exit
+            coffee-runclean -l 1
+            exitOK
         ;;
         r)
             step=$OPTARG
             dir="$PWD.step${step}"
             if [ -d $dir ]; then
                 echo "Directory $dir found"
-                coffee-runclean 2> /dev/null
+                coffee-runclean
                 rsync -au --progress $dir/* .
             else
                 echo "Directory $dir does not exist: cannot revert to step $step"
             fi
-            exit
+            exitOK
         ;;
         q)
             NBexp=$OPTARG
@@ -664,7 +698,7 @@ if [ "$1" = "help" ] || [ "$#" -ne $NBARGS ] || [ "$OptionSelected" = "0" ]; the
         echo "$(tput setaf 1)$(tput bold) $0: Illegal number of parameters ($NBARGS params required, $# entered) $(tput sgr0)"
     fi
     printHELP
-    exit
+    exit 1
 fi
 
 
@@ -847,7 +881,9 @@ fi
 
 
 # LOAD CUSTOM PARAMETERS IF AVAILABLE
-. ./setparam.bash 2> /dev/null
+if [ -f "setparam.bash" ]; then
+. ./setparam.bash
+fi
 
 
 
@@ -887,7 +923,7 @@ if [ $EXITSTATUS -eq 1 ]; then
     echo ""
     echo "$(tput setaf 1)$(tput bold) REQUIRED FILES, COMMANDS NOT FOUND: EXITING $(tput sgr0)"
     echo ""
-    exit
+    exit 1
 else
     echo ""
 fi
@@ -978,7 +1014,7 @@ if [ "$SETparams" = "1" ]; then
         echo "$LyotZmax" > conf/conf_LyotZmax.txt
         echo "$pupoutmaskrad" > conf/conf_pupoutmaskrad.txt
     fi
-    exit
+    exitOK
 fi
 
 
@@ -988,7 +1024,7 @@ fi
 
 if [ "$ListParam" -eq 1 ]; then
     coffee-run
-    exit
+    exitOK
 fi
 
 
@@ -1021,7 +1057,7 @@ piaacmcfpmprocess fpmin $FPMcoordFile $NBexp fpmout.txt
 exit
 EOF
 
-    exit
+    exitOK
 fi
 
 
@@ -1041,7 +1077,7 @@ if [ "$step" -le "$mSTEP" ]; then
     if [ ! -f "step$step.txt" ]; then
         coffee-run optsingle $step
         if [ "$SAVESTEP" = "1" ]; then
-            rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+            rsync -au --progress $PWD/ $PWD.step${step}
         fi
         touch step$step.txt
     fi
@@ -1069,7 +1105,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1089,7 +1125,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1106,7 +1142,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1125,7 +1161,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1142,7 +1178,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1160,7 +1196,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1177,7 +1213,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1198,7 +1234,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1219,7 +1255,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1238,7 +1274,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1262,7 +1298,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1282,7 +1318,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1301,7 +1337,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1318,7 +1354,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1357,7 +1393,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1380,7 +1416,7 @@ if [ "$APLCMC" = "0" ]; then
         if [ ! -f "step$step.txt" ]; then
             coffee-run optsingle $step
             if [ "$SAVESTEP" = "1" ]; then
-                rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+                rsync -au --progress $PWD/ $PWD.step${step}
             fi
             touch step$step.txt
         fi
@@ -1404,7 +1440,7 @@ step="200"
 if [ "$step" -eq "$mSTEP" ]; then
     coffee-run optsingle $step
     if [ "$SAVESTEP" = "1" ]; then
-        rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+        rsync -au --progress $PWD/ $PWD.step${step}
     fi
     touch step$step.txt
 fi
@@ -1447,7 +1483,7 @@ step="300"
 if [ "$step" = "$mSTEP" ]; then
     coffee-run proppoly 0
     if [ "$SAVESTEP" = "1" ]; then
-        rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+        rsync -au --progress $PWD/ $PWD.step${step}
     fi
 fi
 # this will take about 20mn
@@ -1473,7 +1509,7 @@ step="400"
 if [ "$step" = "$mSTEP" ]; then
     coffee-run eval0 18
     if [ "$SAVESTEP" = "1" ]; then
-        rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+        rsync -au --progress $PWD/ $PWD.step${step}
     fi
 fi
 
@@ -1485,7 +1521,7 @@ step="401"
 if [ "$step" = "$mSTEP" ]; then
     coffee-run eval1 18
     if [ "$SAVESTEP" = "1" ]; then
-        rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+        rsync -au --progress $PWD/ $PWD.step${step}
     fi
 fi
 # takes 59mn
@@ -1518,9 +1554,11 @@ step="402"
 if [ "$step" = "$mSTEP" ]; then
     coffee-run eval2 18
     if [ "$SAVESTEP" = "1" ]; then
-        rsync -au --progress $PWD/ $PWD.step${step} &> /dev/null
+        rsync -au --progress $PWD/ $PWD.step${step}
     fi
 fi
+
+
 
 
 

@@ -40,6 +40,8 @@ double f_evalmask(
     void *params
 )
 {
+    DEBUG_TRACE_FSTART();
+
     double *p = (double *)params;
     double value;
     long k;
@@ -67,8 +69,8 @@ double f_evalmask(
 
     piaacmcsimul_var.LOOPCNT++;
 
+    DEBUG_TRACE_FEXIT();
     return (value);
-
 }
 
 

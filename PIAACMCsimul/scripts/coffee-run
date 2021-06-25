@@ -1,11 +1,33 @@
 #!/usr/bin/env bash
 
+# exit on error
+set -e 
+
+# debug mode
+set -x
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+
+
+export MILK_ERROREXIT="1"
+
+function exitOK() {
+	echo -e "\n\033[32;1m SUCCESS \033[0m $0 \n"
+	exit
+}
+
+function exitERR() {
+	echo -e "\n\033[31;1m ERROR \033[0m $0 \n"
+	exit 1
+}
+
+
+
 # Designing PIAACMC
 
 
 
 errorfile="errorstatus.txt"
-rm $errorfile
+rm -f $errorfile
 
 
 mkdir -p conf
@@ -675,7 +697,7 @@ if [ "$#" -ne $NBARGS ]; then
     printvarall > "log/varlog.txt"
     echo "Illegal number of parameters ($NBARGS params required, $# entered)"
 fi
-        exit
+        exitOK
 fi
 
 printvarall > "log/varlog.txt"
@@ -710,7 +732,7 @@ echo "19" > ./log/conf_exitpt.txt
 fi
 
 
-rm cmdlog.txt
+rm -f cmdlog.txt
 
 
 datestr=`date -u +%Y-%m-%d_%H:%M:%S`
@@ -836,3 +858,7 @@ fi
 
 
 #rm run.cmd.tsart
+
+
+exitOK
+

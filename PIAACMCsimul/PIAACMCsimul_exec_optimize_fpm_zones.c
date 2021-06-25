@@ -58,40 +58,34 @@ extern OPTPIAACMCDESIGN *piaacmc;
  */
 
 
-int PIAACMCsimul_exec_optimize_fpm_zones()
+errno_t PIAACMCsimul_exec_optimize_fpm_zones()
 {
+    DEBUG_TRACE_FSTART();
+
     imageID IDv;
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
 
-    char stopfile[500];
-
-
+    char stopfile[STRINGMAXLEN_FULLFILENAME];
 
     imageID IDfpmresp;
-    long k;
 
     //imageID IDstatus;
-    char fname[1500];
+    char fname[STRINGMAXLEN_FULLFILENAME];
 
     FILE *fp;
 
-    long elem;
-    double tmplf1, tmplf2;
+
     int tmpd1;
 
-    //long NBiter = 1000;
 
-    //long ID;
-
-    long mz;
 
     printf("=================================== mode 013 ===================================\n");
 
 
     // set the name of the stopfile
-    sprintf(stopfile, "%s/stoploop13.txt", piaacmcsimul_var.piaacmcconfdir);
+    WRITE_FULLFILENAME(stopfile, "%s/stoploop13.txt", piaacmcsimul_var.piaacmcconfdir);
 
 
 
@@ -126,22 +120,33 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
     //    data.image[IDstatus].array.UI16[0] = 0;
 
     // usual initialization
-    PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 1);
-    PIAACMCsimul_makePIAAshapes(piaacmc, 0);
-    PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0);
+    if(PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 1) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
+    }
+
+    if(PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
+    }
+
+    if(PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0) != RETURN_SUCCESS)
+    {
+        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
+    }
 
     // set current state for statistical tracking
     //data.image[IDstatus].array.UI16[0] = 1;
 
     // tracking diagnostic, giving the total flux in each plane
-    sprintf(fname, "%s/tmp_flux.txt", piaacmcsimul_var.piaacmcconfdir);
+    WRITE_FULLFILENAME(fname, "%s/tmp_flux.txt", piaacmcsimul_var.piaacmcconfdir);
     fp = fopen(fname, "r");
-    for(elem = 0; elem < optsyst[0].NBelem; elem++)
+    for(long elem = 0; elem < optsyst[0].NBelem; elem++)
     {
         //ret = fscanf(fp, "%lf %lf  %d\n", &tmplf1, &tmplf2, &tmpd1);
 
         int fscanfcnt;
-
+        double tmplf1, tmplf2;
         fscanfcnt = fscanf(fp, "%lf %lf  %d\n", &tmplf1, &tmplf2, &tmpd1);
         if(fscanfcnt == EOF)
         {
@@ -154,14 +159,14 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
                 fprintf(stderr,
                         "Error: fscanf reached end of file, no matching characters, no matching failure\n");
             }
-            return RETURN_FAILURE;
+            FUNC_RETURN_FAILURE("Call to fscanf failed");
         }
         else if(fscanfcnt != 3)
         {
             fprintf(stderr,
                     "Error: fscanf successfully matched and assigned %i input items, 3 expected\n",
                     fscanfcnt);
-            return RETURN_FAILURE;
+            FUNC_RETURN_FAILURE("Call to fscanf failed");
         }
 
         // scale flux to current number of lambda
@@ -188,12 +193,12 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
 
     // get the FPMresp array computed in mode 11
     PIAACMCsimul_update_fnamedescr_conf();
-    sprintf(fname, "%s/FPMresp%d.%s.fits", piaacmcsimul_var.piaacmcconfdir,
-            piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr_conf);
+    WRITE_FULLFILENAME(fname, "%s/FPMresp%d.%s.fits", piaacmcsimul_var.piaacmcconfdir,
+                       piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr_conf);
 
 
 
-    IDfpmresp = load_fits(fname, "FPMresp", 1);
+    load_fits(fname, "FPMresp", 1, &IDfpmresp);
 
     piaacmcsimul_var.vsize =
         data.image[IDfpmresp].md[0].size[0]; // number of eval pts x2
@@ -209,7 +214,7 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
     piaacmcsimul_var.dphadz_array = (double *) malloc(sizeof(
                                         double) * piaacmc[0].nblambda);
     // compute this derivative
-    for(k = 0; k < piaacmc[0].nblambda; k++)
+    for(long k = 0; k < piaacmc[0].nblambda; k++)
     {
         // OPTICSMATERIALS_pha_lambda computes change in phase per unit thickness at specified wavelength
         // second arg is thickness, so 1.0 meters determines result per meter thickness
@@ -229,7 +234,7 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
     //data.image[IDstatus].array.UI16[0] = 3;
 
     // read the contrast normalization factor into CnormFactor
-    sprintf(fname, "%s/CnormFactor.txt", piaacmcsimul_var.piaacmcconfdir);
+    WRITE_FULLFILENAME(fname, "%s/CnormFactor.txt", piaacmcsimul_var.piaacmcconfdir);
     fp = fopen(fname, "r");
     {
         int fscanfcnt;
@@ -246,14 +251,14 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
                 fprintf(stderr,
                         "Error: fscanf reached end of file, no matching characters, no matching failure\n");
             }
-            return RETURN_FAILURE;
+            FUNC_RETURN_FAILURE("Call to fscanf failed");
         }
         else if(fscanfcnt != 1)
         {
             fprintf(stderr,
                     "Error: fscanf successfully matched and assigned %i input items, 1 expected\n",
                     fscanfcnt);
-            return RETURN_FAILURE;
+            FUNC_RETURN_FAILURE("Call to fscanf failed");
         }
     }
     //ret = fscanf(fp, "%lf", &piaacmcsimul_var.CnormFactor);
@@ -261,7 +266,7 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
     // for each zone, add a random offset in range +- MODampl
     // this randomizes the starting point for each zone
     // data.image[piaacmc[0].zonezID].array.D[k] is set in PIAACMCsimul_run()
-    for(k = 0; k < data.image[piaacmc[0].zonezID].md[0].size[0]; k++)
+    for(long k = 0; k < data.image[piaacmc[0].zonezID].md[0].size[0]; k++)
     {
         data.image[piaacmc[0].zonezID].array.D[k] += piaacmcsimul_var.MODampl *
                 (1.0 - 2.0 * ran1());
@@ -270,7 +275,7 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
     // set up optimization parameters for each zone
     // uses abstract specification of optimization parameters called paramval, ...
     piaacmcsimul_var.linopt_number_param = 0;
-    for(mz = 0; mz < data.image[piaacmc[0].zonezID].md[0].size[0]; mz++)
+    for(long mz = 0; mz < data.image[piaacmc[0].zonezID].md[0].size[0]; mz++)
     {
         // parameter type
         piaacmcsimul_var.linopt_paramtype[piaacmcsimul_var.linopt_number_param] =
@@ -300,7 +305,8 @@ int PIAACMCsimul_exec_optimize_fpm_zones()
     // Now on to the actual optimization, after exit from the switch statement
     // I hope you have a lot of time...
 
-    return 0;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 

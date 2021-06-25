@@ -62,34 +62,26 @@ extern OPTPIAACMCDESIGN *piaacmc;
 /**
  * @param[out]  IDname  Name of output image
  */
-long PIAACMCsimul_mkFPM_zonemap(
+imageID PIAACMCsimul_mkFPM_zonemap(
     const char *IDname
 )
 {
+    DEBUG_TRACE_FSTART();
+
     FILE *fp;
-    char fname[500];
-    //long NBzones;
-    long ID;
-    double x, y, r, PA;
-    uint32_t ii, jj;
-    long zi;
+    char fname[STRINGMAXLEN_FULLFILENAME];
     uint32_t *sizearray;
 
-    long ring;
     uint_fast32_t *nbsector;
     uint_fast32_t *nbsectorcumul;
-    double PAf;
     double eps = 1.0e-6;
 
-    uint_fast16_t zoneindex;
     uint_fast64_t cnt, cnt1;
     uint_fast32_t nbzonescc;
 
     double hexstep = 1.0;
     double hexgap = -0.0001;
     double hexsteppix;
-    int_fast64_t ii1, jj1, ii1max, jj1max;
-    double hx, hy;
     double hex_x[10000];
     double hex_y[10000];
     long hex_ring[10000];
@@ -116,7 +108,7 @@ long PIAACMCsimul_mkFPM_zonemap(
     }
     sizearray[0] = piaacmc[0].fpmarraysize;
     sizearray[1] = piaacmc[0].fpmarraysize;
-    ID = create_image_ID(IDname, 2, sizearray, _DATATYPE_UINT16, 0, 0, 0);
+    imageID ID = create_image_ID(IDname, 2, sizearray, _DATATYPE_UINT16, 0, 0, 0);
     free(sizearray);
 
     nbsector = (uint_fast32_t *) malloc(sizeof(uint_fast32_t) * piaacmc[0].NBrings);
@@ -137,23 +129,27 @@ long PIAACMCsimul_mkFPM_zonemap(
 
     case 0: // rings
         nbsectorcumul[0] = 1;
-        for(ring = 1; ring < piaacmc[0].NBrings; ring++)
+        for(long ring = 1; ring < piaacmc[0].NBrings; ring++)
         {
             nbsectorcumul[ring] = nbsectorcumul[ring - 1] + 1;
         }
         break;
 
     case 1: // rings broken in sectors
-        sprintf(fname, "%s/fpm_zonescoord_%d_%03ld.txt",
-                piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.PIAACMC_FPMsectors,
-                piaacmc[0].NBrings);
+        WRITE_FULLFILENAME(
+            fname,
+            "%s/fpm_zonescoord_%d_%03ld.txt",
+            piaacmcsimul_var.piaacmcconfdir,
+            piaacmcsimul_var.PIAACMC_FPMsectors,
+            piaacmc[0].NBrings
+        );
         fp = fopen(fname, "w");
         //NBzones = 0;
         cnt = 0;
         fprintf(fp, "0 0\n");
         nbsector[0] = 1;
         nbsectorcumul[0] = 1;
-        for(ring = 1; ring < piaacmc[0].NBrings; ring++)
+        for(long ring = 1; ring < piaacmc[0].NBrings; ring++)
         {
 
             nbsector[ring] = 2 * (ring + 1);
@@ -166,16 +162,20 @@ long PIAACMCsimul_mkFPM_zonemap(
         }
 
         fclose(fp);
-        for(ring = 0; ring < piaacmc[0].NBrings; ring++)
+        for(long ring = 0; ring < piaacmc[0].NBrings; ring++)
         {
             printf("ring %ld : %ld %ld\n", ring, nbsector[ring], nbsectorcumul[ring]);
         }
         break;
 
     case 2: // rings of hexagons
-        sprintf(fname, "%s/fpm_zonescoord_%d_%03ld.txt",
-                piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.PIAACMC_FPMsectors,
-                piaacmc[0].NBrings);
+        WRITE_FULLFILENAME(
+            fname,
+            "%s/fpm_zonescoord_%d_%03ld.txt",
+            piaacmcsimul_var.piaacmcconfdir,
+            piaacmcsimul_var.PIAACMC_FPMsectors,
+            piaacmc[0].NBrings
+        );
         fp = fopen(fname, "w");
         fprintf(fp, "# focal plane mask zones geometry\n");
         fprintf(fp, "# hexagonal tiling\n");
@@ -188,21 +188,21 @@ long PIAACMCsimul_mkFPM_zonemap(
         nbsector[0] = 1;
         nbsector[0] = 1;
         nbsectorcumul[0] = 1;
-        for(ring = 1; ring < piaacmc[0].NBrings; ring++)
+        for(long ring = 1; ring < piaacmc[0].NBrings; ring++)
         {
             nbsector[ring] = 0;
             nbsectorcumul[ring] = 0;
         }
         hindex = 0;
         // hegagon side = s = ring unit
-        ii1max = (long)(piaacmc[0].NBrings / 3 + 2);
-        jj1max = (long)(piaacmc[0].NBrings / sqrt(3.0) + 2);
-        for(ii1 = -ii1max; ii1 < ii1max; ii1++)
-            for(jj1 = -jj1max; jj1 < jj1max; jj1++)
+        long ii1max = (long)(piaacmc[0].NBrings / 3 + 2);
+        long jj1max = (long)(piaacmc[0].NBrings / sqrt(3.0) + 2);
+        for(long ii1 = -ii1max; ii1 < ii1max; ii1++)
+            for(long jj1 = -jj1max; jj1 < jj1max; jj1++)
             {
-                hx = hexstep * ii1 * 3;
-                hy = hexstep * sqrt(3.0) * jj1;
-                ring = (long) sqrt(hx * hx + hy * hy);
+                double hx = hexstep * ii1 * 3;
+                double hy = hexstep * sqrt(3.0) * jj1;
+                long ring = (long) sqrt(hx * hx + hy * hy);
                 if(ring < piaacmc[0].NBrings)
                 {
                     nbsector[ring] ++;
@@ -229,7 +229,7 @@ long PIAACMCsimul_mkFPM_zonemap(
 
         fprintf(fp, "%5ld %5ld  %11.6f %11.6f\n", (long) 0, (long) 0, 0.0, 0.0);
         hcnt = 1;
-        for(ring = 1; ring < piaacmc[0].NBrings; ring++)
+        for(long ring = 1; ring < piaacmc[0].NBrings; ring++)
         {
             for(hindex = 0; hindex < hindexMax; hindex++)
                 if(hex_ring[hindex] == ring)
@@ -245,7 +245,7 @@ long PIAACMCsimul_mkFPM_zonemap(
             }
         }
         fclose(fp);
-        for(ring = 0; ring < piaacmc[0].NBrings; ring++)
+        for(long ring = 0; ring < piaacmc[0].NBrings; ring++)
         {
             printf("ring %ld : %ld %ld\n", ring, nbsector[ring], nbsectorcumul[ring]);
         }
@@ -277,16 +277,18 @@ long PIAACMCsimul_mkFPM_zonemap(
     if((piaacmcsimul_var.PIAACMC_FPMsectors == 0)
             || (piaacmcsimul_var.PIAACMC_FPMsectors == 1))
     {
-        for(ii = 0; ii < piaacmc[0].fpmarraysize; ii++)
-            for(jj = 0; jj < piaacmc[0].fpmarraysize; jj++)
+        for(long ii = 0; ii < piaacmc[0].fpmarraysize; ii++)
+            for(long jj = 0; jj < piaacmc[0].fpmarraysize; jj++)
             {
-                x = (2.0 * ii - 1.0 * piaacmc[0].fpmarraysize) / piaacmc[0].fpmarraysize /
-                    piaacmcsimul_var.FPMSCALEFACTOR;
-                y = (2.0 * jj - 1.0 * piaacmc[0].fpmarraysize) / piaacmc[0].fpmarraysize /
-                    piaacmcsimul_var.FPMSCALEFACTOR;
-                r = sqrt(x * x + y * y);
-                PA = atan2(y, x);
-                PAf = 0.5 * ((PA / M_PI) + 1.0);
+                double x = (2.0 * ii - 1.0 * piaacmc[0].fpmarraysize) / piaacmc[0].fpmarraysize /
+                           piaacmcsimul_var.FPMSCALEFACTOR;
+
+                double y = (2.0 * jj - 1.0 * piaacmc[0].fpmarraysize) / piaacmc[0].fpmarraysize /
+                           piaacmcsimul_var.FPMSCALEFACTOR;
+
+                double r = sqrt(x * x + y * y);
+                double PA = atan2(y, x);
+                double PAf = 0.5 * ((PA / M_PI) + 1.0);
                 if(PAf < eps)
                 {
                     PAf = eps;
@@ -296,7 +298,7 @@ long PIAACMCsimul_mkFPM_zonemap(
                     PAf = 1.0 - eps;
                 }
 
-                zi = (long) ceil((1.0 - r) * piaacmc[0].NBrings);
+                long zi = (long) ceil((1.0 - r) * piaacmc[0].NBrings);
 
 
                 if(zi < 0.1)
@@ -308,16 +310,16 @@ long PIAACMCsimul_mkFPM_zonemap(
                     zi = piaacmc[0].NBrings;
                 }
 
-                ring = piaacmc[0].NBrings - zi; // 0 for inner disk, increases outward
+                long ring = piaacmc[0].NBrings - zi; // 0 for inner disk, increases outward
                 if(zi == 0)
                 {
                     ring = -1;
                 }
 
-
+                long zoneindex;
                 if(piaacmcsimul_var.PIAACMC_FPMsectors == 0)
                 {
-                    zoneindex = (unsigned short int)(piaacmc[0].NBrings - zi + 1);
+                    zoneindex = piaacmc[0].NBrings - zi + 1;
                     if(zi == 0)
                     {
                         zoneindex = 0;
@@ -337,8 +339,8 @@ long PIAACMCsimul_mkFPM_zonemap(
                         }
                         else
                         {
-                            zoneindex = (unsigned short int) nbsectorcumul[ring - 1] + 1;
-                            zoneindex += (unsigned short int)(PAf * nbsector[ring]);
+                            zoneindex = nbsectorcumul[ring - 1] + 1;
+                            zoneindex += (long) (PAf * nbsector[ring]);
                         }
 
                         if(piaacmc[0].NBrings > 1)
@@ -395,14 +397,14 @@ long PIAACMCsimul_mkFPM_zonemap(
                                0.5 * piaacmc[0].fpmarraysize + hex_y[hindex] * hexsteppix,
                                hexsteppix * (1.0 - hexgap) * (sqrt(3.0) / 2.0));
 
-            for(ii = 0; ii < piaacmc[0].fpmarraysize * piaacmc[0].fpmarraysize; ii++)
+            for(long ii = 0; ii < piaacmc[0].fpmarraysize * piaacmc[0].fpmarraysize; ii++)
             {
                 if(data.image[ID1].array.F[ii] > 0.5)
                 {
                     data.image[ID].array.UI16[ii] = (unsigned int) hex_number[hindex] + 1;
                 }
             }
-            delete_image_ID("_TMPhex");
+            delete_image_ID("_TMPhex", DELETE_IMAGE_ERRMODE_WARNING);
         }
 
         if(piaacmc[0].NBrings > 1)
@@ -425,7 +427,7 @@ long PIAACMCsimul_mkFPM_zonemap(
     if(piaacmcsimul_var.PIAACMC_FPMsectors != 0)
     {
         printf("Saving %s ....\n", IDname);
-        save_fits(IDname, "!__test_zonemap_00.fits"); //TEST
+        save_fits(IDname, "__test_zonemap_00.fits"); //TEST
         // sleep(100000);
     }
 
@@ -435,5 +437,6 @@ long PIAACMCsimul_mkFPM_zonemap(
     printf("NUMBER OF ZONES = %ld\n", piaacmc[0].focmNBzone); //TEST
 
 
+    DEBUG_TRACE_FEXIT();
     return ID;
 }

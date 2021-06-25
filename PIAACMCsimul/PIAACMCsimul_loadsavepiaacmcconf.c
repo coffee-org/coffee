@@ -42,19 +42,16 @@ extern OPTPIAACMCDESIGN *piaacmc;
 
 
 
-int PIAACMCsimul_loadpiaacmcconf(
+errno_t PIAACMCsimul_loadpiaacmcconf(
     const char *dname
 )
 {
-    FILE *fp;
-    char fname[1500];
-    char imname[1500];
-    long i;
+    DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG dname %s", dname);
 
-    //int tmpi;
-    long tmpl;
-    float tmpf;
-    double tmplf;
+    FILE *fp;
+    char fname[STRINGMAXLEN_FULLFILENAME];
+
 
 #ifdef PIAASIMUL_LOGFUNC0
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
@@ -62,7 +59,7 @@ int PIAACMCsimul_loadpiaacmcconf(
 #endif
 
 
-    sprintf(fname, "%s/piaacmcparams.conf", dname);
+    WRITE_FULLFILENAME(fname, "%s/piaacmcparams.conf", dname);
     printf("%s\n", fname);
     fp = fopen(fname, "r");
     if(fp == NULL)
@@ -74,9 +71,9 @@ int PIAACMCsimul_loadpiaacmcconf(
     else
     {
 
-        //        fscanf(fp, "%ld   NBradpts\n", &tmpl);
-        {
+        {   // Get number of rad points
             int fscanfcnt;
+            long tmpl;
 
             fscanfcnt = fscanf(fp, "%ld   NBradpts\n", &tmpl);
             if(fscanfcnt == EOF)
@@ -90,34 +87,36 @@ int PIAACMCsimul_loadpiaacmcconf(
                     fprintf(stderr,
                             "Error: fscanf reached end of file, no matching characters, no matching failure\n");
                 }
-                return RETURN_FAILURE;
+                abort();
             }
             else if(fscanfcnt != 1)
             {
                 fprintf(stderr,
                         "Error: fscanf successfully matched and assigned %i input items, 1 expected\n",
                         fscanfcnt);
-                return RETURN_FAILURE;
+                abort();
             }
-
+            piaacmc[0].NBradpts = tmpl;
         }
 
 
 
-
-        piaacmc[0].NBradpts = tmpl;
-
-        for(i = 0; i < 10; i++)
+        for(int i = 0; i < 10; i++)
         {
             if(i < piaacmc[0].NBLyotStop)
             {
-                sprintf(fname, "%s/LyotStop%ld.fits", dname, i);
-                sprintf(imname, "lyotstop%ld", i);
+                char fname[STRINGMAXLEN_FULLFILENAME];
+                char imname[STRINGMAXLEN_IMGNAME];
+
+                WRITE_FULLFILENAME(fname, "%s/LyotStop%d.fits", dname, i);
+                WRITE_IMAGENAME(imname, "lyotstop%d", i);
                 printf("Loading \"%s\" as \"%s\"\n", fname, imname);
-                piaacmc[0].IDLyotStop[i] = load_fits(fname, imname, 1);
-                //r = fscanf(fp, "%lf   LyotStop_zpos %ld\n", &tmplf, &tmpl);
+                load_fits(fname, imname, 1, &(piaacmc[0].IDLyotStop[i]));
+
                 {
                     int fscanfcnt;
+                    double tmplf;
+                    long tmpl;
 
                     fscanfcnt = fscanf(fp, "%lf   LyotStop_zpos %ld\n", &tmplf, &tmpl);
                     if(fscanfcnt == EOF)
@@ -131,92 +130,92 @@ int PIAACMCsimul_loadpiaacmcconf(
                             fprintf(stderr,
                                     "Error: fscanf reached end of file, no matching characters, no matching failure\n");
                         }
-                        return RETURN_FAILURE;
+                        abort();
                     }
                     else if(fscanfcnt != 2)
                     {
                         fprintf(stderr,
                                 "Error: fscanf successfully matched and assigned %i input items, 2 expected\n",
                                 fscanfcnt);
-                        return RETURN_FAILURE;
+                        abort();
                     }
-
+                    piaacmc[0].LyotStop_zpos[i] = tmplf;
                 }
-
-                piaacmc[0].LyotStop_zpos[i] = tmplf;
             }
             else
             {
-                //r = fscanf(fp, "%lf   LyotStop_zpos %ld\n", &tmplf, &tmpl);
-                {
-                    int fscanfcnt;
+                int fscanfcnt;
+                double tmplf;
+                long tmpl;
 
-                    fscanfcnt = fscanf(fp, "%lf   LyotStop_zpos %ld\n", &tmplf, &tmpl);
-                    if(fscanfcnt == EOF)
+                fscanfcnt = fscanf(fp, "%lf   LyotStop_zpos %ld\n", &tmplf, &tmpl);
+                if(fscanfcnt == EOF)
+                {
+                    if(ferror(fp))
                     {
-                        if(ferror(fp))
-                        {
-                            perror("fscanf");
-                        }
-                        else
-                        {
-                            fprintf(stderr,
-                                    "Error: fscanf reached end of file, no matching characters, no matching failure\n");
-                        }
-                        return RETURN_FAILURE;
+                        perror("fscanf");
                     }
-                    else if(fscanfcnt != 2)
+                    else
                     {
                         fprintf(stderr,
-                                "Error: fscanf successfully matched and assigned %i input items, 2 expected\n",
-                                fscanfcnt);
-                        return RETURN_FAILURE;
+                                "Error: fscanf reached end of file, no matching characters, no matching failure\n");
                     }
+                    abort();
                 }
+                else if(fscanfcnt != 2)
+                {
+                    fprintf(stderr,
+                            "Error: fscanf successfully matched and assigned %i input items, 2 expected\n",
+                            fscanfcnt);
+                    abort();
+                }
+
                 piaacmc[0].LyotStop_zpos[i] = tmplf;
             }
-            printf("LYOT STOP %ld POS : %lf\n", i, tmplf);
+            printf("LYOT STOP %d POS : %lf\n", i,  piaacmc[0].LyotStop_zpos[i]);
 
         }
 
 
-        sprintf(fname, "%s/piaa0Cmodes.fits", dname);
-        piaacmc[0].piaa0CmodesID = load_fits(fname, "piaa0Cmodescoeff", 1);
+        WRITE_FULLFILENAME(fname, "%s/piaa0Cmodes.fits", dname);
+        load_fits(fname, "piaa0Cmodescoeff", 1, &(piaacmc[0].piaa0CmodesID));
         if(piaacmc[0].piaa0CmodesID == -1)
         {
-            sprintf(fname, "%s/piaaref/piaa0Cmodes.fits", dname);
-            piaacmc[0].piaa0CmodesID = load_fits(fname, "piaa0Cmodescoeff", 1);
+            WRITE_FULLFILENAME(fname, "%s/piaaref/piaa0Cmodes.fits", dname);
+            load_fits(fname, "piaa0Cmodescoeff", 1, &(piaacmc[0].piaa0CmodesID) );
         }
 
 
-        sprintf(fname, "%s/piaa0Fmodes.fits", dname);
-        piaacmc[0].piaa0FmodesID = load_fits(fname, "piaa0Fmodescoeff", 1);
+        WRITE_FULLFILENAME(fname, "%s/piaa0Fmodes.fits", dname);
+        load_fits(fname, "piaa0Fmodescoeff", 1, &(piaacmc[0].piaa0FmodesID));
         if(piaacmc[0].piaa0FmodesID == -1)
         {
-            sprintf(fname, "%s/piaaref/piaa0Fmodes.fits", dname);
-            piaacmc[0].piaa0FmodesID = load_fits(fname, "piaa0Fmodescoeff", 1);
+            WRITE_FULLFILENAME(fname, "%s/piaaref/piaa0Fmodes.fits", dname);
+            load_fits(fname, "piaa0Fmodescoeff", 1, &(piaacmc[0].piaa0FmodesID));
         }
 
-        sprintf(fname, "%s/piaa1Cmodes.fits", dname);
-        piaacmc[0].piaa1CmodesID = load_fits(fname, "piaa1Cmodescoeff", 1);
+        WRITE_FULLFILENAME(fname, "%s/piaa1Cmodes.fits", dname);
+        load_fits(fname, "piaa1Cmodescoeff", 1, &(piaacmc[0].piaa1CmodesID));
         if(piaacmc[0].piaa1CmodesID == -1)
         {
-            sprintf(fname, "%s/piaaref/piaa1Cmodes.fits", dname);
-            piaacmc[0].piaa1CmodesID = load_fits(fname, "piaa1Cmodescoeff", 1);
+            WRITE_FULLFILENAME(fname, "%s/piaaref/piaa1Cmodes.fits", dname);
+            load_fits(fname, "piaa1Cmodescoeff", 1, &(piaacmc[0].piaa1CmodesID));
         }
 
-        sprintf(fname, "%s/piaa1Fmodes.fits", dname);
-        piaacmc[0].piaa1FmodesID = load_fits(fname, "piaa1Fmodescoeff", 1);
+        WRITE_FULLFILENAME(fname, "%s/piaa1Fmodes.fits", dname);
+        load_fits(fname, "piaa1Fmodescoeff", 1, &(piaacmc[0].piaa1FmodesID));
         if(piaacmc[0].piaa1FmodesID == -1)
         {
-            sprintf(fname, "%s/piaaref/piaa1Fmodes.fits", dname);
-            piaacmc[0].piaa1FmodesID = load_fits(fname, "piaa1Fmodescoeff", 1);
+            imageID IDtmp = -1;
+            WRITE_FULLFILENAME(fname, "%s/piaaref/piaa1Fmodes.fits", dname);
+            load_fits(fname, "piaa1Fmodescoeff", 1, &IDtmp);
+            piaacmc[0].piaa1FmodesID = IDtmp;
         }
 
 
-        //r = fscanf(fp, "%f   fpmaskamptransm\n",    &tmpf);
-        {
+        {   // read focal plane mask transmission
             int fscanfcnt;
+            float tmpf;
 
             fscanfcnt = fscanf(fp, "%f   fpmaskamptransm\n",    &tmpf);
             if(fscanfcnt == EOF)
@@ -230,24 +229,25 @@ int PIAACMCsimul_loadpiaacmcconf(
                     fprintf(stderr,
                             "Error: fscanf reached end of file, no matching characters, no matching failure\n");
                 }
-                return RETURN_FAILURE;
+                abort();
             }
             else if(fscanfcnt != 1)
             {
                 fprintf(stderr,
                         "Error: fscanf successfully matched and assigned %i input items, 1 expected\n",
                         fscanfcnt);
-                return RETURN_FAILURE;
+                abort();
             }
-        }
-        piaacmc[0].fpmaskamptransm = tmpf;
 
+            piaacmc[0].fpmaskamptransm = tmpf;
+        }
         //r = 1;
 
         fclose(fp);
     }
 
-    return(0);
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 
@@ -255,22 +255,26 @@ int PIAACMCsimul_loadpiaacmcconf(
 /** @brief Assemble focal plane mask configuration name
  *
  */
-int PIAACMCsimul_update_fnamedescr_conf()
+errno_t PIAACMCsimul_update_fnamedescr_conf()
 {
-    //WRITE_FILENAME()
-    WRITE_FILENAME(piaacmcsimul_var.fnamedescr_conf,
-            "s%d_l%04ld_sr%02ld_nbr%03ld_mr%03ld_ssr%02d_ssm%d_wb%02d",
-            piaacmcsimul_var.PIAACMC_FPMsectors, (long)(1.0e9 * piaacmc[0].lambda + 0.1),
-            (long)(1.0 * piaacmc[0].lambdaB + 0.1), piaacmc[0].NBrings,
-            (long)(100.0 * piaacmcsimul_var.PIAACMC_MASKRADLD + 0.1),
-            piaacmcsimul_var.computePSF_ResolvedTarget,
-            piaacmcsimul_var.computePSF_ResolvedTarget_mode, piaacmc[0].nblambda);
-    // debug from Justin
-    // printf("s%d_l%04ld_sr%02ld_nbr%03ld_mr%03ld_ssr%02d_ssm%d_wb%02d\n", piaacmcsimul_var.PIAACMC_FPMsectors, (long) (1.0e9*piaacmc[0].lambda + 0.1), (long) (1.0*piaacmc[0].lambdaB + 0.1), piaacmc[0].NBrings, (long) (100.0*piaacmcsimul_var.PIAACMC_MASKRADLD+0.1), piaacmcsimul_var.computePSF_ResolvedTarget, piaacmcsimul_var.computePSF_ResolvedTarget_mode, piaacmc[0].nblambda);
-    // fflush(stdout);
-    // sleep(2);
+    DEBUG_TRACE_FSTART();
 
-    return EXIT_SUCCESS;
+    //WRITE_FILENAME()
+    WRITE_FILENAME(
+        piaacmcsimul_var.fnamedescr_conf,
+        "s%d_l%04ld_sr%02ld_nbr%03ld_mr%03ld_ssr%02d_ssm%d_wb%02d",
+        piaacmcsimul_var.PIAACMC_FPMsectors,
+        (long)(1.0e9 * piaacmc[0].lambda + 0.1),
+        (long)(1.0 * piaacmc[0].lambdaB + 0.1),
+        piaacmc[0].NBrings,
+        (long)(100.0 * piaacmcsimul_var.PIAACMC_MASKRADLD + 0.1),
+        piaacmcsimul_var.computePSF_ResolvedTarget,
+        piaacmcsimul_var.computePSF_ResolvedTarget_mode,
+        piaacmc[0].nblambda
+    );
+
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 
@@ -278,22 +282,25 @@ int PIAACMCsimul_update_fnamedescr_conf()
  *
  *
  */
-int PIAACMCsimul_update_fnamedescr()
+errno_t PIAACMCsimul_update_fnamedescr()
 {
+    DEBUG_TRACE_FSTART();
+
     PIAACMCsimul_update_fnamedescr_conf();
 
-    WRITE_FILENAME(piaacmcsimul_var.fnamedescr,
-            "%s.minsag%06ld_maxsag%06ld_fpmregc%08ld_fpmrega%06ld_%s",
-            piaacmcsimul_var.fnamedescr_conf, (long)(1.0e9 * piaacmc[0].fpmminsag - 0.1),
-            (long)(1.0e9 * piaacmc[0].fpmmaxsag + 0.1),
-            (long)(1.0e9 * piaacmc[0].fpmsagreg_coeff + 0.1),
-            (long)(1000.0 * piaacmc[0].fpmsagreg_alpha + 0.1), piaacmc[0].fpmmaterial_name);
-    // debug from Justin
-    // printf("Running PIAACMCsimul_update_fnamedescr: %s.minsag%06ld_maxsag%06ld_fpmregc%08ld_fpmrega%06ld_%s\n", piaacmcsimul_var.fnamedescr_conf, (long) (1.0e9*piaacmc[0].fpmminsag - 0.1), (long) (1.0e9*piaacmc[0].fpmmaxsag + 0.1), (long) (1.0e9*piaacmc[0].fpmsagreg_coeff+0.1),  (long) (1000.0*piaacmc[0].fpmsagreg_alpha+0.1), piaacmc[0].fpmmaterial_name);
-    // fflush(stdout);
-    // sleep(2);
+    WRITE_FILENAME(
+        piaacmcsimul_var.fnamedescr,
+        "%s.minsag%06ld_maxsag%06ld_fpmregc%08ld_fpmrega%06ld_%s",
+        piaacmcsimul_var.fnamedescr_conf,
+        (long)(1.0e9 * piaacmc[0].fpmminsag - 0.1),
+        (long)(1.0e9 * piaacmc[0].fpmmaxsag + 0.1),
+        (long)(1.0e9 * piaacmc[0].fpmsagreg_coeff + 0.1),
+        (long)(1000.0 * piaacmc[0].fpmsagreg_alpha + 0.1),
+        piaacmc[0].fpmmaterial_name
+    );
 
-    return EXIT_SUCCESS;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 
@@ -304,12 +311,12 @@ int PIAACMCsimul_update_fnamedescr()
 // Save PIAACMC optical design
 //
 
-int PIAACMCsimul_savepiaacmcconf(const char *dname)
+errno_t PIAACMCsimul_savepiaacmcconf(const char *dname)
 {
-    FILE *fp;
-    char fname[1500];
-    long i;
+    DEBUG_TRACE_FSTART();
 
+
+    char fname[STRINGMAXLEN_FULLFILENAME];
 
 
 #ifdef PIAASIMUL_LOGFUNC0
@@ -323,55 +330,54 @@ int PIAACMCsimul_savepiaacmcconf(const char *dname)
 
     // piaacmcparam.conf
 
-    sprintf(fname, "%s/piaacmcparams.conf", dname);
-
-    fp = fopen(fname, "w");
-
-    fprintf(fp, "%10ld   NBradpts\n", piaacmc[0].NBradpts);
-    for(i = 0; i < 10; i++)
     {
-        if(i < piaacmc[0].NBLyotStop)
+        WRITE_FULLFILENAME(fname, "%s/piaacmcparams.conf", dname);
+        FILE * fp = fopen(fname, "w");
+
+        fprintf(fp, "%10ld   NBradpts\n", piaacmc[0].NBradpts);
+        for(int i = 0; i < 10; i++)
         {
-            sprintf(fname, "!%s/LyotStop%ld.fits", dname, i);
-            if(piaacmc[0].IDLyotStop[i] != -1)
+            if(i < piaacmc[0].NBLyotStop)
             {
-                save_fits(data.image[piaacmc[0].IDLyotStop[i]].name, fname);
+                WRITE_FULLFILENAME(fname, "%s/LyotStop%d.fits", dname, i);
+                if(piaacmc[0].IDLyotStop[i] != -1)
+                {
+                    save_fits(data.image[piaacmc[0].IDLyotStop[i]].name, fname);
+                }
+                fprintf(fp, "%10.6lf   LyotStop_zpos %d\n", piaacmc[0].LyotStop_zpos[i], i);
             }
-            fprintf(fp, "%10.6lf   LyotStop_zpos %ld\n", piaacmc[0].LyotStop_zpos[i], i);
+            else
+            {
+                fprintf(fp, "%10.6lf   LyotStop_zpos %d\n", piaacmc[0].LyotStop_zpos[i], i);
+            }
         }
-        else
-        {
-            fprintf(fp, "%10.6lf   LyotStop_zpos %ld\n", piaacmc[0].LyotStop_zpos[i], i);
-        }
+        fprintf(fp, "%10.6f    fpmaskamptransm\n", piaacmc[0].fpmaskamptransm);
+        fclose(fp);
     }
-
-    fprintf(fp, "%10.6f    fpmaskamptransm\n", piaacmc[0].fpmaskamptransm);
-
-    fclose(fp);
 
 
 
     // PIAACMC optics
 
-    sprintf(fname, "!%s/piaa0Cmodes.fits", dname);
+    WRITE_FULLFILENAME(fname, "%s/piaa0Cmodes.fits", dname);
     if(piaacmc[0].piaa0CmodesID != -1)
     {
         save_fits(data.image[piaacmc[0].piaa0CmodesID].name, fname);
     }
 
-    sprintf(fname, "!%s/piaa0Fmodes.fits", dname);
+    WRITE_FULLFILENAME(fname, "%s/piaa0Fmodes.fits", dname);
     if(piaacmc[0].piaa0FmodesID != -1)
     {
         save_fits(data.image[piaacmc[0].piaa0FmodesID].name, fname);
     }
 
-    sprintf(fname, "!%s/piaa1Cmodes.fits", dname);
+    WRITE_FULLFILENAME(fname, "%s/piaa1Cmodes.fits", dname);
     if(piaacmc[0].piaa1CmodesID != -1)
     {
         save_fits(data.image[piaacmc[0].piaa1CmodesID].name, fname);
     }
 
-    sprintf(fname, "!%s/piaa1Fmodes.fits", dname);
+    WRITE_FULLFILENAME(fname, "%s/piaa1Fmodes.fits", dname);
     if(piaacmc[0].piaa1FmodesID != -1)
     {
         save_fits(data.image[piaacmc[0].piaa1FmodesID].name, fname);
@@ -384,37 +390,44 @@ int PIAACMCsimul_savepiaacmcconf(const char *dname)
     // Focal plane mask
     PIAACMCsimul_update_fnamedescr();
 
-    sprintf(fname, "!%s/fpm_zonez.%s.fits", piaacmcsimul_var.piaacmcconfdir,
-            piaacmcsimul_var.fnamedescr);
+    WRITE_FULLFILENAME(
+        fname,
+        "%s/fpm_zonez.%s.fits",
+        piaacmcsimul_var.piaacmcconfdir,
+        piaacmcsimul_var.fnamedescr
+    );
     if(piaacmc[0].zonezID != -1)
     {
         save_fits(data.image[piaacmc[0].zonezID].name, fname);
     }
 
 
-    sprintf(fname, "!%s/fpm_zonea.%s.fits", piaacmcsimul_var.piaacmcconfdir,
-            piaacmcsimul_var.fnamedescr);
+    WRITE_FULLFILENAME(
+        fname,
+        "%s/fpm_zonea.%s.fits",
+        piaacmcsimul_var.piaacmcconfdir,
+        piaacmcsimul_var.fnamedescr
+    );
     if(piaacmc[0].zoneaID != -1)
     {
         save_fits(data.image[piaacmc[0].zoneaID].name, fname);
     }
 
 
-    long IDfpmzmap1;
-    long ii;
-    long xsize, ysize, xysize;
-
+    imageID IDfpmzmap1;
     IDfpmzmap1 = image_ID("fpmzmap1");
     if(IDfpmzmap1 == -1)
     {
         printf("Creating fpmzmap1 ...\n");
         fflush(stdout);
         IDfpmzmap1 = PIAACMCsimul_mkFPM_zonemap("fpmzmap1");
-        xsize = data.image[IDfpmzmap1].md[0].size[0];
-        ysize = data.image[IDfpmzmap1].md[0].size[1];
-        xysize = xsize * ysize;
+        uint32_t xsize = data.image[IDfpmzmap1].md[0].size[0];
+        uint32_t ysize = data.image[IDfpmzmap1].md[0].size[1];
 
-        for(ii = 0; ii < xysize; ii++)
+        uint64_t xysize = xsize;
+        xysize *= ysize;
+
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
             data.image[IDfpmzmap1].array.UI16[ii] -= 1;
         }
@@ -423,14 +436,24 @@ int PIAACMCsimul_savepiaacmcconf(const char *dname)
     //printf("data.image[piaacmc[0].zonezID].name = %s\n", data.image[piaacmc[0].zonezID].name);
 
 
-    image_basic_indexmap("fpmzmap1", data.image[piaacmc[0].zonezID].name,
-                         "fpmsagmapHR");
-    sprintf(fname, "!%s/fpm_sagmapHR.%s.fits", piaacmcsimul_var.piaacmcconfdir,
-            piaacmcsimul_var.fnamedescr);
-    save_fits("fpmsagmapHR", fname);
-    delete_image_ID("fpmsagmapHR");
+    image_basic_indexmap(
+        "fpmzmap1",
+        data.image[piaacmc[0].zonezID].name,
+        "fpmsagmapHR"
+    );
 
-    return(0);
+    WRITE_FULLFILENAME(
+        fname,
+        "%s/fpm_sagmapHR.%s.fits",
+        piaacmcsimul_var.piaacmcconfdir,
+        piaacmcsimul_var.fnamedescr
+    );
+
+    save_fits("fpmsagmapHR", fname);
+    delete_image_ID("fpmsagmapHR", DELETE_IMAGE_ERRMODE_WARNING);
+
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 

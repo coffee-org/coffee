@@ -8,6 +8,16 @@ NBARGS=0
 pname=`echo "$0" | sed "s/\.\///g"`
 
 
+function exitOK() {
+	echo -e "\n\033[32;1m SUCCESS \033[0m $0 \n"
+	exit
+}
+
+function exitERR() {
+	echo -e "\n\033[31;1m ERROR \033[0m $0 \n"
+	exit 1
+}
+
 
 
 function CLEANinput {
@@ -28,53 +38,52 @@ rm -rf status
 rm -rf piaacmcconf_*
 rm -rf eval*
 
-rm stop.time_elapsed.ttxt
-rm cmdlogtest.txt
-rm cmdlogtest1.txt
-rm tmpcmd
-rm ModesExpr_CPA.txt
-rm prePIAA0mask.fits
-rm prePIAA1mask.fits
-rm postPIAA0mask.fits
-rm postPIAA1mask.fits
-rm initOK*
-rm run.cmd.tsart
-rm optcoeff*.fits
-rm step0*.txt
-rm varlog.txt
-rm cpamodesfreq.fits
-rm cmdlog.txt
-rm Cmodes_*
-rm Fmodes_*
-rm runPIAACMCfifo*
-rm clistartup*.txt
-rm test*
-rm piaacmc*/*thread0*.fits
-rm piaacmc*/*thread0*.fits.tmp
-rm piaacmc*/WFamp0*.fits
-rm piaacmc*/WFpha0*.fits
-rm piaacmc*/psfi*.fits
-rm piaacmc*/LMintC.fits
-rm tmp_*
-rm PSFcontrastval.txt
-rm eigenv.dat
-rm __test*
-rm stepfile*
-rm searchtime.txt
-rm looppsfcomp_done
-rm conj_test.txt
-rm _pupmaskload.fits
-rm SVDmodes.log
-rm eigenv_*
-rm sag0.txt
-rm timeused.txt
-rm step200.txt
-rm fpsagtest.txt
-rm fpm_name.txt
-rm fpm_name_conf.txt
-rm ModesExpr_CosRad.txt
-rm FPmask.tmp.fits
-rm APLCapo.*.info
+rm -f stop.time_elapsed.ttxt
+rm -f cmdlogtest.txt
+rm -f cmdlogtest1.txt
+rm -f tmpcmd
+rm -f ModesExpr_CPA.txt
+rm -f prePIAA0mask.fits
+rm -f prePIAA1mask.fits
+rm -f postPIAA0mask.fits
+rm -f postPIAA1mask.fits
+rm -f initOK*
+rm -f run.cmd.tsart
+rm -f optcoeff*.fits
+rm -f step0*.txt
+rm -f varlog.txt
+rm -f cpamodesfreq.fits
+rm -f cmdlog.txt
+rm -f Cmodes_*
+rm -f Fmodes_*
+rm -f clistartup*.txt
+rm -f test*
+rm -f piaacmc*/*thread0*.fits
+rm -f piaacmc*/*thread0*.fits.tmp
+rm -f piaacmc*/WFamp0*.fits
+rm -f piaacmc*/WFpha0*.fits
+rm -f piaacmc*/psfi*.fits
+rm -f piaacmc*/LMintC.fits
+rm -f tmp_*
+rm -f PSFcontrastval.txt
+rm -f eigenv.dat
+rm -f __test*
+rm -f stepfile*
+rm -f searchtime.txt
+rm -f looppsfcomp_done
+rm -f conj_test.txt
+rm -f _pupmaskload.fits
+rm -f SVDmodes.log
+rm -f eigenv_*
+rm -f sag0.txt
+rm -f timeused.txt
+rm -f step200.txt
+rm -f fpsagtest.txt
+rm -f fpm_name.txt
+rm -f fpm_name_conf.txt
+rm -f ModesExpr_CosRad.txt
+rm -f FPmask.tmp.fits
+rm -f APLCapo.*.info
 }
 
 
@@ -196,7 +205,7 @@ while getopts :hl: FLAG; do
       else
       printHELP1
       fi
-      exit
+      exitOK
       ;;
     l)
     CLEANlevel=$OPTARG
@@ -222,7 +231,7 @@ if [ "$#" -ne $NBARGS ]; then
     echo "$(tput setaf 1)$(tput bold) $0: Illegal number of parameters ($NBARGS params required, $# entered) $(tput sgr0)"
 fi
 printHELP
-        exit
+        exitOK
 fi
 
 CLEANok="0"
@@ -242,3 +251,6 @@ fi
 if [ "$CLEANok" = "0" ]; then
 echo "ERROR: Clean level not recognized, nothing done"
 fi
+
+
+exitOK

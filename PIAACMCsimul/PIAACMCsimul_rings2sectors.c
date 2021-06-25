@@ -1,20 +1,9 @@
 /**
  * @file    PIAAACMCsimul_rings2sectors.c
  * @brief   PIAA-type coronagraph design, rings to sectors
- * 
- * Can design both APLCMC and PIAACMC coronagraphs
- *  
- * @author  O. Guyon
- * @date    24 nov 2017
  *
- * 
- * | date        |  Code Change      |
- * |-------------|-------------------|
- * | 2017-11-24  | documentation     |
- * 
- * 
- * @bug No known bugs.
- * 
+ * Can design both APLCMC and PIAACMC coronagraphs
+ *
  */
 
 
@@ -29,30 +18,76 @@
 
 
 
+// Local variables pointers
+static char *inimname;
+static char *secfname;
+static char *outimname;
+
+
+
+static CLICMDARGDEF farg[] =
+{
+    {
+        CLIARG_IMG, ".inimname", "input image: circular mask design", "imin",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &inimname
+    },
+    {
+        CLIARG_STR, ".secfname", "text file specifying which zones belong to which rings", "sec.txt",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &secfname
+    },
+    {
+        CLIARG_STR_NOT_IMG, ".outimname", "output sector mask design", "outim",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &outimname
+    }
+};
+
+static CLICMDDATA CLIcmddata =
+{
+    "ring2sect",
+    "turn ring fpm design into sectors",
+    CLICMD_FIELDS_DEFAULTS
+};
+
+
+// detailed help
+static errno_t help_function()
+{
+    return RETURN_SUCCESS;
+}
+
+
+
+
+
 /**
  * @brief Rings to sectors
- * 
+ *
  * @param[in] IDin_name	input image: circular mask design
  * @param[in] sectfname	text file specifying which zones belong to which rings
  * @param[out] IDout_name	output sector mask design
- * 
- */ 
-long PIAACMCsimul_rings2sectors(
-		const char *IDin_name, 
-		const char *sectfname, 
-		const char *IDout_name
-		)
+ *
+ */
+imageID PIAACMCsimul_rings2sectors(
+    const char *IDin_name,
+    const char *sectfname,
+    const char *IDout_name
+)
 {
-    long IDin, IDout;
+    DEBUG_TRACE_FSTART();
+
+    imageID IDin, IDout;
     FILE *fp;
     long nbring, nbzone;
     long tmpl1, tmpl2;
     long zone;
     long arrayring[5000];
 
-	#ifdef PIAASIMUL_LOGFUNC0
-		PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__, "");
-	#endif
+#ifdef PIAASIMUL_LOGFUNC0
+    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__, "");
+#endif
 
 
     IDin = image_ID(IDin_name);
@@ -79,8 +114,41 @@ long PIAACMCsimul_rings2sectors(
 
     printf("%ld zones in %ld rings\n", nbzone, nbring);
 
+    DEBUG_TRACE_FEXIT();
     return(IDout);
 }
 
+
+
+
+
+static errno_t compute_function()
+{
+
+
+    INSERT_STD_PROCINFO_COMPUTEFUNC_START
+
+    PIAACMCsimul_rings2sectors(
+        inimname,
+        secfname,
+        outimname
+    );
+
+    INSERT_STD_PROCINFO_COMPUTEFUNC_END
+
+    return RETURN_SUCCESS;
+}
+
+
+
+
+INSERT_STD_FPSCLIfunctions
+
+// Register function in CLI
+errno_t CLIADDCMD_PIAACMCsimul__ring2sectors()
+{
+    INSERT_STD_CLIREGISTERFUNC
+    return RETURN_SUCCESS;
+}
 
 

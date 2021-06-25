@@ -47,23 +47,21 @@ Vary these zpos, looking for the best contrast returned by PIAACMCsimul_computeP
 
 Search is performed by iterative refined marching
 **/
-int PIAACMCsimul_exec_optimize_lyot_stop_position()
+errno_t PIAACMCsimul_exec_optimize_lyot_stop_position()
 {
+    DEBUG_TRACE_FSTART();
+
     imageID IDv;
     double fpmradld = 0.95;  // default
     double centobs0 = 0.3;
     double centobs1 = 0.2;
-    double range, stepsize;
-    FILE *fp;
-    long ls, ls1;
-    long iter;
+
     long NBiter = 1000;
+
     double parambest[10000]; // for scanning
     double paramref[10000];
-    //int loopOK;
-    double valbest;
-    char fnamelog[500];
-    long elem0;
+
+    char fnamelog[STRINGMAXLEN_FULLFILENAME];
 
     printf("=================================== mode 001 ===================================\n");
     // load some more cli variables
@@ -92,45 +90,52 @@ int PIAACMCsimul_exec_optimize_lyot_stop_position()
     PIAACMCsimul_init(piaacmc, 0, 0.0,
                       0.0); // necessary to initialize optical design
     // set initial lyot stop marching range (current position +- range)
-    if((IDv = variable_ID("PIAACMC_lsoptrange")) != -1)
+    double range, stepsize;
     {
-        range = data.variable[IDv].value.f;    // from cli
+        variableID IDv;
+        if((IDv = variable_ID("PIAACMC_lsoptrange")) != -1)
+        {
+            range = data.variable[IDv].value.f;    // from cli
+        }
+        else
+        {
+            range = 3.0;    // default, in meters
+        }
+        stepsize = range / 3.0; // initial march stepsize
     }
-    else
-    {
-        range = 3.0;    // default, in meters
-    }
-    stepsize = range / 3.0; // initial march stepsize
+
+
     // store initial Lyot stop positions
-    for(ls = 0; ls < piaacmc[0].NBLyotStop;
-            ls++) // NBLyotStop = length(LyotStop_zpos)
+    // NBLyotStop = length(LyotStop_zpos)
+    for(long ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
     {
         paramref[ls] = piaacmc[0].LyotStop_zpos[ls];
     }
     NBiter = 4; // number of iterations
 
     // start up a log
-    sprintf(fnamelog, "%s/result_LMpos.log", piaacmcsimul_var.piaacmcconfdir);
-    fp = fopen(fnamelog, "w");
-    fclose(fp);
-
+    WRITE_FULLFILENAME(fnamelog, "%s/result_LMpos.log", piaacmcsimul_var.piaacmcconfdir);
+    {
+        FILE * fp = fopen(fnamelog, "w");
+        fclose(fp);
+    }
 
 
     // pick another initial march stepsize
     stepsize = range / 5.0;
     // start the iterative refined march
-    for(iter = 0; iter < NBiter; iter++)
+    for(long iter = 0; iter < NBiter; iter++)
     {
         // for each Lyot stop, find its best position
-        for(ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
+        for(long ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
         {
             // start position for march.  paramref is current best value
             piaacmc[0].LyotStop_zpos[ls] = paramref[ls] - range;
             // current best position
             parambest[ls] = piaacmc[0].LyotStop_zpos[ls];
 
-           // loopOK = 1;
-            valbest = 1.0;
+            // loopOK = 1;
+            double valbest = 1.0;
 
             // march to the other other end of range
             while(piaacmc[0].LyotStop_zpos[ls] < paramref[ls] + range)
@@ -138,7 +143,7 @@ int PIAACMCsimul_exec_optimize_lyot_stop_position()
                 long elem;
                 double val;
 
-                elem0 = 6; // elem0 is the starting point of the PSF propagation.  This is a staring default
+                long elem0 = 6; // elem0 is the starting point of the PSF propagation.  This is a staring default
 
                 // look for the element called "Lyot mask 0" as the actual starting point
                 elem0 = -1;
@@ -159,7 +164,13 @@ int PIAACMCsimul_exec_optimize_lyot_stop_position()
                 optsyst[0].keepMem[elem0] = 1; // save this element and reuse
 
                 // compute the PSF for this Lyot stop position, returning contrast in the evaluation zone
-                val = PIAACMCsimul_computePSF(0.0, 0.0, elem0, optsyst[0].NBelem, 0, 0, 0, 0);
+                {
+                    errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, elem0, optsyst[0].NBelem, 0, 0, 0, 0, &val);
+                    if( fret != RETURN_SUCCESS)
+                    {
+                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
+                    }
+                }
 
                 // if this is the best contrast for this stop, save it for it and the position of this stop
                 if(val < valbest)
@@ -169,13 +180,15 @@ int PIAACMCsimul_exec_optimize_lyot_stop_position()
                 }
 
                 // say what's happening
-                fp = fopen(fnamelog, "a");
-                for(ls1 = 0; ls1 < piaacmc[0].NBLyotStop; ls1++)
                 {
-                    fprintf(fp, " %lf", piaacmc[0].LyotStop_zpos[ls1]);
+                    FILE * fp = fopen(fnamelog, "a");
+                    for(long ls1 = 0; ls1 < piaacmc[0].NBLyotStop; ls1++)
+                    {
+                        fprintf(fp, " %lf", piaacmc[0].LyotStop_zpos[ls1]);
+                    }
+                    fprintf(fp, " %g\n", val);
+                    fclose(fp);
                 }
-                fprintf(fp, " %g\n", val);
-                fclose(fp);
 
                 // march along by the step size
                 piaacmc[0].LyotStop_zpos[ls] += stepsize;
@@ -188,21 +201,25 @@ int PIAACMCsimul_exec_optimize_lyot_stop_position()
             printf(" %g\n", valbest);
         }
 
-        fp = fopen(fnamelog, "a");
-        fprintf(fp, "\n");
-        fclose(fp);
+        {
+            FILE * fp = fopen(fnamelog, "a");
+            fprintf(fp, "\n");
+            fclose(fp);
+        }
 
         // reduce the range and stepsize, refining the march
         range *= 0.3;
         stepsize = range / 3.0;
     }
     // store all best positions  Done!!
-    for(ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
+    for(long ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
     {
         piaacmc[0].LyotStop_zpos[ls] = parambest[ls];
     }
     PIAACMCsimul_savepiaacmcconf(piaacmcsimul_var.piaacmcconfdir);
 
-    return 0;
+
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 

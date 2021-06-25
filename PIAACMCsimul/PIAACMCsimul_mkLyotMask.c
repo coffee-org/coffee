@@ -2,9 +2,6 @@
  * @file    PIAACMCsimul_mkLyotMask.c
  * @brief   PIAA-type coronagraph design
  *
- * Can design both APLCMC and PIAACMC coronagraphs
- *
- * @bug No known bugs.
  *
  */
 
@@ -58,7 +55,7 @@ extern OPTPIAACMCDESIGN *piaacmc;
 /// (2) keeps pixels for which onaxisLight < v0
 /// selects the mask that achieves the strongest on-axis rejection while satifying the throughput constraint
 
-long PIAACMCsimul_mkLyotMask(
+imageID PIAACMCsimul_mkLyotMask(
     const char *IDincoh_name,
     const char *IDmc_name,
     const char *IDzone_name,
@@ -66,14 +63,14 @@ long PIAACMCsimul_mkLyotMask(
     const char *IDout_name
 )
 {
+    DEBUG_TRACE_FSTART();
+
     imageID ID1;
     imageID IDmc, IDincoh, IDzone;
-    double val, val1, v, v0, bestval, v_best, rsl_best;
-    double rsl, rsl0;
+    //double val, val1, v, v0, bestval, v_best, rsl_best;
+    //double rsl, rsl0;
     long iter, NBiter;
-    long ii;
-    long xsize = 0;
-    long ysize = 0;
+    //long ii;
     imageID IDout;
     //float sigma = 4.0;
     //int filter_size = 10;
@@ -100,42 +97,47 @@ long PIAACMCsimul_mkLyotMask(
     //	IDmc = gauss_filter(IDmc_name, "mcg", sigma, filter_size);
 
     IDzone = image_ID(IDzone_name);
-    xsize = data.image[IDmc].md[0].size[0];
-    ysize = data.image[IDmc].md[0].size[1];
+    uint32_t xsize = data.image[IDmc].md[0].size[0];
+    uint32_t ysize = data.image[IDmc].md[0].size[1];
 
     IDout = create_2Dimage_ID(IDout_name, xsize, ysize);
 
     // normalize both images to 1.0
-    val = 0.0;
-    for(ii = 0; ii < xsize * ysize; ii++)
     {
-        val += data.image[IDmc].array.F[ii];
-    }
-    for(ii = 0; ii < xsize * ysize; ii++)
-    {
-        data.image[IDmc].array.F[ii] /= val;
+        double val = 0.0;
+        for(long ii = 0; ii < xsize * ysize; ii++)
+        {
+            val += data.image[IDmc].array.F[ii];
+        }
+        for(long ii = 0; ii < xsize * ysize; ii++)
+        {
+            data.image[IDmc].array.F[ii] /= val;
+        }
     }
 
-    val = 0.0;
-    for(ii = 0; ii < xsize * ysize; ii++)
+
     {
-        val += data.image[IDincoh].array.F[ii];
-    }
-    for(ii = 0; ii < xsize * ysize; ii++)
-    {
-        data.image[IDincoh].array.F[ii] /= val;
+        double val = 0.0;
+        for(long ii = 0; ii < xsize * ysize; ii++)
+        {
+            val += data.image[IDincoh].array.F[ii];
+        }
+        for(long ii = 0; ii < xsize * ysize; ii++)
+        {
+            data.image[IDincoh].array.F[ii] /= val;
+        }
     }
 
 
 
     // estimate iteratively rsl0, the threshold in offaxis/onaxis starlight that will achieve the goal throughput
-    rsl = 1.0;
+    double rsl = 1.0;
     for(iter = 0; iter < NBiter; iter++)
     {
-        val = 0.0;
-        val1 = 0.0;
+        double val = 0.0;
+        double val1 = 0.0;
 
-        for(ii = 0; ii < xsize * ysize; ii++)
+        for(long ii = 0; ii < xsize * ysize; ii++)
         {
             if((data.image[IDzone].array.F[ii] > -1)
                     && (data.image[IDincoh].array.F[ii] / data.image[IDmc].array.F[ii] > rsl))
@@ -159,23 +161,26 @@ long PIAACMCsimul_mkLyotMask(
             rsl *= 0.9;
         }
     }
-    rsl0 = rsl;
+    double rsl0 = rsl;
 
     // v0 = img_percentile("mcg", 0.99);
-    v0 = img_percentile(IDmc_name, 0.99);
+    double v0 = img_percentile(IDmc_name, 0.99);
     printf("v0 = %lf\n", v0);
 
 
 
 
-    bestval = 1.0; // to be minized: total starlight transmitted
-    for(rsl = 0.0 * rsl0; rsl < 2.0 * rsl0; rsl += 0.02 * rsl0)
-        for(v = 0.00000001 * v0; v < 50.0 * v0; v *= 1.2)
-        {
-            val = 0.0;
-            val1 = 0.0;
+    double bestval = 1.0; // to be minized: total starlight transmitted
+    double rsl_best = 0.0;
+    double v_best = 0.0;
 
-            for(ii = 0; ii < xsize * ysize; ii++)
+    for(rsl = 0.0 * rsl0; rsl < 2.0 * rsl0; rsl += 0.02 * rsl0)
+        for(double v = 0.00000001 * v0; v < 50.0 * v0; v *= 1.2)
+        {
+            double val = 0.0;
+            double val1 = 0.0;
+
+            for(long ii = 0; ii < xsize * ysize; ii++)
             {
                 if((data.image[IDzone].array.F[ii] > -1)
                         && (data.image[IDincoh].array.F[ii] / data.image[IDmc].array.F[ii] > rsl)
@@ -200,7 +205,7 @@ long PIAACMCsimul_mkLyotMask(
             }
         }
 
-    for(ii = 0; ii < xsize * ysize; ii++)
+    for(long ii = 0; ii < xsize * ysize; ii++)
     {
         if((data.image[IDzone].array.F[ii] > -1)
                 && (data.image[IDincoh].array.F[ii] / data.image[IDmc].array.F[ii] > rsl_best)
@@ -217,16 +222,16 @@ long PIAACMCsimul_mkLyotMask(
     if(0)
     {
         ID1 = create_2Dimage_ID("postLMim", xsize, ysize);
-        for(ii = 0; ii < xsize * ysize; ii++)
+        for(long ii = 0; ii < xsize * ysize; ii++)
         {
             data.image[ID1].array.F[ii] = data.image[IDmc].array.F[ii] *
                                           data.image[IDout].array.F[ii];
         }
-        save_fits("postLMim", "!postLMim.fits");
-        delete_image_ID("postLMim");
+        save_fits("postLMim", "postLMim.fits");
+        delete_image_ID("postLMim", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
-
+    DEBUG_TRACE_FEXIT();
     return(IDout);
 }
 
