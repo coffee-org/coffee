@@ -9,8 +9,8 @@ Latest Version (off main branch): [![latesttag](https://img.shields.io/github/ta
 
 
 Code metrics (dev branch) :
-[![CodeScene Code Health](https://codescene.io/projects/14780/status-badges/code-health)](https://codescene.io/projects/14781)
-[![CodeScene System Mastery](https://codescene.io/projects/14780/status-badges/system-mastery)](https://codescene.io/projects/14781)
+[![CodeScene Code Health](https://codescene.io/projects/14781/status-badges/code-health)](https://codescene.io/projects/14781)
+[![CodeScene System Mastery](https://codescene.io/projects/14781/status-badges/system-mastery)](https://codescene.io/projects/14781)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/99d33a7efa834015a907f64b71560505)](https://www.codacy.com/gh/coffee-org/coffee/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=coffee-org/coffee&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/coffee-org/coffee/badge)](https://www.codefactor.io/repository/github/coffee-org/coffee)
 
