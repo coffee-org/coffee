@@ -30,21 +30,27 @@ extern OPTPIAACMCDESIGN *piaacmc;
 
 
 
-///
-/// mirror sag shapes:  piaam0z, piaam1z
-///
-/// piaa0Cmodescoeff -> piaa0Cz
-/// piaa0Fmodescoeff -> piaa0Fz
-/// piaa0Cz + piaa0Fz -> piaam0z
-///
-
+/** @brief Make PIAA shapes
+ *
+ * Creates mirror sag shapes:  piaam0z, piaam1z
+ *  and lens shapes if applicable
+ *
+ * Shapes are constructed from mode coefficients
+ *
+ * piaa0Cmodescoeff -> piaa0Cz
+ * piaa0Fmodescoeff -> piaa0Fz
+ * piaa0Cz + piaa0Fz -> piaam0z
+ *
+ */
 errno_t PIAACMCsimul_makePIAAshapes(
     OPTPIAACMCDESIGN *design,
     long index
 )
 {
     DEBUG_TRACE_FSTART();
-    DEBUG_TRACEPOINT("FARG %ld", index);
+    DEBUG_TRACEPOINT_LOG("FARG %ld", index);
+    DEBUG_TRACEPOINT_LOG("PIAA material code = %d", design[index].PIAAmaterial_code);
+
 
 #ifdef PIAASIMUL_LOGFUNC0
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
@@ -56,11 +62,12 @@ errno_t PIAACMCsimul_makePIAAshapes(
 
     // ============ construct PIAA shapes from fitting coefficients ==================
 
-
-    DEBUG_TRACEPOINT("PIAAmode %d", piaacmc[0].PIAAmode);
+    DEBUG_TRACEPOINT_LOG("PIAAmode %d", piaacmc[0].PIAAmode);
     if(piaacmc[0].PIAAmode == 1)
-    {
+    {   // if using PIAA optics
 
+        // check if PIAA shapes should be made
+        //
         piaacmcsimul_var.MAKE_PIAA0shape = 0;
         if(piaacmcsimul_var.FORCE_MAKE_PIAA0shape == 0)
         {
@@ -94,12 +101,18 @@ errno_t PIAACMCsimul_makePIAAshapes(
 
 
 
-        DEBUG_TRACEPOINT("piaacmcsimul_var.MAKE_PIAA0shape %d", piaacmcsimul_var.MAKE_PIAA0shape);
+        DEBUG_TRACEPOINT_LOG("piaacmcsimul_var.MAKE_PIAA0shape %d", piaacmcsimul_var.MAKE_PIAA0shape);
         if(piaacmcsimul_var.MAKE_PIAA0shape == 1)
-        {
-            // assemble piaa0z and piaa1z images
+        {   // if PIAA shapes should be computed
+
+            // assemble piaa0z and piaa1z images from their linear coefficients
+
+            // cosine radial modes
             imageID ID0 = linopt_imtools_image_construct("Cmodes", "piaa0Cmodescoeff", "piaa0Cz");
+
+            // Fourier 2D modes
             imageID ID1 = linopt_imtools_image_construct("Fmodes", "piaa0Fmodescoeff", "piaa0Fz");
+
             imageID ID = image_ID("piaam0z");
             if(ID == -1)
             {
@@ -148,7 +161,7 @@ errno_t PIAACMCsimul_makePIAAshapes(
             imageID IDpiaam0z = ID;
 
             // make lense shapes if applicable
-            DEBUG_TRACEPOINT("PIAA material code = %d", design[index].PIAAmaterial_code);
+            DEBUG_TRACEPOINT_LOG("PIAA material code = %d", design[index].PIAAmaterial_code);
             if(design[index].PIAAmaterial_code != 0) // refractive PIAA
             {
                 // if piaar0zsag does not exist or is wrong size, create it
@@ -212,8 +225,8 @@ errno_t PIAACMCsimul_makePIAAshapes(
                     if(piaacmcsimul_var.PIAACMC_save == 1)
                     {
                         save_fl_fits("piaar0zsag", fname);
+                        DEBUG_TRACEPOINT_LOG("Saved piaar0zsag to %s", fname);
                     }
-                    DEBUG_TRACEPOINT("Saved piaar0zsag to %s", fname);
                 }
             }
 
@@ -333,8 +346,8 @@ errno_t PIAACMCsimul_makePIAAshapes(
                     if(piaacmcsimul_var.PIAACMC_save == 1)
                     {
                         save_fl_fits("piaar1zsag", fname);
+                        DEBUG_TRACEPOINT_LOG("Saved piaar1zsag to %s", fname);
                     }
-                    printf("Saved piaar1zsag to %s\n", fname);
                 }
             }
         }

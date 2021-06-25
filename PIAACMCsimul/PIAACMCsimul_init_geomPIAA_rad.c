@@ -38,6 +38,7 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
 )
 {
     DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT_LOG("ARG %s", IDapofit_name);
 
     imageID IDcoeff;
     long nbcoeff;
@@ -64,9 +65,7 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
 
     char fname[STRINGMAXLEN_FULLFILENAME];
 
-#ifdef PIAASIMUL_LOGFUNC0
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__, "");
-#endif
+
 
 
     double * pup0 = (double*) malloc(sizeof(double)*piaacmc[0].NBradpts);

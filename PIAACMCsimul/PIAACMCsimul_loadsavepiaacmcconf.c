@@ -47,6 +47,7 @@ errno_t PIAACMCsimul_loadpiaacmcconf(
 )
 {
     DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG dname %s", dname);
 
     FILE *fp;
     char fname[STRINGMAXLEN_FULLFILENAME];

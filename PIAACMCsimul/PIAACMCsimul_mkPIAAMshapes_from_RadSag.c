@@ -20,6 +20,10 @@
 #include <math.h>
 #include <malloc.h>
 
+# ifdef _OPENMP
+# include <omp.h>
+# endif
+
 
 #include "CommandLineInterface/CLIcore.h"
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -54,7 +58,6 @@ extern OPTPIAACMCDESIGN *piaacmc;
  * @brief Make PIAA OPD screens from radial sag profile
  *
  */
-
 errno_t PIAACMCsimul_mkPIAAMshapes_from_RadSag(
     const char *fname,
     const char *ID_PIAAM0_name,
@@ -62,8 +65,8 @@ errno_t PIAACMCsimul_mkPIAAMshapes_from_RadSag(
 )
 {
     DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT_LOG("FARG %s %s %s", fname, ID_PIAAM0_name, ID_PIAAM1_name);
 
-    FILE *fp;
     long size;
     imageID ID_PIAAM0, ID_PIAAM1;
 
@@ -114,14 +117,27 @@ errno_t PIAACMCsimul_mkPIAAMshapes_from_RadSag(
         abort(); // or handle error in other ways
     }
 
-    fp = fopen(fname, "r");
-    for(long k = 0; k < piaacmc[0].NBradpts; k++)
     {
-        int ret = fscanf(fp, "%lf %lf %lf %lf\n", &r0array[k], &z0array[k], &r1array[k],
-                         &z1array[k]);
-        (void) ret;
+        // Read sag file
+        DEBUG_TRACEPOINT("read sag radial profile %s", fname);
+
+        FILE * fp = fopen(fname, "r");
+        if(fp != NULL)
+        {
+            for(long k = 0; k < piaacmc[0].NBradpts; k++)
+            {
+                int ret = fscanf(fp, "%lf %lf %lf %lf\n", &r0array[k], &z0array[k], &r1array[k],
+                                 &z1array[k]);
+                (void) ret;
+            }
+            fclose(fp);
+        }
+        else
+        {
+            FUNC_RETURN_FAILURE("Cannot read file %s", fname);
+        }
+
     }
-    fclose(fp);
 
     //  for(k=0;k<nbpt;k++)
     //  printf("%ld %.8lf %.8lf %.8lf %.8lf\n", k, r0array[k], z0array[k], r1array[k], z1array[k]);
@@ -140,13 +156,14 @@ errno_t PIAACMCsimul_mkPIAAMshapes_from_RadSag(
 
     printf("\n\n");
 
-# ifdef HAVE_LIBGOMP
-    #pragma omp parallel default(shared) private(ii, jj, x, y, r, k, r00, r01, alpha, val)
+
+# ifdef _OPENMP
+    #pragma omp parallel
     {
 # endif
 
 
-# ifdef HAVE_LIBGOMP
+# ifdef _OPENMP
         #pragma omp for
 # endif
         for(long ii = 0; ii < size; ii++)
@@ -164,7 +181,8 @@ errno_t PIAACMCsimul_mkPIAAMshapes_from_RadSag(
                 if(r < piaacmc[0].r0lim * piaacmc[0].beamrad)
                 {
                     long k = 1;
-                    while((r0array[k] < r) && (k < piaacmc[0].NBradpts - 2))
+                    while((k < piaacmc[0].NBradpts - 2)
+                            && (r0array[k] < r))
                     {
                         k++;
                     }
@@ -186,7 +204,8 @@ errno_t PIAACMCsimul_mkPIAAMshapes_from_RadSag(
                 if(r < piaacmc[0].r1lim * piaacmc[0].beamrad)
                 {
                     long k = 1;
-                    while((r1array[k] < r) && (k < piaacmc[0].NBradpts - 2))
+                    while((k < piaacmc[0].NBradpts - 2)
+                            && (r1array[k] < r))
                     {
                         k++;
                     }
@@ -206,7 +225,7 @@ errno_t PIAACMCsimul_mkPIAAMshapes_from_RadSag(
                 }
             }
         }
-# ifdef HAVE_LIBGOMP
+# ifdef _OPENMP
     }
 # endif
 

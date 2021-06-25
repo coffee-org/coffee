@@ -181,7 +181,7 @@ static errno_t PIAACMCsimul_setparam_variables(
     double centobs1 = 0.2;
 
     // set the result directories
-    sprintf(piaacmcsimul_var.piaacmcconfdir, "%s", confindex);
+    WRITE_DIRNAME(piaacmcsimul_var.piaacmcconfdir, "%s", confindex);
 
     // load some more cli variables
     if((IDv = variable_ID("PIAACMC_centobs0")) != -1)

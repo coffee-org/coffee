@@ -40,7 +40,6 @@ extern OPTPIAACMCDESIGN *piaacmc;
  * @brief Compute PSF or image scene
  *
  */
-
 errno_t PIAACMCsimul_exec_compute_image()
 {
     DEBUG_TRACE_FSTART();

@@ -140,13 +140,12 @@ errno_t PIAACMCsimul_computePSF(
     /// ### Create scoring mask if it doesn't exist
     /// The scoring mask is the array of evaluation points on the focal plane
     {
-        imageID IDsm = -1;
-        if((IDsm = image_ID("scoringmask")) == -1)
+        if(image_ID("scoringmask") == -1)
         {
             printf("CREATING SCORING MASK\n");
             printf("FOCAL PLANE SCALE = %f l/d per pix\n", focscale);
             fflush(stdout);
-            IDsm = create_2Dimage_ID("scoringmask", size, size);
+            imageID IDsm = create_2Dimage_ID("scoringmask", size, size);
 
             if(piaacmcsimul_var.SCORINGMASKTYPE == 0) // high density, wide
             {

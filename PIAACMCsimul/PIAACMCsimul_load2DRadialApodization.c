@@ -42,6 +42,7 @@ errno_t PIAACMCsimul_load2DRadialApodization(
 )
 {
     DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG %s %f %s", IDapo_name, beamradpix, IDapofit_name);
 
     long kmax = 10;
     float eps = 1.0e-4;
@@ -56,11 +57,10 @@ errno_t PIAACMCsimul_load2DRadialApodization(
 
     // CREATE MODES IF THEY DO NOT EXIST
     {
-        imageID IDm;
-        if((IDm=image_ID("APOmodesCos"))==-1)
+        if((image_ID("APOmodesCos"))==-1)
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
-            IDm = linopt_imtools_makeCosRadModes("APOmodesCos", sizem, kmax, ApoFitCosFact*beamradpix, 1.0);
+            linopt_imtools_makeCosRadModes("APOmodesCos", sizem, kmax, ApoFitCosFact*beamradpix, 1.0);
             WRITE_FULLFILENAME(fname, "%s/APOmodesCos.fits", piaacmcsimul_var.piaacmcconfdir);
             save_fits("APOmodesCos", fname);
         }
@@ -87,8 +87,7 @@ errno_t PIAACMCsimul_load2DRadialApodization(
             }
     }
 
-    if(debug==1)
-    {
+    {   // for debugging
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "%s/_apoincrop.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits("_apoincrop", fname);
