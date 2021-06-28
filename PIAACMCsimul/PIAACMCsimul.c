@@ -71,7 +71,7 @@
 
 
 
-static int INITSTATUS_PIAACMCsimul = 0;
+// static int INITSTATUS_PIAACMCsimul = 0;
 
 
 
@@ -210,10 +210,6 @@ errno_t PIAACMC_FPM_process_cli()
 
 static errno_t init_module_CLI()
 {
-#ifdef PIAASIMUL_LOGFUNC0
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
-                                 "");
-#endif
 
 
     CLIADDCMD_PIAACMCsimul__ring2sectors();

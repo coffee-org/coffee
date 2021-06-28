@@ -112,9 +112,9 @@ errno_t PIAACMCsimul_exec_compute_image()
 
     // make the mirror or lenses shapes
     if(PIAACMCsimul_makePIAAshapes(
-        piaacmc,
-        0
-    ) != RETURN_SUCCESS)
+                piaacmc,
+                0
+            ) != RETURN_SUCCESS)
     {
         FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
     }
@@ -135,7 +135,8 @@ errno_t PIAACMCsimul_exec_compute_image()
         sizearray[0] = piaacmc[0].size;
         sizearray[1] = piaacmc[0].size;
 
-        imageID IDopderrC = create_image_ID("opderr", 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0);
+        imageID IDopderrC;
+        create_image_ID("opderr", 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0, &IDopderrC);
         COREMOD_MEMORY_image_set_createsem("opderr", 10);
         free(sizearray);
 
@@ -144,7 +145,7 @@ errno_t PIAACMCsimul_exec_compute_image()
         sizearray[0] = sizecrop;
         sizearray[1] = sizecrop;
         sizearray[2] = piaacmc[0].nblambda;
-        IDpsfi0 = create_image_ID("psfiout0", 3, sizearray, _DATATYPE_FLOAT, 1, 0, 0);
+        create_image_ID("psfiout0", 3, sizearray, _DATATYPE_FLOAT, 1, 0, 0, &IDpsfi0);
         free(sizearray);
 
         long iter = 0;

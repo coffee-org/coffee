@@ -31,10 +31,12 @@ extern PIAACMCsimul_varType piaacmcsimul_var;
 
 
 
-//
-// load and fit radial apodization profile
-// modal basis is mk(r) : cos(r*k*M_PI/1.3)
-//
+/** @brief load and fit radial apodization profile
+ *
+ * Input is 2D apodization map image.
+ * Output is fit.
+ * modal basis is mk(r) : cos(r*k*M_PI/1.3)
+ */
 errno_t PIAACMCsimul_load2DRadialApodization(
     const char *IDapo_name,
     float beamradpix,
@@ -42,20 +44,16 @@ errno_t PIAACMCsimul_load2DRadialApodization(
 )
 {
     DEBUG_TRACE_FSTART();
-    DEBUG_TRACEPOINT("FARG %s %f %s", IDapo_name, beamradpix, IDapofit_name);
+    DEBUG_TRACEPOINT_LOG("FARG %s %f %s", IDapo_name, beamradpix, IDapofit_name);
 
     long kmax = 10;
     float eps = 1.0e-4;
     int debug = 0;
 
-#ifdef PIAASIMUL_LOGFUNC0
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__, "");
-#endif
-
 
     uint32_t sizem = (long) (beamradpix*2);
 
-    // CREATE MODES IF THEY DO NOT EXIST
+    // Load or create 2D radial cos modes
     {
         if((image_ID("APOmodesCos"))==-1)
         {
@@ -96,14 +94,18 @@ errno_t PIAACMCsimul_load2DRadialApodization(
         save_fits("fitmaskapo", fname);
     }
 
-    linopt_imtools_image_fitModes("_apoincrop", "APOmodesCos", "fitmaskapo", 1.0e-8, IDapofit_name, 0);
+    // Perform linear fit
+    FUNC_CHECK_RETURN(
+        linopt_imtools_image_fitModes("_apoincrop", "APOmodesCos", "fitmaskapo", 1.0e-8, IDapofit_name, 0, NULL)
+    );
+
     EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_APOmodesCos.dat", piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
 
     if(debug==1) // test fit quality
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
 
-        linopt_imtools_image_construct("APOmodesCos", IDapofit_name, "testapofitsol");
+        linopt_imtools_image_construct("APOmodesCos", IDapofit_name, "testapofitsol", NULL);
 
         WRITE_FULLFILENAME(fname, "%s/testapofitsol.fits", piaacmcsimul_var.piaacmcconfdir);
         save_fits("testapofitsol", fname);

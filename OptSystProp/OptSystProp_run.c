@@ -90,7 +90,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
         imageID IDa = image_ID(imname);
         if(IDa == -1)
         {
-            IDa = create_image_ID(imname, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0, 0);
+             create_image_ID(imname, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0, 0, &IDa);
             //    create_3Dimage_ID(imname, size, size, nblambda);
         }
 
@@ -110,7 +110,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
         imageID IDp = image_ID(imname);
         if(IDp == -1)
         {
-            create_image_ID(imname, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0, 0);
+            create_image_ID(imname, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0, 0, NULL);
             //create_3Dimage_ID(imname, size, size, nblambda);
         }
     }

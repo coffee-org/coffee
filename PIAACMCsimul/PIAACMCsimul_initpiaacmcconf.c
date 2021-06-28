@@ -239,12 +239,6 @@ errno_t PIAACMCsimul_initpiaacmcconf(
 
 
 
-#ifdef PIAASIMUL_LOGFUNC0
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
-                                 "");
-#endif
-
-
     // Create required directories
     int ret;
 
@@ -865,8 +859,9 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             }
             sizearray[0] = size;
             sizearray[1] = size;
-            piaacmc[0].ID_DM[iDM] = create_image_ID(imname, 2, sizearray, _DATATYPE_FLOAT, 1,
-                                                    0, 0);
+            create_image_ID(imname, 2, sizearray, _DATATYPE_FLOAT, 1,
+                            0, 0,
+                            &(piaacmc[0].ID_DM[iDM]));
             free(sizearray);
         }
     }
@@ -1016,7 +1011,6 @@ errno_t PIAACMCsimul_initpiaacmcconf(
                 || (piaacmc[0].piaa1FmodesID == -1))
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
-            errno_t fret;
 
             DEBUG_TRACEPOINT_LOG("loading mode coeffs");
 
@@ -1025,64 +1019,52 @@ errno_t PIAACMCsimul_initpiaacmcconf(
                 "%s/piaaref/piaa0Cmodes.fits",
                 piaacmcsimul_var.piaacmcconfdir
             );
-            fret = load_fits(
-                       fname,
-                       "piaa0Cmodescoeff",
-                       LOADFITS_ERRMODE_WARNING,
-                       &(piaacmc[0].piaa0CmodesID)
-                   );
-            if(fret != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to load_fits failed");
-            }
+            FUNC_CHECK_RETURN(
+                load_fits(
+                    fname,
+                    "piaa0Cmodescoeff",
+                    LOADFITS_ERRMODE_WARNING,
+                    &(piaacmc[0].piaa0CmodesID)
+                ));
 
             WRITE_FULLFILENAME(
                 fname,
                 "%s/piaaref/piaa0Fmodes.fits",
                 piaacmcsimul_var.piaacmcconfdir
             );
-            fret = load_fits(
-                       fname,
-                       "piaa0Fmodescoeff",
-                       LOADFITS_ERRMODE_WARNING,
-                       &(piaacmc[0].piaa0FmodesID)
-                   );
-            if(fret != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to load_fits failed");
-            }
+            FUNC_CHECK_RETURN(
+                load_fits(
+                    fname,
+                    "piaa0Fmodescoeff",
+                    LOADFITS_ERRMODE_WARNING,
+                    &(piaacmc[0].piaa0FmodesID)
+                ));
 
             WRITE_FULLFILENAME(
                 fname,
                 "%s/piaaref/piaa1Cmodes.fits",
                 piaacmcsimul_var.piaacmcconfdir
             );
-            fret = load_fits(
-                       fname,
-                       "piaa1Cmodescoeff",
-                       LOADFITS_ERRMODE_WARNING,
-                       &(piaacmc[0].piaa1CmodesID)
-                   );
-            if(fret != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to load_fits failed");
-            }
+            FUNC_CHECK_RETURN(
+                load_fits(
+                    fname,
+                    "piaa1Cmodescoeff",
+                    LOADFITS_ERRMODE_WARNING,
+                    &(piaacmc[0].piaa1CmodesID)
+                ));
 
             WRITE_FULLFILENAME(
                 fname,
                 "%s/piaaref/piaa1Fmodes.fits",
                 piaacmcsimul_var.piaacmcconfdir
             );
-            fret = load_fits(
-                       fname,
-                       "piaa1Fmodescoeff",
-                       LOADFITS_ERRMODE_WARNING,
-                       &(piaacmc[0].piaa1FmodesID)
-                   );
-            if(fret != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to load_fits failed");
-            }
+            FUNC_CHECK_RETURN(
+                load_fits(
+                    fname,
+                    "piaa1Fmodescoeff",
+                    LOADFITS_ERRMODE_WARNING,
+                    &(piaacmc[0].piaa1FmodesID)
+                ));
 
             WRITE_FULLFILENAME(
                 fname,
@@ -1134,12 +1116,9 @@ errno_t PIAACMCsimul_initpiaacmcconf(
 
         imageID IDtmp1 = -1;
 
-
-        if(load_fits(fname, "apo2Drad", LOADFITS_ERRMODE_WARNING, &IDtmp1) != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to load_fits failed");
-        }
-
+        FUNC_CHECK_RETURN(
+            load_fits(fname, "apo2Drad", LOADFITS_ERRMODE_WARNING, &IDtmp1)
+        );
 
         if(IDtmp1 == -1) // CREATE APODIZATION
         {
@@ -1152,10 +1131,9 @@ errno_t PIAACMCsimul_initpiaacmcconf(
 
             //sprintf(fname, "%s/apo2Drad.fits", piaacmcsimul_var.piaacmcconfdir);
             imageID IDtmp2 = -1;
-            if(load_fits(fname, "apo2Drad", LOADFITS_ERRMODE_WARNING, &IDtmp2) != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to load_fits failed");
-            }
+            FUNC_CHECK_RETURN(
+                load_fits(fname, "apo2Drad", LOADFITS_ERRMODE_WARNING, &IDtmp2)
+            );
 
             if(IDtmp2 == -1)
             {
@@ -1165,12 +1143,15 @@ errno_t PIAACMCsimul_initpiaacmcconf(
                 create_variable_ID("DFTZFACTOR", 2);
                 create_variable_ID("PNBITER", 15);
 
-                if(coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix * 0.5,
-                                                piaacmc[0].centObs1, "apotmp1", size / 2, "NULLim") != RETURN_SUCCESS)
-                {
-                    FUNC_RETURN_FAILURE("Call to coronagraph_make_2Dprolateld failed");
-                }
-
+                FUNC_CHECK_RETURN(
+                    coronagraph_make_2Dprolateld(
+                        piaacmc[0].fpmaskradld,
+                        beamradpix * 0.5,
+                        piaacmc[0].centObs1,
+                        "apotmp1",
+                        size / 2,
+                        "NULLim")
+                );
 
                 // expand solution to full size
                 basic_resizeim("apotmp1", "apostart", size, size);
@@ -1179,33 +1160,44 @@ errno_t PIAACMCsimul_initpiaacmcconf(
                 // full size, 4x zoom
                 create_variable_ID("DFTZFACTOR", 4);
                 create_variable_ID("PNBITER", 5);
-                if(coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix,
-                                                piaacmc[0].centObs1, "apo", size, "pupmaskim") != RETURN_SUCCESS)
-                {
-                    FUNC_RETURN_FAILURE("Call to coronagraph_make_2Dprolateld failed");
-                }
+                FUNC_CHECK_RETURN(
+                    coronagraph_make_2Dprolateld(
+                        piaacmc[0].fpmaskradld,
+                        beamradpix,
+                        piaacmc[0].centObs1,
+                        "apo",
+                        size,
+                        "pupmaskim")
+                );
 
 
                 // full size, 8x zoom
                 chname_image_ID("apo", "apostart");
                 create_variable_ID("DFTZFACTOR", 8);
                 create_variable_ID("PNBITER", 5);
-                if(coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix,
-                                                piaacmc[0].centObs1, "apo", size, "pupmaskim") != RETURN_SUCCESS)
-                {
-                    FUNC_RETURN_FAILURE("Call to coronagraph_make_2Dprolateld failed");
-                }
-
+                FUNC_CHECK_RETURN(
+                    coronagraph_make_2Dprolateld(
+                        piaacmc[0].fpmaskradld,
+                        beamradpix,
+                        piaacmc[0].centObs1,
+                        "apo",
+                        size,
+                        "pupmaskim")
+                );
 
                 // full size, 16x zoom
                 chname_image_ID("apo", "apostart");
                 create_variable_ID("DFTZFACTOR", 16);
                 create_variable_ID("PNBITER", 10);
-                if(coronagraph_make_2Dprolateld(piaacmc[0].fpmaskradld, beamradpix,
-                                                piaacmc[0].centObs1, "apo", size, "pupmaskim") != RETURN_SUCCESS)
-                {
-                    FUNC_RETURN_FAILURE("Call to coronagraph_make_2Dprolateld failed");
-                }
+                FUNC_CHECK_RETURN(
+                    coronagraph_make_2Dprolateld(
+                        piaacmc[0].fpmaskradld,
+                        beamradpix,
+                        piaacmc[0].centObs1,
+                        "apo",
+                        size,
+                        "pupmaskim")
+                );
 
 
                 chname_image_ID("apo", "apo2Drad");
@@ -1287,27 +1279,28 @@ errno_t PIAACMCsimul_initpiaacmcconf(
 
 
 
+        // To go from 2D apodization map to PIAA shapes, the apodization is first approximated
+        // as a radial function, represented as a linear sum of cosines.
+        // PIAA shapes are computed for this cosine apodization
 
-        // load PIAA apodization profile and fit it a series of cosines
-        if(PIAACMCsimul_load2DRadialApodization("apo2Drad_PIAA", beamradpix, "outApofit") != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_load2DRadialApodization failed");
-        }
+        // load PIAA apodization profile and fit it a series of radial cosines
+        // Output image "outApofit" is list of cosine coefficients
+        FUNC_CHECK_RETURN(PIAACMCsimul_load2DRadialApodization("apo2Drad_PIAA", beamradpix, "outApofit"));
 
-        // compute radial PIAA sag -> <piaacmcconfdir>/PIAA_Mshapes.txt
-        if(PIAACMCsimul_init_geomPIAA_rad("outApofit") != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init_geomPIAA_rad failed");
-        }
+        // compute radial PIAA sag corresponding to the radial cosines
+        // Input is radial cosine coefficients
+        // output :
+        // -> <piaacmcconfdir>/PIAA_Mshapes.txt
+        FUNC_CHECK_RETURN(PIAACMCsimul_init_geomPIAA_rad("outApofit"));
 
 
-        // make 2D sag maps
+        // make 2D sag maps from 1D radial sag profiles
+        // output :
+        // piaam0z, piaam1z
+        //
         DEBUG_TRACEPOINT_LOG("Make 2D sag maps");
         WRITE_FULLFILENAME(fname, "%s/PIAA_Mshapes.txt", piaacmcsimul_var.piaacmcconfdir);
-        if(PIAACMCsimul_mkPIAAMshapes_from_RadSag(fname, "piaam0z", "piaam1z") != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_mkPIAAMshapes_from_RadSag failed");
-        }
+        FUNC_CHECK_RETURN(PIAACMCsimul_mkPIAAMshapes_from_RadSag(fname, "piaam0z", "piaam1z"));
 
         DEBUG_TRACEPOINT("piaacmcsimul_var.PIAACMC_save %d", piaacmcsimul_var.PIAACMC_save);
         if(piaacmcsimul_var.PIAACMC_save == 1)
@@ -1320,6 +1313,8 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             WRITE_FULLFILENAME(fname, "%s/piaam1z.fits", piaacmcsimul_var.piaacmcconfdir);
             save_fits("piaam1z", fname);
         }
+
+
 
         // crop piaam0z and piaam1z to Cmodes size
         {
@@ -1357,26 +1352,47 @@ errno_t PIAACMCsimul_initpiaacmcconf(
         //sprintf(fname, "%s/maskfit.fits", piaacmcsimul_var.piaacmcconfdir);
         //save_fits("maskfit", fname);
 
+
+
+
+        // The 2D sag maps (piaam0z and piaam1z) are now fitted as a linear sum of cosines
+        // Results (coefficient values) are stored in piaa0Cmodescoeff and piaa1Cmodescoeff
+        //
         printf("--------- FITTING COSINE MODES ---------\n");
         fflush(stdout);
 
-        linopt_imtools_image_fitModes("piaa0zcrop", "Cmodes", "maskfit", 1.0e-6,
-                                      "piaa0Cmodescoeff", 0);
+        FUNC_CHECK_RETURN(
+            linopt_imtools_image_fitModes("piaa0zcrop", "Cmodes", "maskfit", 1.0e-6,
+                                          "piaa0Cmodescoeff", 0, NULL)
+        );
+
         EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_piaa0Cmodes.dat",
                                piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
+
+
 
         //      sprintf(fname, "%s/piaa0Cmodescoeff.fits", piaacmcsimul_var.piaacmcconfdir);
         //      save_fits("piaa0Cmodescoeff", fname);
 
-        linopt_imtools_image_fitModes("piaa1zcrop", "Cmodes", "maskfit", 1.0e-6,
-                                      "piaa1Cmodescoeff", 0);
+        FUNC_CHECK_RETURN(
+            linopt_imtools_image_fitModes("piaa1zcrop", "Cmodes", "maskfit", 1.0e-6,
+                                          "piaa1Cmodescoeff", 0, NULL)
+        );
+
         EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_piaa1Cmodes.dat",
                                piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
 
         //      sprintf(fname, "%s/piaa1Cmodescoeff.fits", piaacmcsimul_var.piaacmcconfdir);
         //      save_fits("piaa1Cmodescoeff", fname);
 
-        linopt_imtools_image_construct("Cmodes", "piaa0Cmodescoeff", "piaa0Cz");
+
+        // The coefficients are re-expanded to 2D maps :
+        // -> piaa0Cz
+        // -> piaa1Cz
+        //
+        FUNC_CHECK_RETURN(
+            linopt_imtools_image_construct("Cmodes", "piaa0Cmodescoeff", "piaa0Cz", NULL)
+        );
 
         if(piaacmcsimul_var.PIAACMC_save == 1)
         {
@@ -1385,7 +1401,9 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             save_fits("piaa0Cz", fname);
         }
 
-        linopt_imtools_image_construct("Cmodes", "piaa1Cmodescoeff", "piaa1Cz");
+        FUNC_CHECK_RETURN(
+            linopt_imtools_image_construct("Cmodes", "piaa1Cmodescoeff", "piaa1Cz", NULL)
+        );
 
         if(piaacmcsimul_var.PIAACMC_save == 1)
         {
@@ -1395,6 +1413,10 @@ errno_t PIAACMCsimul_initpiaacmcconf(
         }
 
 
+
+
+        // Compute residual difference between original 2D shape and fit
+        //
         {   // piaam0z -> piaa0Cres
             imageID ID0 = image_ID("piaa0Cz");
             uint32_t size0 = data.image[ID0].md[0].size[0];
@@ -1438,16 +1460,21 @@ errno_t PIAACMCsimul_initpiaacmcconf(
 
 
 
+
+
+        // The residuals are fitted as Fourier modes
+        // This should be small
+        //
         printf("--------- FITTING FOURIER MODES ---------\n");
         fflush(stdout);
 
         linopt_imtools_image_fitModes("piaa0Cres", "Fmodes", "maskfit", 0.01,
-                                      "piaa0Fmodescoeff", 0);
+                                      "piaa0Fmodescoeff", 0, NULL);
         EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_piaa0Fmodes.dat",
                                piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
 
         linopt_imtools_image_fitModes("piaa1Cres", "Fmodes", "maskfit", 0.01,
-                                      "piaa1Fmodescoeff", 0);
+                                      "piaa1Fmodescoeff", 0, NULL);
         EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_piaa1Fmodes.dat",
                                piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
 
@@ -1475,6 +1502,9 @@ errno_t PIAACMCsimul_initpiaacmcconf(
         piaacmc[0].piaa1CmodesID = image_ID("piaa1Cmodescoeff");
         piaacmc[0].piaa1FmodesID = image_ID("piaa1Fmodescoeff");
 
+
+        // At this point, we have a modal representation of PIAA optics shapes
+        //
         DEBUG_TRACEPOINT_LOG("saving piaa modes files");
 
         WRITE_FULLFILENAME(fname, "%s/piaaref/piaa0Cmodes.fits", piaacmcsimul_var.piaacmcconfdir);
@@ -1492,6 +1522,10 @@ errno_t PIAACMCsimul_initpiaacmcconf(
         EXECUTE_SYSTEM_COMMAND("cp %s/piaaref/* %s/", piaacmcsimul_var.piaacmcconfdir,
                                piaacmcsimul_var.piaacmcconfdir);
     }
+
+
+
+
 
 
     // ============ MAKE FOCAL PLANE MASK ===============
@@ -1827,10 +1861,9 @@ errno_t PIAACMCsimul_initpiaacmcconf(
 
     if(saveconf == 1)
     {
-        if(PIAACMCsimul_savepiaacmcconf(piaacmcsimul_var.piaacmcconfdir) != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_savepiaacmcconf failed");
-        }
+        FUNC_CHECK_RETURN(
+            PIAACMCsimul_savepiaacmcconf(piaacmcsimul_var.piaacmcconfdir)
+        );
     }
 
     DEBUG_TRACE_FEXIT();

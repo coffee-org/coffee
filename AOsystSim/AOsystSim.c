@@ -582,7 +582,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
 
         dmsizearray[0] = DMsize;
         dmsizearray[1] = DMsize;
-        IDdmctrl = create_image_ID(name, 2, dmsizearray, _DATATYPE_FLOAT, 1, 0, 0);
+        create_image_ID(name, 2, dmsizearray, _DATATYPE_FLOAT, 1, 0, 0, &IDdmctrl);
         free(dmsizearray);
         COREMOD_MEMORY_image_set_createsem(name, 2);
     }
@@ -615,7 +615,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
     imsize[0] = arraysize;
     imsize[1] = arraysize;
     imsize[2] = DMnbact;
-    IDif = create_image_ID("dmif0", 2, imsize, _DATATYPE_FLOAT, 0, 0, 0);
+    create_image_ID("dmif0", 2, imsize, _DATATYPE_FLOAT, 0, 0, 0, &IDif);
     // construct DM influence function (for 1 actuator)
     // step 1: square
     // actuator size = dmifscale*(arraysize*2.0*dmrad/DMsize) [pix]
@@ -655,7 +655,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
     list_image_ID();
     save_fits("dmif", "AOsystSim_wdir/dmif.fits");
 
-    IDifc = create_image_ID("dmifc", 3, imsize, _DATATYPE_FLOAT, 0, 0, 0);
+    create_image_ID("dmifc", 3, imsize, _DATATYPE_FLOAT, 0, 0, 0, &IDifc);
     printf("\n");
 
 
@@ -718,7 +718,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
 
     imsize[0] = arraysize;
     imsize[1] = arraysize;
-    IDturb = create_image_ID("WFturb", 2, imsize, _DATATYPE_FLOAT, 1, 0, 0);
+    create_image_ID("WFturb", 2, imsize, _DATATYPE_FLOAT, 1, 0, 0, &IDturb);
     free(imsize);
     COREMOD_MEMORY_image_set_createsem("WFturb", 2);
     list_image_ID();
@@ -830,7 +830,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
     imsize[0] = data.image[ID].md[0].size[0];
     imsize[1] = data.image[ID].md[0].size[1];
     imsize[2] = data.image[ID].md[0].size[2];
-    IDout = create_image_ID("aosimpsfout", 3, imsize, _DATATYPE_FLOAT, 1, 0, 0);
+    create_image_ID("aosimpsfout", 3, imsize, _DATATYPE_FLOAT, 1, 0, 0, &IDout);
     free(imsize);
 
     COREMOD_MEMORY_image_set_createsem("aosimpsfout", 2);
@@ -940,7 +940,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
         // CREATE DARK HOLE FIELD
         IDre = image_ID("psfre0");
         IDim = image_ID("psfim0");
-        IDdh = create_image_ID(imdhname, 2, dhsizearray, _DATATYPE_FLOAT, 1, 0, 0);
+        create_image_ID(imdhname, 2, dhsizearray, _DATATYPE_FLOAT, 1, 0, 0, &IDdh);
         data.image[IDdh].md[0].write = 1;
         for(ii = 0; ii < dhxsize; ii++)
             for(jj = 0; jj < dhysize; jj++)
@@ -1143,16 +1143,16 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
 
 
 
-    IDdm = create_image_ID("aofiltdm", 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0);
-    IDwfe = create_image_ID("aofiltwfe", 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0);
+    create_image_ID("aofiltdm", 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0, &IDdm);
+    create_image_ID("aofiltwfe", 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0, &IDwfe);
 
-    IDout = create_image_ID(IDout_name, 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0);
+    create_image_ID(IDout_name, 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0, &IDout);
     strcpy(data.image[IDout].kw[0].name, "TIME");
     data.image[IDout].kw[0].type = 'D';
     data.image[IDout].kw[0].value.numf = 0.0;
     strcpy(data.image[IDout].kw[0].comment, "Physical time [sec]");
 
-    IDin1 = create_image_ID("aofiltin", 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0);
+    create_image_ID("aofiltin", 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0, &IDin1);
 
     printf("%s -> %s\n", IDin_name, IDout_name);
     cnt0 = -1;
@@ -2685,7 +2685,7 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
 
     sizearray[0] = 1;
     sizearray[1] = 1;
-    IDphystime = create_image_ID(OUTPHYSTIME, 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0);
+    create_image_ID(OUTPHYSTIME, 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0, &IDphystime);
     phystime = 0;
     data.image[IDphystime].array.F[0] = phystime;
     free(sizearray);
@@ -2717,14 +2717,14 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
 
     if(OUT0STREAM > 0)
     {
-        IDopd0 = create_image_ID(OUT0STREAMNAMEOPD, 2, sizearray, _DATATYPE_FLOAT, 1,
-                                 0, 0);
+        create_image_ID(OUT0STREAMNAMEOPD, 2, sizearray, _DATATYPE_FLOAT, 1,
+                        0, 0, &IDopd0);
         COREMOD_MEMORY_image_set_createsem(OUT0STREAMNAMEOPD, 10);
     }
     else
     {
-        IDopd0 = create_image_ID(OUT0STREAMNAMEOPD, 2, sizearray, _DATATYPE_FLOAT, 0,
-                                 0, 0);
+        create_image_ID(OUT0STREAMNAMEOPD, 2, sizearray, _DATATYPE_FLOAT, 0,
+                        0, 0, &IDopd0);
     }
 
 
@@ -2732,14 +2732,14 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
     if(OUT0STREAM >
             0) // create amp stream if OUT0STREAM=1 or 2, but will only update it if OUT0STREAM=2
     {
-        IDamp0 = create_image_ID(OUT0STREAMNAMEAMP, 2, sizearray, _DATATYPE_FLOAT, 1,
-                                 0, 0);
+        create_image_ID(OUT0STREAMNAMEAMP, 2, sizearray, _DATATYPE_FLOAT, 1,
+                        0, 0, &IDamp0);
         COREMOD_MEMORY_image_set_createsem(OUT0STREAMNAMEAMP, 10);
     }
     else
     {
-        IDopd0 = create_image_ID(OUT0STREAMNAMEAMP, 2, sizearray, _DATATYPE_FLOAT, 0,
-                                 0, 0);
+        create_image_ID(OUT0STREAMNAMEAMP, 2, sizearray, _DATATYPE_FLOAT, 0,
+                        0, 0, &IDopd0);
     }
 
 
@@ -2750,14 +2750,14 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
     {
         if(OUT1STREAM > 0)
         {
-            IDopd1 = create_image_ID(OUT1STREAMNAMEOPD, 2, sizearray, _DATATYPE_FLOAT, 1,
-                                     0, 0);
+            create_image_ID(OUT1STREAMNAMEOPD, 2, sizearray, _DATATYPE_FLOAT, 1,
+                            0, 0, &IDopd1);
             COREMOD_MEMORY_image_set_createsem(OUT1STREAMNAMEOPD, 10);
         }
         else
         {
-            IDopd1 = create_image_ID(OUT1STREAMNAMEOPD, 2, sizearray, _DATATYPE_FLOAT, 0,
-                                     0, 0);
+            create_image_ID(OUT1STREAMNAMEOPD, 2, sizearray, _DATATYPE_FLOAT, 0,
+                            0, 0, &IDopd1);
         }
 
         printf("CREATED %s stream  %ld %ld   [%d]\n", OUT1STREAMNAMEOPD,
@@ -2766,14 +2766,14 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
         if(OUT1STREAM >
                 0) // create amp stream if OUT0STREAM=1 or 2, but will only update it if OUT0STREAM=2
         {
-            IDamp1 = create_image_ID(OUT1STREAMNAMEAMP, 2, sizearray, _DATATYPE_FLOAT, 1,
-                                     0, 0);
+            create_image_ID(OUT1STREAMNAMEAMP, 2, sizearray, _DATATYPE_FLOAT, 1,
+                            0, 0, &IDamp1);
             COREMOD_MEMORY_image_set_createsem(OUT1STREAMNAMEAMP, 10);
         }
         else
         {
-            IDopd1 = create_image_ID(OUT1STREAMNAMEAMP, 2, sizearray, _DATATYPE_FLOAT, 0,
-                                     0, 0);
+            create_image_ID(OUT1STREAMNAMEAMP, 2, sizearray, _DATATYPE_FLOAT, 0,
+                            0, 0, &IDopd1);
         }
     }
 
@@ -3462,8 +3462,8 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
             }
             imsize[0] = arraysize;
             imsize[1] = arraysize;
-            IDpyramp = create_image_ID(pnamea, 2, imsize, _DATATYPE_FLOAT, 0, 0, 0);
-            IDpyrpha = create_image_ID("pyrpha0", 2, imsize, _DATATYPE_FLOAT, 0, 0, 0);
+            create_image_ID(pnamea, 2, imsize, _DATATYPE_FLOAT, 0, 0, 0, &IDpyramp);
+            create_image_ID("pyrpha0", 2, imsize, _DATATYPE_FLOAT, 0, 0, 0, &IDpyrpha);
             free(imsize);
 
             PA = 2.0 * M_PI * pmodpt / PYRMOD_nbpts;
@@ -3510,7 +3510,7 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
         }
         imsize[0] = arraysize;
         imsize[1] = arraysize;
-        ID_outWFSim = create_image_ID(outWFSim_name, 2, imsize, _DATATYPE_FLOAT, 1, 0, 0);
+        create_image_ID(outWFSim_name, 2, imsize, _DATATYPE_FLOAT, 1, 0, 0, &ID_outWFSim);
         COREMOD_MEMORY_image_set_createsem(outWFSim_name, 7);
         free(imsize);
     }
@@ -3525,8 +3525,8 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
         }
         imsize[0] = arraysize;
         imsize[1] = arraysize;
-        ID_outWFSim_tmp = create_image_ID("outpwfsimtmp", 2, imsize, _DATATYPE_FLOAT, 1,
-                                          0, 0);
+        create_image_ID("outpwfsimtmp", 2, imsize, _DATATYPE_FLOAT, 1,
+                        0, 0, &ID_outWFSim_tmp);
         free(imsize);
     }
 
@@ -3540,8 +3540,8 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
         }
         imsize[0] = arraysize;
         imsize[1] = arraysize;
-        ID_inWFccp = create_image_ID("pyrwfcin", 2, imsize, _DATATYPE_COMPLEX_FLOAT, 0,
-                                     0, 0);
+        create_image_ID("pyrwfcin", 2, imsize, _DATATYPE_COMPLEX_FLOAT, 0,
+                                     0, 0, &ID_inWFccp);
         free(imsize);
     }
 
@@ -3927,20 +3927,20 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
     wfinsize = data.image[IDinOPD].md[0].size[0];
     if(OUTMODE == 0)
     {
-        IDout = create_image_ID(OUTSTREAMNAME, 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0);
+        create_image_ID(OUTSTREAMNAME, 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0, &IDout);
         COREMOD_MEMORY_image_set_createsem(OUTSTREAMNAME, 10);
 
         sizearray[0] = ARRAYSIZE;
         sizearray[1] = ARRAYSIZE;
-        IDoutinst = create_image_ID(OUTINSTSTREAMNAME, 2, sizearray, _DATATYPE_FLOAT, 1,
-                                    0, 0);
+        create_image_ID(OUTINSTSTREAMNAME, 2, sizearray, _DATATYPE_FLOAT, 1,
+                        0, 0, &IDoutinst);
         COREMOD_MEMORY_image_set_createsem(OUTINSTSTREAMNAME, 10);
     }
     else
     {
-        IDout = create_image_ID(OUTSTREAMNAME, 2, sizearray, _DATATYPE_FLOAT, 0, 0, 0);
-        IDoutinst = create_image_ID(OUTINSTSTREAMNAME, 2, sizearray, _DATATYPE_FLOAT, 0,
-                                    0, 0);
+        create_image_ID(OUTSTREAMNAME, 2, sizearray, _DATATYPE_FLOAT, 0, 0, 0, &IDout);
+        create_image_ID(OUTINSTSTREAMNAME, 2, sizearray, _DATATYPE_FLOAT, 0,
+                        0, 0, &IDoutinst);
     }
     free(sizearray);
 
@@ -4513,15 +4513,15 @@ int AOsystSim_DM(const char *CONF_FNAME)
     DMsize = data.image[IDinDM].md[0].size[0];
     if(OUTMODE == 0)
     {
-        IDout = create_image_ID(OUTSTREAMNAMEDM, 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0);
+        create_image_ID(OUTSTREAMNAMEDM, 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0, &IDout);
         COREMOD_MEMORY_image_set_createsem(OUTSTREAMNAMEDM, 10);
     }
     else
     {
-        IDout = create_image_ID(OUTSTREAMNAMEDM, 2, sizearray, _DATATYPE_FLOAT, 0, 0, 0);
+        create_image_ID(OUTSTREAMNAMEDM, 2, sizearray, _DATATYPE_FLOAT, 0, 0, 0, &IDout);
     }
 
-    IDout_tmp = create_image_ID("tmpDMshape", 2, sizearray, _DATATYPE_FLOAT, 0, 0, 0);
+    create_image_ID("tmpDMshape", 2, sizearray, _DATATYPE_FLOAT, 0, 0, 0, &IDout_tmp);
     free(sizearray);
 
 
@@ -4544,7 +4544,7 @@ int AOsystSim_DM(const char *CONF_FNAME)
     imsize[0] = ARRAYSIZE;
     imsize[1] = ARRAYSIZE;
     imsize[2] = DMnbact;
-    IDif = create_image_ID("dmif0", 2, imsize, _DATATYPE_FLOAT, 0, 0, 0);
+    create_image_ID("dmif0", 2, imsize, _DATATYPE_FLOAT, 0, 0, 0, &IDif);
     // construct DM influence function (for 1 actuator)
     // step 1: square
     // actuator size = dmifscale*(arraysize*2.0*dmrad/DMsize) [pix]
@@ -4582,7 +4582,7 @@ int AOsystSim_DM(const char *CONF_FNAME)
 
     save_fits("dmif", "AOsystSim_wdir/dmif.fits");
 
-    IDifc = create_image_ID("dmifc", 3, imsize, _DATATYPE_FLOAT, 0, 0, 0);
+    create_image_ID("dmifc", 3, imsize, _DATATYPE_FLOAT, 0, 0, 0, &IDifc);
     printf("\n");
 
 
@@ -5097,36 +5097,36 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
     //DMsize = data.image[IDinOPD].md[0].size[0];
     if(OUTMODE == 0)
     {
-        IDoutLOWFS = create_image_ID(OUTLOWFSSTREAMNAME, 2, sizearray, _DATATYPE_FLOAT,
-                                     1, 0, 0);
+        create_image_ID(OUTLOWFSSTREAMNAME, 2, sizearray, _DATATYPE_FLOAT,
+                        1, 0, 0, &IDoutLOWFS);
         COREMOD_MEMORY_image_set_createsem(OUTLOWFSSTREAMNAME, 10);
     }
     else
     {
-        IDoutLOWFS = create_image_ID(OUTLOWFSSTREAMNAME, 2, sizearray, _DATATYPE_FLOAT,
-                                     0, 0, 0);
+        create_image_ID(OUTLOWFSSTREAMNAME, 2, sizearray, _DATATYPE_FLOAT,
+                        0, 0, 0, &IDoutLOWFS);
     }
 
-    IDimlowfs = create_image_ID("aosim_imlowfs", 2, sizearray, _DATATYPE_FLOAT, 1,
-                                0, 0);
+    create_image_ID("aosim_imlowfs", 2, sizearray, _DATATYPE_FLOAT, 1,
+                    0, 0, &IDimlowfs);
 
     sizearray[0] = ARRAYSIZE;
     sizearray[1] = ARRAYSIZE;
 
-    IDfoc1a = create_image_ID("aosim_foc1_amp", 2, sizearray, _DATATYPE_FLOAT, 1,
-                              0, 0);
-    IDfoc1p = create_image_ID("aosim_foc1_pha", 2, sizearray, _DATATYPE_FLOAT, 1,
-                              0, 0);
+    create_image_ID("aosim_foc1_amp", 2, sizearray, _DATATYPE_FLOAT, 1,
+                    0, 0, &IDfoc1a);
+    create_image_ID("aosim_foc1_pha", 2, sizearray, _DATATYPE_FLOAT, 1,
+                    0, 0, &IDfoc1p);
 
-    IDpup1ta = create_image_ID("aosim_pup1t_amp", 2, sizearray, _DATATYPE_FLOAT, 1,
-                               0, 0);
-    IDpup1tp = create_image_ID("aosim_pup1t_pha", 2, sizearray, _DATATYPE_FLOAT, 1,
-                               0, 0);
+    create_image_ID("aosim_pup1t_amp", 2, sizearray, _DATATYPE_FLOAT, 1,
+                    0, 0, &IDpup1ta);
+    create_image_ID("aosim_pup1t_pha", 2, sizearray, _DATATYPE_FLOAT, 1,
+                    0, 0, &IDpup1tp);
 
-    IDpup1ra = create_image_ID("aosim_pup1r_amp", 2, sizearray, _DATATYPE_FLOAT, 1,
-                               0, 0);
-    IDpup1rp = create_image_ID("aosim_pup1r_pha", 2, sizearray, _DATATYPE_FLOAT, 1,
-                               0, 0);
+    create_image_ID("aosim_pup1r_amp", 2, sizearray, _DATATYPE_FLOAT, 1,
+                    0, 0, &IDpup1ra);
+    create_image_ID("aosim_pup1r_pha", 2, sizearray, _DATATYPE_FLOAT, 1,
+                    0, 0, &IDpup1rp);
 
     free(sizearray);
 

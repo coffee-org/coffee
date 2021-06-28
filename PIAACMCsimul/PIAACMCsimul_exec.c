@@ -447,14 +447,15 @@ errno_t PIAACMCsimul_exec(
             }
             sizearray[0] = 4;
             sizearray[1] = 1;
-            IDstatus = create_image_ID(
+            create_image_ID(
                            "stat_PIAACMCsimulexec",
                            2,
                            sizearray,
                            _DATATYPE_UINT16,
                            1,
                            0,
-                           0);
+                           0,
+                           &IDstatus);
             free(sizearray);
         }
     }
@@ -1136,21 +1137,21 @@ errno_t PIAACMCsimul_exec(
             printf("ref = 0.1   -- ");
             fflush(stdout);
             linopt_imtools_image_fitModes("vecDHref1D", "DHmodes", "DHmask", 0.1,
-                                          "optcoeff0", 0);
+                                          "optcoeff0", 0, NULL);
             printf("- DONE\n");
             fflush(stdout);
 
             printf("ref = 0.01  -- ");
             fflush(stdout);
             linopt_imtools_image_fitModes("vecDHref1D", "DHmodes", "DHmask", 0.01,
-                                          "optcoeff1", 0);
+                                          "optcoeff1", 0, NULL);
             printf("- DONE\n");
             fflush(stdout);
 
             printf("ref = 0.001 -- ");
             fflush(stdout);
             linopt_imtools_image_fitModes("vecDHref1D", "DHmodes", "DHmask", 0.001,
-                                          "optcoeff2", 0);
+                                          "optcoeff2", 0, NULL);
             printf("- DONE\n");
             fflush(stdout);
 

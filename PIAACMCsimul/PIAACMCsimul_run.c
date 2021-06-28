@@ -204,17 +204,15 @@ static errno_t PIAACMCsimul_setparam_variables(
         piaacmcsimul_var.PIAACMC_fpmtype = (int)(data.variable[IDv].value.f + 0.1);
     }
 
-    if(PIAACMCsimul_initpiaacmcconf(
-                piaacmcsimul_var.PIAACMC_fpmtype,
-                fpmradld,
-                centobs0,
-                centobs1,
-                0,
-                1
-            ) != RETURN_SUCCESS)
-    {
-        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
-    }
+    FUNC_CHECK_RETURN(
+        PIAACMCsimul_initpiaacmcconf(
+            piaacmcsimul_var.PIAACMC_fpmtype,
+            fpmradld,
+            centobs0,
+            centobs1,
+            0,
+            1
+        ));
 
     DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;
@@ -266,10 +264,8 @@ errno_t PIAACMCsimul_run(
 
 
     // read various cli variables, possibly setting globals
-    if(PIAACMCsimul_setparam_variables(confindex, mode) != RETURN_SUCCESS)
-    {
-        FUNC_RETURN_FAILURE("Call to function PIAACMCsimul_setparam_variables failed");
-    }
+    FUNC_CHECK_RETURN(
+        PIAACMCsimul_setparam_variables(confindex, mode));
 
 
 
@@ -478,11 +474,7 @@ errno_t PIAACMCsimul_run(
             // Perform the optmization
             printf("Execute optimization\n");
             {
-                errno_t fret = PIAACMCsimul_exec(confindex, mode);
-                if(fret != RETURN_SUCCESS)
-                {
-                    FUNC_RETURN_FAILURE("Call to function PIAACMCsimul_exec failed");
-                }
+                FUNC_CHECK_RETURN(PIAACMCsimul_exec(confindex, mode));
             }
 
 
@@ -855,12 +847,7 @@ errno_t PIAACMCsimul_run(
     {
         {
             DEBUG_TRACEPOINT("running exec function");
-            errno_t fret = PIAACMCsimul_exec(confindex, mode);
-
-            if(fret != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to function PIAACMCsimul_exec failed");
-            }
+            FUNC_CHECK_RETURN(PIAACMCsimul_exec(confindex, mode));
         }
     }
 

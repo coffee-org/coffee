@@ -70,19 +70,14 @@ errno_t PIAACMCsimul_mkPIAAMshapes_from_RadSag(
     long size;
     imageID ID_PIAAM0, ID_PIAAM1;
 
-
     double *r0array;
     double *z0array;
     double *r1array;
     double *z1array;
 
-
     double beamradpix;
 
-#ifdef PIAASIMUL_LOGFUNC0
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
-                                 "");
-#endif
+
 
 
     size = piaacmc[0].size;
@@ -118,8 +113,8 @@ errno_t PIAACMCsimul_mkPIAAMshapes_from_RadSag(
     }
 
     {
-        // Read sag file
-        DEBUG_TRACEPOINT("read sag radial profile %s", fname);
+        // Read ASCII sag file
+        DEBUG_TRACEPOINT_LOG("read sag radial profile %s", fname);
 
         FILE * fp = fopen(fname, "r");
         if(fp != NULL)

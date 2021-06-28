@@ -55,15 +55,15 @@ errno_t OptSystProp_propagateCube(
     imageID IDout_amp = image_ID(IDout_amp_name);
     if(IDout_amp == -1)
     {
-        IDout_amp = create_image_ID(IDout_amp_name, 3, imsizearray, _DATATYPE_FLOAT,
-                                    sharedmem, 0, 0);
+        create_image_ID(IDout_amp_name, 3, imsizearray, _DATATYPE_FLOAT,
+                        sharedmem, 0, 0, &IDout_amp);
     }
 
     imageID IDout_pha = image_ID(IDout_pha_name);
     if(IDout_pha == -1)
     {
-        IDout_pha = create_image_ID(IDout_pha_name, 3, imsizearray, _DATATYPE_FLOAT,
-                                    sharedmem, 0, 0);
+        create_image_ID(IDout_pha_name, 3, imsizearray, _DATATYPE_FLOAT,
+                        sharedmem, 0, 0, &IDout_pha);
     }
     free(imsizearray);
 

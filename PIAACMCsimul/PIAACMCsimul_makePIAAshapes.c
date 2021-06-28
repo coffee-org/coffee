@@ -52,11 +52,6 @@ errno_t PIAACMCsimul_makePIAAshapes(
     DEBUG_TRACEPOINT_LOG("PIAA material code = %d", design[index].PIAAmaterial_code);
 
 
-#ifdef PIAASIMUL_LOGFUNC0
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
-                                 "");
-#endif
-
 
     long size = piaacmc[0].size;
 
@@ -69,35 +64,30 @@ errno_t PIAACMCsimul_makePIAAshapes(
         // check if PIAA shapes should be made
         //
         piaacmcsimul_var.MAKE_PIAA0shape = 0;
-        if(piaacmcsimul_var.FORCE_MAKE_PIAA0shape == 0)
-        {
-            imageID ID = image_ID("piaam0z");
-            if(ID == -1)
-            {
-                piaacmcsimul_var.MAKE_PIAA0shape = 1;
-            }
-        }
-        else
+
+        // PIAA shapes must be computed if one of the following conditions are met :
+        // - FORCE set to 1
+        // - piaam0z missing
+        // - if refractive optics, piaar0zsag missing
+        //
+        if( (piaacmcsimul_var.FORCE_MAKE_PIAA0shape == 1)
+                || (image_ID("piaam0z") == -1)
+                || ( (design[index].PIAAmaterial_code != 0) && (image_ID("piaar0zsag") == -1)))
         {
             piaacmcsimul_var.MAKE_PIAA0shape = 1;
         }
 
 
+
+
         piaacmcsimul_var.MAKE_PIAA1shape = 0;
-        if(piaacmcsimul_var.FORCE_MAKE_PIAA1shape == 0)
-        {
-            imageID ID = image_ID("piaam1z");
-            if(ID == -1)
-            {
-                piaacmcsimul_var.MAKE_PIAA1shape = 1;
-            }
-        }
-        else
+
+        if( (piaacmcsimul_var.FORCE_MAKE_PIAA1shape == 1)
+                || (image_ID("piaam1z") == -1)
+                || ( (design[index].PIAAmaterial_code != 0) && (image_ID("piaar1zsag") == -1)))
         {
             piaacmcsimul_var.MAKE_PIAA1shape = 1;
         }
-
-
 
 
 
@@ -108,10 +98,12 @@ errno_t PIAACMCsimul_makePIAAshapes(
             // assemble piaa0z and piaa1z images from their linear coefficients
 
             // cosine radial modes
-            imageID ID0 = linopt_imtools_image_construct("Cmodes", "piaa0Cmodescoeff", "piaa0Cz");
+            imageID ID0;
+            linopt_imtools_image_construct("Cmodes", "piaa0Cmodescoeff", "piaa0Cz", &ID0);
 
             // Fourier 2D modes
-            imageID ID1 = linopt_imtools_image_construct("Fmodes", "piaa0Fmodescoeff", "piaa0Fz");
+            imageID ID1;
+            linopt_imtools_image_construct("Fmodes", "piaa0Fmodescoeff", "piaa0Fz", &ID1);
 
             imageID ID = image_ID("piaam0z");
             if(ID == -1)
@@ -236,8 +228,12 @@ errno_t PIAACMCsimul_makePIAAshapes(
 
         if(piaacmcsimul_var.MAKE_PIAA1shape == 1)
         {
-            imageID ID0 = linopt_imtools_image_construct("Cmodes", "piaa1Cmodescoeff", "piaa1Cz");
-            imageID ID1 = linopt_imtools_image_construct("Fmodes", "piaa1Fmodescoeff", "piaa1Fz");
+            imageID ID0;
+            linopt_imtools_image_construct("Cmodes", "piaa1Cmodescoeff", "piaa1Cz", &ID0);
+
+            imageID ID1;
+            linopt_imtools_image_construct("Fmodes", "piaa1Fmodescoeff", "piaa1Fz", &ID1);
+
             imageID ID = image_ID("piaam1z");
             if(ID == -1)
             {

@@ -28,17 +28,17 @@ extern PIAACMCsimul_varType piaacmcsimul_var;
 
 
 /**
- * computes radial PIAA optics sag
+ * @brief computes radial PIAA optics sag
  *
- * this function only works for circular PIAA
- * uses radial PIAACMC design to initialize PIAA optics shapes and focal plane mask
+ * Only works for circular PIAA.
+ * Uses radial PIAACMC design to initialize PIAA optics shapes and focal plane mask.
  */
 errno_t PIAACMCsimul_init_geomPIAA_rad(
     const char *IDapofit_name
 )
 {
     DEBUG_TRACE_FSTART();
-    DEBUG_TRACEPOINT_LOG("ARG %s", IDapofit_name);
+    DEBUG_TRACEPOINT_LOG("FARG %s", IDapofit_name);
 
     imageID IDcoeff;
     long nbcoeff;
@@ -491,18 +491,24 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
 
     WRITE_FULLFILENAME(fname, "%s/PIAA_Mshapes.txt", piaacmcsimul_var.piaacmcconfdir);
     fp = fopen(fname, "w");
-    for(long ii=0; ii<piaacmc[0].NBradpts; ii++)
+    if(fp != NULL)
     {
-        fprintf(fp,
-                "%18.16f %18.16f %18.16f %18.16f\n",
-                piaar00[ii]*piaacmc[0].beamrad,
-                piaaM0z[ii],
-                piaar10[ii]*piaacmc[0].
-                beamrad,
-                piaaM1z[ii]
-               );
+        for(long ii=0; ii<piaacmc[0].NBradpts; ii++)
+        {
+            fprintf(fp,
+                    "%18.16f %18.16f %18.16f %18.16f\n",
+                    piaar00[ii]*piaacmc[0].beamrad,
+                    piaaM0z[ii],
+                    piaar10[ii]*piaacmc[0].beamrad,
+                    piaaM1z[ii]
+                   );
+        }
+        fclose(fp);
     }
-    fclose(fp);
+    else
+    {
+        FUNC_RETURN_FAILURE("cannot write file %s", fname);
+    }
 
 
     free(piaaM0z);
