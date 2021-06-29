@@ -72,8 +72,11 @@ errno_t PIAACMCsimul_optimizeLyotStop_offaxis_min(
 
     uint32_t NBz = data.image[IDincohc].md[0].size[2];
 
-    imageID IDindex = create_2Dimage_ID("oals_index", xsize, ysize);
-    imageID IDminflux = create_2Dimage_ID("oals_val", xsize, ysize);
+    imageID IDindex;
+    create_2Dimage_ID("oals_index", xsize, ysize, &IDindex);
+
+    imageID IDminflux;
+    create_2Dimage_ID("oals_val", xsize, ysize, &IDminflux);
 
     for(uint32_t ii = 0; ii < xsize; ii++)
         for(uint32_t jj = 0; jj < ysize; jj++)
@@ -235,7 +238,7 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     // propagate complex amplitude in a range from zmin to zmax, where 0 is elem0
     // computes the diffracted light from the on-axis source
     PIAACMCsimul_CA2propCubeInt(fnamea, fnamep, zmin, zmax, NBpropstep,
-                                      "iproptmp");
+                                "iproptmp");
     // complex amplitude at elem0, only used to determine image size
     IDa = image_ID(fnamea);
 
@@ -258,7 +261,7 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
     if(IDc == -1) // OAincohc does not exist so we have to make it
     {
         // create image to receive sum
-        IDc = create_3Dimage_ID("OAincohc", xsize, ysize, NBpropstep);
+        create_3Dimage_ID("OAincohc", xsize, ysize, NBpropstep, &IDc);
 
         long cnt = 0; // initialize counter so later we can normalize by number of sources
 
@@ -303,7 +306,7 @@ errno_t PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions()
 
                 // propagate that elem0 from zmin to zmax with new PSF
                 imageID ID1 = PIAACMCsimul_CA2propCubeInt(fnamea, fnamep, zmin, zmax, NBpropstep,
-                                                  "iproptmp");
+                              "iproptmp");
                 for(uint64_t ii = 0; ii < xysize; ii++) // ii is indexing x-y plane
                 {
                     for(long k = 0; k < NBpropstep; k++)

@@ -108,7 +108,7 @@ imageID PIAACMCsimul_rings2sectors(
     nbring++;
     nbzone++;
 
-    IDout = create_2Dimage_ID_double(IDout_name, nbzone, 1);
+    create_2Dimage_ID_double(IDout_name, nbzone, 1, &IDout);
     for(zone=0; zone<nbzone; zone++)
         data.image[IDout].array.D[zone] = data.image[IDin].array.D[arrayring[zone]];
 

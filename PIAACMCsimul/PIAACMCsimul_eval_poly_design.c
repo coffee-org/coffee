@@ -330,38 +330,50 @@ errno_t PIAACMCsimul_eval_poly_design()
 
 
     // measure pointing sensitivity
-    imageID IDps = create_3Dimage_ID(
-                       "starim",
-                       piaacmc[0].size,
-                       piaacmc[0].size,
-                       zsize
-                   );
+    imageID IDps;
+    create_3Dimage_ID(
+        "starim",
+        piaacmc[0].size,
+        piaacmc[0].size,
+        zsize,
+        &IDps
+    );
 
-    imageID IDps_re = create_3Dimage_ID(
-                          "starim_re",
-                          piaacmc[0].size,
-                          piaacmc[0].size,
-                          zsize
-                      );
-    imageID IDps_im = create_3Dimage_ID(
-                          "starim_im",
-                          piaacmc[0].size,
-                          piaacmc[0].size,
-                          zsize
-                      );
+    imageID IDps_re;
+    create_3Dimage_ID(
+        "starim_re",
+        piaacmc[0].size,
+        piaacmc[0].size,
+        zsize,
+        &IDps_re
+    );
 
-    imageID IDps_COH = create_3Dimage_ID(
-                           "starimCOH",
-                           piaacmc[0].size,
-                           piaacmc[0].size,
-                           zsize
-                       );
-    imageID IDps_INC = create_3Dimage_ID(
-                           "starimINC",
-                           piaacmc[0].size,
-                           piaacmc[0].size,
-                           zsize
-                       );
+    imageID IDps_im;
+    create_3Dimage_ID(
+        "starim_im",
+        piaacmc[0].size,
+        piaacmc[0].size,
+        zsize,
+        &IDps_im
+    );
+
+    imageID IDps_COH;
+    create_3Dimage_ID(
+        "starimCOH",
+        piaacmc[0].size,
+        piaacmc[0].size,
+        zsize,
+        &IDps_COH
+    );
+
+    imageID IDps_INC;
+    create_3Dimage_ID(
+        "starimINC",
+        piaacmc[0].size,
+        piaacmc[0].size,
+        zsize,
+        &IDps_INC
+    );
 
     long NBpt = 0;
 
@@ -507,7 +519,10 @@ errno_t PIAACMCsimul_eval_poly_design()
     for(long OPDmode = 0; OPDmode < nbOPDerr; OPDmode++)
     {
         size = data.image[IDopderrC].md[0].size[0];
-        imageID IDopderr = create_2Dimage_ID("opderr", size, size);
+
+        imageID IDopderr;
+        create_2Dimage_ID("opderr", size, size, &IDopderr);
+
         // "opderr" is a standard name read by PIAACMCsimul_init
         for(long ii = 0; ii < size * size; ii++)
         {
@@ -639,7 +654,8 @@ errno_t PIAACMCsimul_eval_poly_design()
         long aveCcnt = 0;
 
 
-        imageID IDrc = create_3Dimage_ID("_tmp_rc", xsize, ysize, zsize);
+        imageID IDrc;
+        create_3Dimage_ID("_tmp_rc", xsize, ysize, zsize, &IDrc);
 
 
         for(uint32_t kk = 0; kk < zsize; kk++)

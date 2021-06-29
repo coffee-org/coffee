@@ -90,7 +90,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
         imageID IDa = image_ID(imname);
         if(IDa == -1)
         {
-             create_image_ID(imname, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0, 0, &IDa);
+            create_image_ID(imname, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0, 0, &IDa);
             //    create_3Dimage_ID(imname, size, size, nblambda);
         }
 
@@ -513,8 +513,11 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 // we're really reducing the resolution of the grid (not subsampling)
                 // so we need to accumulate the values in the neighborhood of each
                 // subsampled point onto that subsampled point
-                imageID IDre = create_3Dimage_ID("dftgridre", size, size, nblambda);
-                imageID IDim = create_3Dimage_ID("dftgridim", size, size, nblambda);
+                imageID IDre;
+                create_3Dimage_ID("dftgridre", size, size, nblambda, &IDre);
+
+                imageID IDim;
+                create_3Dimage_ID("dftgridim", size, size, nblambda, &IDim);
 
                 long gsize = 2 * optsyst[index].DFTgridpad +
                              1; // grid size, odd number - this is the space between subsampled pixels
@@ -649,8 +652,13 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
 
                 // apply the kernel
                 ID = image_ID("_WFcout");
-                imageID IDre1 = create_3Dimage_ID("dftgridre1", size, size, nblambda);
-                imageID IDim1 = create_3Dimage_ID("dftgridim1", size, size, nblambda);
+
+                imageID IDre1;
+                create_3Dimage_ID("dftgridre1", size, size, nblambda, &IDre1);
+
+                imageID IDim1;
+                create_3Dimage_ID("dftgridim1", size, size, nblambda, &IDim1);
+
                 for(long kl = 0; kl < nblambda; kl++) // for each wavelength
                     for(long ii1 = offset + gsize; ii1 < size - gsize;
                             ii1 += gsize) // for each subsampled pixel

@@ -41,7 +41,9 @@ errno_t OptSystProp_propagateCube(
     imageID IDin_pha = image_ID(IDin_pha_name);
     uint32_t size = data.image[IDin_amp].md[0].size[0];
     uint64_t size2 = size * size;
-    imageID IDc_in = create_2DCimage_ID("tmppropCin", size, size);
+
+    imageID IDc_in;
+    create_2DCimage_ID("tmppropCin", size, size, &IDc_in);
 
     uint32_t * imsizearray = (uint32_t *) malloc(sizeof(uint32_t) * 3);
     if(imsizearray == NULL) {

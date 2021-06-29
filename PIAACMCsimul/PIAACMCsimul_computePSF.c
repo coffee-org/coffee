@@ -145,7 +145,8 @@ errno_t PIAACMCsimul_computePSF(
             printf("CREATING SCORING MASK\n");
             printf("FOCAL PLANE SCALE = %f l/d per pix\n", focscale);
             fflush(stdout);
-            imageID IDsm = create_2Dimage_ID("scoringmask", size, size);
+            imageID IDsm;
+            create_2Dimage_ID("scoringmask", size, size, &IDsm);
 
             if(piaacmcsimul_var.SCORINGMASKTYPE == 0) // high density, wide
             {
@@ -267,8 +268,8 @@ errno_t PIAACMCsimul_computePSF(
             imageID ID = image_ID("imvect"); /// - Use \c imvect for storage if it exists, or create it
             if(ID == -1)
             {
-                ID = create_2Dimage_ID("imvect", piaacmcsimul_var.vsize * optsyst[0].nblambda,
-                                       1);
+                create_2Dimage_ID("imvect", piaacmcsimul_var.vsize * optsyst[0].nblambda,
+                                  1, &ID);
             }
             /// - Write the result into \c imvect
             double value = 0.0;
@@ -609,7 +610,9 @@ errno_t PIAACMCsimul_computePSF(
             // as well as the non-error
             for(long OPDmode = 0; OPDmode < nbOPDerr; OPDmode++)
             {
-                imageID IDopderr = create_2Dimage_ID("opderr", size, size);
+                imageID IDopderr;
+                create_2Dimage_ID("opderr", size, size, &IDopderr);
+
                 // "opderr" is a standard name read by PIAACMCsimul_init
                 for(uint64_t ii = 0; ii < size * size; ii++)
                 {
@@ -706,7 +709,8 @@ errno_t PIAACMCsimul_computePSF(
                     double normcoeff = 1.0 / sqrt(NBimindex);
 
                     // make an imvect for each lambda
-                    imageID ID = create_2Dimage_ID("imvect", offset1, piaacmc[0].nblambda);
+                    imageID ID;
+                    create_2Dimage_ID("imvect", offset1, piaacmc[0].nblambda, &ID);
 
 
                     // fill in with each imvectp* created above

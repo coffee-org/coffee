@@ -71,8 +71,8 @@ long PIAACMCsimul_CA2propCubeInt(
         xsize = data.image[IDa].md[0].size[0];
         ysize = data.image[IDa].md[0].size[1];
 
-        create_2Dimage_ID("retmpim", xsize, ysize);
-        create_2Dimage_ID("imtmpim", xsize, ysize);
+        create_2Dimage_ID("retmpim", xsize, ysize, NULL);
+        create_2Dimage_ID("imtmpim", xsize, ysize, NULL);
 
         if(data.image[IDa].md[0].naxis == 3)
         {
@@ -83,10 +83,10 @@ long PIAACMCsimul_CA2propCubeInt(
             nblambda = 1;
         }
     }
-    IDout = create_3Dimage_ID(IDout_name, xsize, ysize, NBz);
+    create_3Dimage_ID(IDout_name, xsize, ysize, NBz, &IDout);
 
 
-    create_2Dimage_ID("tmpintg", xsize, ysize);
+    create_2Dimage_ID("tmpintg", xsize, ysize, NULL);
 
 
     // initialize zarray

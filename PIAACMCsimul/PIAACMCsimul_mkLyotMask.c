@@ -100,7 +100,7 @@ imageID PIAACMCsimul_mkLyotMask(
     uint32_t xsize = data.image[IDmc].md[0].size[0];
     uint32_t ysize = data.image[IDmc].md[0].size[1];
 
-    IDout = create_2Dimage_ID(IDout_name, xsize, ysize);
+    create_2Dimage_ID(IDout_name, xsize, ysize, &IDout);
 
     // normalize both images to 1.0
     {
@@ -221,7 +221,7 @@ imageID PIAACMCsimul_mkLyotMask(
 
     if(0)
     {
-        ID1 = create_2Dimage_ID("postLMim", xsize, ysize);
+        create_2Dimage_ID("postLMim", xsize, ysize, &ID1);
         for(long ii = 0; ii < xsize * ysize; ii++)
         {
             data.image[ID1].array.F[ii] = data.image[IDmc].array.F[ii] *

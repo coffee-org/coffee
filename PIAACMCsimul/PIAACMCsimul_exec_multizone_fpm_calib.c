@@ -388,8 +388,11 @@ errno_t PIAACMCsimul_exec_multizone_fpm_calib()
                 // allocate the combined FPMresp 3D array
                 // ID is the "imvect" array created by PIAACMCsimul_computePSF and contains the pixels in the
                 // evaluation set as a 1D vector (0th index) per wavelength
-                IDfpmresp = create_3Dimage_ID_double("FPMresp", data.image[IDimvect].md[0].size[0],
-                                                     piaacmc[0].focmNBzone + 1, piaacmc[0].nblambda);
+                create_3Dimage_ID_double("FPMresp",
+                                         data.image[IDimvect].md[0].size[0],
+                                         piaacmc[0].focmNBzone + 1,
+                                         piaacmc[0].nblambda,
+                                         &IDfpmresp);
                 //     list_image_ID();
                 //    sleep(100);
 

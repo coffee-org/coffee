@@ -70,7 +70,7 @@ imageID PIAACMCsimul_mkSimpleLyotStop(
 
     IDr = image_ID("rcoord");
 
-    ID = create_3Dimage_ID(ID_name, size, size, piaacmc[0].nblambda);
+    create_3Dimage_ID(ID_name, size, size, piaacmc[0].nblambda, &ID);
     for(long k = 0; k < piaacmc[0].nblambda; k++)
         for(uint64_t ii = 0; ii < size2; ii++)
         {

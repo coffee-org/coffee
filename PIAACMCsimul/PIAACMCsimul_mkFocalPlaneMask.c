@@ -109,9 +109,15 @@ imageID PIAACMCsimul_mkFocalPlaneMask(
 
 
     imageID IDz = image_ID(IDzonemap_name);
-    imageID ID = create_3DCimage_ID(ID_name, size, size, nblambda);
-    imageID IDsag = create_3Dimage_ID("fpmsag", size, size, nblambda);
-    imageID IDzone = create_3Dimage_ID("fpmzone", size, size, nblambda);
+
+    imageID ID;
+    create_3DCimage_ID(ID_name, size, size, nblambda, &ID);
+
+    imageID IDsag;
+    create_3Dimage_ID("fpmsag", size, size, nblambda, &IDsag);
+
+    imageID IDzone;
+    create_3Dimage_ID("fpmzone", size, size, nblambda, &IDzone);
 
 
     if(piaacmc[0].NBrings > 2)
@@ -271,7 +277,7 @@ imageID PIAACMCsimul_mkFocalPlaneMask(
                     // default
                     double t = 0.0;
                     double a = 1.0;
-  //                  float pha = 0.0;
+                    //                  float pha = 0.0;
                     float cospha = 1.0;
                     float sinpha = 0.0;
                     double amp = 1.0;
@@ -283,9 +289,9 @@ imageID PIAACMCsimul_mkFocalPlaneMask(
                                 && (r < piaacmc[0].fpmOuterConeRad)) // outer cone
                         {
                             double t = piaacmc[0].fpmOuterConeZ * (piaacmc[0].fpmOuterConeRad - r) /
-                                (piaacmc[0].fpmOuterConeRad - piaacmc[0].fpmRad);
+                                       (piaacmc[0].fpmOuterConeRad - piaacmc[0].fpmRad);
                             double pha = OpticsMaterials_pha_lambda(piaacmc[0].fpmmaterial_code, t,
-                                                             optsyst[0].lambdaarray[k]);
+                                                                    optsyst[0].lambdaarray[k]);
                             cospha = cosf(pha);
                             sinpha = sinf(pha);
                             a = 1.0;
@@ -355,7 +361,7 @@ imageID PIAACMCsimul_mkFocalPlaneMask(
                                             // piaacmc[0].fpmCentConeZ*(piaacmc[0].fpmCentConeRad-r)/(piaacmc[0].fpmCentConeRad); //piaacmc[0].fpmCentConeZ
                                             a = 1.0;
                                             double pha = OpticsMaterials_pha_lambda(piaacmc[0].fpmmaterial_code, t,
-                                                                             optsyst[0].lambdaarray[k]);
+                                                                                    optsyst[0].lambdaarray[k]);
                                             cospha = cosf(pha);
                                             sinpha = sinf(pha);
                                             amp = a;
@@ -477,7 +483,9 @@ imageID PIAACMCsimul_mkFocalPlaneMask(
 
 
         /* save mask transmission */
-        imageID IDm = create_3DCimage_ID("fpmCA", size, size, nblambda);
+        imageID IDm;
+        create_3DCimage_ID("fpmCA", size, size, nblambda, &IDm);
+
         for(int k = 0; k < nblambda; k++)
             for(uint32_t ii = 0; ii < size; ii++)
                 for(uint32_t jj = 0; jj < size; jj++)

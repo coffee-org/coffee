@@ -76,8 +76,10 @@ static double PIAACMCsimul_regularization_PIAAshapes_value()
     {
         // error message if we get here?  ***************************************
         // if the reference image doesn't exist, create it
-        IDref = create_2Dimage_ID("piaa0Cmref",
-                                  data.image[piaacmc[0].piaa0CmodesID].md[0].size[0], 1);
+        create_2Dimage_ID("piaa0Cmref",
+                          data.image[piaacmc[0].piaa0CmodesID].md[0].size[0],
+                          1,
+                          &IDref);
 
         // initialize to zero shape
         for(uint32_t jj = 0;
@@ -114,8 +116,11 @@ static double PIAACMCsimul_regularization_PIAAshapes_value()
     IDref = image_ID("piaa1Cmref");
     if(IDref == -1)
     {
-        IDref = create_2Dimage_ID("piaa1Cmref",
-                                  data.image[piaacmc[0].piaa0CmodesID].md[0].size[0], 1);
+        create_2Dimage_ID("piaa1Cmref",
+                          data.image[piaacmc[0].piaa0CmodesID].md[0].size[0],
+                          1,
+                          &IDref);
+
         for(uint32_t jj = 0;
                 jj < data.image[piaacmc[0].piaa0CmodesID].md[0].size[0];
                 jj++)
@@ -144,8 +149,11 @@ static double PIAACMCsimul_regularization_PIAAshapes_value()
     IDref = image_ID("piaa0Fmref");
     if(IDref == -1)
     {
-        IDref = create_2Dimage_ID("piaa0Fmref",
-                                  data.image[piaacmc[0].piaa0FmodesID].md[0].size[0], 1);
+        create_2Dimage_ID("piaa0Fmref",
+                          data.image[piaacmc[0].piaa0FmodesID].md[0].size[0],
+                          1,
+                          &IDref);
+
         for(uint32_t jj = 0;
                 jj < data.image[piaacmc[0].piaa0FmodesID].md[0].size[0];
                 jj++)
@@ -168,8 +176,11 @@ static double PIAACMCsimul_regularization_PIAAshapes_value()
     IDref = image_ID("piaa1Fmref");
     if(IDref == -1)
     {
-        IDref = create_2Dimage_ID("piaa1Fmref",
-                                  data.image[piaacmc[0].piaa1FmodesID].md[0].size[0], 1);
+        create_2Dimage_ID("piaa1Fmref",
+                          data.image[piaacmc[0].piaa1FmodesID].md[0].size[0],
+                          1,
+                          &IDref);
+
         for(uint32_t jj = 0;
                 jj < data.image[piaacmc[0].piaa1FmodesID].md[0].size[0];
                 jj++)
@@ -255,8 +266,11 @@ static long PIAACMCsimul_regularization_PIAAshapes_add1Dvector(
     IDref = image_ID("piaa0Cmref");
     if(IDref == -1)
     {
-        IDref = create_2Dimage_ID("piaa0Cmref",
-                                  data.image[piaacmc[0].piaa0CmodesID].md[0].size[0], 1);
+        create_2Dimage_ID("piaa0Cmref",
+                          data.image[piaacmc[0].piaa0CmodesID].md[0].size[0],
+                          1,
+                          &IDref);
+
         for(uint32_t ii = 0;
                 ii < data.image[piaacmc[0].piaa0CmodesID].md[0].size[0];
                 ii++)
@@ -280,8 +294,11 @@ static long PIAACMCsimul_regularization_PIAAshapes_add1Dvector(
     IDref = image_ID("piaa1Cmref");
     if(IDref == -1)
     {
-        IDref = create_2Dimage_ID("piaa1Cmref",
-                                  data.image[piaacmc[0].piaa0CmodesID].md[0].size[0], 1);
+        create_2Dimage_ID("piaa1Cmref",
+                          data.image[piaacmc[0].piaa0CmodesID].md[0].size[0],
+                          1,
+                          &IDref);
+
         for(uint32_t ii = 0;
                 ii < data.image[piaacmc[0].piaa0CmodesID].md[0].size[0];
                 ii++)
@@ -305,8 +322,11 @@ static long PIAACMCsimul_regularization_PIAAshapes_add1Dvector(
     IDref = image_ID("piaa0Fmref");
     if(IDref == -1)
     {
-        IDref = create_2Dimage_ID("piaa0Fmref",
-                                  data.image[piaacmc[0].piaa0FmodesID].md[0].size[0], 1);
+        create_2Dimage_ID("piaa0Fmref",
+                          data.image[piaacmc[0].piaa0FmodesID].md[0].size[0],
+                          1,
+                          &IDref);
+
         for(uint32_t ii = 0;
                 ii < data.image[piaacmc[0].piaa0FmodesID].md[0].size[0];
                 ii++)
@@ -329,8 +349,11 @@ static long PIAACMCsimul_regularization_PIAAshapes_add1Dvector(
     IDref = image_ID("piaa1Fmref");
     if(IDref == -1)
     {
-        IDref = create_2Dimage_ID("piaa1Fmref",
-                                  data.image[piaacmc[0].piaa1FmodesID].md[0].size[0], 1);
+        create_2Dimage_ID("piaa1Fmref",
+                          data.image[piaacmc[0].piaa1FmodesID].md[0].size[0],
+                          1,
+                          &IDref);
+
         for(uint32_t ii = 0;
                 ii < data.image[piaacmc[0].piaa1FmodesID].md[0].size[0];
                 ii++)
@@ -448,14 +471,14 @@ errno_t PIAACMCsimul_exec(
             sizearray[0] = 4;
             sizearray[1] = 1;
             create_image_ID(
-                           "stat_PIAACMCsimulexec",
-                           2,
-                           sizearray,
-                           _DATATYPE_UINT16,
-                           1,
-                           0,
-                           0,
-                           &IDstatus);
+                "stat_PIAACMCsimulexec",
+                2,
+                sizearray,
+                _DATATYPE_UINT16,
+                1,
+                0,
+                0,
+                &IDstatus);
             free(sizearray);
         }
     }
@@ -799,9 +822,10 @@ errno_t PIAACMCsimul_exec(
         // we also create a mask image which is intended to mask out some of the pixels from the evaluation
         // the mask is currently not used, so we will write 1.0 in all of its pixels
         // DHmask and vecDHref1D contain all the optimization parameters as set above
-        IDm = create_2Dimage_ID("DHmask", size1Dvec, 1); // "ID of evaluation mode mask"
-        ID1Dref = create_2Dimage_ID("vecDHref1D", size1Dvec,
-                                    1); // "ID of 1D dark zone reference"
+        create_2Dimage_ID("DHmask", size1Dvec, 1, &IDm); // "ID of evaluation mode mask"
+
+        create_2Dimage_ID("vecDHref1D", size1Dvec,
+                          1, &ID1Dref); // "ID of 1D dark zone reference"
 
         // we first write 1.0 into the focal plane complex amplitudes in the vector
         ID = image_ID("vecDHref");
@@ -897,11 +921,11 @@ errno_t PIAACMCsimul_exec(
 
             // array for collecting dark hole mode derivatives
             // stores derivative of output vector against input parameters
-            IDmodes = create_3Dimage_ID("DHmodes", size1Dvec, 1,
-                                        piaacmcsimul_var.linopt_number_param);
+            create_3Dimage_ID("DHmodes", size1Dvec, 1,
+                              piaacmcsimul_var.linopt_number_param, &IDmodes);
             // 2D array for diagnostic display
-            IDmodes2D = create_2Dimage_ID("DHmodes2D", size1Dvec,
-                                          piaacmcsimul_var.linopt_number_param); //TEST
+            create_2Dimage_ID("DHmodes2D", size1Dvec,
+                              piaacmcsimul_var.linopt_number_param, &IDmodes2D); //TEST
 
             // get ready to update optimization tracking file
             {
@@ -1042,7 +1066,7 @@ errno_t PIAACMCsimul_exec(
                     // re-package vector into 1D array and add regularization terms
                     // evaluation vector is "imvect1D", ID = ID1D
                     // similar to vecDHref before
-                    ID1D = create_2Dimage_ID("imvect1D", size1Dvec, 1);
+                    create_2Dimage_ID("imvect1D", size1Dvec, 1, &ID1D);
                     // fill in the evaluation point portion
                     {
                         uint64_t ii;
@@ -1087,8 +1111,9 @@ errno_t PIAACMCsimul_exec(
                     //    printf("%3ld %g %g\n", i, val, valref);
 
                     // create diagnostic image
-                    ID = create_2Dimage_ID("DHmodes2D", size1Dvec,
-                                           piaacmcsimul_var.linopt_number_param);
+                    create_2Dimage_ID("DHmodes2D", size1Dvec,
+                                      piaacmcsimul_var.linopt_number_param, &ID);
+
                     for(uint64_t ii = 0; ii < data.image[IDmodes].md[0].nelement; ii++)
                     {
                         data.image[ID].array.F[ii] = data.image[IDmodes].array.F[ii];

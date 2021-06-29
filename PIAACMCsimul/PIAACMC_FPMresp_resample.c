@@ -53,7 +53,7 @@ long PIAACMC_FPMresp_resample(
     long zsize1 = NBlambda;
 
 
-    IDout = create_3Dimage_ID_double(FPMresp_out_name, xsize1, ysize, zsize1);
+    create_3Dimage_ID_double(FPMresp_out_name, xsize1, ysize, zsize1, &IDout);
     /*	for(kk1=0;kk1<zsize1;kk1++)
     		for(ii=0;ii<xsize;ii++)
     			data.image[IDout].array.D[kk1*xsize1*ysize + ii] = 1;

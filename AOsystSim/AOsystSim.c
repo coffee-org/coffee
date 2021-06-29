@@ -785,7 +785,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
     {
         long IDfocmask;
 
-        IDfocmask = create_2DCimage_ID("focpm", arraysize, arraysize);
+        create_2DCimage_ID("focpm", arraysize, arraysize, &IDfocmask);
         for(ii = 0; ii < arraysize; ii++)
             for(jj = 0; jj < arraysize; jj++)
             {
@@ -867,7 +867,7 @@ int AOsystSim_run(int syncmode, long DMindex, long delayus)
     dhsizearray[0] = dhxsize * 2;
     dhsizearray[1] = dhysize;
 
-    IDdhmask = create_2Dimage_ID("dhmask", dhxsize, dhysize);
+    create_2Dimage_ID("dhmask", dhxsize, dhysize, &IDdhmask);
     for(ii = 0; ii < dhxsize; ii++)
         for(jj = 0; jj < dhysize; jj++)
         {
@@ -1067,8 +1067,9 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
     sizearray[1] = data.image[IDin].md[0].size[1];
     size2 = sizearray[0] * sizearray[1];
 
-    IDwfcbuff = create_3Dimage_ID("wfcbuff", sizearray[0], sizearray[1],
-                                  wfcbuff_size);
+    create_3Dimage_ID("wfcbuff", sizearray[0], sizearray[1],
+                      wfcbuff_size, &IDwfcbuff);
+
     wfcbuff_time = (double *) malloc(sizeof(double) * wfcbuff_size);
     if(wfcbuff_time == NULL) {
         PRINT_ERROR("malloc returns NULL pointer");
@@ -1088,11 +1089,11 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
 
     rmask = 0.4 * sizearray[0];
 
-    IDaosf_noise = create_2Dimage_ID("aosf_noise", sizearray[0], sizearray[1]);
-    IDaosf_mult = create_2Dimage_ID("aosf_mult", sizearray[0], sizearray[1]);
-    IDaosf_gain = create_2Dimage_ID("aosf_gain", sizearray[0], sizearray[1]);
+    create_2Dimage_ID("aosf_noise", sizearray[0], sizearray[1], &IDaosf_noise);
+    create_2Dimage_ID("aosf_mult", sizearray[0], sizearray[1], &IDaosf_mult);
+    create_2Dimage_ID("aosf_gain", sizearray[0], sizearray[1], &IDaosf_gain);
 
-    IDmask = create_2Dimage_ID("aosf_mask", sizearray[0], sizearray[1]);
+    create_2Dimage_ID("aosf_mask", sizearray[0], sizearray[1], &IDmask);
 
     if(WDIR_INIT == 0)
     {
@@ -1961,11 +1962,11 @@ long AOsystSim_mkTelPupDM(const char *ID_name, long msize, double xc, double yc,
 
     long size = msize * binfact;
 
-    ID = create_2Dimage_ID(ID_name, msize, msize);
-    IDi = create_3Dimage_ID("TPind", msize, msize, 5);
+    create_2Dimage_ID(ID_name, msize, msize, &ID);
+    create_3Dimage_ID("TPind", msize, msize, 5, &IDi);
 
-    IDz = create_2Dimage_ID("telpupDMz", size, size);
-    IDindex = create_2Dimage_ID("telpupDMzindex", size, size);
+    create_2Dimage_ID("telpupDMz", size, size, &IDz);
+    create_2Dimage_ID("telpupDMzindex", size, size, &IDindex);
     for(uint32_t ii = 0; ii < size; ii++)
         for(uint32_t jj = 0; jj < size; jj++)
         {
@@ -2154,7 +2155,7 @@ long AOsystSim_fitTelPup(const char *ID_name, const char *IDtelpup_name)
 
 
     /** compensate for image gradient */
-    ID1 = create_2Dimage_ID("tmpftpim", size, size);
+    create_2Dimage_ID("tmpftpim", size, size, &ID1);
     val1 = 1000000000000000.0;
     for(coeffx = -1.5; coeffx < 1.5; coeffx += 0.05)
         for(coeffy = -1.5; coeffy < 1.5; coeffy += 0.05)
@@ -3026,25 +3027,25 @@ int AOsystSim_mkWF(const char *CONF_FNAME)
             IDbin_re = image_ID("tmpre");
             if(IDbin_re == -1)
             {
-                IDbin_re = create_2Dimage_ID("tmpre", csize, csize);
+                create_2Dimage_ID("tmpre", csize, csize, &IDbin_re);
             }
 
             IDbin_im = image_ID("tmpim");
             if(IDbin_im == -1)
             {
-                IDbin_im = create_2Dimage_ID("tmpim", csize, csize);
+                create_2Dimage_ID("tmpim", csize, csize, &IDbin_im);
             }
 
             IDbin_amp = image_ID("tmpamp");
             if(IDbin_amp == -1)
             {
-                IDbin_amp = create_2Dimage_ID("tmpamp", csize, csize);
+                create_2Dimage_ID("tmpamp", csize, csize, &IDbin_amp);
             }
 
             IDbin_opd = image_ID("tmpopd");
             if(IDbin_opd == -1)
             {
-                IDbin_opd = create_2Dimage_ID("tmpopd", csize, csize);
+                create_2Dimage_ID("tmpopd", csize, csize, &IDbin_opd);
             }
 
             ii1start = (csize - ARRAYSIZE) / 2 + ii1start0;
@@ -3541,7 +3542,7 @@ int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name,
         imsize[0] = arraysize;
         imsize[1] = arraysize;
         create_image_ID("pyrwfcin", 2, imsize, _DATATYPE_COMPLEX_FLOAT, 0,
-                                     0, 0, &ID_inWFccp);
+                        0, 0, &ID_inWFccp);
         free(imsize);
     }
 
@@ -3853,8 +3854,8 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
     printf("PYTPUPSEP = %f  ->  %f\n", PYRPUPSEP, M_PI * PUPPIXDIAM * PYRPUPSEP);
 
 
-    IDpyr_amp = create_3Dimage_ID("pyramp", ARRAYSIZE, ARRAYSIZE, PYRMODNBPT);
-    IDpyr_pha = create_3Dimage_ID("pyrpha", ARRAYSIZE, ARRAYSIZE, PYRMODNBPT);
+    create_3Dimage_ID("pyramp", ARRAYSIZE, ARRAYSIZE, PYRMODNBPT, &IDpyr_amp);
+    create_3Dimage_ID("pyrpha", ARRAYSIZE, ARRAYSIZE, PYRMODNBPT, &IDpyr_pha);
 
     for(pmodpt = 0; pmodpt < PYRMODNBPT; pmodpt++)
     {
@@ -3949,13 +3950,13 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME)
 
 
     // CREATE COMPUTING ARRAYS
-    IDpupamp = create_2Dimage_ID("pupamp", ARRAYSIZE, ARRAYSIZE);
-    IDpuppha = create_2Dimage_ID("puppha", ARRAYSIZE, ARRAYSIZE);
+    create_2Dimage_ID("pupamp", ARRAYSIZE, ARRAYSIZE, &IDpupamp);
+    create_2Dimage_ID("puppha", ARRAYSIZE, ARRAYSIZE, &IDpuppha);
 
-    IDfocamp = create_2Dimage_ID("focamp", ARRAYSIZE, ARRAYSIZE); // after pyramid
-    IDfocpha = create_2Dimage_ID("focpha", ARRAYSIZE, ARRAYSIZE);
+    create_2Dimage_ID("focamp", ARRAYSIZE, ARRAYSIZE, &IDfocamp); // after pyramid
+    create_2Dimage_ID("focpha", ARRAYSIZE, ARRAYSIZE, &IDfocpha);
 
-    IDpyrpupi = create_2Dimage_ID("pyrpupi", ARRAYSIZE, ARRAYSIZE);
+    create_2Dimage_ID("pyrpupi", ARRAYSIZE, ARRAYSIZE, &IDpyrpupi);
 
     offset = (ARRAYSIZE - wfinsize) / 2;
 
@@ -4268,7 +4269,7 @@ int AOsystSim_DMshape(const char *IDdmctrl_name, const char *IDdmifc_name,
     IDdm = image_ID(IDdm_name);
     if(IDdm == -1)
     {
-        IDdm = create_2Dimage_ID(IDdm_name, dmsizex, dmsizey);
+        create_2Dimage_ID(IDdm_name, dmsizex, dmsizey, &IDdm);
     }
 
 
@@ -4527,8 +4528,8 @@ int AOsystSim_DM(const char *CONF_FNAME)
 
 
     // CREATE DM TEMPORAL RESPONSE CUBE
-    IDdmdispC = create_3Dimage_ID("dmdispC", DMsize, DMsize, NBTSAMPLES);
-    IDdmdispC1 = create_3Dimage_ID("dmdispC1", DMsize, DMsize, NBTSAMPLES);
+    create_3Dimage_ID("dmdispC", DMsize, DMsize, NBTSAMPLES, &IDdmdispC);
+    create_3Dimage_ID("dmdispC1", DMsize, DMsize, NBTSAMPLES, &IDdmdispC1);
 
 
 
@@ -5133,13 +5134,13 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME)
 
     xsizein = data.image[IDinOPD].md[0].size[0];
     ysizein = data.image[IDinOPD].md[0].size[1];
-    IDwfa = create_2Dimage_ID("aosim_wfa", ARRAYSIZE, ARRAYSIZE);
-    IDwfp = create_2Dimage_ID("aosim_wfp", ARRAYSIZE, ARRAYSIZE);
+    create_2Dimage_ID("aosim_wfa", ARRAYSIZE, ARRAYSIZE, &IDwfa);
+    create_2Dimage_ID("aosim_wfp", ARRAYSIZE, ARRAYSIZE, &IDwfp);
     long iioffset = (ARRAYSIZE - xsizein) / 2;
     long jjoffset = (ARRAYSIZE - ysizein) / 2;
 
-    IDimcamlowfstmp = create_2Dimage_ID("aosim_imcamlowfstmp", ARRAYSIZE,
-                                        ARRAYSIZE);
+    create_2Dimage_ID("aosim_imcamlowfstmp", ARRAYSIZE,
+                      ARRAYSIZE, &IDimcamlowfstmp);
     LOWFScamstarttime = data.image[IDphystime].array.F[0];
 
 
@@ -5542,7 +5543,7 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
     IDwf0 = image_ID("wf0");
     if(IDwf0 == -1)
     {
-        IDwf0 = create_2Dimage_ID("wf0", size, size);
+        create_2Dimage_ID("wf0", size, size, &IDwf0);
         for(ii = 0; ii < size * size; ii++)
         {
             data.image[IDwf0].array.F[ii] = wferramp * (1.0 - 2.0 * ran1());
@@ -5551,11 +5552,11 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
     }
 
 
-    IDwfA = create_2Dimage_ID("wfA", size, size);
-    IDwfB = create_2Dimage_ID("wfB", size, size);
-    IDwf = create_2Dimage_ID("wf", size, size);
+    create_2Dimage_ID("wfA", size, size, &IDwfA);
+    create_2Dimage_ID("wfB", size, size, &IDwfB);
+    create_2Dimage_ID("wf", size, size, &IDwf);
 
-    IDpsfC = create_3Dimage_ID("psfC", size, size, NBprobesG);
+    create_3Dimage_ID("psfC", size, size, NBprobesG, &IDpsfC);
 
     // initialize wf0
 
@@ -5658,7 +5659,7 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
     // ADD COMPANIONS
     printf("Adding companions\n");
     fflush(stdout);
-    IDtmp = create_3Dimage_ID("tmp3dim", size, size, NBprobesG);
+    create_3Dimage_ID("tmp3dim", size, size, NBprobesG, &IDtmp);
     for(ii = 0; ii < size * size * NBprobesG; ii++)
     {
         data.image[IDtmp].array.F[ii] = data.image[IDpsfC].array.F[ii];
@@ -5749,7 +5750,7 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
     printf("Cropping and adding photon noise\n");
     fflush(stdout);
 
-    ID = create_3Dimage_ID("psfCcrop", xsize, ysize, NBprobesG);
+    create_3Dimage_ID("psfCcrop", xsize, ysize, NBprobesG, &ID);
     tot1 = 0.0;
     for(pr = 0; pr < NBprobesG; pr++)
         for(ii1 = 0; ii1 < xsize; ii1++)
@@ -5764,7 +5765,7 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
             }
 
     // CREATE PROBE AMPLITUDE IMAGE IN FOCAL PLANE
-    ID1 = create_2Dimage_ID("psfprobeampC", xsize, ysize);
+    create_2Dimage_ID("psfprobeampC", xsize, ysize, &ID1);
 
 
     for(ii1 = 0; ii1 < xsize; ii1++)
@@ -5782,7 +5783,7 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
     save_fl_fits("psfprobeampC", "AOsystSim_wdir/psfprobeampC.fits");
 
     // noise image
-    IDnoise = create_3Dimage_ID("psfCcropnCn", xsize, ysize, NBprobesG);
+    create_3Dimage_ID("psfCcropnCn", xsize, ysize, NBprobesG, &IDnoise);
 
     put_poisson_noise("psfCcrop", "psfCcropn");
     // add readout noise
@@ -5798,7 +5799,7 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
     save_fl_fits("psfCcropn", "AOsystSim_wdir/psfCcropn.fits");
 
     ID = image_ID("psfCcropn");
-    ID1 =  create_3Dimage_ID("psfCcropnC", xsize, ysize, NBprobesG);
+    create_3Dimage_ID("psfCcropnC", xsize, ysize, NBprobesG, &ID1);
     for(pr = 0; pr < NBprobesG; pr++)
         for(ii1 = 0; ii1 < xsize; ii1++)
             for(jj1 = 0; jj1 < ysize; jj1++)
@@ -5828,7 +5829,7 @@ long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy,
     for(pr = 0; pr < NBprobesG; pr++)
     {
         sprintf(imname, "psfC_%03ld", pr);
-        ID = create_2Dimage_ID(imname, size, size);
+        create_2Dimage_ID(imname, size, size, &ID);
         for(ii = 0; ii < size; ii++)
             for(jj = 0; jj < size; jj++)
             {
@@ -5887,8 +5888,8 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
     }
 
 
-    IDdmA = create_2Dimage_ID(IDprobeA_name, dmxsize, dmysize);
-    IDdmB = create_2Dimage_ID(IDprobeB_name, dmxsize, dmysize);
+    create_2Dimage_ID(IDprobeA_name, dmxsize, dmysize, &IDdmA);
+    create_2Dimage_ID(IDprobeB_name, dmxsize, dmysize, &IDdmB);
 
     switch(modegeom)
     {
@@ -5978,7 +5979,7 @@ int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
                 data.image[ID].array.F[jj * imsize + ii] = 0.0;
             }
         }
-    ID = create_2Dimage_ID("pupp", imsize, imsize);
+    create_2Dimage_ID("pupp", imsize, imsize, &ID);
     for(uint32_t ii = 0; ii < dmxsize; ii++)
         for(uint32_t jj = 0; jj < dmysize; jj++)
         {
@@ -6399,7 +6400,7 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
 
     if(IDprobampC == -1)
     {
-        IDprobampC = create_2Dimage_ID("psfprobeamp", mapxsize, mapysize);
+        create_2Dimage_ID("psfprobeamp", mapxsize, mapysize, &IDprobampC);
     }
     for(uint64_t ii = 0; ii < (uint64_t) (mapxsize * mapysize); ii++)
     {
@@ -6451,17 +6452,17 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
         {
             if(mapmode > 0)
             {
-                IDmap = create_3Dimage_ID("WFSerrmap", mapxsize, mapysize, mapzsize);
-                IDmap_ptre = create_3Dimage_ID("WFSsol_ptre", mapxsize, mapysize, mapzsize);
-                IDmap_ptim = create_3Dimage_ID("WFSsol_ptim", mapxsize, mapysize, mapzsize);
-                IDmap_ptre_in = create_3Dimage_ID("WFSsol_ptre_in", mapxsize, mapysize,
-                                                  mapzsize);
-                IDmap_ptim_in = create_3Dimage_ID("WFSsol_ptim_in", mapxsize, mapysize,
-                                                  mapzsize);
-                IDmap_Iflux = create_3Dimage_ID("WFSsol_Iflux", mapxsize, mapysize, mapzsize);
-                IDmap_are = create_3Dimage_ID("WFSsol_are", mapxsize, mapysize, mapzsize);
-                IDmap_aim = create_3Dimage_ID("WFSsol_aim", mapxsize, mapysize, mapzsize);
-                IDmap_e = create_3Dimage_ID("WFSsol_e", mapxsize, mapysize, mapzsize);
+                create_3Dimage_ID("WFSerrmap", mapxsize, mapysize, mapzsize, &IDmap);
+                create_3Dimage_ID("WFSsol_ptre", mapxsize, mapysize, mapzsize, &IDmap_ptre);
+                create_3Dimage_ID("WFSsol_ptim", mapxsize, mapysize, mapzsize, &IDmap_ptim);
+                create_3Dimage_ID("WFSsol_ptre_in", mapxsize, mapysize,
+                                  mapzsize, &IDmap_ptre_in);
+                create_3Dimage_ID("WFSsol_ptim_in", mapxsize, mapysize,
+                                  mapzsize, &IDmap_ptim_in);
+                create_3Dimage_ID("WFSsol_Iflux", mapxsize, mapysize, mapzsize, &IDmap_Iflux);
+                create_3Dimage_ID("WFSsol_are", mapxsize, mapysize, mapzsize, &IDmap_are);
+                create_3Dimage_ID("WFSsol_aim", mapxsize, mapysize, mapzsize, &IDmap_aim);
+                create_3Dimage_ID("WFSsol_e", mapxsize, mapysize, mapzsize, &IDmap_e);
             }
             else
             {
@@ -6807,13 +6808,13 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
             IDmap_Iflux_ave = image_ID("WFSsol_Iflux_ave");
             if(IDmap_Iflux_ave == -1)
             {
-                IDmap_Iflux_ave = create_2Dimage_ID("WFSsol_Iflux_ave", mapxsize, mapysize);
+                create_2Dimage_ID("WFSsol_Iflux_ave", mapxsize, mapysize, &IDmap_Iflux_ave);
             }
 
             IDmap_Iflux_rms = image_ID("WFSsol_Iflux_rms");
             if(IDmap_Iflux_rms == -1)
             {
-                IDmap_Iflux_rms = create_2Dimage_ID("WFSsol_Iflux_rms", mapxsize, mapysize);
+                create_2Dimage_ID("WFSsol_Iflux_rms", mapxsize, mapysize, &IDmap_Iflux_rms);
             }
 
 
@@ -6853,14 +6854,14 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
                 IDmap_Iflux_rmsn = image_ID("WFSsol_Iflux_rmsn");
                 if(IDmap_Iflux_rmsn == -1)
                 {
-                    IDmap_Iflux_rmsn = create_2Dimage_ID("WFSsol_Iflux_rmsn", mapxsize, mapysize);
+                    create_2Dimage_ID("WFSsol_Iflux_rmsn", mapxsize, mapysize, &IDmap_Iflux_rmsn);
                 }
 
                 IDmap_Iflux_rmsn1 = image_ID("WFSsol_Iflux_rmsn1");
                 if(IDmap_Iflux_rmsn1 == -1)
                 {
-                    IDmap_Iflux_rmsn1 = create_2Dimage_ID("WFSsol_Iflux_rmsn1", mapxsize,
-                                                          mapysize);
+                    create_2Dimage_ID("WFSsol_Iflux_rmsn1", mapxsize,
+                                      mapysize, &IDmap_Iflux_rmsn1);
                 }
 
 
@@ -6886,7 +6887,7 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
                 IDmap_CA_rms = image_ID("WFSsol_CA_rms");
                 if(IDmap_CA_rms == -1)
                 {
-                    IDmap_CA_rms = create_2Dimage_ID("WFSsol_CA_rms", mapxsize, mapysize);
+                    create_2Dimage_ID("WFSsol_CA_rms", mapxsize, mapysize, &IDmap_CA_rms);
                 }
 
                 for(kx = 0; kx < mapxsize; kx++)
@@ -6917,7 +6918,7 @@ int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode,
                 IDmap_CA_rmsn = image_ID("WFSsol_CA_rmsn");
                 if(IDmap_CA_rmsn == -1)
                 {
-                    IDmap_CA_rmsn = create_2Dimage_ID("WFSsol_CA_rmsn", mapxsize, mapysize);
+                    create_2Dimage_ID("WFSsol_CA_rmsn", mapxsize, mapysize, &IDmap_CA_rmsn);
                 }
 
                 for(kx = 0; kx < mapxsize; kx++)

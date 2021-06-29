@@ -574,9 +574,9 @@ errno_t coronagraph_make_2Dprolate(
     printf("PUPIL RADIUS = %f\n", beamradpix);
     printf("SIZE = %ld\n", size);
 
-    IDproli = create_2Dimage_ID("proli", size, size);
-    IDprolr = create_2Dimage_ID("prolr", size, size);
-    IDprolp = create_2Dimage_ID("prolp", size, size);
+    create_2Dimage_ID("proli", size, size, &IDproli);
+    create_2Dimage_ID("prolr", size, size, &IDprolr);
+    create_2Dimage_ID("prolp", size, size, &IDprolp);
 
 
     IDfpmask = make_subpixdisk("FPmask", size, size, size / 2, size / 2, fpmradpix);
@@ -590,7 +590,7 @@ errno_t coronagraph_make_2Dprolate(
     //  save_fl_fits("FPmask","FPmask.tmp.fits");
     // exit(0);
 
-    IDpupp0 = create_2Dimage_ID("pupp0", size, size);
+    create_2Dimage_ID("pupp0", size, size, &IDpupp0);
 
     IDpupa0 = image_ID("pupa0");
     if(IDpupa0 != -1)
@@ -647,10 +647,10 @@ errno_t coronagraph_make_2Dprolate(
     //
 
     // total0 = arith_image_total("pupa0");
-    IDpupa0m = create_2Dimage_ID("pupa0m", size, size);
-    IDpupp0m = create_2Dimage_ID("pupp0m", size, size);
+    create_2Dimage_ID("pupa0m", size, size, &IDpupa0m);
+    create_2Dimage_ID("pupp0m", size, size, &IDpupp0m);
 
-    IDprol = create_2Dimage_ID(outname, size, size);
+    create_2Dimage_ID(outname, size, size, &IDprol);
     for(long ii = 0; ii < size; ii++)
         for(long jj = 0; jj < size; jj++)
         {
@@ -1008,9 +1008,9 @@ double coronagraph_make_2Dprolate_DFT(
     printf("PUPIL RADIUS = %f\n", beamradpix);
     printf("SIZE = %ld\n", size);
 
-    IDproli = create_2Dimage_ID("proli", size, size);
-    IDprolr = create_2Dimage_ID("prolr", size, size);
-    IDprolp = create_2Dimage_ID("prolp", size, size);
+    create_2Dimage_ID("proli", size, size, &IDproli);
+    create_2Dimage_ID("prolr", size, size, &IDprolr);
+    create_2Dimage_ID("prolp", size, size, &IDprolp);
 
 
     // CREATE FOCAL PLANE MASK
@@ -1053,8 +1053,8 @@ double coronagraph_make_2Dprolate_DFT(
 
     IDfpmask = make_subpixdisk("FPmask", size, size, size / 2, size / 2, fpmradpix);
     IDfpmaskz = make_subpixdisk_perturb("FPmaskz", size, size, size / 2, size / 2,
-                                        fpmradpix * DFTZFACTOR, fpmshape_n, fpmshape_ra, fpmshape_ka, fpmshape_pa);
-    IDfpmaskc = create_2DCimage_ID("_fpmz", size, size);
+                            fpmradpix * DFTZFACTOR, fpmshape_n, fpmshape_ra, fpmshape_ka, fpmshape_pa);
+    create_2DCimage_ID("_fpmz", size, size, &IDfpmaskc);
     for(uint64_t ii = 0; ii < size2; ii++)
     {
         data.image[IDfpmask].array.F[ii] = 1.0 * data.image[IDfpmaskz].array.F[ii];
@@ -1086,7 +1086,7 @@ double coronagraph_make_2Dprolate_DFT(
     }
     // exit(0);
 
-    IDpupp0 = create_2Dimage_ID("pupp0", size, size);
+    create_2Dimage_ID("pupp0", size, size, &IDpupp0);
 
     IDpupa0 = image_ID("pupa0");
     if(IDpupa0 != -1)
@@ -1149,10 +1149,10 @@ double coronagraph_make_2Dprolate_DFT(
     //
 
     // total0 = arith_image_total("pupa0");
-    IDpupa0m = create_2Dimage_ID("pupa0m", size, size);
-    IDpupp0m = create_2Dimage_ID("pupp0m", size, size);
+    create_2Dimage_ID("pupa0m", size, size, &IDpupa0m);
+    create_2Dimage_ID("pupp0m", size, size, &IDpupp0m);
 
-    IDprol = create_2Dimage_ID(outname, size, size);
+    create_2Dimage_ID(outname, size, size, &IDprol);
     for(uint32_t ii = 0; ii < size; ii++)
         for(uint32_t jj = 0; jj < size; jj++)
         {
@@ -1636,9 +1636,9 @@ errno_t coronagraph_update_2Dprolate(
                 EXECUTE_SYSTEM_COMMAND("cp %s %s", fnameinfoprev, fnameinfo);
             }
 
-            ID0 = create_2Dimage_ID("apo", size, size);
-            ID1 = create_2Dimage_ID("apo1", size, size);
-            ID2 = create_2Dimage_ID("apo2", size, size);
+            create_2Dimage_ID("apo", size, size, &ID0);
+            create_2Dimage_ID("apo1", size, size, &ID1);
+            create_2Dimage_ID("apo2", size, size, &ID2);
             for(ii = 0; ii < size * size; ii++)
             {
                 data.image[ID2].array.F[ii] = 0.0;
@@ -2394,15 +2394,15 @@ errno_t coronagraph_APLCapo_compile()
     jjsize = (long)((APLCapo_FPMRAD_END - APLCapo_FPMRAD_START) /
                     APLCapo_FPMRAD_STEP);
 
-    IDprol_init = create_2Dimage_ID("pinit", iisize, jjsize);
-    IDprol_ffrac = create_2Dimage_ID("pffrac", iisize, jjsize);
-    IDprol_transm = create_2Dimage_ID("ptransm", iisize, jjsize);
-    IDprol_peak = create_2Dimage_ID("ppeak", iisize, jjsize);
+    create_2Dimage_ID("pinit", iisize, jjsize, &IDprol_init);
+    create_2Dimage_ID("pffrac", iisize, jjsize, &IDprol_ffrac);
+    create_2Dimage_ID("ptransm", iisize, jjsize, &IDprol_transm);
+    create_2Dimage_ID("ppeak", iisize, jjsize, &IDprol_peak);
 
-    IDprol_fitapo_a = create_3Dimage_ID("fitapoa", iisize, jjsize, fitapoN);
-    IDprol_fitapo_b = create_3Dimage_ID("fitapob", iisize, jjsize, fitapoN);
-    IDprol_fitapo_c = create_3Dimage_ID("fitapoc", iisize, jjsize, fitapoN);
-    IDprol_fitfit = create_2Dimage_ID("fitfit", iisize, jjsize);
+    create_3Dimage_ID("fitapoa", iisize, jjsize, fitapoN, &IDprol_fitapo_a);
+    create_3Dimage_ID("fitapob", iisize, jjsize, fitapoN, &IDprol_fitapo_b);
+    create_3Dimage_ID("fitapoc", iisize, jjsize, fitapoN, &IDprol_fitapo_c);
+    create_2Dimage_ID("fitfit", iisize, jjsize, &IDprol_fitfit);
 
     //  for(n=0; n<fitapoN; n++)
     // value += fitapo_a[n] * exp(fitapo_b[n] * pow(rp,fitapo_c[n]));
@@ -3089,8 +3089,8 @@ int coronagraph_init_PIAA()
     double total1 = 0.0;
     double total_or = 0.0; // outer region
     double total_ir = 0.0; // inner region
-    IDt = create_2Dimage_ID("apo2Dim", size, size);
-    IDtt = create_2Dimage_ID("apo2Dimt", size, size); // truncated
+    create_2Dimage_ID("apo2Dim", size, size, &IDt);
+    create_2Dimage_ID("apo2Dimt", size, size, &IDtt); // truncated
 
 
     for(long ii = 0; ii < factor * size; ii += tmpstep)
@@ -3889,7 +3889,7 @@ int coronagraphs_make_SUBARU_pupil()
     //  sprintf(PIAAAPO_FNAME,"APLCapo_%.3f.%ld.ref.prof",APLC_FPMASKsize,size);
 
     //  coronagraph_init_PIAA();
-    ID = create_2Dimage_ID("subpup", Ssize, Ssize);
+    create_2Dimage_ID("subpup", Ssize, Ssize, &ID);
     for(uint32_t ii = 0; ii < Ssize; ii++)
         for(uint32_t jj = 0; jj < Ssize; jj++)
         {
@@ -3952,10 +3952,10 @@ int coronagraph_PIAAperturbation(double *zarray, long *zindex, long NBzern,
     double epst = 1.0e-3; // triangle radius
 
     printf("RADIUS = %f\n", trad_pix);
-    IDzmap = create_2Dimage_ID("PIAApert_z", size, size);
-    IDdx = create_2Dimage_ID("PIAApert_dx", size, size);
-    IDdy = create_2Dimage_ID("PIAApert_dy", size, size);
-    IDi = create_2Dimage_ID("PIAApert_i", size, size);
+    create_2Dimage_ID("PIAApert_z", size, size, &IDzmap);
+    create_2Dimage_ID("PIAApert_dx", size, size, &IDdx);
+    create_2Dimage_ID("PIAApert_dy", size, size, &IDdy);
+    create_2Dimage_ID("PIAApert_i", size, size, &IDi);
 
     zernike_init();
 
@@ -4192,8 +4192,8 @@ int coronagraphs_PIAA_apodize_beam(
     IDa1 = image_ID(ampl1);
     IDo1 = image_ID(opd1);
 
-    IDa2 = create_2Dimage_ID(ampl2, size, size);
-    IDo2 = create_2Dimage_ID(opd2, size, size);
+    create_2Dimage_ID(ampl2, size, size, &IDa2);
+    create_2Dimage_ID(opd2, size, size, &IDo2);
 
     cntarray = (long *) malloc(sizeof(long) * size * size);
 
@@ -4467,7 +4467,7 @@ int coronagraph_init_CPA()
     }
     CPAAPO[0] = 1.0;
 
-    ID = create_2Dimage_ID("cpapupref", size, size);
+    create_2Dimage_ID("cpapupref", size, size, &ID);
     for(uint32_t ii = 0; ii < factor * size; ii++)
         for(uint32_t jj = 0; jj < factor * size; jj++)
         {
@@ -4535,7 +4535,7 @@ int coronagraph_init_ODC()
     }
 
 
-    ID = create_2Dimage_ID("odcmref", size, size);
+    create_2Dimage_ID("odcmref", size, size, &ID);
     for(ii = 0; ii < factor * size; ii++)
     {
         ii1 = (long)((1.0 * ii - 0.5) / factor + 0.5);
@@ -4604,7 +4604,7 @@ int coronagraph_init_BL8()
     }
 
 
-    ID = create_2Dimage_ID("bl8mref", size, size);
+    create_2Dimage_ID("bl8mref", size, size, &ID);
     for(ii = 0; ii < factor * size; ii++)
         for(jj = 0; jj < factor * size; jj++)
         {
@@ -4630,7 +4630,7 @@ int coronagraph_init_BL8()
     sprintf(fname1, "%s/bl8m.ref.%ld", CORONAGRAPHSDATALOCAL, size);
     save_fl_fits("bl8mref", fname1);
 
-    ID = create_2Dimage_ID("bl8mrefl", size, size);
+    create_2Dimage_ID("bl8mrefl", size, size, &ID);
     for(ii = 0; ii < factor * size; ii++)
         for(jj = 0; jj < factor * size; jj++)
         {
@@ -4672,7 +4672,7 @@ int coronagraph_init_BL4()
     char fname1[200];
 
 
-    ID = create_2Dimage_ID("bl4mref", size, size);
+    create_2Dimage_ID("bl4mref", size, size, &ID);
     for(ii = 0; ii < factor * size; ii++)
         for(jj = 0; jj < factor * size; jj++)
         {
@@ -4718,7 +4718,7 @@ int coronagraph_init_RRPM()
     sprintf(fname1, "%s/rrpmref_fm.ref.%ld", CORONAGRAPHSDATALOCAL, size);
     save_fl_fits("rrpmreffm", fname1);
 
-    ID = create_2Dimage_ID("rrpmrefpm", size, size);
+    create_2Dimage_ID("rrpmrefpm", size, size, &ID);
     for(ii = 0; ii < size; ii++)
         for(jj = 0; jj < size; jj++)
         {
@@ -4758,8 +4758,8 @@ int coronagraph_init_OVC(long charge)
 
     sprintf(fnamea, "ovcreffma%ld", charge);
     sprintf(fnamep, "ovcreffmp%ld", charge);
-    ID1 = create_2Dimage_ID(fnamep, size, size);
-    ID2 = create_2Dimage_ID(fnamea, size, size);
+    create_2Dimage_ID(fnamep, size, size, &ID1);
+    create_2Dimage_ID(fnamea, size, size, &ID2);
 
 
     for(ii = 0; ii < size; ii++)
@@ -4829,7 +4829,7 @@ int coronagraph_simul_SHEAR4(double xld, double yld, const char *psfname)
     total = arith_image_total("pa1");
     IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix,
                         PI * yld / trad_pix);
-    IDc = create_2DCimage_ID("pc2", size, size);
+    create_2DCimage_ID("pc2", size, size, &IDc);
 
     ID = image_ID("corphase");
     if(ID != -1)
@@ -4950,7 +4950,7 @@ int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
     total = arith_image_total("pa1");
     IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix,
                         PI * yld / trad_pix);
-    IDc = create_2DCimage_ID("pc2", size, size);
+    create_2DCimage_ID("pc2", size, size, &IDc);
 
     ID = image_ID("corphase");
     if(ID != -1)
@@ -4966,12 +4966,12 @@ int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
     {
         printf("Initializing modes...");
         fflush(stdout);
-        ID_DICC1 = create_2Dimage_ID("dicc1", size, size);
-        ID_DICCX = create_2Dimage_ID("diccx", size, size);
-        ID_DICCY = create_2Dimage_ID("diccy", size, size);
-        ID_DICCX2 = create_2Dimage_ID("diccx2", size, size);
-        ID_DICCY2 = create_2Dimage_ID("diccy2", size, size);
-        ID_DICCXY = create_2Dimage_ID("diccxy", size, size);
+        create_2Dimage_ID("dicc1", size, size, &ID_DICC1);
+        create_2Dimage_ID("diccx", size, size, &ID_DICCX);
+        create_2Dimage_ID("diccy", size, size, &ID_DICCY);
+        create_2Dimage_ID("diccx2", size, size, &ID_DICCX2);
+        create_2Dimage_ID("diccy2", size, size, &ID_DICCY2);
+        create_2Dimage_ID("diccxy", size, size, &ID_DICCXY);
         total1 = 0.0;
         totalx = 0.0;
         totaly = 0.0;
@@ -5206,7 +5206,7 @@ int coronagraph_simul_AIC(double xld, double yld, const char *psfname)
     total = arith_image_total("pa1");
     IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix,
                         PI * yld / trad_pix);
-    IDc = create_2DCimage_ID("pc2", size, size);
+    create_2DCimage_ID("pc2", size, size, &IDc);
 
     ID = image_ID("corphase");
     if(ID != -1)
@@ -5378,8 +5378,8 @@ int coronagraph_simul_4QPM(double xld, double yld, const char *psfname)
 
     if(init4q == 1)
     {
-        IDrefr = create_2Dimage_ID("ref4qre", size, size);
-        IDrefi = create_2Dimage_ID("ref4qim", size, size);
+        create_2Dimage_ID("ref4qre", size, size, &IDrefr);
+        create_2Dimage_ID("ref4qim", size, size, &IDrefi);
         for(ii = 0; ii < size2; ii++)
         {
             data.image[IDrefr].array.F[ii] = data.image[ID].array.CF[ii].re;
@@ -5559,8 +5559,8 @@ int coronagraph_simul_ODC(
         sprintf(fname1i, "%s/odcim.ref.%ul", CORONAGRAPHSDATALOCAL, size);
 
 
-        IDrefr = create_2Dimage_ID(fnamer, size, size);
-        IDrefi = create_2Dimage_ID(fnamei, size, size);
+        create_2Dimage_ID(fnamer, size, size, &IDrefr);
+        create_2Dimage_ID(fnamei, size, size, &IDrefi);
         for(uint64_t ii = 0; ii < size2; ii++)
         {
             data.image[IDrefr].array.F[ii] = data.image[ID].array.CF[ii].re;
@@ -5798,8 +5798,8 @@ int coronagraph_simul_BL8(
             sprintf(fname1i, "%s/bl8lim.ref.%ul", CORONAGRAPHSDATALOCAL, size);
         }
 
-        IDrefr = create_2Dimage_ID(fnamer, size, size);
-        IDrefi = create_2Dimage_ID(fnamei, size, size);
+        create_2Dimage_ID(fnamer, size, size, &IDrefr);
+        create_2Dimage_ID(fnamei, size, size, &IDrefi);
         for(uint64_t ii = 0; ii < size2; ii++)
         {
             data.image[IDrefr].array.F[ii] = data.image[ID].array.CF[ii].re;
@@ -5990,8 +5990,8 @@ int coronagraph_simul_BL4(
         sprintf(fname1r, "%s/bl4re.ref.%ul", CORONAGRAPHSDATALOCAL, size);
         sprintf(fname1i, "%s/bl4im.ref.%ul", CORONAGRAPHSDATALOCAL, size);
 
-        IDrefr = create_2Dimage_ID(fnamer, size, size);
-        IDrefi = create_2Dimage_ID(fnamei, size, size);
+        create_2Dimage_ID(fnamer, size, size, &IDrefr);
+        create_2Dimage_ID(fnamei, size, size, &IDrefi);
         for(uint64_t ii = 0; ii < size2; ii++)
         {
             data.image[IDrefr].array.F[ii] = data.image[ID].array.CF[ii].re;
@@ -6148,7 +6148,7 @@ int coronagraph_simul_RRPM(
     }
 
 
-    IDa2 = create_2Dimage_ID("pa2", size, size);
+    create_2Dimage_ID("pa2", size, size, &IDa2);
     for(uint64_t ii = 0; ii < size2; ii++)
     {
         data.image[IDa2].array.F[ii] = data.image[IDa1].array.F[ii] *
@@ -6157,7 +6157,7 @@ int coronagraph_simul_RRPM(
 
     if(RRPM_PIAA == 0)
     {
-        IDa2 = create_2Dimage_ID("pa2", size, size);
+        create_2Dimage_ID("pa2", size, size, &IDa2);
         for(uint64_t ii = 0; ii < size2; ii++)
         {
             data.image[IDa2].array.F[ii] = data.image[IDa1].array.F[ii] *
@@ -6236,8 +6236,8 @@ int coronagraph_simul_RRPM(
 
     if(initrrpm == 1)
     {
-        IDrefr = create_2Dimage_ID("refrrpmre", size, size);
-        IDrefi = create_2Dimage_ID("refrrpmim", size, size);
+        create_2Dimage_ID("refrrpmre", size, size, &IDrefr);
+        create_2Dimage_ID("refrrpmim", size, size, &IDrefi);
         for(uint64_t ii = 0; ii < size2; ii++)
         {
             data.image[IDrefr].array.F[ii] = data.image[ID].array.CF[ii].re;
@@ -6494,8 +6494,8 @@ int coronagraph_simul_OVC(
 
     if(initovc == 1)
     {
-        IDrefr = create_2Dimage_ID("refovcre", size, size);
-        IDrefi = create_2Dimage_ID("refovcim", size, size);
+        create_2Dimage_ID("refovcre", size, size, &IDrefr);
+        create_2Dimage_ID("refovcim", size, size, &IDrefi);
         for(ii = 0; ii < size2; ii++)
         {
             data.image[IDrefr].array.F[ii] = data.image[ID].array.CF[ii].re;
@@ -6611,7 +6611,7 @@ int coronagraph_simul_CPA(double xld, double yld, const char *psfname)
     }
 
 
-    IDa2 = create_2Dimage_ID("pa2", size, size);
+    create_2Dimage_ID("pa2", size, size, &IDa2);
     for(ii = 0; ii < size2; ii++)
     {
         data.image[IDa2].array.F[ii] = data.image[IDa1].array.F[ii] *
@@ -6741,11 +6741,11 @@ int coronagraph_simul_PPA(double xld, double yld, const char *psfname)
         }
 
 
-        IDrefr = create_2Dimage_ID("pparefr", size, size);
-        IDrefi = create_2Dimage_ID("pparefi", size, size);
-        IDrefa = create_2Dimage_ID("pparefa", size, size);
-        IDrefp = create_2Dimage_ID("pparefp", size, size);
-        IDcnt = create_2Dimage_ID("cntref", size, size);
+        create_2Dimage_ID("pparefr", size, size, &IDrefr);
+        create_2Dimage_ID("pparefi", size, size, &IDrefi);
+        create_2Dimage_ID("pparefa", size, size, &IDrefa);
+        create_2Dimage_ID("pparefp", size, size, &IDrefp);
+        create_2Dimage_ID("cntref", size, size, &IDcnt);
 
         for(kx = 0; kx < NBsample; kx++)
         {
@@ -6780,7 +6780,7 @@ int coronagraph_simul_PPA(double xld, double yld, const char *psfname)
 
 
 
-    IDa2 = create_2Dimage_ID("pa2", size, size);
+    create_2Dimage_ID("pa2", size, size, &IDa2);
     for(ii = 0; ii < size; ii++)
         for(jj = 0; jj < size; jj++)
         {
@@ -7345,7 +7345,8 @@ int coronagraph_simul_STRIPC(double xld, double yld, const char *psfname)
             data.image[IDp1].array.F[ii] += data.image[ID].array.F[ii];
         }
     }
-    imageID IDc = create_2DCimage_ID("pc2", size, size);
+    imageID IDc;
+    create_2DCimage_ID("pc2", size, size, &IDc);
 
     OFFSET = (long)(trad_pix * STRIPCOFFSET);
 
@@ -7470,7 +7471,7 @@ int coronagraph_simul_SIMXY(
             data.image[IDp1].array.F[ii] += data.image[ID].array.F[ii];
         }
     }
-    IDc = create_2DCimage_ID("pc2", size, size);
+    create_2DCimage_ID("pc2", size, size, &IDc);
 
     for(long ii = 0; ii < trad_pix; ii++)
     {
@@ -7582,7 +7583,7 @@ int coronagraph_simul_AIC_PIAAC(
     do2dfft("pc2", "fc2");
     permut("fc2");
 
-    IDaicfield = create_2DCimage_ID("fc2_aic", size, size);
+    create_2DCimage_ID("fc2_aic", size, size, &IDaicfield);
     ID = image_ID("fc2");
     for(uint32_t ii = 0; ii < size; ii++)
         for(uint32_t jj = 0; jj < size; jj++)
@@ -7658,8 +7659,8 @@ int coronagraph_simul_AIC_PIAAC(
     }
 
     /* Process AIC part */
-    IDaicc = create_2Dimage_ID("psfAICc", size, size);
-    IDaicd = create_2Dimage_ID("psfAICd", size, size);
+    create_2Dimage_ID("psfAICc", size, size, &IDaicc);
+    create_2Dimage_ID("psfAICd", size, size, &IDaicd);
     for(uint32_t ii = 1; ii < size; ii++)
         for(uint32_t jj = 1; jj < size; jj++)
         {
@@ -7682,7 +7683,7 @@ int coronagraph_simul_AIC_PIAAC(
     /* combine the 3 images */
     IDpiaac = image_ID("psfPIAAC");
 
-    ID = create_2Dimage_ID(psfname, size, size);
+    create_2Dimage_ID(psfname, size, size, &ID);
     for(uint32_t ii = 0; ii < size; ii++)
         for(uint32_t jj = 0; jj < size / 2; jj++)
         {
@@ -8426,7 +8427,7 @@ int coronagraph_simul_MULTISTEP_APLC(
                 save_fl_fits("aplcfpm", "TEST_aplcfpm.fits");
             }
             ID = image_ID("aplcfpm");
-            ID1 = create_2Dimage_ID("aplcfpm1", size, size);
+            create_2Dimage_ID("aplcfpm1", size, size, &ID1);
             for(uint64_t ii = 0; ii < size2; ii++)
             {
                 data.image[ID1].array.F[ii] = 1.0 - data.image[ID].array.F[ii];
@@ -8743,7 +8744,7 @@ int coronagraph_simul_MULTISTEP_APLC(
 
         ID = image_ID("fa2");
         delete_image_ID("fp2", DELETE_IMAGE_ERRMODE_WARNING);
-        IDout = create_2Dimage_ID(psfname, size, size);
+        create_2Dimage_ID(psfname, size, size, &IDout);
         for(uint64_t ii = 0; ii < size2; ii++)
         {
             data.image[IDout].array.F[ii] = data.image[ID].array.F[ii] / size2 / total0 *
@@ -8788,7 +8789,7 @@ int coronagraph_init_EXTERNAL_OCCULTER(
     printf("pix:  %g  %g\n", trad_pix / (D / 2.0)*PARAM_a,
            trad_pix / (D / 2.0)*PARAM_b);
     save_fl_fits("extocc", "extocc");
-    create_2Dimage_ID("zero", size * FACTOR, size * FACTOR);
+    create_2Dimage_ID("zero", size * FACTOR, size * FACTOR, NULL);
     mk_complex_from_amph("extocc", "zero", "extocc_c", 0);
     printf("pixscale = %g    l = %g    lambda = %g\n", pixscale, l, lambda);
     Fresnel_propagate_wavefront("extocc_c", "extoccp", pixscale, l, lambda);
@@ -8853,7 +8854,7 @@ int coronagraph_simul_EXTERNAL_OCCULTER(
 
     printf("transl = %ld %ld\n", xtransl, ytransl);
 
-    IDa1 = create_2Dimage_ID("pa1", size, size);
+    create_2Dimage_ID("pa1", size, size, &IDa1);
     IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix,
                         PI * yld / trad_pix);
 
@@ -8893,7 +8894,7 @@ int coronagraph_simul_EXTERNAL_OCCULTER(
 
     ID = image_ID("fa2");
     delete_image_ID("fp2", DELETE_IMAGE_ERRMODE_WARNING);
-    IDout = create_2Dimage_ID(psfname, size, size);
+    create_2Dimage_ID(psfname, size, size, &IDout);
     for(ii = 0; ii < size2; ii++)
     {
         data.image[IDout].array.F[ii] = data.image[ID].array.F[ii] / size2 / total0 *
@@ -9533,7 +9534,7 @@ int coronagraph_transm(const char *fname, long coronagraph_type,
         PIAAFPMASKRAD = 0.0;
         if((FOCerror_included == 1) || (TTerror_included == 1))
         {
-            ID0 = create_2Dimage_ID("psf0", size, size);
+            create_2Dimage_ID("psf0", size, size, &ID0);
             cnt = 0;
             if(TTerror_included == 1)
             {
@@ -9562,7 +9563,7 @@ int coronagraph_transm(const char *fname, long coronagraph_type,
             }
             else
             {
-                ID = create_2Dimage_ID("corphase", size, size);
+                create_2Dimage_ID("corphase", size, size, &ID);
                 for(i = -nbFOCpts; i < nbFOCpts; i++)
                 {
                     tmp = 1.0 * i * FOCerror / nbFOCpts;
@@ -9613,7 +9614,7 @@ int coronagraph_transm(const char *fname, long coronagraph_type,
 
     if((FOCerror_included == 1) || (TTerror_included == 1))
     {
-        ID0 = create_2Dimage_ID("psf0", size, size);
+        create_2Dimage_ID("psf0", size, size, &ID0);
         cnt = 0;
         if(TTerror_included == 1)
         {
@@ -9642,7 +9643,7 @@ int coronagraph_transm(const char *fname, long coronagraph_type,
         }
         else
         {
-            ID = create_2Dimage_ID("corphase", size, size);
+            create_2Dimage_ID("corphase", size, size, &ID);
             for(i = -nbFOCpts; i < nbFOCpts; i++)
             {
                 tmp = 1.0 * i * FOCerror / nbFOCpts;
@@ -10702,13 +10703,16 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
     // create transmission cube and IWA image
     //
     fpresult = fopen("result.log", "w");
-    IDtransm = create_3Dimage_ID("PIAACMCtransm", obs1arraysize, fpmaskradarraysize,
-                                 kmax);
-    IDiwa = create_2Dimage_ID("PIAACMCiwa", obs1arraysize, fpmaskradarraysize);
-    IDcontrastmax = create_2Dimage_ID("PIAACMCcontrastmax", obs1arraysize,
-                                      fpmaskradarraysize);
-    IDfpmasktransm = create_2Dimage_ID("PIAACMCfpmasktransm", obs1arraysize,
-                                       fpmaskradarraysize);
+    create_3Dimage_ID("PIAACMCtransm", obs1arraysize, fpmaskradarraysize,
+                      kmax, &IDtransm);
+
+    create_2Dimage_ID("PIAACMCiwa", obs1arraysize, fpmaskradarraysize, &IDiwa);
+
+    create_2Dimage_ID("PIAACMCcontrastmax", obs1arraysize,
+                      fpmaskradarraysize, &IDcontrastmax);
+
+    create_2Dimage_ID("PIAACMCfpmasktransm", obs1arraysize,
+                      fpmaskradarraysize, &IDfpmasktransm);
 
     for(obs1_index = 0; obs1_index < obs1arraysize; obs1_index++)
     {

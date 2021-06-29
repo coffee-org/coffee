@@ -146,8 +146,8 @@ errno_t PIAACMCsimul_mkPIAAMshapes_from_RadSag(
 
 
 
-    ID_PIAAM0 = create_2Dimage_ID(ID_PIAAM0_name, size, size);
-    ID_PIAAM1 = create_2Dimage_ID(ID_PIAAM1_name, size, size);
+    create_2Dimage_ID(ID_PIAAM0_name, size, size, &ID_PIAAM0);
+    create_2Dimage_ID(ID_PIAAM1_name, size, size, &ID_PIAAM1);
 
     printf("\n\n");
 

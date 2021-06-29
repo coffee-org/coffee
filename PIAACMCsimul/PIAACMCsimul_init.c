@@ -212,7 +212,7 @@ errno_t PIAACMCsimul_init(
     if(IDa == -1) // if pupil does not exist, use circular one (this occurs in initial design steps)
     {
         printf("CREATING INPUT PUPIL\n");
-        IDa = create_3Dimage_ID("pupa0", size, size, nblambda);
+        create_3Dimage_ID("pupa0", size, size, nblambda, &IDa);
 
         imageID IDr = image_ID("rcoord");
 
@@ -274,7 +274,8 @@ errno_t PIAACMCsimul_init(
 
     // initialize this mirror by setting pointing (simulated as mirror shape), defining off-axis source
     {
-        imageID ID = create_2Dimage_ID("TTm", size, size);
+        imageID ID;
+        create_2Dimage_ID("TTm", size, size, &ID);
 
         for(uint32_t ii = 0; ii < size; ii++)
             for(uint32_t jj = 0; jj < size; jj++)

@@ -179,7 +179,9 @@ double PIAACMCsimul_optimizeLyotStop(
         nblambda = 1;
     }
 
-    imageID IDzone = create_2Dimage_ID("LMzonemap", xsize, ysize);
+    imageID IDzone;
+    create_2Dimage_ID("LMzonemap", xsize, ysize, &IDzone);
+
     for(uint32_t ii = 0; ii < xsize; ii++)
         for(uint32_t jj = 0; jj < ysize; jj++)
         {
@@ -209,11 +211,17 @@ double PIAACMCsimul_optimizeLyotStop(
     //  save_fits(nameint, fname);
 
 
-    imageID IDre = create_2Dimage_ID("retmpim", xsize, ysize);
-    imageID IDim = create_2Dimage_ID("imtmpim", xsize, ysize);
+    imageID IDre;
+    create_2Dimage_ID("retmpim", xsize, ysize, &IDre);
 
-    imageID ID_LMintC = create_3Dimage_ID("LMintC", xsize, ysize, NBz);
-    imageID IDintg = create_2Dimage_ID("tmpintg", xsize, ysize);
+    imageID IDim;
+    create_2Dimage_ID("imtmpim", xsize, ysize, &IDim);
+
+    imageID ID_LMintC;
+    create_3Dimage_ID("LMintC", xsize, ysize, NBz, &ID_LMintC);
+
+    imageID IDintg;
+    create_2Dimage_ID("tmpintg", xsize, ysize, &IDintg);
 
     float sigma = 0.01 * piaacmc[0].beamrad / piaacmc[0].pixscale;
     int filter_size = (long)(sigma * 2.0);
@@ -316,8 +324,8 @@ double PIAACMCsimul_optimizeLyotStop(
         }
     }
 
-    IDmc = create_2Dimage_ID("Lcomb", xsize, ysize);
-    IDmc1 = create_2Dimage_ID("LcombOA", xsize, ysize);
+    create_2Dimage_ID("Lcomb", xsize, ysize, &IDmc);
+    create_2Dimage_ID("LcombOA", xsize, ysize, &IDmc1);
     for(uint64_t ii = 0; ii < xysize; ii++)
     {
         data.image[IDmc1].array.F[ii] = 0.0;
@@ -387,7 +395,9 @@ double PIAACMCsimul_optimizeLyotStop(
 
     delete_image_ID("Lcomb", DELETE_IMAGE_ERRMODE_WARNING);
 
-    imageID IDlscumul = create_2Dimage_ID("LMcumul", xsize, ysize);
+    imageID IDlscumul;
+    create_2Dimage_ID("LMcumul", xsize, ysize, &IDlscumul);
+
     for(uint64_t ii = 0; ii < xysize; ii++)
     {
         data.image[IDlscumul].array.F[ii] = 1.0;
@@ -398,7 +408,8 @@ double PIAACMCsimul_optimizeLyotStop(
         char name[STRINGMAXLEN_IMGNAME];
         WRITE_IMAGENAME(name, "optLM%02ld", m);
 
-        imageID IDm = create_2Dimage_ID(name, xsize, ysize);
+        imageID IDm;
+        create_2Dimage_ID(name, xsize, ysize, &IDm);
 
         for(uint32_t ii = 0; ii < xsize; ii++)
             for(uint32_t jj = 0; jj < ysize; jj++)

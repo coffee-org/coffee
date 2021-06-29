@@ -66,11 +66,15 @@ errno_t PIAACMCsimul_load2DRadialApodization(
 
     // CREATE MASK AND CROP INPUT
     {
-        imageID IDmask = create_2Dimage_ID("fitmaskapo", sizem, sizem);
+        imageID IDmask;
+        create_2Dimage_ID("fitmaskapo", sizem, sizem, &IDmask);
+
         imageID IDin = image_ID(IDapo_name);
         uint32_t sizein = data.image[IDin].md[0].size[0];
 
-        imageID ID = create_2Dimage_ID("_apoincrop", sizem, sizem);
+        imageID ID;
+        create_2Dimage_ID("_apoincrop", sizem, sizem, &ID);
+
         long offset = (sizein-sizem)/2;
         for(uint32_t ii=0; ii<sizem; ii++)
             for(uint32_t jj=0; jj<sizem; jj++)

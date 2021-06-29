@@ -43,7 +43,7 @@ long PIAACMC_FPMresp_rmzones(const char *FPMresp_in_name, const char *FPMresp_ou
 
     long ysize1 = data.image[ID].md[0].size[1]-NBzones;
 
-    IDout = create_3Dimage_ID_double(FPMresp_out_name, xsize, ysize1, zsize);
+    create_3Dimage_ID_double(FPMresp_out_name, xsize, ysize1, zsize, &IDout);
 
     for(uint32_t ii=0; ii<xsize; ii++)
         for(uint32_t kk=0; kk<zsize; kk++)

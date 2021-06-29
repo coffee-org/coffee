@@ -108,7 +108,7 @@ errno_t PIAACMCsimul_makePIAAshapes(
             imageID ID = image_ID("piaam0z");
             if(ID == -1)
             {
-                ID = create_2Dimage_ID("piaam0z", size, size);
+                create_2Dimage_ID("piaam0z", size, size, &ID);
             }
 
             uint32_t size0 = data.image[ID0].md[0].size[0];
@@ -175,8 +175,10 @@ errno_t PIAACMCsimul_makePIAAshapes(
                 }
                 if(mkpiaar0zsag == 1)
                 {
-                    IDpiaar0zsag = create_2Dimage_ID("piaar0zsag", size,
-                                                     size);    //, design[index].nblambda);
+                    create_2Dimage_ID("piaar0zsag",
+                                      size,
+                                      size,
+                                      &IDpiaar0zsag);    //, design[index].nblambda);
                 }
 
 
@@ -237,7 +239,7 @@ errno_t PIAACMCsimul_makePIAAshapes(
             imageID ID = image_ID("piaam1z");
             if(ID == -1)
             {
-                ID = create_2Dimage_ID("piaam1z", size, size);
+                create_2Dimage_ID("piaam1z", size, size, &ID);
             }
             for(long ii = 0; ii < size * size; ii++)
             {
@@ -300,8 +302,10 @@ errno_t PIAACMCsimul_makePIAAshapes(
                 }
                 if(mkpiaar1zsag == 1)
                 {
-                    IDpiaar1zsag = create_2Dimage_ID("piaar1zsag", size,
-                                                     size);    //, design[index].nblambda);
+                    create_2Dimage_ID("piaar1zsag",
+                                      size,
+                                      size,
+                                      &IDpiaar1zsag);    //, design[index].nblambda);
                 }
 
                 FILE *fpri;

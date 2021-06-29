@@ -204,7 +204,7 @@ errno_t PIAACMCsimul_exec_optimize_fpm_zones()
         data.image[IDfpmresp].md[0].size[0]; // number of eval pts x2
     // make an array that holds the resulting light for evaluation point given the FPM solution, for each wavelenth
     //ID =
-    create_2Dimage_ID("imvect1", piaacmcsimul_var.vsize, piaacmc[0].nblambda);
+    create_2Dimage_ID("imvect1", piaacmcsimul_var.vsize, piaacmc[0].nblambda, NULL);
 
     // allocate arrays for fast routine
     // define convenient array variables

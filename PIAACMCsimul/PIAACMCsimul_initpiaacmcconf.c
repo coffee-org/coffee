@@ -808,10 +808,18 @@ errno_t PIAACMCsimul_initpiaacmcconf(
 
     // x, y, r and PA coordinates in beam (for convenience & speed)
     {
-        imageID IDx = create_2Dimage_ID("xcoord", size, size);
-        imageID IDy = create_2Dimage_ID("ycoord", size, size);
-        imageID IDr = create_2Dimage_ID("rcoord", size, size);
-        imageID IDPA = create_2Dimage_ID("PAcoord", size, size);
+        imageID IDx;
+        create_2Dimage_ID("xcoord", size, size, &IDx);
+
+        imageID IDy;
+        create_2Dimage_ID("ycoord", size, size, &IDy);
+
+        imageID IDr;
+        create_2Dimage_ID("rcoord", size, size, &IDr);
+
+        imageID IDPA;
+        create_2Dimage_ID("PAcoord", size, size, &IDPA);
+
         printf("pre-computing x, y, r, and PA\n");
         fflush(stdout);
         // list_image_ID();
@@ -1244,8 +1252,8 @@ errno_t PIAACMCsimul_initpiaacmcconf(
         ysize = data.image[IDapo].md[0].size[1];
         xysize *= ysize;
 
-        IDapo_PIAA = create_2Dimage_ID("apo2Drad_PIAA", xsize, ysize);
-        IDapo_CPA = create_2Dimage_ID("apo2Drad_CPA", xsize, ysize);
+        create_2Dimage_ID("apo2Drad_PIAA", xsize, ysize, &IDapo_PIAA);
+        create_2Dimage_ID("apo2Drad_CPA", xsize, ysize, &IDapo_CPA);
 
         if(piaacmc[0].PIAAmode == 0)
         {
@@ -1322,7 +1330,9 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             uint32_t size0 = data.image[ID0].md[0].size[0];
 
             {   // crop piaam0z -> piaa0zcrop
-                imageID ID1 = create_2Dimage_ID("piaa0zcrop", size0, size0);
+                imageID ID1;
+                create_2Dimage_ID("piaa0zcrop", size0, size0, &ID1);
+
                 imageID ID = image_ID("piaam0z");
                 for(uint32_t ii = 0; ii < size0; ii++)
                     for(uint32_t jj = 0; jj < size0; jj++)
@@ -1334,7 +1344,10 @@ errno_t PIAACMCsimul_initpiaacmcconf(
 
 
             {   // crop piaam1z -> piaa1zcrop
-                imageID ID1 = create_2Dimage_ID("piaa1zcrop", size0, size0);
+
+                imageID ID1;
+                create_2Dimage_ID("piaa1zcrop", size0, size0, &ID1);
+
                 imageID ID = image_ID("piaam1z");
                 for(uint32_t ii = 0; ii < size0; ii++)
                     for(uint32_t jj = 0; jj < size0; jj++)
@@ -1421,7 +1434,10 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             imageID ID0 = image_ID("piaa0Cz");
             uint32_t size0 = data.image[ID0].md[0].size[0];
             imageID ID1 = image_ID("piaam0z");
-            imageID ID = create_2Dimage_ID("piaa0Cres", size0, size0);
+
+            imageID ID;
+            create_2Dimage_ID("piaa0Cres", size0, size0, &ID);
+
             for(uint32_t ii = 0; ii < size0; ii++)
                 for(uint32_t jj = 0; jj < size0; jj++)
                 {
@@ -1442,7 +1458,10 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             imageID ID0 = image_ID("piaa1Cz");
             uint32_t size0 = data.image[ID0].md[0].size[0];
             imageID ID1 = image_ID("piaam1z");
-            imageID ID = create_2Dimage_ID("piaa1Cres", size0, size0);
+
+            imageID ID;
+            create_2Dimage_ID("piaa1Cres", size0, size0, &ID);
+
             for(uint32_t ii = 0; ii < size0; ii++)
                 for(uint32_t jj = 0; jj < size0; jj++)
                 {
@@ -1631,9 +1650,9 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             delete_image_ID("fpmzt", DELETE_IMAGE_ERRMODE_WARNING);
         }
 
-        piaacmc[0].zonezID =
-            create_2Dimage_ID_double("fpmzt", piaacmc[0].focmNBzone,
-                                     1);
+
+        create_2Dimage_ID_double("fpmzt", piaacmc[0].focmNBzone,
+                                 1, &(piaacmc[0].zonezID));
         double t = 1.0e-9;
 
         if(piaacmctype == 0) // idealized focal plane mask
@@ -1723,8 +1742,8 @@ errno_t PIAACMCsimul_initpiaacmcconf(
         {
             delete_image_ID("fpmza", DELETE_IMAGE_ERRMODE_WARNING);
         }
-        piaacmc[0].zoneaID = create_2Dimage_ID_double("fpmza", piaacmc[0].focmNBzone,
-                             1);
+        create_2Dimage_ID_double("fpmza", piaacmc[0].focmNBzone,
+                                 1, &(piaacmc[0].zoneaID));
 
         if(piaacmcsimul_var.PIAACMC_MASKRADLD > 0.2)   // physical mask
         {
@@ -1825,7 +1844,7 @@ errno_t PIAACMCsimul_initpiaacmcconf(
         piaacmc[0].IDLyotStop[i] = image_ID(name);
         if(piaacmc[0].IDLyotStop[i] == -1)
         {
-            piaacmc[0].IDLyotStop[i] = create_2Dimage_ID(name, xsize, ysize);
+            create_2Dimage_ID(name, xsize, ysize, &(piaacmc[0].IDLyotStop[i]));
             imageID ID = image_ID("pupmaskim");
             for(uint64_t ii = 0; ii < xysize; ii++)
                 if(data.image[ID].array.F[ii] < 0.99999999)

@@ -83,8 +83,11 @@ long PIAACMCsimul_geomProp(
 
     imageID IDsag = image_ID(IDsag_name);
 
-    imageID IDout = create_2Dimage_ID(IDout_name, xsize, ysize);
-    imageID IDoutcnt = create_2Dimage_ID(IDoutcnt_name, xsize, ysize);
+    imageID IDout;
+    create_2Dimage_ID(IDout_name, xsize, ysize, &IDout);
+
+    imageID IDoutcnt;
+    create_2Dimage_ID(IDoutcnt_name, xsize, ysize, &IDoutcnt);
 
     printf("kstep = %f\n", kstep);
 

@@ -217,7 +217,7 @@ errno_t PIAACMCsimul_exec_compute_image()
                 {
                     initscene = 1;
                     // create 3D image to sum the PSFs into
-                    IDscene = create_3Dimage_ID("scene", xsize, ysize, zsize);
+                    create_3Dimage_ID("scene", xsize, ysize, zsize, &IDscene);
                 }
                 ID = image_ID("psfi0");
                 // sum the current PSF into the image: summed image is IDscene, source is ID
