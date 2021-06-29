@@ -58,22 +58,31 @@ errno_t PIAACMCsimul_load2DRadialApodization(
         if((image_ID("APOmodesCos"))==-1)
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
-            linopt_imtools_makeCosRadModes("APOmodesCos", sizem, kmax, ApoFitCosFact*beamradpix, 1.0);
+            FUNC_CHECK_RETURN(
+                linopt_imtools_makeCosRadModes("APOmodesCos", sizem, kmax, ApoFitCosFact*beamradpix, 1.0, NULL)
+            );
+
             WRITE_FULLFILENAME(fname, "%s/APOmodesCos.fits", piaacmcsimul_var.piaacmcconfdir);
-            save_fits("APOmodesCos", fname);
+            FUNC_CHECK_RETURN(
+                save_fits("APOmodesCos", fname)
+            );
         }
     }
 
     // CREATE MASK AND CROP INPUT
     {
         imageID IDmask;
-        create_2Dimage_ID("fitmaskapo", sizem, sizem, &IDmask);
+        FUNC_CHECK_RETURN(
+            create_2Dimage_ID("fitmaskapo", sizem, sizem, &IDmask)
+        );
 
         imageID IDin = image_ID(IDapo_name);
         uint32_t sizein = data.image[IDin].md[0].size[0];
 
         imageID ID;
-        create_2Dimage_ID("_apoincrop", sizem, sizem, &ID);
+        FUNC_CHECK_RETURN(
+            create_2Dimage_ID("_apoincrop", sizem, sizem, &ID)
+        );
 
         long offset = (sizein-sizem)/2;
         for(uint32_t ii=0; ii<sizem; ii++)
@@ -92,10 +101,14 @@ errno_t PIAACMCsimul_load2DRadialApodization(
     {   // for debugging
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "%s/_apoincrop.fits", piaacmcsimul_var.piaacmcconfdir);
-        save_fits("_apoincrop", fname);
+        FUNC_CHECK_RETURN(
+            save_fits("_apoincrop", fname)
+        );
 
         WRITE_FULLFILENAME(fname, "%s/fitmaskapo.fits", piaacmcsimul_var.piaacmcconfdir);
-        save_fits("fitmaskapo", fname);
+        FUNC_CHECK_RETURN(
+            save_fits("fitmaskapo", fname)
+        );
     }
 
     // Perform linear fit
@@ -109,26 +122,39 @@ errno_t PIAACMCsimul_load2DRadialApodization(
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
 
-        linopt_imtools_image_construct("APOmodesCos", IDapofit_name, "testapofitsol", NULL);
+        FUNC_CHECK_RETURN(
+            linopt_imtools_image_construct("APOmodesCos", IDapofit_name, "testapofitsol", NULL)
+        );
 
         WRITE_FULLFILENAME(fname, "%s/testapofitsol.fits", piaacmcsimul_var.piaacmcconfdir);
-        save_fits("testapofitsol", fname);
+        FUNC_CHECK_RETURN(
+            save_fits("testapofitsol", fname)
+        );
 
         arith_image_sub("_apoincrop", "testapofitsol", "apofitres");
         arith_image_mult("apofitres", "fitmaskapo", "apofitresm");
 
         WRITE_FULLFILENAME(fname, "%s/apofitres.fits", piaacmcsimul_var.piaacmcconfdir);
-        save_fits("apofitres", fname);
+        FUNC_CHECK_RETURN(
+            save_fits("apofitres", fname)
+        );
 
         WRITE_FULLFILENAME(fname, "%s/apofitresm.fits", piaacmcsimul_var.piaacmcconfdir);
-        save_fits("apofitresm", fname);
+        FUNC_CHECK_RETURN(
+            save_fits("apofitresm", fname)
+        );
 
         // linopt_imtools_image_fitModes("apofitres", "APOmodesCos", "fitmaskapo", 1.0e-5, "test2c", 0);
         info_image_stats("apofitresm", "");
     }
 
-    delete_image_ID("_apoincrop", DELETE_IMAGE_ERRMODE_WARNING);
-    delete_image_ID("fitmaskapo", DELETE_IMAGE_ERRMODE_WARNING);
+    FUNC_CHECK_RETURN(
+        delete_image_ID("_apoincrop", DELETE_IMAGE_ERRMODE_WARNING)
+    );
+
+    FUNC_CHECK_RETURN(
+        delete_image_ID("fitmaskapo", DELETE_IMAGE_ERRMODE_WARNING)
+    );
 
 
     DEBUG_TRACE_FEXIT();

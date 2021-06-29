@@ -928,7 +928,7 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             piaacmc[0].Cmsize = Cmsize;
             DEBUG_TRACEPOINT_LOG("run linopt_imtools_makeCosRadModes");
             linopt_imtools_makeCosRadModes("Cmodes", Cmsize, piaacmc[0].piaaNBCmodesmax,
-                                           ApoFitCosFact * beamradpix, 2.0);
+                                           ApoFitCosFact * beamradpix, 2.0, NULL);
             piaacmc[0].CmodesID = image_ID("Cmodes");
             save_fits("Cmodes", fname);
 
@@ -978,7 +978,7 @@ errno_t PIAACMCsimul_initpiaacmcconf(
             piaacmc[0].Fmsize = Fmsize;
             DEBUG_TRACEPOINT_LOG("run linopt_imtools_makeCPAmodes");
             linopt_imtools_makeCPAmodes("Fmodes",  Fmsize, piaacmc[0].piaaCPAmax, 0.8,
-                                        beamradpix, 2.0, 1);
+                                        beamradpix, 2.0, 1, NULL);
             piaacmc[0].FmodesID = image_ID("Fmodes");
             save_fits("Fmodes", fname);
             save_fits("cpamodesfreq", "cpamodesfreq.fits");

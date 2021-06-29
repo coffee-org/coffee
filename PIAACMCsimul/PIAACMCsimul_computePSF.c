@@ -224,7 +224,10 @@ errno_t PIAACMCsimul_computePSF(
                 save_fits("scoringmask", fname);
             }
             // a pixtable is a list of non-zero pixels with their coordinates
-            linopt_imtools_mask_to_pixtable("scoringmask", "pixindex", "pixmult");
+            FUNC_CHECK_RETURN(
+                linopt_imtools_mask_to_pixtable("scoringmask", "pixindex", "pixmult", NULL)
+            );
+
             // sums the image, giving the total number of pixels in the scoring mask
             piaacmcsimul_var.SCORINGTOTAL = arith_image_total("scoringmask");
 
@@ -383,7 +386,9 @@ errno_t PIAACMCsimul_computePSF(
                 WRITE_IMAGENAME(imname, "imvectp%02ld", imindex);
 
                 // convert the image to the vector
-                linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
+                FUNC_CHECK_RETURN(
+                    linopt_imtools_image_to_vec("psfc0", "pixindex", "pixmult", imname, NULL)
+                );
             }
 
             // save the intensity of the first point
@@ -425,7 +430,10 @@ errno_t PIAACMCsimul_computePSF(
                 {
                     char imname[STRINGMAXLEN_IMGNAME];
                     WRITE_IMAGENAME(imname, "imvectp%02ld", imindex);
-                    linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
+
+                    FUNC_CHECK_RETURN(
+                        linopt_imtools_image_to_vec("psfc0", "pixindex", "pixmult", imname, NULL)
+                    );
                 }
 
                 // add the intensity to build up PSF for extended source
@@ -465,7 +473,9 @@ errno_t PIAACMCsimul_computePSF(
                 {
                     char imname[STRINGMAXLEN_IMGNAME];
                     WRITE_IMAGENAME(imname, "imvectp%02ld", imindex);
-                    linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
+                    FUNC_CHECK_RETURN(
+                        linopt_imtools_image_to_vec("psfc0", "pixindex", "pixmult", imname, NULL)
+                    );
                 }
 
                 // add the intensity to build up PSF for extended source
@@ -506,7 +516,9 @@ errno_t PIAACMCsimul_computePSF(
                 {
                     char imname[STRINGMAXLEN_IMGNAME];
                     WRITE_IMAGENAME(imname, "imvectp%02ld", imindex);
-                    linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
+                    FUNC_CHECK_RETURN(
+                        linopt_imtools_image_to_vec("psfc0", "pixindex", "pixmult", imname, NULL)
+                    );
                 }
 
                 arith_image_add_inplace("psfi0ext", "psfi0");
@@ -547,7 +559,9 @@ errno_t PIAACMCsimul_computePSF(
                 {
                     char imname[STRINGMAXLEN_IMGNAME];
                     WRITE_IMAGENAME(imname, "imvectp%02ld", imindex);
-                    linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
+                    FUNC_CHECK_RETURN(
+                        linopt_imtools_image_to_vec("psfc0", "pixindex", "pixmult", imname, NULL)
+                    );
                 }
 
                 arith_image_add_inplace("psfi0ext", "psfi0");
@@ -588,7 +602,9 @@ errno_t PIAACMCsimul_computePSF(
                 {
                     char imname[STRINGMAXLEN_IMGNAME];
                     WRITE_IMAGENAME(imname, "imvectp%02ld", imindex);
-                    linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
+                    FUNC_CHECK_RETURN(
+                        linopt_imtools_image_to_vec("psfc0", "pixindex", "pixmult", imname, NULL)
+                    );
                 }
 
                 arith_image_add_inplace("psfi0ext", "psfi0");
@@ -650,7 +666,9 @@ errno_t PIAACMCsimul_computePSF(
                 {
                     char imname[STRINGMAXLEN_IMGNAME];
                     WRITE_IMAGENAME(imname, "imvectp%02ld", imindex);
-                    linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", imname);
+                    FUNC_CHECK_RETURN(
+                        linopt_imtools_image_to_vec("psfc0", "pixindex", "pixmult", imname, NULL)
+                    );
                 }
 
                 arith_image_add_inplace("psfi0ext", "psfi0");
@@ -730,7 +748,7 @@ errno_t PIAACMCsimul_computePSF(
                 }
             }
 
-            //linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", "imvect");
+            //linopt_imtools_image_to_vec("psfc0", "pixindex", "pixmult", "imvect");
 
             // measure the contrast for all aimplitudes in imvect
             double value = 0.0;
@@ -914,7 +932,9 @@ errno_t PIAACMCsimul_computePSF(
 
 //           list_image_ID();
             // linearize the result into imvect
-            linopt_imtools_Image_to_vec("psfc0", "pixindex", "pixmult", "imvect");
+            FUNC_CHECK_RETURN(
+                linopt_imtools_image_to_vec("psfc0", "pixindex", "pixmult", "imvect", NULL)
+            );
 
 
             save_fits("imvect", "./testdir/test_imvect.fits");
