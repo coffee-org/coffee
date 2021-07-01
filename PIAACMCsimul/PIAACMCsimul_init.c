@@ -113,6 +113,11 @@ errno_t PIAACMCsimul_init(
         );
 
         fp = fopen(fname, "w");
+        if(fp == NULL)
+        {
+            PRINT_ERROR("Cannot create file %s", fname);
+            abort();
+        }
 
         for(int k = 0; k < optsyst[0].nblambda; k++)
         {
@@ -258,7 +263,10 @@ errno_t PIAACMCsimul_init(
                            "%s/pupa0_%ld.fits",
                            piaacmcsimul_var.piaacmcconfdir,
                            size);
-        save_fl_fits("pupa0", fname_pupa0);
+
+        FUNC_CHECK_RETURN(
+            save_fl_fits("pupa0", fname_pupa0)
+        );
     }
     optsyst[0].elemarrayindex[elem] = IDa;
     optsyst[0].elemZpos[elem] = 0.0; // pupil is at z = 0
@@ -275,7 +283,9 @@ errno_t PIAACMCsimul_init(
     // initialize this mirror by setting pointing (simulated as mirror shape), defining off-axis source
     {
         imageID ID;
-        create_2Dimage_ID("TTm", size, size, &ID);
+        FUNC_CHECK_RETURN(
+            create_2Dimage_ID("TTm", size, size, &ID)
+        );
 
         for(uint32_t ii = 0; ii < size; ii++)
             for(uint32_t jj = 0; jj < size; jj++)
@@ -299,9 +309,6 @@ errno_t PIAACMCsimul_init(
             for(uint32_t ii = 0; ii < size; ii++)
                 for(uint32_t jj = 0; jj < size; jj++)
                 {
-                    //double x = (1.0 * ii - 0.5 * size) / beamradpix;
-                    //double y = (1.0 * jj - 0.5 * size) / beamradpix;
-
                     // add the error shape to the mirror shape
                     data.image[ID].array.F[jj * size + ii] +=
                         data.image[IDopderr].array.F[jj * size + ii] * 0.5;
@@ -364,7 +371,9 @@ errno_t PIAACMCsimul_init(
         imageID ID = image_ID("prePIAA0mask");
         if(ID == -1)
         {
-            load_fits("prePIAA0mask.fits", "prePIAA0mask", LOADFITS_ERRMODE_WARNING, &ID);
+            FUNC_CHECK_RETURN(
+                load_fits("prePIAA0mask.fits", "prePIAA0mask", LOADFITS_ERRMODE_WARNING, &ID)
+            );
         }
         if(ID != -1)
         {
@@ -420,18 +429,16 @@ errno_t PIAACMCsimul_init(
             optsyst[0].elemtype[elem] = 4;
 
             DEBUG_TRACEPOINT("Element is lens");
-            optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].surfID = image_ID("piaar0zsag");
+            optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].surfID = IDpiaam0z; //image_ID("piaar0zsag");
             //IDpiaar0zsag;
             if(optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].surfID == -1)
             {
                 FUNC_RETURN_FAILURE("PIAA lens surface 0 not identified");
             }
 
-            // vacuum
+            // material, vacuum
             optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat0 = 100;
-
-            optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat1 =
-                design[0].PIAAmaterial_code;
+            optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat1 = design[0].PIAAmaterial_code;
         }
 
         elem++;
@@ -484,24 +491,22 @@ errno_t PIAACMCsimul_init(
             optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID = IDpiaam1z;
             if(optsyst[0].ASPHSURFMarray[optsyst[0].elemarrayindex[elem]].surfID == -1)
             {
-                FUNC_RETURN_FAILURE("PIAA mirror surface 0 not identified");
+                FUNC_RETURN_FAILURE("PIAA mirror surface 1 not identified");
             }
         }
         else // lens
         {
             optsyst[0].elemtype[elem] = 4;
 
-            optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].surfID =
-                image_ID("piaar1zsag"); //IDpiaar0zsag;
+            optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].surfID = IDpiaam1z; //image_ID("piaar1zsag");
 
             if(optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].surfID == -1)
             {
-                FUNC_RETURN_FAILURE("PIAA lens surface 0 not identified");
+                FUNC_RETURN_FAILURE("PIAA lens surface 1 not identified");
             }
 
-            optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat0 = 100; // vacuum
-            optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat1 =
-                design[0].PIAAmaterial_code;
+            optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat0 = 100;
+            optsyst[0].ASPHSURFRarray[optsyst[0].elemarrayindex[elem]].mat1 = design[0].PIAAmaterial_code;
         }
         //       fprintf(fp,"%02ld  %f    PIAAM1\n", elem, optsyst[0].elemZpos[elem]);
         elem++;
@@ -552,15 +557,28 @@ errno_t PIAACMCsimul_init(
         optsyst[0].FOCMASKarray[0].fpmID =
             PIAACMCsimul_mkFocalPlaneMask("fpmzmap",
                                           "piaacmcfpm", piaacmcsimul_var.focmMode,
-                                          savefpm); // if -1, this is 1-fpm; otherwise, this is impulse response from single zone
+                                          savefpm);
+        // if -1, this is 1-fpm; otherwise, this is impulse response from single zone
 
         // TEST
 
         mk_reim_from_complex("piaacmcfpm", "piaacmcfpm_re", "piaacmcfpm_im", 0);
-        save_fits("piaacmcfpm_re", "./testdir/test_piaacmcfpm_re.fits");
-        save_fits("piaacmcfpm_im", "./testdir/test_piaacmcfpm_im.fits");
-        delete_image_ID("piaacmcfpm_re", DELETE_IMAGE_ERRMODE_WARNING);
-        delete_image_ID("piaacmcfpm_im", DELETE_IMAGE_ERRMODE_WARNING);
+
+        FUNC_CHECK_RETURN(
+            save_fits("piaacmcfpm_re", "./testdir/test_piaacmcfpm_re.fits")
+        );
+
+        FUNC_CHECK_RETURN(
+            save_fits("piaacmcfpm_im", "./testdir/test_piaacmcfpm_im.fits")
+        );
+
+        FUNC_CHECK_RETURN(
+            delete_image_ID("piaacmcfpm_re", DELETE_IMAGE_ERRMODE_WARNING)
+        );
+
+        FUNC_CHECK_RETURN(
+            delete_image_ID("piaacmcfpm_im", DELETE_IMAGE_ERRMODE_WARNING)
+        );
 
 
 
@@ -719,6 +737,11 @@ errno_t PIAACMCsimul_init(
             piaacmcsimul_var.piaacmcconfdir
         );
         fp = fopen(fname, "w");
+        if(fp == NULL)
+        {
+            PRINT_ERROR("Cannot create %s", fname);
+            abort();
+        }
 
         for(elem=0; elem<optsyst[0].NBelem; elem++)
         {

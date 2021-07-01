@@ -395,7 +395,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
         if(optsyst[index].elemtype[elem] == 4)
         {
             // REFRACTIVE SURFACE - STORED AS SAG MAP AS A SINGLE MAP (ACHROMATIC) OR A CUBE (CHROMATIC)
-            printf("============= Refractive surface =======================\n");
+            printf("============= [%ld] Refractive surface =======================\n", elem);
             fflush(stdout);
 
             imageID ID = optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].surfID;
@@ -446,8 +446,8 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                         for(uint64_t ii = 0; ii < size2; ii++)
                             // apply change in phase
                         {
-                            data.image[IDp].array.F[size2 * kl + ii] += data.image[ID].array.F[ii] *
-                            optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl];
+                            data.image[IDp].array.F[size2 * kl + ii] +=
+                            data.image[ID].array.F[ii] * optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl];
                         }
 # ifdef HAVE_LIBGOMP
                 }
@@ -464,8 +464,8 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                         for(uint64_t ii = 0; ii < size2; ii++)
                             // apply change in phase
                         {
-                            data.image[IDp].array.F[size2 * kl + ii] += data.image[ID].array.F[size2 * kl +
-                                    ii] * optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl];
+                            data.image[IDp].array.F[size2 * kl + ii] +=
+                            data.image[ID].array.F[size2 * kl + ii] * optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl];
                         }
 # ifdef HAVE_LIBGOMP
                 }
@@ -484,19 +484,21 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
 
         // covers both transmission and phase FPM
         // apply a change in phase or amplitude
-        if(optsyst[index].elemtype[elem] ==
-                5) // FOCAL PLANE MASK - MASK INPUT IS 1-MASK FOR EFFICIENT DFT
-        {
-            printf("============= Focal Plane Mask ==============\n");
+        if(optsyst[index].elemtype[elem] == 5)
+        {   // FOCAL PLANE MASK - MASK INPUT IS 1-MASK FOR EFFICIENT DFT
+            printf("============= [%ld] Focal Plane Mask ==============\n", elem);
             fflush(stdout);
             // uses 1-fpm
 
-            // TEST
-            /*   sprintf(fname, "%s/test_inamp_%02ld.fits", savedir, elem);
-                save_fits(imnameamp_out, fname);
-                sprintf(fname, "%s/test_inpha_%02ld.fits", savedir, elem);
-                save_fits(imnamepha_out, fname);*/
-            //exit(0);
+            /* {
+                 // TEST: INPUT
+                 char fname[STRINGMAXLEN_FULLFILENAME];
+                 WRITE_FULLFILENAME(fname, "%s/test_preFPMamp_%02ld.fits", savedir, elem);
+                 save_fits(imnameamp_out, fname);
+                 WRITE_FULLFILENAME(fname, "%s/test_preFPMpha_%02ld.fits", savedir, elem);
+                 save_fits(imnamepha_out, fname);
+             }*/
+
 
             // convert input pupil amplitude and phase to Re and Im
             imageID ID = mk_complex_from_amph(imnameamp_out, imnamepha_out, "_WFctmp", 0);
@@ -505,6 +507,9 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 delete_image_ID(imnameamp_out, DELETE_IMAGE_ERRMODE_WARNING);
                 delete_image_ID(imnamepha_out, DELETE_IMAGE_ERRMODE_WARNING);
             }
+
+
+            printf("optsyst[index].DFTgridpad = %ld\n", optsyst[index].DFTgridpad);
 
             // if we're subsampling in pixel space for faster DFTs
             if(optsyst[index].DFTgridpad > 0)
@@ -519,21 +524,23 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 imageID IDim;
                 create_3Dimage_ID("dftgridim", size, size, nblambda, &IDim);
 
-                long gsize = 2 * optsyst[index].DFTgridpad +
-                             1; // grid size, odd number - this is the space between subsampled pixels
+                // grid size, odd number - this is the space between subsampled pixels
+                long gsize = 2 * optsyst[index].DFTgridpad + 1;
 
-                long offset = optsyst[index].DFTgridpad; // offset from box edge to active pixel
+                // offset from box edge to active pixel
+                long offset = optsyst[index].DFTgridpad;
 
                 ID = image_ID("_WFctmp");
                 for(long kl = 0; kl < nblambda; kl++)
                     for(uint32_t ii = 0; ii < size; ii++)
                         for(uint32_t jj = 0; jj < size; jj++)
-                        {
-                            // for each pixel
+                        {   // for each pixel
+
                             float re = data.image[ID].array.CF[size2 * kl + jj * size + ii].re;
                             float im = data.image[ID].array.CF[size2 * kl + jj * size + ii].im;
-                            long ii1 = offset + ((long)(ii / gsize)) *
-                                       gsize; // find the nearest subsampled point to ii,jj
+
+                            // find the nearest subsampled point to ii,jj
+                            long ii1 = offset + ((long)(ii / gsize)) * gsize;
                             long jj1 = offset + ((long)(jj / gsize)) * gsize;
                             if((ii1 < size) && (jj1 < size))
                             {
@@ -555,7 +562,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
 
                 long elemindex = optsyst[index].elemarrayindex[elem];
                 ID = optsyst[index].FOCMASKarray[elemindex].fpmID;
-                printf("focm : %s\n", data.image[ID].name);
+                printf("focm # %ld: %s\n", elemindex, data.image[ID].name);
 
 
                 //      printf("Saving to testfpm.fits\n");
@@ -569,7 +576,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 if(optsyst[index].SAVE == 1)
                 {
                     // make amp and phase files from complex
-                    mk_amph_from_complex("piaacmcfpm", "fpma", "fpmp", 0);
+                    mk_amph_from_complex(data.image[ID].name, "fpma", "fpmp", 0);
 
                     char fname[STRINGMAXLEN_FULLFILENAME];
 
@@ -597,7 +604,8 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 // the focal plane mask is the second argument, which contains properties of the FPM
                 // that are applied as part of fft_DFTinsertFPM
                 fft_DFTinsertFPM("_WFctmpc", data.image[ID].name,
-                                 optsyst[index].FOCMASKarray[elemindex].zfactor, "_WFcout");
+                                 optsyst[index].FOCMASKarray[elemindex].zfactor, "_WFcout", NULL);
+
                 delete_image_ID("_WFctmpc", DELETE_IMAGE_ERRMODE_WARNING);
 
 
@@ -704,13 +712,43 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 printf("focm : %s\n", data.image[ID].name);
                 fflush(stdout);
 
+
+                /*{   // TEST: write fpm to disk
+                    // make amp and phase files from complex
+                    mk_amph_from_complex(data.image[ID].name, "fpma", "fpmp", 0);
+
+                    char fname[STRINGMAXLEN_FULLFILENAME];
+
+                    WRITE_FULLFILENAME(fname, "%s/fpm__ampl.fits", savedir);
+                    save_fits("fpma", fname);
+
+                    WRITE_FULLFILENAME(fname, "%s/fpm__pha.fits", savedir);
+                    save_fits("fpmp", fname);
+
+                    delete_image_ID("fpma", DELETE_IMAGE_ERRMODE_WARNING);
+                    delete_image_ID("fpmp", DELETE_IMAGE_ERRMODE_WARNING);
+                }*/
+
+
                 /// - do DFT from pupil to pupil with a FPM in the middle, so this does pupil1 -> DFT -> FPM -> DFT -> pupil2
                 ///
                 /// - output in last argument
                 ///
                 /// - the focal plane mask is the second argument, which contains properties of the FPM that are applied as part of fft_DFTinsertFPM()
                 fft_DFTinsertFPM("_WFctmp", data.image[ID].name,
-                                 optsyst[index].FOCMASKarray[i].zfactor, "_WFcout");
+                                 optsyst[index].FOCMASKarray[i].zfactor, "_WFcout", NULL);
+
+                /* {   // TEST: OUPUT 1
+                     mk_amph_from_complex("_WFcout", "postFPMamp", "postFPMpha", 0);
+
+                     char fname[STRINGMAXLEN_FULLFILENAME];
+
+                     WRITE_FULLFILENAME(fname, "%s/test_postFPMamp0_%02ld.fits", savedir, elem);
+                     save_fits("postFPMamp", fname);
+
+                     WRITE_FULLFILENAME(fname, "%s/test_postFPMpha0_%02ld.fits", savedir, elem);
+                     save_fits("postFPMpha", fname);
+                 }*/
 
                 // save diagnostics
                 /* sprintf(command, "mv _DFT_foca %s/_DFT_foca_%02ld.fits", savedir, elem);
@@ -725,6 +763,9 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
             }
             long elemindex = optsyst[index].elemarrayindex[elem];
 
+            list_image_ID();
+
+            printf("optsyst[index].FOCMASKarray[elemindex].mode = %d\n", optsyst[index].FOCMASKarray[elemindex].mode);
             if(optsyst[index].FOCMASKarray[elemindex].mode == 1)
             {
                 // we are computing using the 1 - FPM trick, so subtract the DFT result from the input light
@@ -736,6 +777,15 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
             {
                 mk_amph_from_complex("_WFcout", imnameamp_out, imnamepha_out, 0);
             }
+
+            /* {
+                 // TEST: OUTPUT
+                 char fname[STRINGMAXLEN_FULLFILENAME];
+                 WRITE_FULLFILENAME(fname, "%s/test_postFPMamp1_%02ld.fits", savedir, elem);
+                 save_fits(imnameamp_out, fname);
+                 WRITE_FULLFILENAME(fname, "%s/test_postFPMpha1_%02ld.fits", savedir, elem);
+                 save_fits(imnamepha_out, fname);
+             }*/
 
             delete_image_ID("_WFctmp", DELETE_IMAGE_ERRMODE_WARNING);
             delete_image_ID("_WFcout", DELETE_IMAGE_ERRMODE_WARNING);

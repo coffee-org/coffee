@@ -42,7 +42,6 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
 
     imageID IDcoeff;
     long nbcoeff;
-    FILE *fp;
     double total;
 
     // to convert r ro r1 (assymptotic outer radius on pup1)
@@ -63,7 +62,7 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
     double *piaaM0z;
     double *piaaM1z;
 
-    char fname[STRINGMAXLEN_FULLFILENAME];
+//    char fname[STRINGMAXLEN_FULLFILENAME];
 
 
 
@@ -309,25 +308,35 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
 
 
 
-    WRITE_FULLFILENAME(fname, "%s/pup01.prof", piaacmcsimul_var.piaacmcconfdir);
-    fp = fopen(fname, "w");
-    for(long ii=0; ii<piaacmc[0].NBradpts; ii++)
-    {
-        double r0 = 1.0*ii/piaacmc[0].NBradpts*piaacmc[0].r0lim;
-        double r1 = 1.0*ii/piaacmc[0].NBradpts*piaacmc[0].r1lim;
 
-        fprintf(
-            fp,
-            "%f %f %g %g %g %g\n",
-            r0,
-            r1,
-            pup0[ii],
-            pup1[ii],
-            flux0cumul[ii],
-            flux1cumul[ii]
-        );
+
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/pup01.prof", piaacmcsimul_var.piaacmcconfdir);
+        FILE *fp = fopen(fname, "w");
+        if(fp == NULL)
+        {
+            PRINT_ERROR("Cannot create file %s", fname);
+            abort();
+        }
+        for(long ii=0; ii<piaacmc[0].NBradpts; ii++)
+        {
+            double r0 = 1.0*ii/piaacmc[0].NBradpts*piaacmc[0].r0lim;
+            double r1 = 1.0*ii/piaacmc[0].NBradpts*piaacmc[0].r1lim;
+
+            fprintf(
+                fp,
+                "%f %f %g %g %g %g\n",
+                r0,
+                r1,
+                pup0[ii],
+                pup1[ii],
+                flux0cumul[ii],
+                flux1cumul[ii]
+            );
+        }
+        fclose(fp);
     }
-    fclose(fp);
 
 
 
@@ -489,25 +498,29 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
         piaaM1z[i+1] = piaaM1z[i] + slope*(piaar10[i+1]-r1c)*piaacmc[0].beamrad;
     }
 
-    WRITE_FULLFILENAME(fname, "%s/PIAA_Mshapes.txt", piaacmcsimul_var.piaacmcconfdir);
-    fp = fopen(fname, "w");
-    if(fp != NULL)
+
     {
-        for(long ii=0; ii<piaacmc[0].NBradpts; ii++)
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/PIAA_Mshapes.txt", piaacmcsimul_var.piaacmcconfdir);
+        FILE *fp = fopen(fname, "w");
+        if(fp != NULL)
         {
-            fprintf(fp,
-                    "%18.16f %18.16f %18.16f %18.16f\n",
-                    piaar00[ii]*piaacmc[0].beamrad,
-                    piaaM0z[ii],
-                    piaar10[ii]*piaacmc[0].beamrad,
-                    piaaM1z[ii]
-                   );
+            for(long ii=0; ii<piaacmc[0].NBradpts; ii++)
+            {
+                fprintf(fp,
+                        "%18.16f %18.16f %18.16f %18.16f\n",
+                        piaar00[ii]*piaacmc[0].beamrad,
+                        piaaM0z[ii],
+                        piaar10[ii]*piaacmc[0].beamrad,
+                        piaaM1z[ii]
+                       );
+            }
+            fclose(fp);
         }
-        fclose(fp);
-    }
-    else
-    {
-        FUNC_RETURN_FAILURE("cannot write file %s", fname);
+        else
+        {
+            FUNC_RETURN_FAILURE("cannot write file %s", fname);
+        }
     }
 
 

@@ -1217,7 +1217,7 @@ double coronagraph_make_2Dprolate_DFT(
         //save_fl_fits("pupp0", "pupp0.fits");
         //printf("DFTZFACTOR = %f\n", DFTZFACTOR);
 
-        fft_DFTinsertFPM("pc1", "_fpmz", DFTZFACTOR, "pc3");
+        fft_DFTinsertFPM("pc1", "_fpmz", DFTZFACTOR, "pc3", NULL);
 
 
         //      exit(0);
@@ -8449,12 +8449,12 @@ int coronagraph_simul_MULTISTEP_APLC(
                     data.image[ID].array.CF[ii].re = 1.0 - data.image[ID].array.CF[ii].re;
                     data.image[ID].array.CF[ii].im = -data.image[ID].array.CF[ii].im;
                 }
-                fft_DFTinsertFPM("pc1", "aplcfpm_c", DFTZFACTOR, "pc2");
+                fft_DFTinsertFPM("pc1", "aplcfpm_c", DFTZFACTOR, "pc2", NULL);
                 delete_image_ID("aplcfpm_c", DELETE_IMAGE_ERRMODE_WARNING);
             }
             else
             {
-                fft_DFTinsertFPM_re("pc1", "aplcfpm1", DFTZFACTOR, "pc2");
+                fft_DFTinsertFPM_re("pc1", "aplcfpm1", DFTZFACTOR, "pc2", NULL);
             }
             //	  list_image_ID();
 
