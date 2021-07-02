@@ -935,6 +935,8 @@ double coronagraph_make_2Dprolate_DFT(
     double *transmval
 )
 {
+    DEBUG_TRACE_FSTART();
+
     FILE *fp;
     uint64_t size2;
     imageID IDfpmask, IDfpmaskc, IDfpmaskz;
@@ -947,8 +949,6 @@ double coronagraph_make_2Dprolate_DFT(
     double transm;
     imageID IDr, IDi;
     imageID IDprolr, IDproli, IDprolp;
-    //char fname[600];
-    //char vname[200];
     imageID IDpupmask;
 
     int CentralObstructionFlag = 0;
@@ -1008,9 +1008,17 @@ double coronagraph_make_2Dprolate_DFT(
     printf("PUPIL RADIUS = %f\n", beamradpix);
     printf("SIZE = %ld\n", size);
 
-    create_2Dimage_ID("proli", size, size, &IDproli);
-    create_2Dimage_ID("prolr", size, size, &IDprolr);
-    create_2Dimage_ID("prolp", size, size, &IDprolp);
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID("proli", size, size, &IDproli)
+    );
+
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID("prolr", size, size, &IDprolr)
+    );
+
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID("prolp", size, size, &IDprolp)
+    );
 
 
     // CREATE FOCAL PLANE MASK
@@ -1053,8 +1061,12 @@ double coronagraph_make_2Dprolate_DFT(
 
     IDfpmask = make_subpixdisk("FPmask", size, size, size / 2, size / 2, fpmradpix);
     IDfpmaskz = make_subpixdisk_perturb("FPmaskz", size, size, size / 2, size / 2,
-                            fpmradpix * DFTZFACTOR, fpmshape_n, fpmshape_ra, fpmshape_ka, fpmshape_pa);
-    create_2DCimage_ID("_fpmz", size, size, &IDfpmaskc);
+                                        fpmradpix * DFTZFACTOR, fpmshape_n, fpmshape_ra, fpmshape_ka, fpmshape_pa);
+
+    FUNC_CHECK_RETURN(
+        create_2DCimage_ID("_fpmz", size, size, &IDfpmaskc)
+    );
+
     for(uint64_t ii = 0; ii < size2; ii++)
     {
         data.image[IDfpmask].array.F[ii] = 1.0 * data.image[IDfpmaskz].array.F[ii];
@@ -1078,15 +1090,31 @@ double coronagraph_make_2Dprolate_DFT(
 
     if(0)
     {
-        mk_amph_from_complex("_fpmz", "_fpmza", "_fpmzp", 0);
-        save_fl_fits("_fpmza", "_fpmza.fits");
-        save_fl_fits("_fpmzp", "_fpmzp.fits");
-        delete_image_ID("_fpmza", DELETE_IMAGE_ERRMODE_WARNING);
-        delete_image_ID("_fpmzp", DELETE_IMAGE_ERRMODE_WARNING);
+        FUNC_CHECK_RETURN(
+            mk_amph_from_complex("_fpmz", "_fpmza", "_fpmzp", 0)
+        );
+
+        FUNC_CHECK_RETURN(
+            save_fl_fits("_fpmza", "_fpmza.fits")
+        );
+
+        FUNC_CHECK_RETURN(
+            save_fl_fits("_fpmzp", "_fpmzp.fits")
+        );
+
+        FUNC_CHECK_RETURN(
+            delete_image_ID("_fpmza", DELETE_IMAGE_ERRMODE_WARNING)
+        );
+
+        FUNC_CHECK_RETURN(
+            delete_image_ID("_fpmzp", DELETE_IMAGE_ERRMODE_WARNING)
+        );
     }
     // exit(0);
 
-    create_2Dimage_ID("pupp0", size, size, &IDpupp0);
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID("pupp0", size, size, &IDpupp0)
+    );
 
     IDpupa0 = image_ID("pupa0");
     if(IDpupa0 != -1)
@@ -1094,7 +1122,7 @@ double coronagraph_make_2Dprolate_DFT(
         if(data.image[IDpupa0].md[0].size[0] != size)
         {
             printf("ERROR: pupa0 should be %ld x %ld\n", size, size);
-            exit(0);
+            abort();
         }
     }
     if(IDpupa0 == -1)
@@ -1111,7 +1139,10 @@ double coronagraph_make_2Dprolate_DFT(
             {
                 data.image[IDpupa0].array.F[ii] -= data.image[IDpupa0co].array.F[ii];
             }
-            delete_image_ID("pupa0co", DELETE_IMAGE_ERRMODE_WARNING);
+
+            FUNC_CHECK_RETURN(
+                delete_image_ID("pupa0co", DELETE_IMAGE_ERRMODE_WARNING)
+            );
         }
 
         //   save_fits("pupa0", "test_pupa00.fits"); //TEST
@@ -1149,10 +1180,18 @@ double coronagraph_make_2Dprolate_DFT(
     //
 
     // total0 = arith_image_total("pupa0");
-    create_2Dimage_ID("pupa0m", size, size, &IDpupa0m);
-    create_2Dimage_ID("pupp0m", size, size, &IDpupp0m);
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID("pupa0m", size, size, &IDpupa0m)
+    );
 
-    create_2Dimage_ID(outname, size, size, &IDprol);
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID("pupp0m", size, size, &IDpupp0m)
+    );
+
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID(outname, size, size, &IDprol)
+    );
+
     for(uint32_t ii = 0; ii < size; ii++)
         for(uint32_t jj = 0; jj < size; jj++)
         {
@@ -1184,7 +1223,9 @@ double coronagraph_make_2Dprolate_DFT(
             data.image[IDprol].array.F[ii] = data.image[ID].array.F[ii];
         }
     }
-    delete_image_ID("apostart", DELETE_IMAGE_ERRMODE_WARNING);
+    FUNC_CHECK_RETURN(
+        delete_image_ID("apostart", DELETE_IMAGE_ERRMODE_WARNING)
+    );
 
 
 
@@ -1203,7 +1244,9 @@ double coronagraph_make_2Dprolate_DFT(
                                                 data.image[IDprolp].array.F[ii];
         }
 
-        mk_complex_from_amph("pupa0m", "pupp0", "pc1", 0);
+        FUNC_CHECK_RETURN(
+            mk_complex_from_amph("pupa0m", "pupp0", "pc1", 0)
+        );
         //	save_fits("pupa0m", "test_pupa0m.fits");//TEST
         //	sleep(100.0);//TEST
 
@@ -1217,7 +1260,9 @@ double coronagraph_make_2Dprolate_DFT(
         //save_fl_fits("pupp0", "pupp0.fits");
         //printf("DFTZFACTOR = %f\n", DFTZFACTOR);
 
-        fft_DFTinsertFPM("pc1", "_fpmz", DFTZFACTOR, "pc3", NULL);
+        FUNC_CHECK_RETURN(
+            fft_DFTinsertFPM("pc1", "_fpmz", DFTZFACTOR, "pc3", NULL)
+        );
 
 
         //      exit(0);
@@ -1254,7 +1299,9 @@ double coronagraph_make_2Dprolate_DFT(
         printf("%ld/%ld   FPmask throughput = %g    prolate throughput = %.18g\n", iter,
                NBiter, (double)(total / total2), (double) transm);
 
-        mk_reim_from_complex("pc3", "pr2", "pi2", 0);
+        FUNC_CHECK_RETURN(
+            mk_reim_from_complex("pc3", "pr2", "pi2", 0)
+        );
 
 
 
@@ -1306,8 +1353,13 @@ double coronagraph_make_2Dprolate_DFT(
 
         if(0) // TEST
         {
-            save_fl_fits("pr2", "_prol_pr2.fits");
-            save_fl_fits("pi2", "_prol_pi2.fits");
+            FUNC_CHECK_RETURN(
+                save_fl_fits("pr2", "_prol_pr2.fits")
+            );
+
+            FUNC_CHECK_RETURN(
+                save_fl_fits("pi2", "_prol_pi2.fits")
+            );
         }
 
         for(uint64_t ii = 0; ii < size2; ii++)
@@ -1365,10 +1417,21 @@ double coronagraph_make_2Dprolate_DFT(
             //	  exit(0);
         }
 
-        delete_image_ID("pc1", DELETE_IMAGE_ERRMODE_WARNING);
-        delete_image_ID("pc3", DELETE_IMAGE_ERRMODE_WARNING);
-        delete_image_ID("pr2", DELETE_IMAGE_ERRMODE_WARNING);
-        delete_image_ID("pi2", DELETE_IMAGE_ERRMODE_WARNING);
+        FUNC_CHECK_RETURN(
+            delete_image_ID("pc1", DELETE_IMAGE_ERRMODE_WARNING)
+        );
+
+        FUNC_CHECK_RETURN(
+            delete_image_ID("pc3", DELETE_IMAGE_ERRMODE_WARNING)
+        );
+
+        FUNC_CHECK_RETURN(
+            delete_image_ID("pr2", DELETE_IMAGE_ERRMODE_WARNING)
+        );
+
+        FUNC_CHECK_RETURN(
+            delete_image_ID("pi2", DELETE_IMAGE_ERRMODE_WARNING)
+        );
     }
 
     for(uint64_t ii = 0; ii < size2; ii++)
@@ -1384,17 +1447,45 @@ double coronagraph_make_2Dprolate_DFT(
     }
 
     //  save_fl_fits("FPmaskz","FPmask.fits");
-    delete_image_ID("FPmaskz", DELETE_IMAGE_ERRMODE_WARNING);
+    FUNC_CHECK_RETURN(
+        delete_image_ID("FPmaskz", DELETE_IMAGE_ERRMODE_WARNING)
+    );
 
-    delete_image_ID("FPmask", DELETE_IMAGE_ERRMODE_WARNING);
-    delete_image_ID("_fpmz", DELETE_IMAGE_ERRMODE_WARNING);
-    delete_image_ID("pupp0", DELETE_IMAGE_ERRMODE_WARNING);
-    delete_image_ID("pupa0", DELETE_IMAGE_ERRMODE_WARNING);
-    delete_image_ID("pupa0m", DELETE_IMAGE_ERRMODE_WARNING);
-    delete_image_ID("proli", DELETE_IMAGE_ERRMODE_WARNING);
-    delete_image_ID("prolr", DELETE_IMAGE_ERRMODE_WARNING);
-    delete_image_ID("prolp", DELETE_IMAGE_ERRMODE_WARNING);
-    delete_image_ID("pupp0m", DELETE_IMAGE_ERRMODE_WARNING);
+    FUNC_CHECK_RETURN(
+        delete_image_ID("FPmask", DELETE_IMAGE_ERRMODE_WARNING)
+    );
+
+    FUNC_CHECK_RETURN(
+        delete_image_ID("_fpmz", DELETE_IMAGE_ERRMODE_WARNING)
+    );
+
+    FUNC_CHECK_RETURN(
+        delete_image_ID("pupp0", DELETE_IMAGE_ERRMODE_WARNING)
+    );
+
+    FUNC_CHECK_RETURN(
+        delete_image_ID("pupa0", DELETE_IMAGE_ERRMODE_WARNING)
+    );
+
+    FUNC_CHECK_RETURN(
+        delete_image_ID("pupa0m", DELETE_IMAGE_ERRMODE_WARNING)
+    );
+
+    FUNC_CHECK_RETURN(
+        delete_image_ID("proli", DELETE_IMAGE_ERRMODE_WARNING)
+    );
+
+    FUNC_CHECK_RETURN(
+        delete_image_ID("prolr", DELETE_IMAGE_ERRMODE_WARNING)
+    );
+
+    FUNC_CHECK_RETURN(
+        delete_image_ID("prolp", DELETE_IMAGE_ERRMODE_WARNING)
+    );
+
+    FUNC_CHECK_RETURN(
+        delete_image_ID("pupp0m", DELETE_IMAGE_ERRMODE_WARNING)
+    );
 
 
     if(transmval != NULL)
@@ -1753,8 +1844,10 @@ errno_t coronagraph_update_2Dprolate(
 
 
 
-double coronagraph_apofit_eval_r(double r)
+errno_t coronagraph_apofit_eval_r(double r, double *outval)
 {
+    DEBUG_TRACE_FSTART();
+
     double value = 0.0;
     long n;
     double rp;
@@ -1811,14 +1904,21 @@ double coronagraph_apofit_eval_r(double r)
         }
     }
 
+    if(outval != NULL)
+    {
+        *outval = value;
+    }
 
-    return(value);
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 
 
-double  coronagraph_apofit_eval()
+errno_t coronagraph_apofit_eval(double *outval)
 {
+    DEBUG_TRACE_FSTART();
+
     double value;
     long i;
     double r, v;
@@ -1852,7 +1952,7 @@ double  coronagraph_apofit_eval()
     for(i = 1; i < aporawN - 1; i++)
     {
         r = aporaw_r[i];
-        v = coronagraph_apofit_eval_r(r);
+        coronagraph_apofit_eval_r(r, &v);
         tmpv = aporaw_v[i] - v;
         value += tmpv * tmpv;
     }
@@ -1878,7 +1978,7 @@ double  coronagraph_apofit_eval()
         for(i = 0; i < aporawN; i++)
         {
             r = aporaw_r[i];
-            v = coronagraph_apofit_eval_r(r);
+            coronagraph_apofit_eval_r(r, &v);
             tmpv = aporaw_v[i] - v;
             value += tmpv * tmpv;
             printf("%ld %f %f %f %f\n", i, r, v, tmpv, value);
@@ -1890,7 +1990,13 @@ double  coronagraph_apofit_eval()
         exit(0);
     }
 
-    return(value);
+    if(outval != NULL)
+    {
+        *outval = value;
+    }
+
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 
@@ -1912,7 +2018,7 @@ double coronagraph_apofit_f_evalmask(const gsl_vector *v, void *params)
         fitapo_c[n] = gsl_vector_get(v, 3 * n + 2);
     }
 
-    value = coronagraph_apofit_eval();
+    coronagraph_apofit_eval(&value);
 
     if(LOOPCNT == 0)
     {
@@ -1923,8 +2029,7 @@ double coronagraph_apofit_f_evalmask(const gsl_vector *v, void *params)
     //printf("[[%e]]", value);
     // fflush(stdout);
 
-    return (value);
-
+    return value;
 }
 
 
@@ -1971,7 +2076,7 @@ double coronagraph_apofit(
     fflush(stdout);
 
     //double value =
-    coronagraph_apofit_eval();
+    coronagraph_apofit_eval(NULL);
 
     printf("Preparing optimization ... \n");
     fflush(stdout);
@@ -2828,8 +2933,10 @@ errno_t coronagraph_APLCapo_compile()
 // it uses an analytical fit to apodized pupil function
 //
 //
-int coronagraph_init_PIAA()
+errno_t coronagraph_init_PIAA(long *outNBpoints)
 {
+    DEBUG_TRACE_FSTART();
+
     FILE *fp;
     uint32_t size = CORONAGRAPHS_ARRAYSIZE;
     double *r0, *r1;
@@ -3112,7 +3219,7 @@ int coronagraph_init_PIAA()
             double value = 0.0;
             if(r < PIAAextfactor1)
             {
-                value = coronagraph_apofit_eval_r(r);
+                coronagraph_apofit_eval_r(r, &value);
                 if(r > 1.0) // OUTER RING
                 {
                     total_or += value * value;
@@ -3267,7 +3374,9 @@ int coronagraph_init_PIAA()
     for(long ii = 0; ii < piaaconfNPUPFILESIZE; ii++)
     {
         double r = PIAAextfactor1 * ii / piaaconfNPUPFILESIZE;
-        piaaconfpup_amp_profile[ii] = normfactor * coronagraph_apofit_eval_r(r);
+        double v;
+        coronagraph_apofit_eval_r(r, &v);
+        piaaconfpup_amp_profile[ii] = normfactor * v;
     }
 
 
@@ -3762,7 +3871,13 @@ int coronagraph_init_PIAA()
     printf("init PIAA is done\n");
     fflush(stdout);
 
-    return(NBpoints);
+    if(outNBpoints != NULL)
+    {
+        *outNBpoints = NBpoints;
+    }
+
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 
@@ -6170,7 +6285,7 @@ int coronagraph_simul_RRPM(
         PIAAAPO_NBPOINTS = 80;
         if(initPIAA == 0)
         {
-            coronagraph_init_PIAA();
+            coronagraph_init_PIAA(NULL);
             initPIAA = 1;
         }
         coronagraphs_PIAA_apodize_beam("pa1", "pp1", "pa2", "pp2");
@@ -6887,7 +7002,7 @@ int coronagraph_simul_PIAA(
 
     if(initPIAA == 0)
     {
-        coronagraph_init_PIAA();
+        coronagraph_init_PIAA(NULL);
         initPIAA = 1;
     }
 
@@ -7083,7 +7198,7 @@ int coronagraph_simul_PIAAC(
 
     if(initPIAA == 0)
     {
-        coronagraph_init_PIAA();
+        coronagraph_init_PIAA(NULL);
         initPIAA = 1;
     }
 
@@ -7554,7 +7669,7 @@ int coronagraph_simul_AIC_PIAAC(
 
     if(initPIAA == 0)
     {
-        coronagraph_init_PIAA();
+        coronagraph_init_PIAA(NULL);
         initPIAA = 1;
     }
 
@@ -8252,7 +8367,7 @@ int coronagraph_simul_MULTISTEP_APLC(
         {
             // initialize PIAA using PIAAAPO_FNAME apodization profile
             // this creates the relationship between input and output pupil radii
-            coronagraph_init_PIAA();
+            coronagraph_init_PIAA(NULL);
             initPIAA = 1;
         }
         //    save_fl_fits("pa1","pa111.fits");

@@ -310,7 +310,7 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
 
 
 
-    {
+    {   // write output to file
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "%s/pup01.prof", piaacmcsimul_var.piaacmcconfdir);
         FILE *fp = fopen(fname, "w");
@@ -499,7 +499,8 @@ errno_t PIAACMCsimul_init_geomPIAA_rad(
     }
 
 
-    {
+    {   // write PIAA optics radial shapes to file
+
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "%s/PIAA_Mshapes.txt", piaacmcsimul_var.piaacmcconfdir);
         FILE *fp = fopen(fname, "w");

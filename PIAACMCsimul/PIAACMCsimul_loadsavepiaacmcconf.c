@@ -111,7 +111,9 @@ errno_t PIAACMCsimul_loadpiaacmcconf(
                 WRITE_FULLFILENAME(fname, "%s/LyotStop%d.fits", dname, i);
                 WRITE_IMAGENAME(imname, "lyotstop%d", i);
                 printf("Loading \"%s\" as \"%s\"\n", fname, imname);
-                load_fits(fname, imname, 1, &(piaacmc[0].IDLyotStop[i]));
+                FUNC_CHECK_RETURN(
+                    load_fits(fname, imname, LOADFITS_ERRMODE_WARNING, &(piaacmc[0].IDLyotStop[i]))
+                );
 
                 {
                     int fscanfcnt;
@@ -178,37 +180,53 @@ errno_t PIAACMCsimul_loadpiaacmcconf(
 
 
         WRITE_FULLFILENAME(fname, "%s/piaa0Cmodes.fits", dname);
-        load_fits(fname, "piaa0Cmodescoeff", 1, &(piaacmc[0].piaa0CmodesID));
+        FUNC_CHECK_RETURN(
+            load_fits(fname, "piaa0Cmodescoeff", 1, &(piaacmc[0].piaa0CmodesID))
+        );
         if(piaacmc[0].piaa0CmodesID == -1)
         {
             WRITE_FULLFILENAME(fname, "%s/piaaref/piaa0Cmodes.fits", dname);
-            load_fits(fname, "piaa0Cmodescoeff", 1, &(piaacmc[0].piaa0CmodesID) );
+            FUNC_CHECK_RETURN(
+                load_fits(fname, "piaa0Cmodescoeff", 1, &(piaacmc[0].piaa0CmodesID) )
+            );
         }
 
 
         WRITE_FULLFILENAME(fname, "%s/piaa0Fmodes.fits", dname);
-        load_fits(fname, "piaa0Fmodescoeff", 1, &(piaacmc[0].piaa0FmodesID));
+        FUNC_CHECK_RETURN(
+            load_fits(fname, "piaa0Fmodescoeff", 1, &(piaacmc[0].piaa0FmodesID))
+        );
         if(piaacmc[0].piaa0FmodesID == -1)
         {
             WRITE_FULLFILENAME(fname, "%s/piaaref/piaa0Fmodes.fits", dname);
-            load_fits(fname, "piaa0Fmodescoeff", 1, &(piaacmc[0].piaa0FmodesID));
+            FUNC_CHECK_RETURN(
+                load_fits(fname, "piaa0Fmodescoeff", 1, &(piaacmc[0].piaa0FmodesID))
+            );
         }
 
         WRITE_FULLFILENAME(fname, "%s/piaa1Cmodes.fits", dname);
-        load_fits(fname, "piaa1Cmodescoeff", 1, &(piaacmc[0].piaa1CmodesID));
+        FUNC_CHECK_RETURN(
+            load_fits(fname, "piaa1Cmodescoeff", 1, &(piaacmc[0].piaa1CmodesID))
+        );
         if(piaacmc[0].piaa1CmodesID == -1)
         {
             WRITE_FULLFILENAME(fname, "%s/piaaref/piaa1Cmodes.fits", dname);
-            load_fits(fname, "piaa1Cmodescoeff", 1, &(piaacmc[0].piaa1CmodesID));
+            FUNC_CHECK_RETURN(
+                load_fits(fname, "piaa1Cmodescoeff", 1, &(piaacmc[0].piaa1CmodesID))
+            );
         }
 
         WRITE_FULLFILENAME(fname, "%s/piaa1Fmodes.fits", dname);
-        load_fits(fname, "piaa1Fmodescoeff", 1, &(piaacmc[0].piaa1FmodesID));
+        FUNC_CHECK_RETURN(
+            load_fits(fname, "piaa1Fmodescoeff", 1, &(piaacmc[0].piaa1FmodesID))
+        );
         if(piaacmc[0].piaa1FmodesID == -1)
         {
             imageID IDtmp = -1;
             WRITE_FULLFILENAME(fname, "%s/piaaref/piaa1Fmodes.fits", dname);
-            load_fits(fname, "piaa1Fmodescoeff", 1, &IDtmp);
+            FUNC_CHECK_RETURN(
+                load_fits(fname, "piaa1Fmodescoeff", 1, &IDtmp)
+            );
             piaacmc[0].piaa1FmodesID = IDtmp;
         }
 
