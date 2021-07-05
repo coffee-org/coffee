@@ -1,6 +1,0 @@
-#ifndef PIAACMCSIMUL_RING2SECTORS_H
-#define PIAACMCSIMUL_RING2SECTORS_H
-
-errno_t CLIADDCMD_PIAACMCsimul__ring2sectors();
-
-#endif

@@ -34,7 +34,29 @@
 #include "linopt_imtools/linopt_imtools.h"
 #include "OpticsMaterials/OpticsMaterials.h"
 #include "OptSystProp/OptSystProp.h"
-#include "PIAACMCsimul/PIAACMCsimul.h"
+
+#include "PIAACMCsimul.h"
+
+#include "exec_compute_image.h"
+#include "exec_computePSF_no_fpm.h"
+#include "exec_optimize_PIAA_shapes_fpmtransm.h"
+#include "PIAACMCsimul_achromFPMsol_eval_zonezderivative.h"
+#include "PIAACMCsimul_computePSF.h"
+#include "PIAACMCsimul_eval_poly_design.h"
+#include "PIAACMCsimul_loadsavepiaacmcconf.h"
+#include "PIAACMCsimul_measure_transm_curve.h"
+
+#include "FocalPlaneMask/exec_optimize_fpm_zones.h"
+#include "FocalPlaneMask/exec_multizone_fpm_calib.h"
+#include "FocalPlaneMask/exec_optimize_fpmtransmission.h"
+
+#include "LyotStop/exec_optimize_lyot_stop_position.h"
+#include "LyotStop/exec_optimize_lyot_stops_shapes_positions.h"
+
+#include "PIAAshape/exec_optimize_PIAA_shapes.h"
+#include "PIAAshape/makePIAAshapes.h"
+
+
 
 
 
@@ -537,87 +559,52 @@ errno_t PIAACMCsimul_exec(
     // set the name of the stopfile
     WRITE_FULLFILENAME(stopfile, "%s/stopmode%ld.txt", piaacmcsimul_var.piaacmcconfdir, mode);
 
-    errno_t fret = RETURN_SUCCESS;
     switch(mode)
     {
     case 0 :
-        fret = PIAACMCsimul_exec_compute_image();
-        if(fret != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_compute_image failed");
-        }
+        FUNC_CHECK_RETURN( exec_compute_image() );
         printf("EXEC CASE 0 COMPLETED\n");
         fflush(stdout);
         break;
 
     case 1 :
-        if(PIAACMCsimul_exec_optimize_lyot_stop_position() != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_optimize_lyot_stop_position failed");
-        }
+        FUNC_CHECK_RETURN(exec_optimize_lyot_stop_position());
         break;
 
     case 2 :
-        if(PIAACMCsimul_exec_optimize_fpmtransmission() != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_optimize_fpmtransmission failed");
-        }
+        FUNC_CHECK_RETURN(exec_optimize_fpmtransmission());
         break;
 
     case 3 :
-        if(PIAACMCsimul_exec_computePSF_no_fpm(NULL) != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_computePSF_no_fpm failed");
-        }
+        FUNC_CHECK_RETURN(exec_computePSF_no_fpm(NULL));
         break;
 
     case 4 :
-        if(PIAACMCsimul_exec_optimize_PIAA_shapes() != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_optimize_PIAA_shapes failed");
-        }
+        FUNC_CHECK_RETURN(exec_optimize_PIAA_shapes());
         break;
 
     case 5 :
-        if(PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions() != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions failed");
-        }
+        FUNC_CHECK_RETURN(exec_optimize_lyot_stops_shapes_positions());
         break;
 
     case 11 :
-        if(PIAACMCsimul_exec_multizone_fpm_calib() != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_multizone_fpm_calib failed");
-        }
+        FUNC_CHECK_RETURN(exec_multizone_fpm_calib());
         break;
 
     case 13 :
-        if(PIAACMCsimul_exec_optimize_fpm_zones() != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_optimize_fpm_zones failed");
-        }
+        FUNC_CHECK_RETURN(exec_optimize_fpm_zones());
         break;
 
     case 40 :
-        if(PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm() != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm failed");
-        }
+        FUNC_CHECK_RETURN(exec_optimize_PIAA_shapes_fpmtransm());
         break;
 
     case 100 : // evaluate current design: polychromatic contrast, pointing sensitivity
-        if(PIAACMCsimul_eval_poly_design() != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_eval_poly_design failed");
-        }
+        FUNC_CHECK_RETURN(PIAACMCsimul_eval_poly_design());
         break;
 
     case 101 :
-        if(PIAACMCsimul_measure_transm_curve() != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_measure_transm_curve failed");
-        }
+        FUNC_CHECK_RETURN(PIAACMCsimul_measure_transm_curve());
         break;
 
 
@@ -662,20 +649,17 @@ errno_t PIAACMCsimul_exec(
         data.image[IDstatus].array.UI16[0] = 5;
 
         // Compute Reference on-axis performance contrast (valref)
-        if(PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
-        }
+        FUNC_CHECK_RETURN(
+            makePIAAshapes(piaacmc)
+        );
 
         optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm
         {
-            errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
-                                                   piaacmcsimul_var.computePSF_ResolvedTarget,
-                                                   piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &valref);
-            if( fret != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
-            }
+            FUNC_CHECK_RETURN(
+                PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
+                                        piaacmcsimul_var.computePSF_ResolvedTarget,
+                                        piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &valref)
+            );
         }
 
 
@@ -684,10 +668,8 @@ errno_t PIAACMCsimul_exec(
             char dirname[STRINGMAXLEN_DIRNAME];
 
             WRITE_DIRNAME(dirname, "%s_linopt", piaacmcsimul_var.piaacmcconfdir);
-            if(PIAACMCsimul_savepiaacmcconf(dirname) != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_savepiaacmcconf failed");
-            }
+
+            FUNC_CHECK_RETURN(PIAACMCsimul_savepiaacmcconf(dirname));
 
             // import configuration from _linopt directory
             EXECUTE_SYSTEM_COMMAND("rsync -au --progress %s/* ./%s/", dirname,
@@ -716,16 +698,16 @@ errno_t PIAACMCsimul_exec(
             char fname[STRINGMAXLEN_FULLFILENAME];
 
             WRITE_FULLFILENAME(fname, "%s/piaa0Cmodes.ref.fits", dirname);
-            load_fits(fname, "piaa0Cmref", 1, NULL);
+            FUNC_CHECK_RETURN(load_fits(fname, "piaa0Cmref", 1, NULL));
 
             WRITE_FULLFILENAME(fname, "%s/piaa1Cmodes.ref.fits", dirname);
-            load_fits(fname, "piaa1Cmref", 1, NULL);
+            FUNC_CHECK_RETURN(load_fits(fname, "piaa1Cmref", 1, NULL));
 
             WRITE_FULLFILENAME(fname, "%s/piaa0Fmodes.ref.fits", dirname);
-            load_fits(fname, "piaa0Fmref", 1, NULL);
+            FUNC_CHECK_RETURN(load_fits(fname, "piaa0Fmref", 1, NULL));
 
             WRITE_FULLFILENAME(fname, "%s/piaa1Fmodes.ref.fits", dirname);
-            load_fits(fname, "piaa1Fmref", 1, NULL);
+            FUNC_CHECK_RETURN(load_fits(fname, "piaa1Fmref", 1, NULL));
         }
 
 
@@ -822,10 +804,12 @@ errno_t PIAACMCsimul_exec(
         // we also create a mask image which is intended to mask out some of the pixels from the evaluation
         // the mask is currently not used, so we will write 1.0 in all of its pixels
         // DHmask and vecDHref1D contain all the optimization parameters as set above
-        create_2Dimage_ID("DHmask", size1Dvec, 1, &IDm); // "ID of evaluation mode mask"
+        // "ID of evaluation mode mask"
+        FUNC_CHECK_RETURN(create_2Dimage_ID("DHmask", size1Dvec, 1, &IDm));
 
-        create_2Dimage_ID("vecDHref1D", size1Dvec,
-                          1, &ID1Dref); // "ID of 1D dark zone reference"
+        // "ID of 1D dark zone reference"
+        FUNC_CHECK_RETURN(create_2Dimage_ID("vecDHref1D", size1Dvec,
+                                            1, &ID1Dref));
 
         // we first write 1.0 into the focal plane complex amplitudes in the vector
         ID = image_ID("vecDHref");
@@ -879,8 +863,8 @@ errno_t PIAACMCsimul_exec(
             // we're done with ii
         }
 
-
-        delete_image_ID("vecDHref", DELETE_IMAGE_ERRMODE_WARNING); // vecDHref has beem embedded into vecDHref1D
+        // vecDHref has beem embedded into vecDHref1D
+        FUNC_CHECK_RETURN(delete_image_ID("vecDHref", DELETE_IMAGE_ERRMODE_WARNING));
 
         // at this point, we have completed the initialization, and the optimization loop starts
 
@@ -969,11 +953,18 @@ errno_t PIAACMCsimul_exec(
                     //      zonez_array = data.image[piaacmc[0].zonezID].array.D;
                     // dphadz_array was computed in mode 13 shortly afterwards
                     // outtmp_array is output
-                    PIAACMCsimul_achromFPMsol_eval_zonezderivative(mz,
-                            piaacmcsimul_var.fpmresp_array, piaacmcsimul_var.zonez_array,
-                            piaacmcsimul_var.dphadz_array, piaacmcsimul_var.outtmp_array,
-                            piaacmcsimul_var.vsize, data.image[piaacmc[0].zonezID].md[0].size[0],
-                            piaacmc[0].nblambda);
+                    FUNC_CHECK_RETURN(
+                        PIAACMCsimul_achromFPMsol_eval_zonezderivative(
+                            mz,
+                            piaacmcsimul_var.fpmresp_array,
+                            piaacmcsimul_var.zonez_array,
+                            piaacmcsimul_var.dphadz_array,
+                            piaacmcsimul_var.outtmp_array,
+                            piaacmcsimul_var.vsize,
+                            data.image[piaacmc[0].zonezID].md[0].size[0],
+                            piaacmc[0].nblambda
+                        )
+                    );
                     for(long ii = 0; ii < size1Dvec0; ii++)
                     {
                         data.image[IDmodes].array.F[mz * size1Dvec + ii] =
@@ -1001,7 +992,10 @@ errno_t PIAACMCsimul_exec(
                 // TEST diagnostic
                 memcpy(data.image[IDmodes2D].array.F, data.image[IDmodes].array.F,
                        sizeof(float)*size1Dvec * piaacmcsimul_var.linopt_number_param);
-                save_fl_fits("DHmodes2D", "test_DHmodes2D.fits");
+
+                FUNC_CHECK_RETURN(
+                    save_fl_fits("DHmodes2D", "test_DHmodes2D.fits")
+                );
 
                 // for state tracking and statistics
                 data.image[IDstatus].array.UI16[0] = 13;
@@ -1066,7 +1060,9 @@ errno_t PIAACMCsimul_exec(
                     // re-package vector into 1D array and add regularization terms
                     // evaluation vector is "imvect1D", ID = ID1D
                     // similar to vecDHref before
-                    create_2Dimage_ID("imvect1D", size1Dvec, 1, &ID1D);
+                    FUNC_CHECK_RETURN(
+                        create_2Dimage_ID("imvect1D", size1Dvec, 1, &ID1D)
+                    );
                     // fill in the evaluation point portion
                     {
                         uint64_t ii;
@@ -1084,7 +1080,9 @@ errno_t PIAACMCsimul_exec(
                     }
 
 
-                    delete_image_ID("imvect", DELETE_IMAGE_ERRMODE_WARNING); // has been imbedded into imvect1D
+                    FUNC_CHECK_RETURN(
+                        delete_image_ID("imvect", DELETE_IMAGE_ERRMODE_WARNING)
+                    ); // has been imbedded into imvect1D
 
                     // restore original state (return to original staring point)
                     if(piaacmcsimul_var.linopt_paramtype[i] == _DATATYPE_FLOAT)
@@ -1111,8 +1109,10 @@ errno_t PIAACMCsimul_exec(
                     //    printf("%3ld %g %g\n", i, val, valref);
 
                     // create diagnostic image
-                    create_2Dimage_ID("DHmodes2D", size1Dvec,
-                                      piaacmcsimul_var.linopt_number_param, &ID);
+                    FUNC_CHECK_RETURN(
+                        create_2Dimage_ID("DHmodes2D", size1Dvec,
+                                          piaacmcsimul_var.linopt_number_param, &ID)
+                    );
 
                     for(uint64_t ii = 0; ii < data.image[IDmodes].md[0].nelement; ii++)
                     {
@@ -1122,10 +1122,12 @@ errno_t PIAACMCsimul_exec(
                     {
                         char fname[STRINGMAXLEN_FULLFILENAME];
                         WRITE_FULLFILENAME(fname, "%s/DMmodes.fits", piaacmcsimul_var.piaacmcconfdir);
-                        save_fits("DHmodes2D", fname);
+                        FUNC_CHECK_RETURN(save_fits("DHmodes2D", fname));
                     }
 
-                    delete_image_ID("DHmodes2D", DELETE_IMAGE_ERRMODE_WARNING);
+                    FUNC_CHECK_RETURN(
+                        delete_image_ID("DHmodes2D", DELETE_IMAGE_ERRMODE_WARNING)
+                    );
                 }
                 // for state tracking and statistics
                 data.image[IDstatus].array.UI16[0] = 15;
@@ -1236,19 +1238,19 @@ errno_t PIAACMCsimul_exec(
                 arith_image_cstmult("optcoeff2", acoeff2, "optcoeff2m");
 
                 // diagnostic
-                save_fl_fits("optcoeff0", "optcoeff0.fits");//TEST
-                save_fl_fits("optcoeff1", "optcoeff1.fits");
-                save_fl_fits("optcoeff2", "optcoeff2.fits");
+                FUNC_CHECK_RETURN(save_fl_fits("optcoeff0", "optcoeff0.fits"));//TEST
+                FUNC_CHECK_RETURN(save_fl_fits("optcoeff1", "optcoeff1.fits"));
+                FUNC_CHECK_RETURN(save_fl_fits("optcoeff2", "optcoeff2.fits"));
 
                 // optcoeff01m = acoeff0*optcoeff0 + acoeff1*optcoeff1
                 arith_image_add("optcoeff0m", "optcoeff1m", "optcoeff01m");
                 // optcoeff = acoeff0*optcoeff0 + acoeff1*optcoeff1 + acoeff2*optcoeff2
                 arith_image_add("optcoeff01m", "optcoeff2m", "optcoeff");
                 // optcoeff now has our search direction
-                delete_image_ID("optcoeff0m", DELETE_IMAGE_ERRMODE_WARNING);
-                delete_image_ID("optcoeff1m", DELETE_IMAGE_ERRMODE_WARNING);
-                delete_image_ID("optcoeff2m", DELETE_IMAGE_ERRMODE_WARNING);
-                delete_image_ID("optcoeff01m", DELETE_IMAGE_ERRMODE_WARNING);
+                FUNC_CHECK_RETURN(delete_image_ID("optcoeff0m", DELETE_IMAGE_ERRMODE_WARNING));
+                FUNC_CHECK_RETURN(delete_image_ID("optcoeff1m", DELETE_IMAGE_ERRMODE_WARNING));
+                FUNC_CHECK_RETURN(delete_image_ID("optcoeff2m", DELETE_IMAGE_ERRMODE_WARNING));
+                FUNC_CHECK_RETURN(delete_image_ID("optcoeff01m", DELETE_IMAGE_ERRMODE_WARNING));
 
                 ID = image_ID("optcoeff");
                 // for state tracking and statistics
@@ -1370,15 +1372,11 @@ errno_t PIAACMCsimul_exec(
 
                     // compute new state and compute assossiated evaluation metric
                     // using the modified global data object
-                    {
-                        errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
-                                                               piaacmcsimul_var.computePSF_ResolvedTarget,
-                                                               piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &contrastval);
-                        if( fret != RETURN_SUCCESS)
-                        {
-                            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
-                        }
-                    }
+                    FUNC_CHECK_RETURN(
+                        PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
+                                                piaacmcsimul_var.computePSF_ResolvedTarget,
+                                                piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &contrastval)
+                    );
                     double valContrast = contrastval; // contrast component of the evaluation metric
                     // we've now only done the light portion
 
@@ -1509,9 +1507,9 @@ errno_t PIAACMCsimul_exec(
                 data.image[IDstatus].array.UI16[0] = 26;
             }
             // best solution after this linear linescan is stored in IDoptvec
-            delete_image_ID("optcoeff0", DELETE_IMAGE_ERRMODE_WARNING);
-            delete_image_ID("optcoeff1", DELETE_IMAGE_ERRMODE_WARNING);
-            delete_image_ID("DHmodes", DELETE_IMAGE_ERRMODE_WARNING);
+            FUNC_CHECK_RETURN(delete_image_ID("optcoeff0", DELETE_IMAGE_ERRMODE_WARNING));
+            FUNC_CHECK_RETURN(delete_image_ID("optcoeff1", DELETE_IMAGE_ERRMODE_WARNING));
+            FUNC_CHECK_RETURN(delete_image_ID("DHmodes", DELETE_IMAGE_ERRMODE_WARNING));
 
             // we've now found the minimum using the three directions from the
             // alternative decompositions of the parameter space with the DHmodes basis
@@ -1610,7 +1608,7 @@ errno_t PIAACMCsimul_exec(
                 }
             }
 
-            delete_image_ID("imvect", DELETE_IMAGE_ERRMODE_WARNING);
+            FUNC_CHECK_RETURN(delete_image_ID("imvect", DELETE_IMAGE_ERRMODE_WARNING));
             // for state tracking and statistics
             data.image[IDstatus].array.UI16[0] = 29;
 

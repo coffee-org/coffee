@@ -23,8 +23,14 @@
 
 #include "linopt_imtools/linopt_imtools.h"
 #include "OptSystProp/OptSystProp.h"
-#include "PIAACMCsimul/PIAACMCsimul.h"
 
+#include "PIAACMCsimul.h"
+
+#include "PIAACMCsimul_achromFPMsol_eval.h"
+#include "PIAACMCsimul_init.h"
+#include "PIAACMCsimul_loadsavepiaacmcconf.h"
+
+#include "PIAAshape/makePIAAshapes.h"
 
 
 
@@ -254,7 +260,8 @@ errno_t PIAACMCsimul_computePSF(
             piaacmcsimul_var.outtmp_array,
             piaacmcsimul_var.vsize,
             data.image[piaacmc[0].zonezID].md[0].size[0],
-            optsyst[0].nblambda
+            optsyst[0].nblambda,
+            NULL
         );
 
 //		printf("FAST FPMresp CALLED\n");
@@ -361,7 +368,7 @@ errno_t PIAACMCsimul_computePSF(
                 }
             }
 
-            PIAACMCsimul_makePIAAshapes(piaacmc, 0);
+            makePIAAshapes(piaacmc);
 
             // propagate it (optsyst is a global), output in psfc0 (complex amlitude)
             // and psfi0 (intensity)
@@ -411,7 +418,7 @@ errno_t PIAACMCsimul_computePSF(
                     }
                 }
 
-                PIAACMCsimul_makePIAAshapes(piaacmc, 0);
+                FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
 
                 {
                     errno_t fret = OptSystProp_run(
@@ -454,7 +461,7 @@ errno_t PIAACMCsimul_computePSF(
                     }
                 }
 
-                PIAACMCsimul_makePIAAshapes(piaacmc, 0);
+                FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
 
                 {
                     errno_t fret = OptSystProp_run(
@@ -497,21 +504,19 @@ errno_t PIAACMCsimul_computePSF(
                         FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
                     }
                 }
-                PIAACMCsimul_makePIAAshapes(piaacmc, 0);
 
-                {
-                    errno_t fret = OptSystProp_run(
-                                       optsyst,
-                                       0,
-                                       startelem,
-                                       optsyst[0].NBelem,
-                                       piaacmcsimul_var.piaacmcconfdir,
-                                       0);
-                    if( fret != RETURN_SUCCESS)
-                    {
-                        FUNC_RETURN_FAILURE("Call to OptSystProp_run failed");
-                    }
-                }
+                FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
+
+
+                FUNC_CHECK_RETURN(
+                    OptSystProp_run(
+                        optsyst,
+                        0,
+                        startelem,
+                        optsyst[0].NBelem,
+                        piaacmcsimul_var.piaacmcconfdir,
+                        0)
+                );
 
                 {
                     char imname[STRINGMAXLEN_IMGNAME];
@@ -537,24 +542,17 @@ errno_t PIAACMCsimul_computePSF(
                     }
                 }
 
-                if(PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
-                {
-                    FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
-                }
+                FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
 
-                {
-                    errno_t fret = OptSystProp_run(
-                                       optsyst,
-                                       0,
-                                       startelem,
-                                       optsyst[0].NBelem,
-                                       piaacmcsimul_var.piaacmcconfdir,
-                                       0);
-                    if( fret != RETURN_SUCCESS)
-                    {
-                        FUNC_RETURN_FAILURE("Call to OptSystProp_run failed");
-                    }
-                }
+                FUNC_CHECK_RETURN(
+                    OptSystProp_run(
+                        optsyst,
+                        0,
+                        startelem,
+                        optsyst[0].NBelem,
+                        piaacmcsimul_var.piaacmcconfdir,
+                        0)
+                );
 
                 {
                     char imname[STRINGMAXLEN_IMGNAME];
@@ -580,24 +578,17 @@ errno_t PIAACMCsimul_computePSF(
                     }
                 }
 
-                if( PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
-                {
-                    FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
-                }
+                FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
 
-                {
-                    errno_t fret = OptSystProp_run(
-                                       optsyst,
-                                       0,
-                                       startelem,
-                                       optsyst[0].NBelem,
-                                       piaacmcsimul_var.piaacmcconfdir,
-                                       0);
-                    if( fret != RETURN_SUCCESS)
-                    {
-                        FUNC_RETURN_FAILURE("Call to OptSystProp_run failed");
-                    }
-                }
+                FUNC_CHECK_RETURN(
+                    OptSystProp_run(
+                        optsyst,
+                        0,
+                        startelem,
+                        optsyst[0].NBelem,
+                        piaacmcsimul_var.piaacmcconfdir,
+                        0)
+                );
 
                 {
                     char imname[STRINGMAXLEN_IMGNAME];
@@ -644,24 +635,17 @@ errno_t PIAACMCsimul_computePSF(
                     }
                 }
 
-                if(PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
-                {
-                    FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
-                }
+                FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
 
-                {
-                    errno_t fret = OptSystProp_run(
-                                       optsyst,
-                                       0,
-                                       startelem,
-                                       optsyst[0].NBelem,
-                                       piaacmcsimul_var.piaacmcconfdir,
-                                       0);
-                    if( fret != RETURN_SUCCESS)
-                    {
-                        FUNC_RETURN_FAILURE("Call to OptSystProp_run failed");
-                    }
-                }
+                FUNC_CHECK_RETURN(
+                    OptSystProp_run(
+                        optsyst,
+                        0,
+                        startelem,
+                        optsyst[0].NBelem,
+                        piaacmcsimul_var.piaacmcconfdir,
+                        0)
+                );
 
                 {
                     char imname[STRINGMAXLEN_IMGNAME];
@@ -888,10 +872,7 @@ errno_t PIAACMCsimul_computePSF(
 
             /// calls PIAACMCsimul_makePIAAshapes()
 
-            if( PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
-            }
+            FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
 
 
 
@@ -900,19 +881,15 @@ errno_t PIAACMCsimul_computePSF(
             // propagate it (optsyst is a global), output in psfc0 (complex amlitude)
             // and psfi0 (intensity)
 
-            {
-                errno_t fret = OptSystProp_run(
-                                   optsyst,
-                                   0,
-                                   startelem,
-                                   optsyst[0].NBelem,
-                                   piaacmcsimul_var.piaacmcconfdir,
-                                   0);
-                if( fret != RETURN_SUCCESS)
-                {
-                    FUNC_RETURN_FAILURE("Call to OptSystProp_run failed");
-                }
-            }
+            FUNC_CHECK_RETURN(
+                OptSystProp_run(
+                    optsyst,
+                    0,
+                    startelem,
+                    optsyst[0].NBelem,
+                    piaacmcsimul_var.piaacmcconfdir,
+                    0)
+            );
 
             if(outsave == 1)
             {

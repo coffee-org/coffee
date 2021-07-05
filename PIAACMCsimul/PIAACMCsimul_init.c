@@ -22,7 +22,9 @@
 
 
 #include "OptSystProp/OptSystProp.h"
-#include "PIAACMCsimul/PIAACMCsimul.h"
+
+#include "PIAACMCsimul.h"
+#include "FocalPlaneMask/mkFocalPlaneMask.h"
 
 
 extern PIAACMCsimul_varType piaacmcsimul_var;
@@ -554,10 +556,16 @@ errno_t PIAACMCsimul_init(
         }
 
         /// call PIAACMCsimul_mkFocalPlaneMask() to make the focal plane mask
-        optsyst[0].FOCMASKarray[0].fpmID =
-            PIAACMCsimul_mkFocalPlaneMask("fpmzmap",
-                                          "piaacmcfpm", piaacmcsimul_var.focmMode,
-                                          savefpm);
+        FUNC_CHECK_RETURN(
+            mkFocalPlaneMask(
+                "fpmzmap",
+                "piaacmcfpm",
+                piaacmcsimul_var.focmMode,
+                savefpm,
+                &(optsyst[0].FOCMASKarray[0].fpmID)
+            )
+        );
+
         // if -1, this is 1-fpm; otherwise, this is impulse response from single zone
 
         // TEST

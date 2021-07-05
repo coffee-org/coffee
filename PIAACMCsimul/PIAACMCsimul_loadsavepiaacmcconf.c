@@ -24,8 +24,9 @@
 
 
 
-#include "PIAACMCsimul/PIAACMCsimul.h"
+#include "PIAACMCsimul.h"
 
+#include "FocalPlaneMask/mkFPM_zonemap.h"
 
 
 
@@ -51,12 +52,6 @@ errno_t PIAACMCsimul_loadpiaacmcconf(
 
     FILE *fp;
     char fname[STRINGMAXLEN_FULLFILENAME];
-
-
-#ifdef PIAASIMUL_LOGFUNC0
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
-                                 "");
-#endif
 
 
     WRITE_FULLFILENAME(fname, "%s/piaacmcparams.conf", dname);
@@ -329,22 +324,16 @@ errno_t PIAACMCsimul_update_fnamedescr()
 // Save PIAACMC optical design
 //
 
-errno_t PIAACMCsimul_savepiaacmcconf(const char *dname)
+errno_t PIAACMCsimul_savepiaacmcconf(
+    const char *__restrict__ dname
+)
 {
     DEBUG_TRACE_FSTART();
-
 
     char fname[STRINGMAXLEN_FULLFILENAME];
 
 
-#ifdef PIAASIMUL_LOGFUNC0
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
-                                 "");
-#endif
-
-
     EXECUTE_SYSTEM_COMMAND("mkdir -p %s", dname);
-
 
     // piaacmcparam.conf
 
@@ -380,25 +369,33 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *dname)
     WRITE_FULLFILENAME(fname, "%s/piaa0Cmodes.fits", dname);
     if(piaacmc[0].piaa0CmodesID != -1)
     {
-        save_fits(data.image[piaacmc[0].piaa0CmodesID].name, fname);
+        FUNC_CHECK_RETURN(
+            save_fits(data.image[piaacmc[0].piaa0CmodesID].name, fname)
+        );
     }
 
     WRITE_FULLFILENAME(fname, "%s/piaa0Fmodes.fits", dname);
     if(piaacmc[0].piaa0FmodesID != -1)
     {
-        save_fits(data.image[piaacmc[0].piaa0FmodesID].name, fname);
+        FUNC_CHECK_RETURN(
+            save_fits(data.image[piaacmc[0].piaa0FmodesID].name, fname)
+        );
     }
 
     WRITE_FULLFILENAME(fname, "%s/piaa1Cmodes.fits", dname);
     if(piaacmc[0].piaa1CmodesID != -1)
     {
-        save_fits(data.image[piaacmc[0].piaa1CmodesID].name, fname);
+        FUNC_CHECK_RETURN(
+            save_fits(data.image[piaacmc[0].piaa1CmodesID].name, fname)
+        );
     }
 
     WRITE_FULLFILENAME(fname, "%s/piaa1Fmodes.fits", dname);
     if(piaacmc[0].piaa1FmodesID != -1)
     {
-        save_fits(data.image[piaacmc[0].piaa1FmodesID].name, fname);
+        FUNC_CHECK_RETURN(
+            save_fits(data.image[piaacmc[0].piaa1FmodesID].name, fname)
+        );
     }
 
 
@@ -416,7 +413,9 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *dname)
     );
     if(piaacmc[0].zonezID != -1)
     {
-        save_fits(data.image[piaacmc[0].zonezID].name, fname);
+        FUNC_CHECK_RETURN(
+            save_fits(data.image[piaacmc[0].zonezID].name, fname)
+        );
     }
 
 
@@ -428,7 +427,9 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *dname)
     );
     if(piaacmc[0].zoneaID != -1)
     {
-        save_fits(data.image[piaacmc[0].zoneaID].name, fname);
+        FUNC_CHECK_RETURN(
+            save_fits(data.image[piaacmc[0].zoneaID].name, fname)
+        );
     }
 
 
@@ -438,7 +439,10 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *dname)
     {
         printf("Creating fpmzmap1 ...\n");
         fflush(stdout);
-        IDfpmzmap1 = PIAACMCsimul_mkFPM_zonemap("fpmzmap1");
+
+        FUNC_CHECK_RETURN(
+            mkFPM_zonemap("fpmzmap1", &IDfpmzmap1);
+        );
         uint32_t xsize = data.image[IDfpmzmap1].md[0].size[0];
         uint32_t ysize = data.image[IDfpmzmap1].md[0].size[1];
 
@@ -467,8 +471,13 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *dname)
         piaacmcsimul_var.fnamedescr
     );
 
-    save_fits("fpmsagmapHR", fname);
-    delete_image_ID("fpmsagmapHR", DELETE_IMAGE_ERRMODE_WARNING);
+    FUNC_CHECK_RETURN(
+        save_fits("fpmsagmapHR", fname)
+    );
+
+    FUNC_CHECK_RETURN(
+        delete_image_ID("fpmsagmapHR", DELETE_IMAGE_ERRMODE_WARNING)
+    );
 
     DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;

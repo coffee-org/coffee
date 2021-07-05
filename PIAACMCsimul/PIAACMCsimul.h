@@ -10,6 +10,7 @@
 
 #include "CommandLineInterface/CLIcore.h"
 
+#include "PIAAshape/mkPIAAMshapes_from_RadSag.h"
 
 //
 // *****************************************************************************************************
@@ -20,7 +21,7 @@ typedef struct
 {
 
     char piaacmcconfdir[STRINGMAXLEN_DIRNAME];          ///  Current configuration directory
-    int optsystinit;
+    int  optsystinit;
 
     int FORCE_CREATE_Cmodes;
     int CREATE_Cmodes;
@@ -148,11 +149,11 @@ typedef struct
     double centObs1;     /**< output central obstruction */
     double r0lim;        /**< outer radius after extrapolation, piaa mirror 0 */
     double r1lim;        /**< outer radius after extrapolation, piaa mirror 1 */
-    long NBradpts;       /**< number of points for common r0, r1, piaa sags 1D table */
+    long   NBradpts;     /**< number of points for common r0, r1, piaa sags 1D table */
 
 
     // Wavelength
-    int nblambda;
+    int    nblambda;
     double lambda; // central wavelength [m]
     double lambdaB; // spectral bandwidth [%]
     double lambdaarray[2000]; // [m]  lambdaarray is also defined in OptSystProp structure
@@ -160,46 +161,48 @@ typedef struct
 
     // ====== Overall OPTICAL Geometry ===============
 
-    float beamrad; // [m]
-    long size;
+    float beamrad;  // [m]
+    long  size;
     float pixscale; // [m/pix]
 
-    int PIAAmode; // 0: no PIAA, 1: PIAA
+    int PIAAmode;
+    // 0: no PIAA,
+    // 1: PIAA
 
     float PIAA0pos; // conjugation (z) of first PIAA surface [m]
-    float PIAAsep;// separation between PIAA surfaces [m]
-    int prePIAA0mask; // 1 if mask before PIAA surface 0
+    float PIAAsep;  // separation between PIAA surfaces [m]
+    int   prePIAA0mask; // 1 if mask before PIAA surface 0
     float prePIAA0maskpos; // position of mask before PIAA surface 0 [m]
-    int postPIAA0mask; // 1 if mask after PIAA surface 0
+    int   postPIAA0mask; // 1 if mask after PIAA surface 0
     float postPIAA0maskpos; // position of mask after PIAA surface 0 [m]
     float PIAAcoeff; // fraction of apodization done by PIAA
-    int invPIAAmode; // 0: no inv PIAA, 1: inv PIAA after Lyot stops, 2: inv PIAA before Lyot stops
+    int   invPIAAmode; // 0: no inv PIAA, 1: inv PIAA after Lyot stops, 2: inv PIAA before Lyot stops
     float LyotZmin;
     float LyotZmax;
     float pupoutmaskrad; // output pupil mask radius (scaled to pupil radius)
 
     // ========== WAVEFRONT CONTROL ==================
-    int nbDM; // number of deformable mirrors (10 max)
+    int    nbDM; // number of deformable mirrors (10 max)
     double DMpos[10]; // DM conjugation in collimated space
-    long ID_DM[10];  // DM image identifier
+    long   ID_DM[10];  // DM image identifier
 
 
     // ========= LYOT STOPS ============
-    long NBLyotStop;          /**< Number of Lyot stops */
-    long IDLyotStop[10];
-    double LyotStop_zpos[10];
+    long    NBLyotStop;          /**< Number of Lyot stops */
+    long    IDLyotStop[10];
+    double  LyotStop_zpos[10];
 
     // ======= Optics shapes modes ============
     char PIAAmaterial_name[10];
-    int PIAAmaterial_code;
+    int  PIAAmaterial_code;
     long CmodesID; // Cosine radial mode
     long Cmsize; // cosine modes size
     long NBCmodes;
     long piaaNBCmodesmax; // maximum number of radial cosine modes for PIAA optics
 
-    long FmodesID; // Fourier 2D modes
-    long Fmsize;
-    long NBFmodes;
+    long  FmodesID; // Fourier 2D modes
+    long  Fmsize;
+    long  NBFmodes;
     float piaaCPAmax; // maximum spatial frequency (CPA) for PIAA optics
 
     long piaa0CmodesID;
@@ -214,29 +217,29 @@ typedef struct
     // ========= Focal Plane Mask ============
 
     double fpmaskradld; // mask radius [l/d] for the idealized PIAACMC starting point
-    long focmNBzone; // number of zones
+    long   focmNBzone; // number of zones
     double Fratio; // beam Fratio at focal plane
-    long zonezID;  // focm zone material thickness, double precision image, named fpmzt / fpm_zonez.fits
+    long   zonezID;  // focm zone material thickness, double precision image, named fpmzt / fpm_zonez.fits
     double fpmaskamptransm; // mask amplitude transmission (normally 1.0)
-    long zoneaID;  // focm zone amplitude transmission, double precision image, named fpmza / fpm_zonea.fits
+    long   zoneaID;  // focm zone amplitude transmission, double precision image, named fpmza / fpm_zonea.fits
     double fpzfactor; // focal plane mask DFT zoom factor
 
     double fpmRad; // outer radius of physical focal plane mask [m]
 
-    long NBrings; // number of rings
+    long   NBrings; // number of rings
     double fpmminsag; // [m]
     double fpmmaxsag; // [m]
     double fpmsagreg_coeff;
     double fpmsagreg_alpha;
-    long NBringCentCone; // number of rings that the central cone occupies
+    long   NBringCentCone; // number of rings that the central cone occupies
     double fpmCentConeRad; // [m]
     double fpmCentConeZ; // peak sag of central cone [m]
     double fpmOuterConeZ; // outer sag offset [m]
     double fpmOuterConeRadld; // outer radius (end of outer cone) [lambda/D]
     double fpmOuterConeRad; // [m]
-    long fpmarraysize;
-    char fpmmaterial_name[STRINGMAXLEN_PIAACMCSIMUL_MATERIALNAME];
-    int fpmmaterial_code;
+    long   fpmarraysize;
+    char   fpmmaterial_name[STRINGMAXLEN_PIAACMCSIMUL_MATERIALNAME];
+    int    fpmmaterial_code;
 
     // Mask description
     //
@@ -296,29 +299,29 @@ void  PIAACMCsimul_free(void);
 /**
  * @brief initializes the optsyst structure to simulate reflective PIAACMC system
  */
-errno_t PIAACMCsimul_init(OPTPIAACMCDESIGN *design, long index, double TTxld,
-                       double TTyld);
-
+/*errno_t PIAACMCsimul_init(OPTPIAACMCDESIGN *design, long index, double TTxld,
+                          double TTyld);
+*/
 
 /**
  * @brief initializes configuration
  */
-errno_t PIAACMCsimul_initpiaacmcconf(long piaacmctype, double fpmradld,
-                                 double centobs0, double centobs1, int WFCmode, int load);
+/*errno_t PIAACMCsimul_initpiaacmcconf(long piaacmctype, double fpmradld,
+                                     double centobs0, double centobs1, int WFCmode, int load);
+*/
 
-
-errno_t PIAACMCsimul_update_fnamedescr_conf();
-errno_t PIAACMCsimul_update_fnamedescr();
+//errno_t PIAACMCsimul_update_fnamedescr_conf();
+//errno_t PIAACMCsimul_update_fnamedescr();
 
 /**
  * @brief Save configuration
  */
-errno_t PIAACMCsimul_savepiaacmcconf(const char *dname);
+//errno_t PIAACMCsimul_savepiaacmcconf(const char *dname);
 
 /**
  * @brief Load configuration
  */
-errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname);
+//errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname);
 
 
 ///@}
@@ -335,64 +338,8 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname);
 /* =============================================================================================== */
 /* =============================================================================================== */
 
-imageID PIAACMCsimul_mkFPM_zonemap(const char *IDname);
+//imageID PIAACMCsimul_mkFPM_zonemap(const char *IDname);
 
-long PIAACMCsimul_rings2sectors(const char *IDin_name, const char *sectfname,
-                                const char *IDout_name);
-
-imageID PIAACMCsimul_mkFocalPlaneMask(const char *IDzonemap_name,
-                                   const char *ID_name,  int mode, int saveMask);
-
-///@}
-
-
-
-/* =============================================================================================== */
-/* =============================================================================================== */
-/** @name  3. PIAA optics  (geometrical optics)
- *  Create PIAA opics according to geometrical optics
- */
-///@{
-/* =============================================================================================== */
-/* =============================================================================================== */
-
-errno_t PIAACMCsimul_load2DRadialApodization(const char *IDapo_name,
-        float beamradpix, const char *IDapofit_name);
-
-errno_t PIAACMCsimul_init_geomPIAA_rad(const char *IDapofit_name);
-
-errno_t PIAACMCsimul_mkPIAAMshapes_from_RadSag(const char *fname,
-        const char *ID_PIAAM0_name, const char *ID_PIAAM1_name);
-
-errno_t PIAACMCsimul_makePIAAshapes(OPTPIAACMCDESIGN *design, long index);
-
-///@}
-
-
-
-/* =============================================================================================== */
-/* =============================================================================================== */
-/** @name  4. Lyot stop(s)
- *  Create, optimize and manage Lyot stop(s)
- */
-///@{
-/* =============================================================================================== */
-/* =============================================================================================== */
-
-imageID PIAACMCsimul_mkSimpleLyotStop(const char *ID_name, float rin, float rout);
-
-double PIAACMCsimul_optimizeLyotStop(const char *IDamp_name,
-                                     const char *IDpha_name, const char *IDincoh_name, float zmin, float zmax,
-                                     double throughput, long NBz, long NBmasks);
-
-imageID PIAACMCsimul_mkLyotMask(const char *IDincoh_name, const char *IDmc_name,
-                             const char *IDzone_name, double throughput, const char *IDout_name);
-
-long PIAACMCsimul_geomProp(const char *IDin_name, const char *IDsag_name,
-                           const char *IDout_name, const char *IDoutcnt_name, float drindex, float pscale,
-                           float zprop, float krad, float kstep, float rlim);
-
-///@}
 
 
 /* =============================================================================================== */
@@ -403,7 +350,7 @@ long PIAACMCsimul_geomProp(const char *IDin_name, const char *IDsag_name,
 ///@{
 /* =============================================================================================== */
 /* =============================================================================================== */
-
+/*
 double PIAACMCsimul_achromFPMsol_eval(double *fpmresp_array,
                                       double *zonez_array, double *dphadz_array, double *outtmp_array, long vsize,
                                       long nbz, long nbl);
@@ -417,7 +364,7 @@ long PIAACMC_FPMresp_rmzones(const char *FPMresp_in_name,
 
 long PIAACMC_FPMresp_resample(const char *FPMresp_in_name,
                               const char *FPMresp_out_name, long NBlambda, long PTstep);
-
+*/
 ///@}
 
 
@@ -430,13 +377,13 @@ long PIAACMC_FPMresp_resample(const char *FPMresp_in_name,
 /* =============================================================================================== */
 /* =============================================================================================== */
 
-
+/*
 errno_t PIAACMC_FPM_process(const char *FPMsag_name, const char *zonescoord_name,
-                         long NBexp, const char *outname);
+                            long NBexp, const char *outname);
 
 long PIAACMC_FPMresp_resample(const char *FPMresp_in_name,
                               const char *FPMresp_out_name, long NBlambda, long PTstep);
-
+*/
 ///@}
 
 
@@ -450,11 +397,12 @@ long PIAACMC_FPMresp_resample(const char *FPMresp_in_name,
 /* =============================================================================================== */
 /* =============================================================================================== */
 
+/*
 errno_t PIAACMCsimul_exec(const char *confindex, long mode);
 
 errno_t PIAACMCsimul_computePSF(float xld, float yld, long startelem,
-                               long endelem, int savepsf, int sourcesize, int extmode, int outsave,
-                               double *contrastval);
+                                long endelem, int savepsf, int sourcesize, int extmode, int outsave,
+                                double *contrastval);
 
 long PIAACMCsimul_CA2propCubeInt(const char *IDamp_name, const char *IDpha_name,
                                  float zmin, float zmax, long NBz, const char *IDout_name);
@@ -483,7 +431,7 @@ errno_t PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm();
 errno_t PIAACMCsimul_measure_transm_curve();
 
 int PIAACMCsimul_eval_poly_design();
-
+*/
 
 ///@}
 

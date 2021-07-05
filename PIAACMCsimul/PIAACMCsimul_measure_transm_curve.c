@@ -17,7 +17,14 @@
 #include "COREMOD_iofits/COREMOD_iofits.h"
 
 #include "OptSystProp/OptSystProp.h"
-#include "PIAACMCsimul/PIAACMCsimul.h"
+
+#include "PIAACMCsimul.h"
+
+#include "PIAACMCsimul_computePSF.h"
+#include "PIAACMCsimul_initpiaacmcconf.h"
+#include "PIAACMCsimul_loadsavepiaacmcconf.h"
+
+#include "PIAAshape/makePIAAshapes.h"
 
 
 // externs
@@ -72,29 +79,26 @@ errno_t PIAACMCsimul_measure_transm_curve()
     }
 
     piaacmcsimul_var.FORCE_CREATE_fpmza = 1;
-    PIAACMCsimul_initpiaacmcconf(piaacmcsimul_var.PIAACMC_fpmtype, fpmradld,
-                                 centobs0, centobs1, 0, 1);
+    FUNC_CHECK_RETURN(
+        PIAACMCsimul_initpiaacmcconf(piaacmcsimul_var.PIAACMC_fpmtype, fpmradld,
+                                     centobs0, centobs1, 0, 1)
+    );
 
-    PIAACMCsimul_makePIAAshapes(piaacmc, 0);
+    FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
     optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm
 
 
     {
         double cval = 0.0;
-        errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0, &cval);
-        if( fret != RETURN_SUCCESS)
-        {
-            printf("ERROR  [ %s %s %d ]\n", __FILE__, __func__, __LINE__);
-            printf("    Call to PIAACMCsimul_computePSF failed\n");
-            printf("    Function %s returns FAILURE\n", __func__);
-            return RETURN_FAILURE;
-        }
+        FUNC_CHECK_RETURN(
+            PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0, &cval)
+        );
     }
 
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "%s/psfi0test_x00_y00.fits", piaacmcsimul_var.piaacmcconfdir);
-        save_fits("psfi0", fname);
+        FUNC_CHECK_RETURN(save_fits("psfi0", fname));
     }
 
 
@@ -112,36 +116,31 @@ errno_t PIAACMCsimul_measure_transm_curve()
     double xld;
     for(xld = 0.0; xld < 10.0; xld += stepld)
     {
-        long ID;
-        long xsize, ysize, zsize;
         double val;
 
         //valref =
         {
             double cval = 0.0;
-            errno_t fret = PIAACMCsimul_computePSF(xld, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &cval);
-            if( fret != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
-            }
+            FUNC_CHECK_RETURN(
+                PIAACMCsimul_computePSF(xld, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &cval)
+            );
         }
 
-        ID = image_ID("psfi0");
+
+        imageID ID = image_ID("psfi0");
         //            sprintf(fname, "psfi0transm_%04.1f.fits", xld);
         //           save_fits("psfi0", fname);
         printf("ID = %ld\n", ID);
-        xsize = data.image[ID].md[0].size[0];
-        ysize = data.image[ID].md[0].size[1];
-        zsize = data.image[ID].md[0].size[2];
-        printf("image size = %ld %ld %ld\n", xsize, ysize, zsize);
+        uint32_t xsize = data.image[ID].md[0].size[0];
+        uint32_t ysize = data.image[ID].md[0].size[1];
+        uint32_t zsize = data.image[ID].md[0].size[2];
+        printf("image size = %u %u %u\n", xsize, ysize, zsize);
         val = 0.0;
 
-        long kk;
-        for(kk = 0; kk < zsize; kk++)
+        for(uint32_t kk = 0; kk < zsize; kk++)
         {
-            long ii, jj;
-            for(ii = 0; ii < xsize; ii++)
-                for(jj = 0; jj < ysize; jj++)
+            for(uint32_t ii = 0; ii < xsize; ii++)
+                for(uint32_t jj = 0; jj < ysize; jj++)
                 {
                     double dx, dy;
 
@@ -158,7 +157,10 @@ errno_t PIAACMCsimul_measure_transm_curve()
         fpt = fopen(fnametransm, "a");
         fprintf(fpt, "%10f %.18f\n", xld, val);
         fclose(fpt);
-        delete_image_ID("psfi0", DELETE_IMAGE_ERRMODE_WARNING);
+
+        FUNC_CHECK_RETURN(
+            delete_image_ID("psfi0", DELETE_IMAGE_ERRMODE_WARNING)
+        );
 
         stepld = 0.001;
         stepld += 0.1 * xld;

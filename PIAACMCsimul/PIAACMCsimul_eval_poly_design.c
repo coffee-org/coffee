@@ -19,8 +19,15 @@
 #include "COREMOD_tools/COREMOD_tools.h"
 
 #include "OptSystProp/OptSystProp.h"
-#include "PIAACMCsimul/PIAACMCsimul.h"
 
+#include "PIAACMCsimul.h"
+
+#include "PIAACMCsimul_computePSF.h"
+#include "PIAACMCsimul_init.h"
+#include "PIAACMCsimul_initpiaacmcconf.h"
+#include "PIAACMCsimul_loadsavepiaacmcconf.h"
+
+#include "PIAAshape/makePIAAshapes.h"
 
 
 extern PIAACMCsimul_varType piaacmcsimul_var;
@@ -123,27 +130,18 @@ errno_t PIAACMCsimul_eval_poly_design()
     piaacmcsimul_var.FORCE_CREATE_fpmza = 1;
 
 
+    FUNC_CHECK_RETURN(
+        PIAACMCsimul_initpiaacmcconf(
+            piaacmcsimul_var.PIAACMC_fpmtype,
+            fpmradld,
+            centobs0, centobs1,
+            0,
+            1)
+    );
 
-    {
-        errno_t fret = PIAACMCsimul_initpiaacmcconf(
-                           piaacmcsimul_var.PIAACMC_fpmtype,
-                           fpmradld,
-                           centobs0, centobs1,
-                           0,
-                           1);
-        if( fret != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
-        }
-    }
-
-
-
-
-    if(PIAACMCsimul_makePIAAshapes(piaacmc, 0) != RETURN_SUCCESS)
-    {
-        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
-    }
+    FUNC_CHECK_RETURN(
+        makePIAAshapes(piaacmc)
+    );
 
     optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm
 
@@ -166,13 +164,10 @@ errno_t PIAACMCsimul_eval_poly_design()
     printf("ldoffset = %f\n", ldoffset);
 
 
-    {   // compute off-axis POINT source reference
-        errno_t fret = PIAACMCsimul_computePSF(5.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0, &valref);
-        if( fret != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
-        }
-    }
+    // compute off-axis POINT source reference
+    FUNC_CHECK_RETURN(
+        PIAACMCsimul_computePSF(5.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0, &valref)
+    );
 
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
@@ -214,18 +209,16 @@ errno_t PIAACMCsimul_eval_poly_design()
         }
         avpeak /= zsize;
         free(peakarray);
-        delete_image_ID("psfi0", DELETE_IMAGE_ERRMODE_WARNING);
+        FUNC_CHECK_RETURN(
+            delete_image_ID("psfi0", DELETE_IMAGE_ERRMODE_WARNING)
+        );
     }
 
 
     // compute on-axis POINT source
-    {
-        errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 1, &valref);
-        if( fret != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
-        }
-    }
+    FUNC_CHECK_RETURN(
+        PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 1, &valref)
+    );
 
 
     {
@@ -331,48 +324,58 @@ errno_t PIAACMCsimul_eval_poly_design()
 
     // measure pointing sensitivity
     imageID IDps;
-    create_3Dimage_ID(
-        "starim",
-        piaacmc[0].size,
-        piaacmc[0].size,
-        zsize,
-        &IDps
+    FUNC_CHECK_RETURN(
+        create_3Dimage_ID(
+            "starim",
+            piaacmc[0].size,
+            piaacmc[0].size,
+            zsize,
+            &IDps
+        )
     );
 
     imageID IDps_re;
-    create_3Dimage_ID(
-        "starim_re",
-        piaacmc[0].size,
-        piaacmc[0].size,
-        zsize,
-        &IDps_re
+    FUNC_CHECK_RETURN(
+        create_3Dimage_ID(
+            "starim_re",
+            piaacmc[0].size,
+            piaacmc[0].size,
+            zsize,
+            &IDps_re
+        )
     );
 
     imageID IDps_im;
-    create_3Dimage_ID(
-        "starim_im",
-        piaacmc[0].size,
-        piaacmc[0].size,
-        zsize,
-        &IDps_im
+    FUNC_CHECK_RETURN(
+        create_3Dimage_ID(
+            "starim_im",
+            piaacmc[0].size,
+            piaacmc[0].size,
+            zsize,
+            &IDps_im
+        )
     );
 
     imageID IDps_COH;
-    create_3Dimage_ID(
-        "starimCOH",
-        piaacmc[0].size,
-        piaacmc[0].size,
-        zsize,
-        &IDps_COH
+    FUNC_CHECK_RETURN(
+        create_3Dimage_ID(
+            "starimCOH",
+            piaacmc[0].size,
+            piaacmc[0].size,
+            zsize,
+            &IDps_COH
+        )
     );
 
     imageID IDps_INC;
-    create_3Dimage_ID(
-        "starimINC",
-        piaacmc[0].size,
-        piaacmc[0].size,
-        zsize,
-        &IDps_INC
+    FUNC_CHECK_RETURN(
+        create_3Dimage_ID(
+            "starimINC",
+            piaacmc[0].size,
+            piaacmc[0].size,
+            zsize,
+            &IDps_INC
+        )
     );
 
     long NBpt = 0;
@@ -530,23 +533,13 @@ errno_t PIAACMCsimul_eval_poly_design()
                                                OPDmode + ii];
         }
 
-        {
-            errno_t fret = PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0); // add error to the data
-            if( fret != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
-            }
+        FUNC_CHECK_RETURN(
+            PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0)
+        ); // add error to the data
 
-        }
-
-        {
-            double cval = 0.0;
-            errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &cval);
-            if( fret != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
-            }
-        }
+        FUNC_CHECK_RETURN(
+            PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, NULL)
+        );
 
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
@@ -555,7 +548,9 @@ errno_t PIAACMCsimul_eval_poly_design()
             save_fits("psfi0", fname);
         }
 
-        delete_image_ID("opderr", DELETE_IMAGE_ERRMODE_WARNING);
+        FUNC_CHECK_RETURN(
+            delete_image_ID("opderr", DELETE_IMAGE_ERRMODE_WARNING)
+        );
 
         {
             imageID ID = image_ID("psfi0");
@@ -607,7 +602,7 @@ errno_t PIAACMCsimul_eval_poly_design()
         WRITE_FULLFILENAME(fname, "%s/psfi0_extsrc%2ld_sm%d.%s.fits",
                            piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
                            piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
-        save_fits("starim", fname);
+        FUNC_CHECK_RETURN(save_fits("starim", fname));
     }
 
     PIAACMCsimul_update_fnamedescr();
@@ -616,7 +611,7 @@ errno_t PIAACMCsimul_eval_poly_design()
         WRITE_FULLFILENAME(fname, "%s/psfi0INC_extsrc%2ld_sm%d.%s.fits",
                            piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
                            piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
-        save_fits("starimINC", fname);
+        FUNC_CHECK_RETURN(save_fits("starimINC", fname));
     }
 
     PIAACMCsimul_update_fnamedescr();
@@ -625,7 +620,7 @@ errno_t PIAACMCsimul_eval_poly_design()
         WRITE_FULLFILENAME(fname, "%s/psfi0COH_extsrc%2ld_sm%d.%s.fits",
                            piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
                            piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
-        save_fits("starimCOH", fname);
+        FUNC_CHECK_RETURN(save_fits("starimCOH", fname));
     }
 
 
@@ -655,7 +650,9 @@ errno_t PIAACMCsimul_eval_poly_design()
 
 
         imageID IDrc;
-        create_3Dimage_ID("_tmp_rc", xsize, ysize, zsize, &IDrc);
+        FUNC_CHECK_RETURN(
+            create_3Dimage_ID("_tmp_rc", xsize, ysize, zsize, &IDrc)
+        );
 
 
         for(uint32_t kk = 0; kk < zsize; kk++)
@@ -748,12 +745,18 @@ errno_t PIAACMCsimul_eval_poly_design()
 
 
             free(rcarray);
-            delete_image_ID("_tmp_rc", DELETE_IMAGE_ERRMODE_WARNING);
+            FUNC_CHECK_RETURN(
+                delete_image_ID("_tmp_rc", DELETE_IMAGE_ERRMODE_WARNING)
+            );
             fclose(fp);
         }
 
-        delete_image_ID("starimINC", DELETE_IMAGE_ERRMODE_WARNING);
-        delete_image_ID("starimCOH", DELETE_IMAGE_ERRMODE_WARNING);
+        FUNC_CHECK_RETURN(
+            delete_image_ID("starimINC", DELETE_IMAGE_ERRMODE_WARNING)
+        );
+        FUNC_CHECK_RETURN(
+            delete_image_ID("starimCOH", DELETE_IMAGE_ERRMODE_WARNING)
+        );
 
 
         PIAACMCsimul_update_fnamedescr();

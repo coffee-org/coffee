@@ -23,8 +23,13 @@
 
 #include "OpticsMaterials/OpticsMaterials.h"
 #include "OptSystProp/OptSystProp.h"
-#include "PIAACMCsimul/PIAACMCsimul.h"
 
+
+#include "PIAACMCsimul.h"
+
+#include "PIAACMCsimul_exec.h"
+#include "PIAACMCsimul_initpiaacmcconf.h"
+#include "PIAACMCsimul_loadsavepiaacmcconf.h"
 
 
 
@@ -512,11 +517,13 @@ errno_t PIAACMCsimul_run(
                 printf("LOADING \"%s\"...\n", fnamebestsol);
                 fflush(stdout);
 
-                load_fits(fnamebestsol,
-                          "fpmbestsol",
-                          LOADFITS_ERRMODE_IGNORE,
-                          &IDbestsol
-                         );
+                FUNC_CHECK_RETURN(
+                    load_fits(fnamebestsol,
+                              "fpmbestsol",
+                              LOADFITS_ERRMODE_IGNORE,
+                              &IDbestsol
+                             )
+                );
             }
 
 

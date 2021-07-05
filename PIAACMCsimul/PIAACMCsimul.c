@@ -59,8 +59,15 @@
 #include "OptSystProp/OptSystProp.h"
 
 
+
 #include "PIAACMCsimul_run.h"
-#include "PIAACMCsimul_rings2sectors.h"
+
+#include "FocalPlaneMask/FPMresp_rmzones.h"
+#include "FocalPlaneMask/FPMresp_resample.h"
+#include "FocalPlaneMask/FPM_process.h"
+#include "FocalPlaneMask/rings2sectors.h"
+
+#include "LyotStop/geomProp.h"
 
 
 
@@ -114,87 +121,13 @@ double f_evalmask(const gsl_vector *v, void *params);
 
 
 
-/* =============================================================================================== */
-/*  4. Lyot Stop(s)                                                              */
-/* =============================================================================================== */
-
-errno_t PIAACMCsimul_geomProp_cli()
-{
-    if(CLI_checkarg(1, 4) + CLI_checkarg(2, 4) + CLI_checkarg(3,
-            3) + CLI_checkarg(4, 3) + CLI_checkarg(5, 1) + CLI_checkarg(6,
-                    1) + CLI_checkarg(7, 1) + CLI_checkarg(8, 1) + CLI_checkarg(9,
-                            1) + CLI_checkarg(10, 1) == 0)
-    {
-        PIAACMCsimul_geomProp(data.cmdargtoken[1].val.string,
-                              data.cmdargtoken[2].val.string, data.cmdargtoken[3].val.string,
-                              data.cmdargtoken[4].val.string, data.cmdargtoken[5].val.numf,
-                              data.cmdargtoken[6].val.numf, data.cmdargtoken[7].val.numf,
-                              data.cmdargtoken[8].val.numf, data.cmdargtoken[9].val.numf,
-                              data.cmdargtoken[10].val.numf);
-    }
-    else
-    {
-        return 1;
-    }
-
-    return 0;
-}
 
 
-/* =============================================================================================== */
-/*  5. Focal plane mask optimization                                                               */
-/* =============================================================================================== */
-
-
-errno_t PIAACMC_FPMresp_rmzones_cli()
-{
-    if(CLI_checkarg(1, 4) + CLI_checkarg(2, 3) + CLI_checkarg(3, 2) == 0)
-    {
-        PIAACMC_FPMresp_rmzones(data.cmdargtoken[1].val.string,
-                                data.cmdargtoken[2].val.string, data.cmdargtoken[3].val.numl);
-        return 0;
-    }
-    else
-    {
-        return 1;
-    }
-}
-
-errno_t PIAACMC_FPMresp_resample_cli()
-{
-    if(CLI_checkarg(1, 4) + CLI_checkarg(2, 3) + CLI_checkarg(3,
-            2) + CLI_checkarg(4, 2) == 0)
-    {
-        PIAACMC_FPMresp_resample(data.cmdargtoken[1].val.string,
-                                 data.cmdargtoken[2].val.string, data.cmdargtoken[3].val.numl,
-                                 data.cmdargtoken[4].val.numl);
-        return 0;
-    }
-    else
-    {
-        return 1;
-    }
-}
 
 /* =============================================================================================== */
 /*  6. Focal plane processing                                                                      */
 /* =============================================================================================== */
 
-errno_t PIAACMC_FPM_process_cli()
-{
-    if(CLI_checkarg(1, 4) + CLI_checkarg(2, 5) + CLI_checkarg(3,
-            2) + CLI_checkarg(4, 3) == 0)
-    {
-        PIAACMC_FPM_process(data.cmdargtoken[1].val.string,
-                            data.cmdargtoken[2].val.string, data.cmdargtoken[3].val.numl,
-                            data.cmdargtoken[4].val.string);
-        return 0;
-    }
-    else
-    {
-        return 1;
-    }
-}
 
 
 
@@ -216,54 +149,13 @@ static errno_t init_module_CLI()
 
     CLIADDCMD_PIAACMCsimul__run();
 
+    CLIADDCMD_PIAACMCsimul__FPMresp_rmzones();
 
-    strcpy(data.cmd[data.NBcmd].key, "piaacmsimfpmresprm");
-    strcpy(data.cmd[data.NBcmd].module, __FILE__);
-    data.cmd[data.NBcmd].fp = PIAACMC_FPMresp_rmzones_cli;
-    strcpy(data.cmd[data.NBcmd].info, "remove zones in FPM resp matrix");
-    strcpy(data.cmd[data.NBcmd].syntax,
-           "<input FPMresp> <output FPMresp> <NBzone removed>");
-    strcpy(data.cmd[data.NBcmd].example,
-           "piaacmsimfpmresprm FPMresp FPMrespout 125");
-    strcpy(data.cmd[data.NBcmd].Ccall,
-           "long PIAACMC_FPMresp_rmzones(const char *FPMresp_in_name, const char *FPMresp_out_name, long NBzones)");
-    data.NBcmd++;
+    CLIADDCMD_PIAACMCsimul__FPMresp_resample();
 
-    strcpy(data.cmd[data.NBcmd].key, "piaacmsimfpmresprs");
-    strcpy(data.cmd[data.NBcmd].module, __FILE__);
-    data.cmd[data.NBcmd].fp = PIAACMC_FPMresp_resample_cli;
-    strcpy(data.cmd[data.NBcmd].info, "resample FPM resp matrix");
-    strcpy(data.cmd[data.NBcmd].syntax,
-           "<input FPMresp> <output FPMresp> <NBlambda> <EvalPts step>");
-    strcpy(data.cmd[data.NBcmd].example,
-           "piaacmsimfpmresprs FPMresp FPMrespout 10 2");
-    strcpy(data.cmd[data.NBcmd].Ccall,
-           "long PIAACMC_FPMresp_resample(const char *FPMresp_in_name, const char *FPMresp_out_name, long NBlambda, long PTstep)");
-    data.NBcmd++;
+    CLIADDCMD_PIAACMCsimul__FPM_process();
 
-    strcpy(data.cmd[data.NBcmd].key, "piaacmcfpmprocess");
-    strcpy(data.cmd[data.NBcmd].module, __FILE__);
-    data.cmd[data.NBcmd].fp = PIAACMC_FPM_process_cli;
-    strcpy(data.cmd[data.NBcmd].info, "Quantize FPM");
-    strcpy(data.cmd[data.NBcmd].syntax,
-           "<input FPM sags> <sectors ASCII file> <number of exposures> <output FPM sags>");
-    strcpy(data.cmd[data.NBcmd].example, "piaacmcfpmprocess");
-    strcpy(data.cmd[data.NBcmd].Ccall,
-           "long PIAACMC_FPM_process(const char *FPMsag_name, const char *zonescoord_name, long NBexp, const char *outname)");
-    data.NBcmd++;
-
-    strcpy(data.cmd[data.NBcmd].key, "piaacmcgeomprop");
-    strcpy(data.cmd[data.NBcmd].module, __FILE__);
-    data.cmd[data.NBcmd].fp = PIAACMCsimul_geomProp_cli;
-    strcpy(data.cmd[data.NBcmd].info, "Geometric propagation from surface");
-    strcpy(data.cmd[data.NBcmd].syntax,
-           "<input map> <input sag> <output map> <output map counter> <delta refractive index> <pixel scale> <propagation dist> <kernel radius> <kernel step> <clear aperture>");
-    strcpy(data.cmd[data.NBcmd].example,
-           "piaacmcgeomprop pupin piaa0z pupout cntout 2.0 0.00011 2.302606 3.0 0.5 200.0");
-    strcpy(data.cmd[data.NBcmd].Ccall,
-           "long PIAACMCsimul_geomProp(const char *IDin_name, const char *IDsag_name, const char *IDout_name, const char *IDoutcnt_name, float drindex, float pscale, float zprop, float krad, float kstep, float rlim)");
-    data.NBcmd++;
-
+    CLIADDCMD_PIAACMCsimul__LyotStop__PIAACMCsimul_geomProp();
 
     piaacmcsimul_var.optsystinit = 0;
 

@@ -35,7 +35,7 @@ extern PIAACMCsimul_varType piaacmcsimul_var;
 /// written to be fast, no checking of array sizes
 /// all arrays pre-allocated outside this function
 ///
-double PIAACMCsimul_achromFPMsol_eval(
+errno_t PIAACMCsimul_achromFPMsol_eval(
     double *restrict
     fpmresp_array, 	/// @param[in] fpmresp_array   Mask zones responses, double array
     double *restrict
@@ -46,7 +46,8 @@ double PIAACMCsimul_achromFPMsol_eval(
     outtmp_array, 		/// @param[out] outtmp_array   Output temp array
     long vsize,
     long nbz,
-    long nbl
+    long nbl,
+    double *outval
 )
 {
     DEBUG_TRACE_FSTART();
@@ -149,7 +150,12 @@ double PIAACMCsimul_achromFPMsol_eval(
     //  evalval /= vsize*nbl;
 
     // note that evalval is prop to bumber of spectral channels x number of evaluation pixels
+    if(outval != NULL)
+    {
+        *outval = evalval;
+    }
+
     DEBUG_TRACE_FEXIT();
-    return evalval;
+    return RETURN_SUCCESS;
 }
 

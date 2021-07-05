@@ -36,13 +36,14 @@ extern OPTSYST *optsyst;
  *
  */
 
-long PIAACMCsimul_CA2propCubeInt(
-    const char *IDamp_name,
-    const char *IDpha_name,
+errno_t PIAACMCsimul_CA2propCubeInt(
+    const char *__restrict__ IDamp_name,
+    const char *__restrict__ IDpha_name,
     float zmin,
     float zmax,
     long NBz,
-    const char *IDout_name
+    const char *__restrict__ IDout_name,
+    imageID *outID
 )
 {
     DEBUG_TRACE_FSTART();
@@ -54,11 +55,6 @@ long PIAACMCsimul_CA2propCubeInt(
 
     uint32_t xsize;
     uint32_t ysize;
-
-#ifdef PIAASIMUL_LOGFUNC0
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
-                                 "");
-#endif
 
 
     printf("PIAACMCsimul_CA2propCubeInt   : %s %s %f %f %ld %s\n", IDamp_name,
@@ -83,17 +79,20 @@ long PIAACMCsimul_CA2propCubeInt(
             nblambda = 1;
         }
     }
-    create_3Dimage_ID(IDout_name, xsize, ysize, NBz, &IDout);
+    FUNC_CHECK_RETURN(
+        create_3Dimage_ID(IDout_name, xsize, ysize, NBz, &IDout)
+    );
 
-
-    create_2Dimage_ID("tmpintg", xsize, ysize, NULL);
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID("tmpintg", xsize, ysize, NULL)
+    );
 
 
     // initialize zarray
     zarray = (float *) malloc(sizeof(float) * NBz);
     if(zarray == NULL) {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        abort();
     }
 
     for(long l = 0; l < NBz; l++)
@@ -134,7 +133,12 @@ long PIAACMCsimul_CA2propCubeInt(
     delete_image_ID("retmpim", DELETE_IMAGE_ERRMODE_WARNING);
     delete_image_ID("imtmpim", DELETE_IMAGE_ERRMODE_WARNING);
 
+    if(outID != NULL)
+    {
+        *outID = IDout;
+    }
+
     DEBUG_TRACE_FEXIT();
-    return IDout;
+    return RETURN_SUCCESS;
 }
 
