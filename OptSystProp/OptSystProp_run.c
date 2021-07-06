@@ -436,7 +436,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].init = 1;
             }
 
-            {   //TEST
+            /*{   //TEST
                 char fnamepre[STRINGMAXLEN_FILENAME];
                 WRITE_FILENAME(fnamepre, "test_refract_elem%ld_prepha.fits", elem);
                 save_fl_fits(data.image[IDp].md[0].name, fnamepre);
@@ -444,7 +444,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 char fnameoptpha[STRINGMAXLEN_FILENAME];
                 WRITE_FILENAME(fnameoptpha, "test_refract_elem%ld_optpha.fits", elem);
                 save_fl_fits(data.image[ID].md[0].name, fnameoptpha);
-            }
+            }*/
 
             if(data.image[ID].md[0].naxis == 2)
             {
@@ -481,11 +481,11 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
 # endif
             }
 
-            {   //TEST
+           /* {   //TEST
                 char fnamepost[STRINGMAXLEN_FILENAME];
                 WRITE_FILENAME(fnamepost, "test_refract_elem%ld_postpha.fits", elem);
                 save_fl_fits(data.image[IDp].md[0].name, fnamepost);
-            }
+            }*/
         }
 
 
