@@ -436,8 +436,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].init = 1;
             }
 
-            //TEST
-            {
+            {   //TEST
                 char fnamepre[STRINGMAXLEN_FILENAME];
                 WRITE_FILENAME(fnamepre, "test_refract_elem%ld_prepha.fits", elem);
                 save_fl_fits(data.image[IDp].md[0].name, fnamepre);
@@ -481,18 +480,8 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 }
 # endif
             }
-            //TEST
-            {
-                if(elem==5)
-                {
-                    for(long kl = 0; kl < nblambda; kl++)
-                    for(uint64_t ii = 0; ii < size2; ii++)
-                    {
-                        data.image[IDp].array.F[size2 * kl + ii] = 0.0;
-                    }
-                }
 
-
+            {   //TEST
                 char fnamepost[STRINGMAXLEN_FILENAME];
                 WRITE_FILENAME(fnamepost, "test_refract_elem%ld_postpha.fits", elem);
                 save_fl_fits(data.image[IDp].md[0].name, fnamepost);
