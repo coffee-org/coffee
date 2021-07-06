@@ -876,7 +876,7 @@ static errno_t setupPIAAshapes(
 
             // trying to load the 4 files from filesystem
             char fname[STRINGMAXLEN_FULLFILENAME];
-            DEBUG_TRACEPOINT_LOG("loading mode coeffs");
+            DEBUG_TRACEPOINT("loading mode coeffs");
 
             WRITE_FULLFILENAME(
                 fname,
@@ -1328,10 +1328,20 @@ static errno_t setupPIAAshapes(
 
         if(piaacmcparams.PIAACMC_save == 1)
         {
-            WRITE_FULLFILENAME(fname, "%s/piaa0Cz.fits", piaacmcparams.piaacmcconfdir);
-            DEBUG_TRACEPOINT_LOG("saving %s -> %s", "piaa0Cz", fname);
+            WRITE_FULLFILENAME(fname, "%s/initpiaacmc_piaa0Cz.fits", piaacmcparams.piaacmcconfdir);
+            DEBUG_TRACEPOINT("saving %s -> %s", "piaa0Cz", fname);
             FUNC_CHECK_RETURN(
                 save_fits("piaa0Cz", fname)
+            );
+
+            WRITE_FULLFILENAME(fname, "%s/initpiaacmc_piaa0Cmodescoeff.fits", piaacmcparams.piaacmcconfdir);
+            FUNC_CHECK_RETURN(
+                save_fits("piaa0Cmodescoeff", fname)
+            );
+
+            WRITE_FULLFILENAME(fname, "%s/initpiaacmc_Cmodes.fits", piaacmcparams.piaacmcconfdir);
+            FUNC_CHECK_RETURN(
+                save_fits("Cmodes", fname)
             );
         }
 
@@ -1341,8 +1351,8 @@ static errno_t setupPIAAshapes(
 
         if(piaacmcparams.PIAACMC_save == 1)
         {
-            WRITE_FULLFILENAME(fname, "%s/piaa1Cz.fits", piaacmcparams.piaacmcconfdir);
-            DEBUG_TRACEPOINT_LOG("saving %s -> %s", "piaa1Cz", fname);
+            WRITE_FULLFILENAME(fname, "%s/initpiaacmc_piaa1Cz.fits", piaacmcparams.piaacmcconfdir);
+            DEBUG_TRACEPOINT("saving %s -> %s", "piaa1Cz", fname);
             FUNC_CHECK_RETURN(
                 save_fits("piaa1Cz", fname)
             );
@@ -1373,8 +1383,8 @@ static errno_t setupPIAAshapes(
         }
         if(piaacmcparams.PIAACMC_save == 1)
         {
-            WRITE_FULLFILENAME(fname, "%s/piaa0Cres.fits", piaacmcparams.piaacmcconfdir);
-            DEBUG_TRACEPOINT_LOG("saving %s -> %s", "piaa0Cres", fname);
+            WRITE_FULLFILENAME(fname, "%s/initpiaacmc_piaa0Cres.fits", piaacmcparams.piaacmcconfdir);
+            DEBUG_TRACEPOINT("saving %s -> %s", "piaa0Cres", fname);
             FUNC_CHECK_RETURN(
                 save_fits("piaa0Cres", fname)
             );
@@ -1401,8 +1411,8 @@ static errno_t setupPIAAshapes(
         }
         if(piaacmcparams.PIAACMC_save == 1)
         {
-            WRITE_FULLFILENAME(fname, "%s/piaa1Cres.fits", piaacmcparams.piaacmcconfdir);
-            DEBUG_TRACEPOINT_LOG("saving %s -> %s", "piaa1Cres", fname);
+            WRITE_FULLFILENAME(fname, "%s/initpiaacmc_piaa1Cres.fits", piaacmcparams.piaacmcconfdir);
+            DEBUG_TRACEPOINT("saving %s -> %s", "piaa1Cres", fname);
             FUNC_CHECK_RETURN(
                 save_fits("piaa1Cres", fname)
             );

@@ -15,6 +15,7 @@
 
 #include "CommandLineInterface/CLIcore.h"
 #include "COREMOD_memory/COREMOD_memory.h"
+#include "COREMOD_iofits/COREMOD_iofits.h"
 
 
 
@@ -117,8 +118,8 @@ errno_t mkPIAAMshapes_from_RadSag(
         {
             for(long k = 0; k < NBradpts; k++)
             {
-                int ret = fscanf(fp, "%lf %lf %lf %lf\n", &r0array[k], &z0array[k], &r1array[k],
-                                 &z1array[k]);
+                int ret = fscanf(fp, "%lf %lf %lf %lf\n",
+                                 &r0array[k], &z0array[k], &r1array[k], &z1array[k]);
                 (void) ret;
             }
             fclose(fp);
@@ -225,6 +226,11 @@ errno_t mkPIAAMshapes_from_RadSag(
 # endif
 
 
+    {   //TEST
+        char fnametest[STRINGMAXLEN_FILENAME];
+        WRITE_FILENAME(fnametest, "test_piaam0z.fits");
+        FUNC_CHECK_RETURN(save_fl_fits(ID_PIAAM0_name, fnametest));
+    }
 
     printf("\n\n");
 

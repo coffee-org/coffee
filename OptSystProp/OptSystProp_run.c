@@ -429,8 +429,8 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                     optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl] =
                         2.0 * M_PI * (n0 - n1) / optsyst[index].lambdaarray[kl];
 
-                    DEBUG_TRACEPOINT("elem %ld ASPHSURFRarray ncoeff %ld = %lf",
-                                     elem, kl,
+                    DEBUG_TRACEPOINT("elem %ld ASPHSURFRarray %f %f -> ncoeff %ld = %lf",
+                                     elem, n0, n1, kl,
                                      optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl]);
                 }
                 optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].init = 1;
@@ -481,11 +481,11 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
 # endif
             }
 
-           /* {   //TEST
-                char fnamepost[STRINGMAXLEN_FILENAME];
-                WRITE_FILENAME(fnamepost, "test_refract_elem%ld_postpha.fits", elem);
-                save_fl_fits(data.image[IDp].md[0].name, fnamepost);
-            }*/
+            /* {   //TEST
+                 char fnamepost[STRINGMAXLEN_FILENAME];
+                 WRITE_FILENAME(fnamepost, "test_refract_elem%ld_postpha.fits", elem);
+                 save_fl_fits(data.image[IDp].md[0].name, fnamepost);
+             }*/
         }
 
 

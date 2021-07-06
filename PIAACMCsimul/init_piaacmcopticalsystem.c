@@ -408,8 +408,8 @@ errno_t init_piaacmcopticalsystem(
             piaacmcopticalsystem.elemtype[elem] = 4;
 
             DEBUG_TRACEPOINT("Element %ld is lens", elem);
-            piaacmcopticalsystem.ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]].surfID = IDpiaam0z; //image_ID("piaar0zsag");
-            //IDpiaar0zsag;
+            piaacmcopticalsystem.ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]].surfID = image_ID("piaar0zsag");
+
             if(piaacmcopticalsystem.ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]].surfID == -1)
             {
                 FUNC_RETURN_FAILURE("PIAA lens surface 0 not identified");
@@ -479,7 +479,7 @@ errno_t init_piaacmcopticalsystem(
             piaacmcopticalsystem.elemtype[elem] = 4;
 
             DEBUG_TRACEPOINT("Element %ld is lens", elem);
-            piaacmcopticalsystem.ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]].surfID = IDpiaam1z; //image_ID("piaar1zsag");
+            piaacmcopticalsystem.ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]].surfID = image_ID("piaar1zsag");
 
             if(piaacmcopticalsystem.ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]].surfID == -1)
             {
