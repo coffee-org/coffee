@@ -27,13 +27,6 @@
 
 
 
-
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-extern OPTPIAACMCDESIGN *piaacmc;
-
-
-
 errno_t f_evalmask(
     const gsl_vector *v,
     void *params,
@@ -49,27 +42,27 @@ errno_t f_evalmask(
     (void) p;
 
 
-    for(k = 0; k < data.image[piaacmc[0].zonezID].md[0].size[0]; k++)
+    for(k = 0; k < data.image[piaacmcopticaldesign.zonezID].md[0].size[0]; k++)
     {
-        piaacmcsimul_var.zonez_array[k] = gsl_vector_get(v, k);
+        piaacmcparams.zonez_array[k] = gsl_vector_get(v, k);
     }
 
     FUNC_CHECK_RETURN(
         PIAACMCsimul_achromFPMsol_eval(
-            piaacmcsimul_var.fpmresp_array,
-            piaacmcsimul_var.zonez_array,
-            piaacmcsimul_var.dphadz_array,
-            piaacmcsimul_var.outtmp_array,
-            piaacmcsimul_var.vsize,
-            data.image[piaacmc[0].zonezID].md[0].size[0],
-            piaacmc[0].nblambda,
+            piaacmcparams.fpmresp_array,
+            piaacmcparams.zonez_array,
+            piaacmcparams.dphadz_array,
+            piaacmcparams.outtmp_array,
+            piaacmcparams.vsize,
+            data.image[piaacmcopticaldesign.zonezID].md[0].size[0],
+            piaacmcopticaldesign.nblambda,
             &value
         );
     );
-    value /= piaacmcsimul_var.CnormFactor * piaacmcsimul_var.SCORINGTOTAL *
-             piaacmc[0].nblambda;
+    value /= piaacmcparams.CnormFactor * piaacmcparams.SCORINGTOTAL *
+             piaacmcopticaldesign.nblambda;
 
-    piaacmcsimul_var.LOOPCNT++;
+    piaacmcparams.LOOPCNT++;
 
     if(outval != NULL)
     {

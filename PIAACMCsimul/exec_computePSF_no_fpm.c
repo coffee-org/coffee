@@ -24,19 +24,10 @@
 #include "PIAACMCsimul.h"
 
 #include "PIAACMCsimul_computePSF.h"
-#include "PIAACMCsimul_initpiaacmcconf.h"
+#include "init_piaacmcopticaldesign.h"
 #include "PIAACMCsimul_loadsavepiaacmcconf.h"
 
 #include "PIAAshape/makePIAAshapes.h"
-
-
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-extern OPTSYST *optsyst;
-
-extern OPTPIAACMCDESIGN *piaacmc;
-
-
 
 
 
@@ -85,40 +76,41 @@ errno_t exec_computePSF_no_fpm(
 
     // init as in mode 0
     FUNC_CHECK_RETURN(
-        PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 1)
+        init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 1)
     );
 
-    FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
+    FUNC_CHECK_RETURN(makePIAAshapes());
 
 
-    optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm
+    piaacmcopticalsystem.FOCMASKarray[0].mode = 1; // use 1-fpm
 
-    piaacmcsimul_var.linopt_paramrefval[0] = piaacmc[0].fpmaskamptransm;
+    piaacmcparams.linopt_paramrefval[0] = piaacmcopticaldesign.fpmaskamptransm;
 
-    piaacmc[0].fpmaskamptransm = -1.0;  // Remove focal plane mask
-    piaacmcsimul_var.FORCE_CREATE_fpmza = 1;
+    piaacmcopticaldesign.fpmaskamptransm = -1.0;  // Remove focal plane mask
+    piaacmcparams.FORCE_CREATE_fpmza = 1;
 
     FUNC_CHECK_RETURN(
-        PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 0)
+        init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 0)
     );
 
     // compute the PSF for an on-axis source, all optical elements
     FUNC_CHECK_RETURN(
-        PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &val)
+        PIAACMCsimul_computePSF(
+            0.0, 0.0, 0, piaacmcopticalsystem.NBelem, 0, 0, 0, 0, &val)
     );
 
     // restore original configuration
-    piaacmc[0].fpmaskamptransm = piaacmcsimul_var.linopt_paramrefval[0];
+    piaacmcopticaldesign.fpmaskamptransm = piaacmcparams.linopt_paramrefval[0];
 
     FUNC_CHECK_RETURN(
-        PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 0)
+        init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 0)
     );
 
     FUNC_CHECK_RETURN(
-        PIAACMCsimul_savepiaacmcconf( piaacmcsimul_var.piaacmcconfdir)
+        PIAACMCsimul_savepiaacmcconf(piaacmcparams.piaacmcconfdir)
     );
 
-    piaacmcsimul_var.FORCE_CREATE_fpmza = 0;
+    piaacmcparams.FORCE_CREATE_fpmza = 0;
 
     if(outval == NULL)
     {

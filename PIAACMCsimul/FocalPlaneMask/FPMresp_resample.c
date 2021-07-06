@@ -82,10 +82,6 @@ errno_t PIAACMC_FPMresp_resample(
     imageID ID = -1;
     imageID IDout = -1;
 
-#ifdef PIAASIMUL_LOGFUNC0
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
-                                 "");
-#endif
 
 
     ID = image_ID(FPMresp_in_name);

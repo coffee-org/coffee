@@ -21,14 +21,8 @@
 #include "image_filter/image_filter.h"
 
 #include "OptSystProp/OptSystProp.h"
-#include "PIAACMCsimul/PIAACMCsimul.h"
 
-
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-extern OPTSYST *optsyst;
-
-extern OPTPIAACMCDESIGN *piaacmc;
+#include "PIAACMCsimul.h"
 
 
 

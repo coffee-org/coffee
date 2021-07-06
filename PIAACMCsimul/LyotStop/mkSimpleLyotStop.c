@@ -18,14 +18,6 @@
 #include "PIAACMCsimul/PIAACMCsimul.h"
 
 
-extern OPTPIAACMCDESIGN *piaacmc;
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-
-
-
-
-
 
 /**
  * @brief Make Lyot stop that transmits between rin and rout
@@ -52,17 +44,17 @@ errno_t mkSimpleLyotStop(
     imageID ID, IDr;
 
 
-    size = piaacmc[0].size;
+    size = piaacmcopticaldesign.size;
     size2 = size;
     size2 *= size;
 
     IDr = image_ID("rcoord");
 
     FUNC_CHECK_RETURN(
-        create_3Dimage_ID(ID_name, size, size, piaacmc[0].nblambda, &ID)
+        create_3Dimage_ID(ID_name, size, size, piaacmcopticaldesign.nblambda, &ID)
     );
 
-    for(long k = 0; k < piaacmc[0].nblambda; k++)
+    for(long k = 0; k < piaacmcopticaldesign.nblambda; k++)
         for(uint64_t ii = 0; ii < size2; ii++)
         {
             if((data.image[IDr].array.F[ii] < rout) && (data.image[IDr].array.F[ii] > rin))

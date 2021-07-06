@@ -20,14 +20,7 @@
 #include "info/info.h"
 #include "linopt_imtools/linopt_imtools.h"
 
-#include "PIAACMCsimul/PIAACMCsimul.h"
-
-
-
-
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-
+#include "PIAACMCsimul.h"
 
 
 /**
@@ -79,7 +72,7 @@ errno_t load2DRadialApodization(
                 )
             );
 
-            WRITE_FULLFILENAME(fname, "%s/APOmodesCos.fits", piaacmcsimul_var.piaacmcconfdir);
+            WRITE_FULLFILENAME(fname, "%s/APOmodesCos.fits", piaacmcparams.piaacmcconfdir);
             FUNC_CHECK_RETURN(
                 save_fits("APOmodesCos", fname)
             );
@@ -117,12 +110,12 @@ errno_t load2DRadialApodization(
 
     {   // for debugging, write files to filesystem
         char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/_apoincrop.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/_apoincrop.fits", piaacmcparams.piaacmcconfdir);
         FUNC_CHECK_RETURN(
             save_fits("_apoincrop", fname)
         );
 
-        WRITE_FULLFILENAME(fname, "%s/fitmaskapo.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/fitmaskapo.fits", piaacmcparams.piaacmcconfdir);
         FUNC_CHECK_RETURN(
             save_fits("fitmaskapo", fname)
         );
@@ -141,7 +134,7 @@ errno_t load2DRadialApodization(
         )
     );
 
-    EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_APOmodesCos.dat", piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.piaacmcconfdir);
+    EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_APOmodesCos.dat", piaacmcparams.piaacmcconfdir, piaacmcparams.piaacmcconfdir);
 
     if(debug==1) // test fit quality
     {
@@ -156,7 +149,7 @@ errno_t load2DRadialApodization(
             )
         );
 
-        WRITE_FULLFILENAME(fname, "%s/testapofitsol.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/testapofitsol.fits", piaacmcparams.piaacmcconfdir);
         FUNC_CHECK_RETURN(
             save_fits("testapofitsol", fname)
         );
@@ -164,12 +157,12 @@ errno_t load2DRadialApodization(
         arith_image_sub("_apoincrop", "testapofitsol", "apofitres");
         arith_image_mult("apofitres", "fitmaskapo", "apofitresm");
 
-        WRITE_FULLFILENAME(fname, "%s/_2Dapofitres.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/_2Dapofitres.fits", piaacmcparams.piaacmcconfdir);
         FUNC_CHECK_RETURN(
             save_fits("apofitres", fname)
         );
 
-        WRITE_FULLFILENAME(fname, "%s/_2Dapofitresm.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/_2Dapofitresm.fits", piaacmcparams.piaacmcconfdir);
         FUNC_CHECK_RETURN(
             save_fits("apofitresm", fname)
         );

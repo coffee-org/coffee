@@ -1868,7 +1868,7 @@ $execnamestring -n step008 << EOF
 PIAACMC_MASKRADLD=0.0 
 
 PIAACMC_resolved=0
-IAACMC_nbiter=20
+PIAACMC_nbiter=20
 PIAACMC_nblambda=1
 PIAACMC_lambda=${lambda}
 PIAACMC_maxoptCterm=${kmaxC}

@@ -26,20 +26,11 @@
 #include "PIAACMCsimul.h"
 
 #include "PIAACMCsimul_computePSF.h"
-#include "PIAACMCsimul_init.h"
-#include "PIAACMCsimul_initpiaacmcconf.h"
+#include "init_piaacmcopticalsystem.h"
+#include "init_piaacmcopticaldesign.h"
 #include "PIAACMCsimul_loadsavepiaacmcconf.h"
 
 #include "PIAAshape/makePIAAshapes.h"
-
-
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-extern OPTSYST *optsyst;
-
-extern OPTPIAACMCDESIGN *piaacmc;
-
-
 
 
 
@@ -85,38 +76,28 @@ errno_t exec_multizone_fpm_calib()
             printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
         }
     }
-    /*
-        if((IDv = variable_ID("PIAACMC_nblambda")) != -1)
-        {
-            tmpnblambda = data.variable[IDv].value.f;
-        }
 
-        if((IDv = variable_ID("PIAACMC_NBrings")) != -1)
-        {
-            tmpNBrings = data.variable[IDv].value.f;
-        }
-    */
+
     // initialize
-    if(PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 1) != RETURN_SUCCESS)
-    {
-        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
-    }
+    FUNC_CHECK_RETURN(
+        init_piaacmcopticaldesign(1, fpmradld, centobs0, centobs1, 0, 1)
+    );
 
-    printf("piaacmcconfdir     : %s\n", piaacmcsimul_var.piaacmcconfdir);
-    printf("SCORINGMASKTYPE    : %d\n", piaacmcsimul_var.SCORINGMASKTYPE);
-    printf("PIAACMC_FPMsectors : %d\n", piaacmcsimul_var.PIAACMC_FPMsectors);
+    printf("piaacmcconfdir     : %s\n", piaacmcparams.piaacmcconfdir);
+    printf("SCORINGMASKTYPE    : %d\n", piaacmcparams.SCORINGMASKTYPE);
+    printf("PIAACMC_FPMsectors : %d\n", piaacmcparams.PIAACMC_FPMsectors);
     printf("lamda              : %ld nm\n",
-           (long)(1.0e9 * piaacmc[0].lambda + 0.1));
-    printf("lamdaB             : %ld \n", (long)(1.0 * piaacmc[0].lambdaB + 0.1));
-    printf("piaacmc[0].NBrings : %ld\n", piaacmc[0].NBrings);
+           (long)(1.0e9 * piaacmcopticaldesign.lambda + 0.1));
+    printf("lamdaB             : %ld \n", (long)(1.0 * piaacmcopticaldesign.lambdaB + 0.1));
+    printf("piaacmcopticaldesign.NBrings : %ld\n", piaacmcopticaldesign.NBrings);
     printf("mask rad           : %ld\n",
-           (long)(100.0 * piaacmcsimul_var.PIAACMC_MASKRADLD + 0.1));
+           (long)(100.0 * piaacmcparams.PIAACMC_MASKRADLD + 0.1));
     printf("computePSF_ResolvedTarget : %d\n",
-           piaacmcsimul_var.computePSF_ResolvedTarget);
+           piaacmcparams.computePSF_ResolvedTarget);
     printf("computePSF_ResolvedTarget_mode : %d\n",
-           piaacmcsimul_var.computePSF_ResolvedTarget_mode);
-    printf("piaacmc[0].fpmmaterial_name : %s\n", piaacmc[0].fpmmaterial_name);
-    printf("piaacmc[0].nblambda         : %d\n", piaacmc[0].nblambda);
+           piaacmcparams.computePSF_ResolvedTarget_mode);
+    printf("piaacmcopticaldesign.fpmmaterial_name : %s\n", piaacmcopticaldesign.fpmmaterial_name);
+    printf("piaacmcopticaldesign.nblambda         : %d\n", piaacmcopticaldesign.nblambda);
 
 
 
@@ -131,9 +112,9 @@ errno_t exec_multizone_fpm_calib()
         WRITE_FULLFILENAME(
             fname,
             "%s/FPMresp%d.%s.fits",
-            piaacmcsimul_var.piaacmcconfdir,
-            piaacmcsimul_var.SCORINGMASKTYPE,
-            piaacmcsimul_var.fnamedescr_conf
+            piaacmcparams.piaacmcconfdir,
+            piaacmcparams.SCORINGMASKTYPE,
+            piaacmcparams.fnamedescr_conf
         );
 
         load_fits(fname, "FPMresp", 1, &ID_FPMresp);
@@ -147,67 +128,65 @@ errno_t exec_multizone_fpm_calib()
 
         // get the number of tmux threads from cli
 
-        piaacmcsimul_var.PIAACMC_FPMresp_mp = 1;
+        piaacmcparams.PIAACMC_FPMresp_mp = 1;
         // 1: all computations on a single thread
 
         {
             variableID IDv;
             if((IDv = variable_ID("PIAACMC_FPMresp_mp")) != -1) // multi threaded
             {
-                piaacmcsimul_var.PIAACMC_FPMresp_mp = (long) data.variable[IDv].value.f + 0.01;
+                piaacmcparams.PIAACMC_FPMresp_mp = (long) data.variable[IDv].value.f + 0.01;
             }
         }
-        printf("PIAACMC_FPMresp_mp = %ld\n", piaacmcsimul_var.PIAACMC_FPMresp_mp);
+        printf("PIAACMC_FPMresp_mp = %ld\n", piaacmcparams.PIAACMC_FPMresp_mp);
 
         printf("------------------------------------- STEP02\n");
-        printf("piaacmc[0].focmNBzone  =  %ld   (%ld)\n", piaacmc[0].focmNBzone,
-               piaacmc[0].NBrings);
+        printf("piaacmcopticaldesign.focmNBzone  =  %ld   (%ld)\n", piaacmcopticaldesign.focmNBzone,
+               piaacmcopticaldesign.NBrings);
         fflush(stdout);
 
         // get our tmux thread number in [0 PIAACMC_FPMresp_mp]
         // where the master thread has PIAACMC_FPMresp_thread == PIAACMC_FPMresp_mp
-        piaacmcsimul_var.PIAACMC_FPMresp_thread = 0;
+        piaacmcparams.PIAACMC_FPMresp_thread = 0;
         {
             variableID IDv;
             if((IDv = variable_ID("PIAACMC_FPMresp_thread")) != -1) // multi threaded
             {
-                piaacmcsimul_var.PIAACMC_FPMresp_thread = (long) data.variable[IDv].value.f +
-                        0.01;
+                piaacmcparams.PIAACMC_FPMresp_thread = (long) data.variable[IDv].value.f +
+                                                       0.01;
             }
         }
         printf("PIAACMC_FPMresp_thread = %ld\n",
-               piaacmcsimul_var.PIAACMC_FPMresp_thread);
+               piaacmcparams.PIAACMC_FPMresp_thread);
 
 
 
         //index = 0;
-        if((piaacmcsimul_var.PIAACMC_FPMresp_mp == 1)
-                || (piaacmcsimul_var.PIAACMC_FPMresp_thread >
-                    piaacmcsimul_var.PIAACMC_FPMresp_mp - 1)) // main or combine process
+        if((piaacmcparams.PIAACMC_FPMresp_mp == 1)
+                || (piaacmcparams.PIAACMC_FPMresp_thread >
+                    piaacmcparams.PIAACMC_FPMresp_mp - 1)) // main or combine process
             // why not test PIAACMC_FPMresp_thread == PIAACMC_FPMresp_mp?
         {
             // we're the parent set up the FPM zone map
-            piaacmcsimul_var.FORCE_CREATE_fpmzmap = 1;
-            piaacmcsimul_var.FORCE_CREATE_fpmzt = 1;
-            piaacmcsimul_var.FORCE_CREATE_fpmza = 1;
+            piaacmcparams.FORCE_CREATE_fpmzmap = 1;
+            piaacmcparams.FORCE_CREATE_fpmzt = 1;
+            piaacmcparams.FORCE_CREATE_fpmza = 1;
 
-            if(PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 1) != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
-            }
+            FUNC_CHECK_RETURN(
+                init_piaacmcopticaldesign(1, fpmradld, centobs0, centobs1, 0, 1)
+            );
         }
         else
         {
             printf("NO initOK file created\n");
             // we're a child tmux thread, do not set up the FPM zone map, get it from parent via file
-            piaacmcsimul_var.FORCE_CREATE_fpmzmap = 0;
-            piaacmcsimul_var.FORCE_CREATE_fpmzt = 0;
-            piaacmcsimul_var.FORCE_CREATE_fpmza = 0;
+            piaacmcparams.FORCE_CREATE_fpmzmap = 0;
+            piaacmcparams.FORCE_CREATE_fpmzt = 0;
+            piaacmcparams.FORCE_CREATE_fpmza = 0;
 
-            if(PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 1) != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
-            }
+            FUNC_CHECK_RETURN(
+                init_piaacmcopticaldesign(1, fpmradld, centobs0, centobs1, 0, 1)
+            );
         }
 
 
@@ -220,18 +199,18 @@ errno_t exec_multizone_fpm_calib()
         imageID IDcomb;
 
         // if we're the parent load
-        if((piaacmcsimul_var.PIAACMC_FPMresp_mp == 1)
-                || (piaacmcsimul_var.PIAACMC_FPMresp_thread >
-                    piaacmcsimul_var.PIAACMC_FPMresp_mp - 1))
+        if((piaacmcparams.PIAACMC_FPMresp_mp == 1)
+                || (piaacmcparams.PIAACMC_FPMresp_thread >
+                    piaacmcparams.PIAACMC_FPMresp_mp - 1))
         {
             PIAACMCsimul_update_fnamedescr_conf();
             char fname[STRINGMAXLEN_FULLFILENAME];
             WRITE_FULLFILENAME(
                 fname,
                 "%s/FPMresp%d.%s.fits",
-                piaacmcsimul_var.piaacmcconfdir,
-                piaacmcsimul_var.SCORINGMASKTYPE,
-                piaacmcsimul_var.fnamedescr_conf
+                piaacmcparams.piaacmcconfdir,
+                piaacmcparams.SCORINGMASKTYPE,
+                piaacmcparams.fnamedescr_conf
             );
 
             WRITE_FILENAME(fname1, "%s.tmp", fname);
@@ -253,9 +232,9 @@ errno_t exec_multizone_fpm_calib()
             WRITE_FULLFILENAME(
                 fnamecomb,
                 "%s/FPMresp%d.%s.fits",
-                piaacmcsimul_var.piaacmcconfdir,
-                piaacmcsimul_var.SCORINGMASKTYPE,
-                piaacmcsimul_var.fnamedescr_conf
+                piaacmcparams.piaacmcconfdir,
+                piaacmcparams.SCORINGMASKTYPE,
+                piaacmcparams.fnamedescr_conf
             );
 
             // partial FPMresp file
@@ -264,19 +243,19 @@ errno_t exec_multizone_fpm_calib()
             WRITE_FULLFILENAME(
                 fname,
                 "%s/FPMresp%d.%s.mp%02ld_thread%02ld.fits",
-                piaacmcsimul_var.piaacmcconfdir,
-                piaacmcsimul_var.SCORINGMASKTYPE,
-                piaacmcsimul_var.fnamedescr_conf,
-                piaacmcsimul_var.PIAACMC_FPMresp_mp,
-                piaacmcsimul_var.PIAACMC_FPMresp_thread
+                piaacmcparams.piaacmcconfdir,
+                piaacmcparams.SCORINGMASKTYPE,
+                piaacmcparams.fnamedescr_conf,
+                piaacmcparams.PIAACMC_FPMresp_mp,
+                piaacmcparams.PIAACMC_FPMresp_thread
             );
 
             // stash the filename of the partial file for later
             WRITE_FILENAME(fname1, "%s.tmp", fname);
             WRITE_FILENAME(fname2, "%s", fname);
             // set region of the partial file that this child computes
-            mzoffset = piaacmcsimul_var.PIAACMC_FPMresp_thread;
-            mzstep = piaacmcsimul_var.PIAACMC_FPMresp_mp;
+            mzoffset = piaacmcparams.PIAACMC_FPMresp_thread;
+            mzstep = piaacmcparams.PIAACMC_FPMresp_mp;
 
             // may exist from a previous execution with restart
             load_fits(fname, "FPMresp", LOADFITS_ERRMODE_WARNING, &ID_FPMresp);
@@ -294,54 +273,45 @@ errno_t exec_multizone_fpm_calib()
             // and will always fire for children in a fresh run
 
             //                printf("--------------------------------------------------------STEP 0005 File \"%s\" does not exist: creating\n", fname);
-            //   printf("piaacmc[0].focmNBzone  =  %ld   (%ld)\n", piaacmc[0].focmNBzone, piaacmc[0].NBrings);
+            //   printf("piaacmcopticaldesign.focmNBzone  =  %ld   (%ld)\n", piaacmcopticaldesign.focmNBzone, piaacmcopticaldesign.NBrings);
             //  sleep(3);
 
             // usual initialzation
-            optsyst[0].FOCMASKarray[0].mode =
+            piaacmcopticalsystem.FOCMASKarray[0].mode =
                 1; // use 1-fpm computation in optical propagation
-            //piaacmc[0].fpmaskamptransm = 1.0;
+            //piaacmcopticaldesign.fpmaskamptransm = 1.0;
             // set the physical size of the FPM as mean(lambda/D)*mask radius in units of lambda/D
-            piaacmc[0].fpmRad = 0.5 * (piaacmcsimul_var.LAMBDASTART +
-                                       piaacmcsimul_var.LAMBDAEND) * piaacmc[0].Fratio *
-                                piaacmcsimul_var.PIAACMC_MASKRADLD; // piaacmcsimul_var.PIAACMC_MASKRADLD l/D radius at central lambda
+            piaacmcopticaldesign.fpmRad = 0.5 * (piaacmcparams.LAMBDASTART +
+                                                 piaacmcparams.LAMBDAEND) * piaacmcopticaldesign.Fratio *
+                                          piaacmcparams.PIAACMC_MASKRADLD; // piaacmcparams.PIAACMC_MASKRADLD l/D radius at central lambda
             // initialize the optical system
-            if(PIAACMCsimul_initpiaacmcconf(1, fpmradld, centobs0, centobs1, 0, 0) != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
-            }
+            FUNC_CHECK_RETURN(
+                init_piaacmcopticaldesign(1, fpmradld, centobs0, centobs1, 0, 0)
+            );
 
 
-            //     printf("-------------------------- STEP 0005a  piaacmc[0].focmNBzone  =  %ld   (%ld)\n", piaacmc[0].focmNBzone, piaacmc[0].NBrings);
+            //     printf("-------------------------- STEP 0005a  piaacmcopticaldesign.focmNBzone  =  %ld   (%ld)\n", piaacmcopticaldesign.focmNBzone, piaacmcopticaldesign.NBrings);
             //            sleep(3);
 
             // computes or loads the piaa optics from the piaacmc structure
-            if(makePIAAshapes(piaacmc) != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
-            }
+            FUNC_CHECK_RETURN(makePIAAshapes());
 
 
-            //   printf("-------------------------- STEP 0005b  piaacmc[0].focmNBzone  =  %ld   (%ld)\n", piaacmc[0].focmNBzone, piaacmc[0].NBrings);
+            //   printf("-------------------------- STEP 0005b  piaacmcopticaldesign.focmNBzone  =  %ld   (%ld)\n", piaacmcopticaldesign.focmNBzone, piaacmcopticaldesign.NBrings);
             //          sleep(3);
 
             // initialize the optical system to be on axis
-            if(PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0) != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
-            }
-            // printf("-------------------------- STEP 0005c  piaacmc[0].focmNBzone  =  %ld   (%ld)\n", piaacmc[0].focmNBzone, piaacmc[0].NBrings);
+            FUNC_CHECK_RETURN(init_piaacmcopticalsystem(0.0, 0.0));
+
+            // printf("-------------------------- STEP 0005c  piaacmcopticaldesign.focmNBzone  =  %ld   (%ld)\n", piaacmcopticaldesign.focmNBzone, piaacmcopticaldesign.NBrings);
             //        sleep(3);
 
             // make the shapes again why?  *****************************************
-            if(makePIAAshapes(piaacmc) != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_makePIAAshapes failed");
-            }
+            FUNC_CHECK_RETURN(makePIAAshapes());
 
-            /*               printf("piaacmc[0].NBrings =                             %ld\n", piaacmc[0].NBrings);
-                            printf("piaacmc[0].focmNBzone =                          %ld\n", piaacmc[0].focmNBzone);
-                            printf("piaacmc[0].nblambda =                            %d\n", piaacmc[0].nblambda);
+            /*               printf("piaacmcopticaldesign.NBrings =                             %ld\n", piaacmcopticaldesign.NBrings);
+                            printf("piaacmcopticaldesign.focmNBzone =                          %ld\n", piaacmcopticaldesign.focmNBzone);
+                            printf("piaacmcopticaldesign.nblambda =                            %d\n", piaacmcopticaldesign.nblambda);
 
                             fflush(stdout);
             sleep(5);*/
@@ -354,28 +324,21 @@ errno_t exec_multizone_fpm_calib()
             // light including that which misses the FPM is propagated.
             // Later, we will subtract off the actual zone contributions, which will leave only
             // the light that misses the FPM.
-            piaacmcsimul_var.focmMode = data.image[piaacmc[0].zonezID].md[0].size[0] +
-                                        10;  // response for no focal plane mask
-            optsyst[0].FOCMASKarray[0].mode =
-                1; // use 1-fpm computation in optical propagation
+            piaacmcparams.focmMode = data.image[piaacmcopticaldesign.zonezID].md[0].size[0] +
+                                     10;  // response for no focal plane mask
+            piaacmcopticalsystem.FOCMASKarray[0].mode = 1;
+            // use 1-fpm computation in optical propagation
             // To compute the on-axis PSF component for light around the FPM, we first compute the full PSF (no focal plane mask)
             // We will, later on, subtract each zone response to it to get the response to light outside the focal plane mask
             //
 
 
-            {
-                double val;
-                errno_t fret =
-                    PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0,
-                                            piaacmcsimul_var.computePSF_ResolvedTarget,
-                                            piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &val);
-                if( fret != RETURN_SUCCESS)
-                {
-                    FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
-                }
-
-                printf("val = %g\n", val);
-            }
+            FUNC_CHECK_RETURN(
+                PIAACMCsimul_computePSF(
+                    0.0, 0.0, 0, piaacmcopticalsystem.NBelem, 0,
+                    piaacmcparams.computePSF_ResolvedTarget,
+                    piaacmcparams.computePSF_ResolvedTarget_mode, 0, NULL)
+            );
 
             imageID IDfpmresp;
             {
@@ -390,22 +353,22 @@ errno_t exec_multizone_fpm_calib()
 
 
                 // axis 0: eval pts (ii) - size = data.image[ID].md[0].size[0]
-                // axis 1: zones (mz) - size = data.image[piaacmc[0].zonezID].md[0].size[0]+1
-                // axis 3: lambda (k) - size = piaacmc[0].nblambda
+                // axis 1: zones (mz) - size = data.image[piaacmcopticaldesign.zonezID].md[0].size[0]+1
+                // axis 3: lambda (k) - size = piaacmcopticaldesign.nblambda
 
                 // allocate the combined FPMresp 3D array
                 // ID is the "imvect" array created by PIAACMCsimul_computePSF and contains the pixels in the
                 // evaluation set as a 1D vector (0th index) per wavelength
-                create_3Dimage_ID_double("FPMresp",
-                                         data.image[IDimvect].md[0].size[0],
-                                         piaacmc[0].focmNBzone + 1,
-                                         piaacmc[0].nblambda,
-                                         &IDfpmresp);
-                //     list_image_ID();
-                //    sleep(100);
+                FUNC_CHECK_RETURN(
+                    create_3Dimage_ID_double("FPMresp",
+                                             data.image[IDimvect].md[0].size[0],
+                                             piaacmcopticaldesign.focmNBzone + 1,
+                                             piaacmcopticaldesign.nblambda,
+                                             &IDfpmresp)
+                );
 
                 // light outside mask, initially set as full PSF
-                for(int k = 0; k < piaacmc[0].nblambda; k++) // loop over wavelengths
+                for(int k = 0; k < piaacmcopticaldesign.nblambda; k++) // loop over wavelengths
                 {
                     for(uint32_t ii = 0; ii < data.image[IDimvect].md[0].size[0]; ii++)
                     {
@@ -413,7 +376,7 @@ errno_t exec_multizone_fpm_calib()
                         // set the 0th zone to be the light from the above on-axis PSF computation with a
                         // black FPM on the evaluation pixels in "imvect"
 
-                        data.image[IDfpmresp].array.D[k * (piaacmc[0].focmNBzone + 1)
+                        data.image[IDfpmresp].array.D[k * (piaacmcopticaldesign.focmNBzone + 1)
                                                       *data.image[IDimvect].md[0].size[0] + ii] = data.image[IDimvect].array.F[k *
                                                               data.image[IDimvect].md[0].size[0] + ii];
                     }
@@ -422,7 +385,7 @@ errno_t exec_multizone_fpm_calib()
 
 
             // if we're the parent, combine files
-            if(piaacmcsimul_var.PIAACMC_FPMresp_thread > piaacmcsimul_var.PIAACMC_FPMresp_mp - 1)
+            if(piaacmcparams.PIAACMC_FPMresp_thread > piaacmcparams.PIAACMC_FPMresp_mp - 1)
             {
                 long index = 0;
                 {
@@ -448,14 +411,14 @@ errno_t exec_multizone_fpm_calib()
                 char fnamet[STRINGMAXLEN_FULLFILENAME];
                 WRITE_FULLFILENAME(fnamet,
                                    "%s/FPMthreadstatus.txt",
-                                   piaacmcsimul_var.piaacmcconfdir
+                                   piaacmcparams.piaacmcconfdir
                                   );
                 FILE * fpt = fopen(fnamet, "w");
                 fclose(fpt);
 
 
                 // we now wait for the children to complete their partial FPM resp files, then combine them
-                for(long thr = 0; thr < piaacmcsimul_var.PIAACMC_FPMresp_mp; thr++)
+                for(long thr = 0; thr < piaacmcparams.PIAACMC_FPMresp_mp; thr++)
                 {
                     printf("thr = %ld\n", thr);
                     fflush(stdout);
@@ -472,10 +435,10 @@ errno_t exec_multizone_fpm_calib()
                         char fname[STRINGMAXLEN_FULLFILENAME];
                         WRITE_FULLFILENAME(fname,
                                            "%s/FPMresp%d.%s.mp%02ld_thread%02ld.fits",
-                                           piaacmcsimul_var.piaacmcconfdir,
-                                           piaacmcsimul_var.SCORINGMASKTYPE,
-                                           piaacmcsimul_var.fnamedescr_conf,
-                                           piaacmcsimul_var.PIAACMC_FPMresp_mp,
+                                           piaacmcparams.piaacmcconfdir,
+                                           piaacmcparams.SCORINGMASKTYPE,
+                                           piaacmcparams.fnamedescr_conf,
+                                           piaacmcparams.PIAACMC_FPMresp_mp,
                                            thr);
 
                         printf("Waiting for file \"%s\" ...\n", fname);
@@ -491,10 +454,14 @@ errno_t exec_multizone_fpm_calib()
                         }
 
                         // safely remove image with this name
-                        delete_image_ID("tmpFPMresp", DELETE_IMAGE_ERRMODE_WARNING);
-                        //  list_image_ID();
+                        FUNC_CHECK_RETURN(
+                            delete_image_ID("tmpFPMresp", DELETE_IMAGE_ERRMODE_WARNING)
+                        );
+
                         // try to load the final child's partial FPMresp file
-                        load_fits(fname, "tmpFPMresp", 1, &ID1);
+                        FUNC_CHECK_RETURN(
+                            load_fits(fname, "tmpFPMresp", LOADFITS_ERRMODE_WARNING, &ID1)
+                        );
                         //  list_image_ID();
                     }
                     // we found this child's partial FPMresp file!
@@ -508,11 +475,11 @@ errno_t exec_multizone_fpm_calib()
 
                     /*     list_image_ID();
 
-                         printf("piaacmc[0].NBrings =                             %ld\n", piaacmc[0].NBrings);
-                         printf("piaacmc[0].focmNBzone =                          %ld\n", piaacmc[0].focmNBzone);
-                         printf("piaacmc[0].nblambda =                            %d\n", piaacmc[0].nblambda);
+                         printf("piaacmcopticaldesign.NBrings =                             %ld\n", piaacmcopticaldesign.NBrings);
+                         printf("piaacmcopticaldesign.focmNBzone =                          %ld\n", piaacmcopticaldesign.focmNBzone);
+                         printf("piaacmcopticaldesign.nblambda =                            %d\n", piaacmcopticaldesign.nblambda);
                          printf("data.image[ID].md[0].size[0] =                   %ld\n", data.image[ID].md[0].size[0]);
-                         printf("data.image[piaacmc[0].zonezID].md[0].size[0] =   %ld\n", data.image[piaacmc[0].zonezID].md[0].size[0]);
+                         printf("data.image[piaacmcopticaldesign.zonezID].md[0].size[0] =   %ld\n", data.image[piaacmcopticaldesign.zonezID].md[0].size[0]);
                          fflush(stdout);
                          sleep(100);
                     */
@@ -520,24 +487,24 @@ errno_t exec_multizone_fpm_calib()
 
                     // ID1 is now != -1
 
-                    mzstep = piaacmcsimul_var.PIAACMC_FPMresp_mp; // total number of tmux threads
+                    mzstep = piaacmcparams.PIAACMC_FPMresp_mp; // total number of tmux threads
                     mzoffset = thr; // the thread number of the child that just delivered its result
                     // insert the partial result of child thr into the combined FPMresp array
                     // be sure to skip the first line 'cause we already set it to be the light the went around the FPM
-                    for(long mz = 1 + mzoffset; mz < piaacmc[0].focmNBzone + 1;
+                    for(long mz = 1 + mzoffset; mz < piaacmcopticaldesign.focmNBzone + 1;
                             mz += mzstep) // loop over zone, do every PIAACMC_FPMresp_mp line
                     {
 
                         printf("mz = %ld    %ld %ld\n", mz, IDfpmresp, ID1);
                         fflush(stdout);
-                        for(int k = 0; k < piaacmc[0].nblambda; k++)
+                        for(int k = 0; k < piaacmcopticaldesign.nblambda; k++)
                         {   // for each wavelenth
                             for(uint32_t ii = 0; ii < data.image[ID_FPMresp].md[0].size[0]; ii++)
                             {   // for each evaluation point
                                 // index of this evaluation point and wavelength and zone
                                 // tmpl1 = k*(nzones+1)*nEvaluationPoints) + zoneIndex*nEvaluationPoints + evaluationPoint
                                 long tmpl1 =
-                                    k * (data.image[piaacmc[0].zonezID].md[0].size[0] + 1) * data.image[ID_FPMresp].md[0].size[0]
+                                    k * (data.image[piaacmcopticaldesign.zonezID].md[0].size[0] + 1) * data.image[ID_FPMresp].md[0].size[0]
                                     + mz * data.image[ID_FPMresp].md[0].size[0] + ii;
 
                                 // set the combined array value from the partial file (both are same shape and size, of course)
@@ -545,14 +512,16 @@ errno_t exec_multizone_fpm_calib()
 
                                 // subtract the current zone value from the first zone line, which contained all light
                                 // (with no mask).  Eventually this will contain only light that misses the FPM.
-                                data.image[IDfpmresp].array.D[k * (data.image[piaacmc[0].zonezID].md[0].size[0]
+                                data.image[IDfpmresp].array.D[k * (data.image[piaacmcopticaldesign.zonezID].md[0].size[0]
                                                                    + 1)*data.image[ID_FPMresp].md[0].size[0] + ii] -= data.image[ID1].array.D[tmpl1];
                             }
                         }
                     }
 
                     // we're done with the partial array, so delete it
-                    delete_image_ID("tmpFPMresp", DELETE_IMAGE_ERRMODE_WARNING);
+                    FUNC_CHECK_RETURN(
+                        delete_image_ID("tmpFPMresp", DELETE_IMAGE_ERRMODE_WARNING)
+                    );
 
                 }
                 // write out the current state of the combined FPMresp file
@@ -562,16 +531,16 @@ errno_t exec_multizone_fpm_calib()
                     WRITE_FULLFILENAME(
                         fname,
                         "%s/FPMresp%d.%s.fits",
-                        piaacmcsimul_var.piaacmcconfdir,
-                        piaacmcsimul_var.SCORINGMASKTYPE,
-                        piaacmcsimul_var.fnamedescr_conf
+                        piaacmcparams.piaacmcconfdir,
+                        piaacmcparams.SCORINGMASKTYPE,
+                        piaacmcparams.fnamedescr_conf
                     );
 
                     save_fits("FPMresp", fname);
                 }
                 // remove the child's .tmp file just in case (it should no longer exist 'cause we renamed, not copied, the .tmp file)
                 EXECUTE_SYSTEM_COMMAND("rm %s/FPMresp*.fits.tmp",
-                                       piaacmcsimul_var.piaacmcconfdir);
+                                       piaacmcparams.piaacmcconfdir);
             }
             else // we're a tmux child, so compute the response for our portion
             {
@@ -581,11 +550,11 @@ errno_t exec_multizone_fpm_calib()
                 WRITE_FULLFILENAME(
                     fname,
                     "%s/FPMresp%d.%s.mp%02ld_thread%02ld.fits",
-                    piaacmcsimul_var.piaacmcconfdir,
-                    piaacmcsimul_var.SCORINGMASKTYPE,
-                    piaacmcsimul_var.fnamedescr_conf,
-                    piaacmcsimul_var.PIAACMC_FPMresp_mp,
-                    piaacmcsimul_var.PIAACMC_FPMresp_thread
+                    piaacmcparams.piaacmcconfdir,
+                    piaacmcparams.SCORINGMASKTYPE,
+                    piaacmcparams.fnamedescr_conf,
+                    piaacmcparams.PIAACMC_FPMresp_mp,
+                    piaacmcparams.PIAACMC_FPMresp_thread
                 );
 
                 // diagnostic file to make sure the child is working with the right zones
@@ -594,31 +563,31 @@ errno_t exec_multizone_fpm_calib()
                     WRITE_FULLFILENAME(
                         fnametmp,
                         "%s/fpmzmap_thread%02ld.fits",
-                        piaacmcsimul_var.piaacmcconfdir,
-                        piaacmcsimul_var.PIAACMC_FPMresp_thread
+                        piaacmcparams.piaacmcconfdir,
+                        piaacmcparams.PIAACMC_FPMresp_thread
                     );
-                    save_fits("fpmzmap", fnametmp);
+                    FUNC_CHECK_RETURN(save_fits("fpmzmap", fnametmp));
                 }
 
                 printf("Making component %ld / %ld\n",
-                       piaacmcsimul_var.PIAACMC_FPMresp_thread,
-                       piaacmcsimul_var.PIAACMC_FPMresp_mp);
+                       piaacmcparams.PIAACMC_FPMresp_thread,
+                       piaacmcparams.PIAACMC_FPMresp_mp);
                 fflush(stdout);
-                piaacmcsimul_var.WRITE_OK = 0;
+                piaacmcparams.WRITE_OK = 0;
                 // for each FPM zone, compute the response
                 // skip the first one 'cause it is not computed by the children
-                for(long mz = 1 + mzoffset; mz < piaacmc[0].focmNBzone + 1; mz += mzstep)
+                for(long mz = 1 + mzoffset; mz < piaacmcopticaldesign.focmNBzone + 1; mz += mzstep)
                 {
-                    piaacmcsimul_var.focmMode =
+                    piaacmcparams.focmMode =
                         mz;  // focmMode can be a zone index, in which case operations are on that zone
-                    optsyst[0].FOCMASKarray[0].mode = 0; // direct focal plane mask response
+                    piaacmcopticalsystem.FOCMASKarray[0].mode = 0; // direct focal plane mask response
 
                     // default the reference to the 4th element
                     // but look for the element called "opaque mask at PIAA elem 1"
                     long elem0 = 4;
-                    for(long elem = 0; elem < optsyst[0].NBelem; elem++)
+                    for(long elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
                     {
-                        if(strcmp("opaque mask at PIAA elem 1", optsyst[0].name[elem]) == 0)
+                        if(strcmp("opaque mask at PIAA elem 1", piaacmcopticalsystem.name[elem]) == 0)
                         {
                             elem0 = elem;
                             printf("opaque mask at PIAA elem 1 = %ld\n", elem);
@@ -626,53 +595,49 @@ errno_t exec_multizone_fpm_calib()
                         // raise an alarm if "opaque mask at PIAA elem 1" is not found *************************************
                     }
 
-                    optsyst[0].keepMem[elem0] = 1; // keep it in memory
+                    piaacmcopticalsystem.keepMem[elem0] = 1; // keep it in memory
 
-                    printf("piaacmc[0].NBrings =                             %ld\n",
-                           piaacmc[0].NBrings);
-                    printf("piaacmc[0].focmNBzone =                          %ld\n",
-                           piaacmc[0].focmNBzone);
-                    printf("piaacmc[0].nblambda =                            %d\n",
-                           piaacmc[0].nblambda);
+                    printf("piaacmcopticaldesign.NBrings =                             %ld\n",
+                           piaacmcopticaldesign.NBrings);
+                    printf("piaacmcopticaldesign.focmNBzone =                          %ld\n",
+                           piaacmcopticaldesign.focmNBzone);
+                    printf("piaacmcopticaldesign.nblambda =                            %d\n",
+                           piaacmcopticaldesign.nblambda);
                     printf("data.image[ID].md[0].size[0] =                   %ld\n",
                            (long) data.image[ID_FPMresp].md[0].size[0]);
-                    printf("data.image[piaacmc[0].zonezID].md[0].size[0] =   %ld\n",
-                           (long) data.image[piaacmc[0].zonezID].md[0].size[0]);
+                    printf("data.image[piaacmcopticaldesign.zonezID].md[0].size[0] =   %ld\n",
+                           (long) data.image[piaacmcopticaldesign.zonezID].md[0].size[0]);
                     fflush(stdout);
 
                     // compute the on-axis PSF
-                    {
-                        double val;
+                    FUNC_CHECK_RETURN(
+                        PIAACMCsimul_computePSF(
+                            0.0, 0.0, elem0, piaacmcopticalsystem.NBelem, 0,
+                            piaacmcparams.computePSF_ResolvedTarget,
+                            piaacmcparams.computePSF_ResolvedTarget_mode, 0, NULL)
+                    );
 
-                        errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, elem0, optsyst[0].NBelem, 0,
-                                                               piaacmcsimul_var.computePSF_ResolvedTarget,
-                                                               piaacmcsimul_var.computePSF_ResolvedTarget_mode, 0, &val);
-                        if( fret != RETURN_SUCCESS)
-                        {
-                            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
-                        }
-                    }
                     // The PSF result for the evaluation points is put in array "imvect" which previously was
                     // assigned to another PSF result.
                     // Should put another ID = image_ID("imvect") here *************************************
 
                     // set the response of this zone from the PSF result
-                    for(int k = 0; k < piaacmc[0].nblambda; k++)
+                    for(int k = 0; k < piaacmcopticaldesign.nblambda; k++)
                     {   // loop over wavelength
                         for(uint32_t ii = 0; ii < data.image[ID_FPMresp].md[0].size[0]; ii++)
                         {   // loop over evaluation points
                             // see previous example for explanation of indexing
                             // save response, which is just the value of the on-axis PSF at each evaluation point
-                            data.image[IDfpmresp].array.D[k * (data.image[piaacmc[0].zonezID].md[0].size[0]
+                            data.image[IDfpmresp].array.D[k * (data.image[piaacmcopticaldesign.zonezID].md[0].size[0]
                                                                + 1)*data.image[ID_FPMresp].md[0].size[0] + mz * data.image[ID_FPMresp].md[0].size[0] + ii] =
                                                                    data.image[ID_FPMresp].array.F[k * data.image[ID_FPMresp].md[0].size[0] + ii];
 
-                            if(piaacmcsimul_var.PIAACMC_FPMresp_mp == 1)
+                            if(piaacmcparams.PIAACMC_FPMresp_mp == 1)
                             {   // if we're single threaded (no children)
                                 // subtract the current zone value from the first zone line, which contained all light
                                 // (with no mask).  Eventually this will contain only light that misses the FPM.
 
-                                data.image[IDfpmresp].array.D[k * (data.image[piaacmc[0].zonezID].md[0].size[0]
+                                data.image[IDfpmresp].array.D[k * (data.image[piaacmcopticaldesign.zonezID].md[0].size[0]
                                                                    + 1)*data.image[ID_FPMresp].md[0].size[0] + ii] -= data.image[ID_FPMresp].array.F[k *
                                                                            data.image[ID_FPMresp].md[0].size[0] + ii];
                             }
@@ -683,7 +648,7 @@ errno_t exec_multizone_fpm_calib()
                     printf("Saving FPMresp (ID = %ld) as \"%s\" ...", image_ID("FPMresp"), fname1);
                     fflush(stdout);
                     // fname1 is the .tmp name
-                    save_fits("FPMresp", fname1);
+                    FUNC_CHECK_RETURN(save_fits("FPMresp", fname1));
                     printf("Done \n");
                     fflush(stdout);
                 }
@@ -694,10 +659,10 @@ errno_t exec_multizone_fpm_calib()
                 printf("Saving FPMresp (ID = %ld) as \"%s\" ...", image_ID("FPMresp"), fname2);
                 fflush(stdout);
                 // fname2 is the final name
-                save_fits("FPMresp", fname2);
+                FUNC_CHECK_RETURN(save_fits("FPMresp", fname2));
                 printf("Done \n");
                 fflush(stdout);
-                piaacmcsimul_var.WRITE_OK = 0;
+                piaacmcparams.WRITE_OK = 0;
 
                 //   EXECUTE_SYSTEM_COMMAND("mv %s %s", fname1, fname2);
             }
@@ -708,7 +673,7 @@ errno_t exec_multizone_fpm_calib()
             //printf("File \"%s\" or \"%s\" exists\n", fname, fnamecomb);
         }
     }
-    piaacmcsimul_var.focmMode = -1;
+    piaacmcparams.focmMode = -1;
 
 
     DEBUG_TRACE_FEXIT();

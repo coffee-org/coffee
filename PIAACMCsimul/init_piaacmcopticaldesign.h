@@ -1,7 +1,7 @@
-#ifndef PIAACMCSIMUL_INITPIAACMCCONF_H
-#define PIAACMCSIMUL_INITPIAACMCCONF_H
+#ifndef PIAACMCSIMUL_INIT_PIAACMCOPTICALDESIGN_H
+#define PIAACMCSIMUL_INIT_PIAACMCOPTICALDESIGN_H
 
-errno_t PIAACMCsimul_initpiaacmcconf(
+errno_t init_piaacmcopticaldesign(
     long    piaacmctype,
     double  fpmradld,
     double  centobs0,

@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
 
+# exit on error
+#set -e 
+
 
 size=1024 # default
 file="./conf/conf_size.txt"
@@ -22,7 +25,7 @@ errorstatus=0 # if 1, stop code, print error message and it in file "errorstatus
 
 # save command string to filesystem (useful for debugging)
 mkdir -p log
-echo "$0 $@" > ./log/$0_cmdstring.txt
+echo "$0 $@" > ./log/$(basename $0)_cmdstring.txt
 
 
 

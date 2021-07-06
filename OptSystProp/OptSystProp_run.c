@@ -355,8 +355,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                     // have to loop over wavelength
                     for(long kl = 0; kl < nblambda; kl++)
                         for(uint64_t ii = 0; ii < size2; ii++)
-                            // compute the change in phase
-                        {
+                        {   // compute the change in phase
                             data.image[IDp].array.F[size2 * kl + ii] -= 4.0 * M_PI *
                             data.image[ID].array.F[ii] / optsyst[index].lambdaarray[kl];
                         }
@@ -373,8 +372,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
 # endif
                     for(long kl = 0; kl < nblambda; kl++)
                         for(uint64_t ii = 0; ii < size2; ii++)
-                            // compute the change in phase
-                        {
+                        {   // compute the change in phase
                             data.image[IDp].array.F[size2 * kl + ii] -= 4.0 * M_PI *
                             data.image[ID].array.F[size2 * kl + ii] / optsyst[index].lambdaarray[kl];
                         }
@@ -403,7 +401,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                              index, elem,
                              optsyst[index].elemarrayindex[elem], ID);
 
-            DEBUG_TRACEPOINT("refractive surface ID %ld", (long) ID);
+            DEBUG_TRACEPOINT("refractive surface ID %ld %s", (long) ID, data.image[ID].md[0].name);
 
             if(ID == -1)
             {
@@ -430,9 +428,23 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                     // set the resulting wavelength-dependent phase coefficient
                     optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl] =
                         2.0 * M_PI * (n0 - n1) / optsyst[index].lambdaarray[kl];
-//                    printf("optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl] = %f %f %g -> %f\n", n0, n1, optsyst[index].lambdaarray[kl], optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl]);
+
+                    DEBUG_TRACEPOINT("elem %ld ASPHSURFRarray ncoeff %ld = %lf",
+                                     elem, kl,
+                                     optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl]);
                 }
                 optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].init = 1;
+            }
+
+            //TEST
+            {
+                char fnamepre[STRINGMAXLEN_FILENAME];
+                WRITE_FILENAME(fnamepre, "test_refract_elem%ld_prepha.fits", elem);
+                save_fl_fits(data.image[IDp].md[0].name, fnamepre);
+
+                char fnameoptpha[STRINGMAXLEN_FILENAME];
+                WRITE_FILENAME(fnameoptpha, "test_refract_elem%ld_optpha.fits", elem);
+                save_fl_fits(data.image[ID].md[0].name, fnameoptpha);
             }
 
             if(data.image[ID].md[0].naxis == 2)
@@ -444,8 +456,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
 # endif
                     for(long kl = 0; kl < nblambda; kl++)
                         for(uint64_t ii = 0; ii < size2; ii++)
-                            // apply change in phase
-                        {
+                        {   // apply change in phase
                             data.image[IDp].array.F[size2 * kl + ii] +=
                             data.image[ID].array.F[ii] * optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl];
                         }
@@ -462,8 +473,7 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
 # endif
                     for(long kl = 0; kl < nblambda; kl++)
                         for(uint64_t ii = 0; ii < size2; ii++)
-                            // apply change in phase
-                        {
+                        {   // apply change in phase
                             data.image[IDp].array.F[size2 * kl + ii] +=
                             data.image[ID].array.F[size2 * kl + ii] * optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl];
                         }
@@ -471,7 +481,22 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 }
 # endif
             }
-            DEBUG_TRACEPOINT("refractive surface ID %ld", (long) ID);
+            //TEST
+            {
+                if(elem==5)
+                {
+                    for(long kl = 0; kl < nblambda; kl++)
+                    for(uint64_t ii = 0; ii < size2; ii++)
+                    {
+                        data.image[IDp].array.F[size2 * kl + ii] = 0.0;
+                    }
+                }
+
+
+                char fnamepost[STRINGMAXLEN_FILENAME];
+                WRITE_FILENAME(fnamepost, "test_refract_elem%ld_postpha.fits", elem);
+                save_fl_fits(data.image[IDp].md[0].name, fnamepost);
+            }
         }
 
 

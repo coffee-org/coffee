@@ -21,20 +21,10 @@
 #include "PIAACMCsimul.h"
 
 #include "PIAACMCsimul_computePSF.h"
-#include "PIAACMCsimul_initpiaacmcconf.h"
+#include "init_piaacmcopticaldesign.h"
 #include "PIAACMCsimul_loadsavepiaacmcconf.h"
 
 #include "PIAAshape/makePIAAshapes.h"
-
-
-// externs
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-extern OPTSYST *optsyst;
-
-extern OPTPIAACMCDESIGN *piaacmc;
-
-
 
 
 
@@ -44,7 +34,8 @@ extern OPTPIAACMCDESIGN *piaacmc;
  * ## Mode 101: Measure transmission as a function of angular separation
  *
  */
-errno_t PIAACMCsimul_measure_transm_curve()
+errno_t PIAACMCsimul_measure_transm_curve(
+)
 {
     DEBUG_TRACE_FSTART();
 
@@ -72,32 +63,39 @@ errno_t PIAACMCsimul_measure_transm_curve()
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
-    piaacmcsimul_var.PIAACMC_fpmtype = 0; // idealized (default)
+    piaacmcparams.PIAACMC_fpmtype = 0; // idealized (default)
     if((IDv = variable_ID("PIAACMC_fpmtype")) != -1)
     {
-        piaacmcsimul_var.PIAACMC_fpmtype = (int)(data.variable[IDv].value.f + 0.1);
+        piaacmcparams.PIAACMC_fpmtype = (int)(data.variable[IDv].value.f + 0.1);
     }
 
-    piaacmcsimul_var.FORCE_CREATE_fpmza = 1;
+    piaacmcparams.FORCE_CREATE_fpmza = 1;
     FUNC_CHECK_RETURN(
-        PIAACMCsimul_initpiaacmcconf(piaacmcsimul_var.PIAACMC_fpmtype, fpmradld,
-                                     centobs0, centobs1, 0, 1)
+        init_piaacmcopticaldesign(
+            piaacmcparams.PIAACMC_fpmtype,
+            fpmradld,
+            centobs0,
+            centobs1,
+            0,
+            1
+        )
     );
 
-    FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
-    optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm
+    FUNC_CHECK_RETURN(makePIAAshapes());
+    piaacmcopticalsystem.FOCMASKarray[0].mode = 1; // use 1-fpm
 
 
     {
         double cval = 0.0;
         FUNC_CHECK_RETURN(
-            PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0, &cval)
+            PIAACMCsimul_computePSF(
+                0.0, 0.0, 0, piaacmcopticalsystem.NBelem, 1, 0, 0, 0, &cval)
         );
     }
 
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/psfi0test_x00_y00.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/psfi0test_x00_y00.fits", piaacmcparams.piaacmcconfdir);
         FUNC_CHECK_RETURN(save_fits("psfi0", fname));
     }
 
@@ -105,8 +103,8 @@ errno_t PIAACMCsimul_measure_transm_curve()
     char fnametransm[STRINGMAXLEN_FULLFILENAME];
     PIAACMCsimul_update_fnamedescr();
     WRITE_FULLFILENAME(fnametransm, "%s/transmCurve_sm%d.%s.txt",
-                       piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.SCORINGMASKTYPE,
-                       piaacmcsimul_var.fnamedescr);
+                       piaacmcparams.piaacmcconfdir, piaacmcparams.SCORINGMASKTYPE,
+                       piaacmcparams.fnamedescr);
 
     FILE *fpt;
     fpt = fopen(fnametransm, "w");
@@ -118,13 +116,11 @@ errno_t PIAACMCsimul_measure_transm_curve()
     {
         double val;
 
-        //valref =
-        {
-            double cval = 0.0;
-            FUNC_CHECK_RETURN(
-                PIAACMCsimul_computePSF(xld, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &cval)
-            );
-        }
+
+        FUNC_CHECK_RETURN(
+            PIAACMCsimul_computePSF(
+                xld, 0.0, 0, piaacmcopticalsystem.NBelem, 0, 0, 0, 0, NULL)
+        );
 
 
         imageID ID = image_ID("psfi0");

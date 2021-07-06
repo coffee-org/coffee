@@ -36,10 +36,10 @@ errno_t PIAACMCsimul_achromFPMsol_eval_zonezderivative(
     DEBUG_TRACE_FSTART();
 
     // axis 0: eval pts (ii)   size = data.image[IDfpmresp].md[0].size[0] -> vsize
-    // axis 1: zones (mz)      size = data.image[piaacmc[0].zonezID].md[0].size[0]+1 = nbz+1
-    // axis 3: lambda (k)      size = piaacmc[0].nblambda -> nbl
+    // axis 1: zones (mz)      size = data.image[piaacmcopticaldesign.zonezID].md[0].size[0]+1 = nbz+1
+    // axis 3: lambda (k)      size = piaacmcopticaldesign.nblambda -> nbl
     //
-    // indexing :  k*(data.image[piaacmc[0].zonezID].md[0].size[0]+1)*vsize + mz*vsize + ii
+    // indexing :  k*(data.image[piaacmcopticaldesign.zonezID].md[0].size[0]+1)*vsize + mz*vsize + ii
 
 #ifdef PIAASIMUL_LOGFUNC1
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__, "");

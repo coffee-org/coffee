@@ -21,8 +21,6 @@
 #include "PIAACMCsimul/PIAACMCsimul.h"
 
 
-extern OPTPIAACMCDESIGN *piaacmc;
-
 
 /**
  * @brief Make Lyot stop geometry
@@ -61,7 +59,6 @@ errno_t mkLyotMask(
 
     NBiter = 100;
 
-    //sigma = 0.01 * piaacmc[0].beamrad / piaacmc[0].pixscale;
     //filter_size = (long)(sigma * 2.0);
 
     printf("IDincoh_name : %s   %ld\n", IDincoh_name, image_ID(IDincoh_name));

@@ -24,16 +24,10 @@
 #include "PIAACMCsimul.h"
 
 #include "PIAACMCsimul_computePSF.h"
-#include "PIAACMCsimul_initpiaacmcconf.h"
+#include "init_piaacmcopticaldesign.h"
 
 #include "PIAAshape/makePIAAshapes.h"
 
-
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-extern OPTSYST *optsyst;
-
-extern OPTPIAACMCDESIGN *piaacmc;
 
 
 
@@ -82,12 +76,12 @@ errno_t exec_compute_image()
             printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
         }
 
-        piaacmcsimul_var.PIAACMC_fpmtype = 0; // idealized (default)
+        piaacmcparams.PIAACMC_fpmtype = 0; // idealized (default)
         if((IDv = variable_ID("PIAACMC_fpmtype")) != -1)
         {
-            piaacmcsimul_var.PIAACMC_fpmtype = (int)(data.variable[IDv].value.f + 0.1);
+            piaacmcparams.PIAACMC_fpmtype = (int)(data.variable[IDv].value.f + 0.1);
         }
-        printf("PIAACMC_fpmtype = %d\n", piaacmcsimul_var.PIAACMC_fpmtype);
+        printf("PIAACMC_fpmtype = %d\n", piaacmcparams.PIAACMC_fpmtype);
 
         PIAACMC_WFCmode = 0; // number of DMs
         if((IDv = variable_ID("PIAACMC_WFCmode")) != -1)
@@ -100,28 +94,27 @@ errno_t exec_compute_image()
 
 
     // force creation of the FPM zone amplitudes by called functions
-    piaacmcsimul_var.FORCE_CREATE_fpmza = 1;
+    piaacmcparams.FORCE_CREATE_fpmza = 1;
 
     // main initialization function to set up the piaacmc structure
-    if(PIAACMCsimul_initpiaacmcconf(
-                piaacmcsimul_var.PIAACMC_fpmtype,
-                fpmradld,
-                centobs0,
-                centobs1,
-                PIAACMC_WFCmode,
-                1
-            ) != RETURN_SUCCESS)
-    {
-        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
-    }
+    FUNC_CHECK_RETURN(
+        init_piaacmcopticaldesign(
+            piaacmcparams.PIAACMC_fpmtype,
+            fpmradld,
+            centobs0,
+            centobs1,
+            PIAACMC_WFCmode,
+            1
+        )
+    );
 
     // make the mirror or lenses shapes
     FUNC_CHECK_RETURN(
-        makePIAAshapes(piaacmc)
+        makePIAAshapes()
     );
 
     // use 1-fpm normalization for efficiency
-    optsyst[0].FOCMASKarray[0].mode = 1;
+    piaacmcopticalsystem.FOCMASKarray[0].mode = 1;
 
 
 
@@ -133,20 +126,24 @@ errno_t exec_compute_image()
 
         uint32_t *sizearray;
         sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
-        sizearray[0] = piaacmc[0].size;
-        sizearray[1] = piaacmc[0].size;
+        sizearray[0] = piaacmcopticaldesign.size;
+        sizearray[1] = piaacmcopticaldesign.size;
 
         imageID IDopderrC;
-        create_image_ID("opderr", 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0, &IDopderrC);
+        FUNC_CHECK_RETURN(
+            create_image_ID("opderr", 2, sizearray, _DATATYPE_FLOAT, 1, 0, 0, &IDopderrC)
+        );
         COREMOD_MEMORY_image_set_createsem("opderr", 10);
         free(sizearray);
 
-        long sizecrop = piaacmc[0].size / 16;
+        long sizecrop = piaacmcopticaldesign.size / 16;
         sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 3);
         sizearray[0] = sizecrop;
         sizearray[1] = sizecrop;
-        sizearray[2] = piaacmc[0].nblambda;
-        create_image_ID("psfiout0", 3, sizearray, _DATATYPE_FLOAT, 1, 0, 0, &IDpsfi0);
+        sizearray[2] = piaacmcopticaldesign.nblambda;
+        FUNC_CHECK_RETURN(
+            create_image_ID("psfiout0", 3, sizearray, _DATATYPE_FLOAT, 1, 0, 0, &IDpsfi0)
+        );
         free(sizearray);
 
         long iter = 0;
@@ -154,7 +151,9 @@ errno_t exec_compute_image()
         {
             {
                 double cval = 0.0;
-                FUNC_CHECK_RETURN(PIAACMCsimul_computePSF(xpos, ypos, 0, optsyst[0].NBelem, 1, 0, 0, 1, &cval));
+                FUNC_CHECK_RETURN(
+                    PIAACMCsimul_computePSF(xpos, ypos, 0, piaacmcopticalsystem.NBelem, 1, 0, 0, 1, &cval)
+                );
             }
 
             ID = image_ID("psfi0");
@@ -162,15 +161,15 @@ errno_t exec_compute_image()
             // copy results to IDpsfi0
             data.image[IDpsfi0].md[0].write = 1;
 
-            for(long k = 0; k < piaacmc[0].nblambda; k++)
+            for(long k = 0; k < piaacmcopticaldesign.nblambda; k++)
                 for(long ii1 = 0; ii1 < sizecrop; ii1++)
                     for(long jj1 = 0; jj1 < sizecrop; jj1++)
                     {
-                        long ii = ii1 + (piaacmc[0].size - sizecrop) / 2;
-                        long jj = jj1 + (piaacmc[0].size - sizecrop) / 2;
+                        long ii = ii1 + (piaacmcopticaldesign.size - sizecrop) / 2;
+                        long jj = jj1 + (piaacmcopticaldesign.size - sizecrop) / 2;
                         data.image[IDpsfi0].array.F[k * sizecrop * sizecrop + jj1 * sizecrop + ii1] =
-                            data.image[ID].array.F[k * piaacmc[0].size * piaacmc[0].size + jj *
-                                                   piaacmc[0].size + ii];
+                            data.image[ID].array.F[k * piaacmcopticaldesign.size * piaacmcopticaldesign.size + jj *
+                                                   piaacmcopticaldesign.size + ii];
                     }
             COREMOD_MEMORY_image_set_sempost_byID(IDpsfi0, -1);
             data.image[IDpsfi0].md[0].cnt0 ++;
@@ -194,14 +193,11 @@ errno_t exec_compute_image()
             {
                 printf("COMPUTING PSF AT POSITION %lf %lf, flux  = %g\n", xpos, ypos, fval);
                 // make the actual PSF
-                {
-                    double cval = 0.0;
-                    errno_t fret = PIAACMCsimul_computePSF(xpos, ypos, 0, optsyst[0].NBelem, 1, 0, 0, 1, &cval);
-                    if( fret != RETURN_SUCCESS)
-                    {
-                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
-                    }
-                }
+                FUNC_CHECK_RETURN(
+                    PIAACMCsimul_computePSF(
+                        xpos, ypos, 0, piaacmcopticalsystem.NBelem, 1, 0, 0, 1, NULL)
+                );
+
 
                 // get the image "psfi0" index, which was created in PIAACMCsimul_computePSF
                 ID = image_ID("psfi0");
@@ -237,7 +233,7 @@ errno_t exec_compute_image()
                         0.0,
                         0.0,
                         0,
-                        optsyst[0].NBelem,
+                        piaacmcopticalsystem.NBelem,
                         1,
                         0,
                         0,

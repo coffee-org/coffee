@@ -22,11 +22,7 @@
 
 #include "OptSystProp/OptSystProp.h"
 
-
-
-extern OPTSYST *optsyst;
-
-
+#include "PIAACMCsimul.h"
 
 
 
@@ -108,7 +104,7 @@ errno_t PIAACMCsimul_CA2propCubeInt(
         fflush(stdout);
 
         zprop = zarray[l];
-        OptSystProp_propagateCube(optsyst, 0, IDamp_name, IDpha_name, "_tmppropamp",
+        OptSystProp_propagateCube(&piaacmcopticalsystem, 0, IDamp_name, IDpha_name, "_tmppropamp",
                                   "_tmpproppha", zprop, 0);
 
         imageID IDa = image_ID("_tmppropamp");

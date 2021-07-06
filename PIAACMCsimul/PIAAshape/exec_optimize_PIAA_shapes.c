@@ -20,14 +20,8 @@
 #include "COREMOD_memory/COREMOD_memory.h"
 
 #include "PIAACMCsimul.h"
-#include "PIAACMCsimul_initpiaacmcconf.h"
+#include "init_piaacmcopticaldesign.h"
 
-
-
-
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-extern OPTPIAACMCDESIGN *piaacmc;
 
 
 
@@ -67,9 +61,9 @@ errno_t exec_optimize_PIAA_shapes()
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
-    FUNC_CHECK_RETURN(PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 1));
+    FUNC_CHECK_RETURN(init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 1));
 
-    piaacmcsimul_var.LINOPT = 1; // perform linear optimization
+    piaacmcparams.LINOPT = 1; // perform linear optimization
     /*if((IDv = variable_ID("PIAACMC_nbiter")) != -1)
     {
         NBiter = (long) data.variable[IDv].value.f + 0.01;
@@ -79,51 +73,51 @@ errno_t exec_optimize_PIAA_shapes()
         NBiter = 1000;
     }*/
 
-    kmax = data.image[piaacmc[0].piaa0CmodesID].md[0].size[0];
+    kmax = data.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
     if((IDv = variable_ID("PIAACMC_maxoptCterm")) != -1)
     {
         kmax = (long) data.variable[IDv].value.f + 0.01;
     }
 
-    if(kmax > data.image[piaacmc[0].piaa0CmodesID].md[0].size[0])
+    if(kmax > data.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0])
     {
-        kmax = data.image[piaacmc[0].piaa0CmodesID].md[0].size[0];
+        kmax = data.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
     }
 
-    piaacmcsimul_var.linopt_number_param = 0;
+    piaacmcparams.linopt_number_param = 0;
     for(long k = 0; k < kmax; k++)
     {
-        piaacmcsimul_var.linopt_paramtype[piaacmcsimul_var.linopt_number_param] =
+        piaacmcparams.linopt_paramtype[piaacmcparams.linopt_number_param] =
             _DATATYPE_FLOAT;
-        piaacmcsimul_var.linopt_paramvalf[piaacmcsimul_var.linopt_number_param] =
-            &data.image[piaacmc[0].piaa0CmodesID].array.F[k];
-        piaacmcsimul_var.linopt_paramdelta[piaacmcsimul_var.linopt_number_param] =
+        piaacmcparams.linopt_paramvalf[piaacmcparams.linopt_number_param] =
+            &data.image[piaacmcopticaldesign.piaa0CmodesID].array.F[k];
+        piaacmcparams.linopt_paramdelta[piaacmcparams.linopt_number_param] =
             1.0e-9;
-        piaacmcsimul_var.linopt_parammaxstep[piaacmcsimul_var.linopt_number_param] =
+        piaacmcparams.linopt_parammaxstep[piaacmcparams.linopt_number_param] =
             1.0e-8;
-        piaacmcsimul_var.linopt_parammin[piaacmcsimul_var.linopt_number_param] =
+        piaacmcparams.linopt_parammin[piaacmcparams.linopt_number_param] =
             -1.0e-5;
-        piaacmcsimul_var.linopt_parammax[piaacmcsimul_var.linopt_number_param] = 1.0e-5;
-        piaacmcsimul_var.linopt_number_param++;
+        piaacmcparams.linopt_parammax[piaacmcparams.linopt_number_param] = 1.0e-5;
+        piaacmcparams.linopt_number_param++;
     }
 
     for(long k = 0; k < kmax; k++)
     {
-        piaacmcsimul_var.linopt_paramtype[piaacmcsimul_var.linopt_number_param] =
+        piaacmcparams.linopt_paramtype[piaacmcparams.linopt_number_param] =
             _DATATYPE_FLOAT;
-        piaacmcsimul_var.linopt_paramvalf[piaacmcsimul_var.linopt_number_param] =
-            &data.image[piaacmc[0].piaa1CmodesID].array.F[k];
-        piaacmcsimul_var.linopt_paramdelta[piaacmcsimul_var.linopt_number_param] =
+        piaacmcparams.linopt_paramvalf[piaacmcparams.linopt_number_param] =
+            &data.image[piaacmcopticaldesign.piaa1CmodesID].array.F[k];
+        piaacmcparams.linopt_paramdelta[piaacmcparams.linopt_number_param] =
             1.0e-9;
-        piaacmcsimul_var.linopt_parammaxstep[piaacmcsimul_var.linopt_number_param] =
+        piaacmcparams.linopt_parammaxstep[piaacmcparams.linopt_number_param] =
             1.0e-8;
-        piaacmcsimul_var.linopt_parammin[piaacmcsimul_var.linopt_number_param] =
+        piaacmcparams.linopt_parammin[piaacmcparams.linopt_number_param] =
             -1.0e-5;
-        piaacmcsimul_var.linopt_parammax[piaacmcsimul_var.linopt_number_param] = 1.0e-5;
-        piaacmcsimul_var.linopt_number_param++;
+        piaacmcparams.linopt_parammax[piaacmcparams.linopt_number_param] = 1.0e-5;
+        piaacmcparams.linopt_number_param++;
     }
-    piaacmcsimul_var.FORCE_MAKE_PIAA0shape = 1;
-    piaacmcsimul_var.FORCE_MAKE_PIAA1shape = 1;
+    piaacmcparams.FORCE_MAKE_PIAA0shape = 1;
+    piaacmcparams.FORCE_MAKE_PIAA1shape = 1;
 
 
     DEBUG_TRACE_FEXIT();

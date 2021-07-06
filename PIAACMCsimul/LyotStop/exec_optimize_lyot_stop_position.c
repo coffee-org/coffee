@@ -26,17 +26,11 @@
 #include "PIAACMCsimul.h"
 
 #include "PIAACMCsimul_computePSF.h"
-#include "PIAACMCsimul_init.h"
-#include "PIAACMCsimul_initpiaacmcconf.h"
+#include "init_piaacmcopticalsystem.h"
+#include "init_piaacmcopticaldesign.h"
 #include "PIAACMCsimul_loadsavepiaacmcconf.h"
 
 #include "PIAAshape/makePIAAshapes.h"
-
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-extern OPTSYST *optsyst;
-
-extern OPTPIAACMCDESIGN *piaacmc;
 
 
 
@@ -89,17 +83,22 @@ errno_t exec_optimize_lyot_stop_position()
 
 
     // init as in mode 0
-    PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 1);
-
     FUNC_CHECK_RETURN(
-        makePIAAshapes(piaacmc)
+        init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 1)
     );
 
-    optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm
+    FUNC_CHECK_RETURN(
+        makePIAAshapes()
+    );
+
+    piaacmcopticalsystem.FOCMASKarray[0].mode = 1; // use 1-fpm
 
     // initialization
-    PIAACMCsimul_init(piaacmc, 0, 0.0,
-                      0.0); // necessary to initialize optical design
+    // necessary to initialize optical design
+    FUNC_CHECK_RETURN(
+        init_piaacmcopticalsystem(0.0, 0.0)
+    );
+
     // set initial lyot stop marching range (current position +- range)
     double range, stepsize;
     {
@@ -118,14 +117,14 @@ errno_t exec_optimize_lyot_stop_position()
 
     // store initial Lyot stop positions
     // NBLyotStop = length(LyotStop_zpos)
-    for(long ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
+    for(long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
     {
-        paramref[ls] = piaacmc[0].LyotStop_zpos[ls];
+        paramref[ls] = piaacmcopticaldesign.LyotStop_zpos[ls];
     }
     NBiter = 4; // number of iterations
 
     // start up a log
-    WRITE_FULLFILENAME(fnamelog, "%s/result_LMpos.log", piaacmcsimul_var.piaacmcconfdir);
+    WRITE_FULLFILENAME(fnamelog, "%s/result_LMpos.log", piaacmcparams.piaacmcconfdir);
     {
         FILE * fp = fopen(fnamelog, "w");
         fclose(fp);
@@ -138,18 +137,18 @@ errno_t exec_optimize_lyot_stop_position()
     for(long iter = 0; iter < NBiter; iter++)
     {
         // for each Lyot stop, find its best position
-        for(long ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
+        for(long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
         {
             // start position for march.  paramref is current best value
-            piaacmc[0].LyotStop_zpos[ls] = paramref[ls] - range;
+            piaacmcopticaldesign.LyotStop_zpos[ls] = paramref[ls] - range;
             // current best position
-            parambest[ls] = piaacmc[0].LyotStop_zpos[ls];
+            parambest[ls] = piaacmcopticaldesign.LyotStop_zpos[ls];
 
             // loopOK = 1;
             double valbest = 1.0;
 
             // march to the other other end of range
-            while(piaacmc[0].LyotStop_zpos[ls] < paramref[ls] + range)
+            while(piaacmcopticaldesign.LyotStop_zpos[ls] < paramref[ls] + range)
             {
                 long elem;
                 double val;
@@ -158,13 +157,13 @@ errno_t exec_optimize_lyot_stop_position()
 
                 // look for the element called "Lyot mask 0" as the actual starting point
                 elem0 = -1;
-                printf("Number of elements = %ld\n", optsyst[0].NBelem);
-                assert(optsyst[0].NBelem > 0);
+                printf("Number of elements = %ld\n", piaacmcopticalsystem.NBelem);
+                assert(piaacmcopticalsystem.NBelem > 0);
 
-                for(elem = 0; elem < optsyst[0].NBelem; elem++)
+                for(elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
                 {
-                    printf("elem %ld :  %s\n", elem, optsyst[0].name[elem]);
-                    if(strcmp("Lyot mask 0", optsyst[0].name[elem]) == 0)
+                    printf("elem %ld :  %s\n", elem, piaacmcopticalsystem.name[elem]);
+                    if(strcmp("Lyot mask 0", piaacmcopticalsystem.name[elem]) == 0)
                     {
                         elem0 = elem;
                     }
@@ -172,41 +171,38 @@ errno_t exec_optimize_lyot_stop_position()
                 assert(elem0 != -1);  // throw a message if this was not found
 
 
-                optsyst[0].keepMem[elem0] = 1; // save this element and reuse
+                piaacmcopticalsystem.keepMem[elem0] = 1; // save this element and reuse
 
                 // compute the PSF for this Lyot stop position, returning contrast in the evaluation zone
-                {
-                    errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, elem0, optsyst[0].NBelem, 0, 0, 0, 0, &val);
-                    if( fret != RETURN_SUCCESS)
-                    {
-                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
-                    }
-                }
+                FUNC_CHECK_RETURN(
+                    PIAACMCsimul_computePSF(
+                        0.0, 0.0, elem0, piaacmcopticalsystem.NBelem, 0, 0, 0, 0, &val)
+                );
 
                 // if this is the best contrast for this stop, save it for it and the position of this stop
                 if(val < valbest)
                 {
-                    parambest[ls] = piaacmc[0].LyotStop_zpos[ls];
+                    parambest[ls] = piaacmcopticaldesign.LyotStop_zpos[ls];
                     valbest = val;
                 }
 
                 // say what's happening
                 {
                     FILE * fp = fopen(fnamelog, "a");
-                    for(long ls1 = 0; ls1 < piaacmc[0].NBLyotStop; ls1++)
+                    for(long ls1 = 0; ls1 < piaacmcopticaldesign.NBLyotStop; ls1++)
                     {
-                        fprintf(fp, " %lf", piaacmc[0].LyotStop_zpos[ls1]);
+                        fprintf(fp, " %lf", piaacmcopticaldesign.LyotStop_zpos[ls1]);
                     }
                     fprintf(fp, " %g\n", val);
                     fclose(fp);
                 }
 
                 // march along by the step size
-                piaacmc[0].LyotStop_zpos[ls] += stepsize;
+                piaacmcopticaldesign.LyotStop_zpos[ls] += stepsize;
             }
             printf("BEST SOLUTION :  ");
             paramref[ls] = parambest[ls]; // update best position for this stop
-            piaacmc[0].LyotStop_zpos[ls] =
+            piaacmcopticaldesign.LyotStop_zpos[ls] =
                 paramref[ls]; // store in case this is last iteration
             printf(" %lf", parambest[ls]);
             printf(" %g\n", valbest);
@@ -223,11 +219,11 @@ errno_t exec_optimize_lyot_stop_position()
         stepsize = range / 3.0;
     }
     // store all best positions  Done!!
-    for(long ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
+    for(long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
     {
-        piaacmc[0].LyotStop_zpos[ls] = parambest[ls];
+        piaacmcopticaldesign.LyotStop_zpos[ls] = parambest[ls];
     }
-    PIAACMCsimul_savepiaacmcconf(piaacmcsimul_var.piaacmcconfdir);
+    PIAACMCsimul_savepiaacmcconf(piaacmcparams.piaacmcconfdir);
 
 
     DEBUG_TRACE_FEXIT();

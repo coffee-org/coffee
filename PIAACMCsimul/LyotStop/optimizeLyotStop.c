@@ -29,14 +29,6 @@
 
 
 
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-extern OPTSYST *optsyst;
-
-extern OPTPIAACMCDESIGN *piaacmc;
-
-
-
 
 /**
  * @brief Lyot stops positions from zmin to zmax relative to current, working back (light goes from 0 to zmax)
@@ -125,7 +117,7 @@ errno_t optimizeLyotStop(
     for(long m = 1; m < NBmasks; m++)
     {
         routarray[m] = rinarray[m - 1];
-        rinarray[m] = routarray[m] - (1.0 - piaacmc[0].centObs1) / NBmasks;
+        rinarray[m] = routarray[m] - (1.0 - piaacmcopticaldesign.centObs1) / NBmasks;
     }
     rinarray[NBmasks - 1] = 0.0;
 
@@ -169,8 +161,8 @@ errno_t optimizeLyotStop(
         for(uint32_t jj = 0; jj < ysize; jj++)
         {
             data.image[IDzone].array.F[jj * xsize + ii] = -2;
-            double x = (1.0 * ii - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
-            double y = (1.0 * jj - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
+            double x = (1.0 * ii - 0.5 * xsize) / (piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale);
+            double y = (1.0 * jj - 0.5 * xsize) / (piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale);
             double r = sqrt(x * x + y * y);
             rarray[jj * xsize + ii] = r;
             for(long m = 0; m < NBmasks; m++)
@@ -179,10 +171,10 @@ errno_t optimizeLyotStop(
                     data.image[IDzone].array.F[jj * xsize + ii] = m;
                 }
         }
-    if(piaacmcsimul_var.PIAACMC_save == 1)
+    if(piaacmcparams.PIAACMC_save == 1)
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/LMzonemap.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/LMzonemap.fits", piaacmcparams.piaacmcconfdir);
         save_fits("LMzonemap", fname);
     }
     // initialize zarray
@@ -206,7 +198,7 @@ errno_t optimizeLyotStop(
     imageID IDintg;
     create_2Dimage_ID("tmpintg", xsize, ysize, &IDintg);
 
-    float sigma = 0.01 * piaacmc[0].beamrad / piaacmc[0].pixscale;
+    float sigma = 0.01 * piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale;
     int filter_size = (long)(sigma * 2.0);
 
     for(long l = 0; l < NBz; l++)
@@ -218,7 +210,7 @@ errno_t optimizeLyotStop(
         WRITE_IMAGENAME(namepha, "LMPpha%02ld", l);
 
         double zprop = zarray[l];
-        OptSystProp_propagateCube(optsyst, 0, IDamp_name, IDpha_name, nameamp, namepha,
+        OptSystProp_propagateCube(&piaacmcopticalsystem, 0, IDamp_name, IDpha_name, nameamp, namepha,
                                   zprop, 0);
 
 
@@ -263,7 +255,7 @@ errno_t optimizeLyotStop(
                 m = (long) (data.image[IDzone].array.F[ii]+0.1);
 
 
-                if((m>-1)&&(m<NBmasks)&&(rarray[ii]<1.0)&&(rarray[ii]>0.9*piaacmc[0].centObs1))
+                if((m>-1)&&(m<NBmasks)&&(rarray[ii]<1.0)&&(rarray[ii]>0.9*piaacmcopticaldesign.centObs1))
                 {
                     totarray[l*NBmasks+m] += data.image[ID].array.F[l*xsize*ysize+ii];
                     tot2array[l*NBmasks+m] += pow(data.image[ID].array.F[l*xsize*ysize+ii], alpha);
@@ -277,7 +269,7 @@ errno_t optimizeLyotStop(
 
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname,  "%s/LMintC.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname,  "%s/LMintC.fits", piaacmcparams.piaacmcconfdir);
         save_fits("LMintC", fname);
     }
 
@@ -297,7 +289,7 @@ errno_t optimizeLyotStop(
             long m = (long) (data.image[IDzone].array.F[ii] + 0.1);
 
             if((m > -1) && (m < NBmasks) && (rarray[ii] < 1.0)
-                    && (rarray[ii] > 0.9 * piaacmc[0].centObs1))
+                    && (rarray[ii] > 0.9 * piaacmcopticaldesign.centObs1))
             {
                 totarray[l * NBmasks + m] += data.image[IDincohc].array.F[l * xsize * ysize +
                                              ii];
@@ -316,7 +308,7 @@ errno_t optimizeLyotStop(
 
     {
         char fname1[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname1, "%s/LyotMasks_zpos.txt", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname1, "%s/LyotMasks_zpos.txt", piaacmcparams.piaacmcconfdir);
         FILE * fp = fopen(fname1, "w");
         IDint = image_ID("LMintC");
         for(long m = 0; m < NBmasks; m++)
@@ -338,7 +330,7 @@ errno_t optimizeLyotStop(
             }
             printf(" ==========  MASK %ld   BEST CONJUGATION : %ld %f (%g)\n", m, lbest,
                    zbest, valbest);
-            piaacmc[0].LyotStop_zpos[m] = zbest; // relative to starting plane
+            piaacmcopticaldesign.LyotStop_zpos[m] = zbest; // relative to starting plane
             fprintf(fp, "%02ld %f\n", lbest, zbest);
 
             for(uint64_t ii = 0; ii < xysize; ii++)
@@ -353,14 +345,14 @@ errno_t optimizeLyotStop(
         fclose(fp);
     }
 
-    if(piaacmcsimul_var.PIAACMC_save == 1)
+    if(piaacmcparams.PIAACMC_save == 1)
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
 
-        WRITE_FULLFILENAME(fname, "%s/Lcomb.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/Lcomb.fits", piaacmcparams.piaacmcconfdir);
         save_fits("Lcomb", fname);
 
-        WRITE_FULLFILENAME(fname, "%s/LcombOA.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/LcombOA.fits", piaacmcparams.piaacmcconfdir);
         save_fits("LcombOA", fname);
     }
 
@@ -372,10 +364,10 @@ errno_t optimizeLyotStop(
                    "LMask", &IDlyotmask)
     );
 
-    if(piaacmcsimul_var.PIAACMC_save == 1)
+    if(piaacmcparams.PIAACMC_save == 1)
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/LMask.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/LMask.fits", piaacmcparams.piaacmcconfdir);
         save_fits("LMask", fname);
     }
 
@@ -400,8 +392,8 @@ errno_t optimizeLyotStop(
         for(uint32_t ii = 0; ii < xsize; ii++)
             for(uint32_t jj = 0; jj < ysize; jj++)
             {
-                double x = (1.0 * ii - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
-                double y = (1.0 * jj - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
+                double x = (1.0 * ii - 0.5 * xsize) / (piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale);
+                double y = (1.0 * jj - 0.5 * xsize) / (piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale);
                 double r = sqrt(x * x + y * y);
 
                 if((r > rinarray[m] - dr) && (r < routarray[m] + dr))
@@ -418,8 +410,8 @@ errno_t optimizeLyotStop(
             for(uint32_t ii = 0; ii < xsize; ii++)
                 for(uint32_t jj = 0; jj < ysize; jj++)
                 {
-                    double x = (1.0 * ii - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
-                    double y = (1.0 * jj - 0.5 * xsize) / (piaacmc[0].beamrad / piaacmc[0].pixscale);
+                    double x = (1.0 * ii - 0.5 * xsize) / (piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale);
+                    double y = (1.0 * jj - 0.5 * xsize) / (piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale);
                     double r = sqrt(x * x + y * y);
                     if(r > 1.0)
                     {
@@ -437,7 +429,7 @@ errno_t optimizeLyotStop(
 
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
-            WRITE_FULLFILENAME(fname, "%s/optLM%02ld.fits", piaacmcsimul_var.piaacmcconfdir, m);
+            WRITE_FULLFILENAME(fname, "%s/optLM%02ld.fits", piaacmcparams.piaacmcconfdir, m);
             save_fits(name, fname);
         }
     }

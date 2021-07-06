@@ -23,24 +23,18 @@
 #include "PIAACMCsimul.h"
 
 #include "PIAACMCsimul_computePSF.h"
-#include "PIAACMCsimul_init.h"
-#include "PIAACMCsimul_initpiaacmcconf.h"
+#include "init_piaacmcopticalsystem.h"
+#include "init_piaacmcopticaldesign.h"
 #include "PIAACMCsimul_loadsavepiaacmcconf.h"
 
 #include "PIAAshape/makePIAAshapes.h"
 
 
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-extern OPTSYST *optsyst;
-
-extern OPTPIAACMCDESIGN *piaacmc;
 
 
 
-
-
-errno_t PIAACMCsimul_eval_poly_design()
+errno_t PIAACMCsimul_eval_poly_design(
+)
 {
     DEBUG_TRACE_FSTART();
     DEBUG_TRACEPOINT("FUNC");
@@ -97,7 +91,7 @@ errno_t PIAACMCsimul_eval_poly_design()
     imageID IDopderrC = image_ID("OPDerrC");
     if(IDopderrC == -1)
     {
-        load_fits("OPDerrC.fits", "OPDerrC", 0, &IDopderrC);
+        FUNC_CHECK_RETURN(load_fits("OPDerrC.fits", "OPDerrC", 0, &IDopderrC));
     }
 
     long nbOPDerr = 0;
@@ -114,25 +108,25 @@ errno_t PIAACMCsimul_eval_poly_design()
 
 
 
-    piaacmcsimul_var.PIAACMC_fpmtype = 0; // idealized (default)
+    piaacmcparams.PIAACMC_fpmtype = 0; // idealized (default)
     {
         variableID IDv;
         IDv = variable_ID("PIAACMC_fpmtype");
         if(IDv != -1)
         {
-            piaacmcsimul_var.PIAACMC_fpmtype = (int)(data.variable[IDv].value.f + 0.1);
+            piaacmcparams.PIAACMC_fpmtype = (int)(data.variable[IDv].value.f + 0.1);
         }
     }
 
 
 
 
-    piaacmcsimul_var.FORCE_CREATE_fpmza = 1;
+    piaacmcparams.FORCE_CREATE_fpmza = 1;
 
 
     FUNC_CHECK_RETURN(
-        PIAACMCsimul_initpiaacmcconf(
-            piaacmcsimul_var.PIAACMC_fpmtype,
+        init_piaacmcopticaldesign(
+            piaacmcparams.PIAACMC_fpmtype,
             fpmradld,
             centobs0, centobs1,
             0,
@@ -140,12 +134,12 @@ errno_t PIAACMCsimul_eval_poly_design()
     );
 
     FUNC_CHECK_RETURN(
-        makePIAAshapes(piaacmc)
+        makePIAAshapes()
     );
 
-    optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm
+    piaacmcopticalsystem.FOCMASKarray[0].mode = 1; // use 1-fpm
 
-    //        valref = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0);
+    //        valref = PIAACMCsimul_computePSF(0.0, 0.0, 0, piaacmcopticalsystem.NBelem, 1, 0);
     //       printf("valref = %g\n", valref);
 
     //exit(0);
@@ -166,13 +160,14 @@ errno_t PIAACMCsimul_eval_poly_design()
 
     // compute off-axis POINT source reference
     FUNC_CHECK_RETURN(
-        PIAACMCsimul_computePSF(5.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 0, &valref)
+        PIAACMCsimul_computePSF(
+            5.0, 0.0, 0, piaacmcopticalsystem.NBelem, 1, 0, 0, 0, &valref)
     );
 
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/psfi0_x50_y00.fits", piaacmcsimul_var.piaacmcconfdir);
-        save_fits("psfi0", fname);
+        WRITE_FULLFILENAME(fname, "%s/psfi0_x50_y00.fits", piaacmcparams.piaacmcconfdir);
+        FUNC_CHECK_RETURN(save_fits("psfi0", fname));
     }
     //load_fits(fname, "psfi");
 
@@ -217,13 +212,14 @@ errno_t PIAACMCsimul_eval_poly_design()
 
     // compute on-axis POINT source
     FUNC_CHECK_RETURN(
-        PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 1, 0, 0, 1, &valref)
+        PIAACMCsimul_computePSF(
+            0.0, 0.0, 0, piaacmcopticalsystem.NBelem, 1, 0, 0, 1, &valref)
     );
 
 
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/psfi0_x00_y00.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/psfi0_x00_y00.fits", piaacmcparams.piaacmcconfdir);
         save_fits("psfi0", fname);
     }
     //load_fits(fname, "psfi");
@@ -234,7 +230,7 @@ errno_t PIAACMCsimul_eval_poly_design()
     {   /// compute contrast curve
         imageID ID = image_ID("psfi0");
 
-        double focscale = (2.0 * piaacmc[0].beamrad / piaacmc[0].pixscale) / piaacmc[0].size;
+        double focscale = (2.0 * piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale) / piaacmcopticaldesign.size;
         printf("focscale = %f\n", focscale);
         long eval_sepNBpt = (long) (eval_sepmaxld / eval_sepstepld);
         double * eval_contrastCurve = (double *) malloc(sizeof(double) * eval_sepNBpt);
@@ -282,8 +278,8 @@ errno_t PIAACMCsimul_eval_poly_design()
         PIAACMCsimul_update_fnamedescr();
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
-            WRITE_FULLFILENAME(fname, "%s/ContrastCurve_tt000.%s.txt", piaacmcsimul_var.piaacmcconfdir,
-                               piaacmcsimul_var.fnamedescr);
+            WRITE_FULLFILENAME(fname, "%s/ContrastCurve_tt000.%s.txt", piaacmcparams.piaacmcconfdir,
+                               piaacmcparams.fnamedescr);
             FILE * fp = fopen(fname, "w");
             fprintf(fp, "# Contrast curve\n");
             fprintf(fp, "# col 1: Angular separation [l/D]\n");
@@ -305,17 +301,17 @@ errno_t PIAACMCsimul_eval_poly_design()
         PIAACMCsimul_update_fnamedescr();
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
-            WRITE_FULLFILENAME(fname, "%s/ContrastVal_tt000.%s.txt", piaacmcsimul_var.piaacmcconfdir,
-                               piaacmcsimul_var.fnamedescr);
+            WRITE_FULLFILENAME(fname, "%s/ContrastVal_tt000.%s.txt", piaacmcparams.piaacmcconfdir,
+                               piaacmcparams.fnamedescr);
             FILE * fp = fopen(fname, "w");
             fprintf(fp,
                     "%10g %10g %4.2f %4.2f %4.2f %4.2f %04ld %02ld %d %03ld %03ld %02d %03ld %02d %d\n",
-                    valref, aveC / aveCcnt, piaacmc[0].fpmaskradld,
-                    piaacmcsimul_var.PIAACMC_MASKRADLD, piaacmc[0].centObs0, piaacmc[0].centObs1,
-                    (long)(piaacmc[0].lambda * 1e9), (long)(piaacmc[0].lambdaB + 0.1),
-                    piaacmcsimul_var.PIAACMC_FPMsectors, piaacmc[0].NBrings, piaacmc[0].focmNBzone,
-                    piaacmc[0].nblambda, (long) 0, piaacmcsimul_var.computePSF_ResolvedTarget,
-                    piaacmcsimul_var.computePSF_ResolvedTarget_mode);
+                    valref, aveC / aveCcnt, piaacmcopticaldesign.fpmaskradld,
+                    piaacmcparams.PIAACMC_MASKRADLD, piaacmcopticaldesign.centObs0, piaacmcopticaldesign.centObs1,
+                    (long)(piaacmcopticaldesign.lambda * 1e9), (long)(piaacmcopticaldesign.lambdaB + 0.1),
+                    piaacmcparams.PIAACMC_FPMsectors, piaacmcopticaldesign.NBrings, piaacmcopticaldesign.focmNBzone,
+                    piaacmcopticaldesign.nblambda, (long) 0, piaacmcparams.computePSF_ResolvedTarget,
+                    piaacmcparams.computePSF_ResolvedTarget_mode);
             fclose(fp);
         }
     }
@@ -327,8 +323,8 @@ errno_t PIAACMCsimul_eval_poly_design()
     FUNC_CHECK_RETURN(
         create_3Dimage_ID(
             "starim",
-            piaacmc[0].size,
-            piaacmc[0].size,
+            piaacmcopticaldesign.size,
+            piaacmcopticaldesign.size,
             zsize,
             &IDps
         )
@@ -338,8 +334,8 @@ errno_t PIAACMCsimul_eval_poly_design()
     FUNC_CHECK_RETURN(
         create_3Dimage_ID(
             "starim_re",
-            piaacmc[0].size,
-            piaacmc[0].size,
+            piaacmcopticaldesign.size,
+            piaacmcopticaldesign.size,
             zsize,
             &IDps_re
         )
@@ -349,8 +345,8 @@ errno_t PIAACMCsimul_eval_poly_design()
     FUNC_CHECK_RETURN(
         create_3Dimage_ID(
             "starim_im",
-            piaacmc[0].size,
-            piaacmc[0].size,
+            piaacmcopticaldesign.size,
+            piaacmcopticaldesign.size,
             zsize,
             &IDps_im
         )
@@ -360,8 +356,8 @@ errno_t PIAACMCsimul_eval_poly_design()
     FUNC_CHECK_RETURN(
         create_3Dimage_ID(
             "starimCOH",
-            piaacmc[0].size,
-            piaacmc[0].size,
+            piaacmcopticaldesign.size,
+            piaacmcopticaldesign.size,
             zsize,
             &IDps_COH
         )
@@ -371,8 +367,8 @@ errno_t PIAACMCsimul_eval_poly_design()
     FUNC_CHECK_RETURN(
         create_3Dimage_ID(
             "starimINC",
-            piaacmc[0].size,
-            piaacmc[0].size,
+            piaacmcopticaldesign.size,
+            piaacmcopticaldesign.size,
             zsize,
             &IDps_INC
         )
@@ -382,18 +378,17 @@ errno_t PIAACMCsimul_eval_poly_design()
 
     {
         double cval = 0.0;
-        errno_t fret = PIAACMCsimul_computePSF(ldoffset, 0.0, 0, optsyst[0].NBelem, 0,
-                                               0, 0, 0, &cval);
+        FUNC_CHECK_RETURN(
+            PIAACMCsimul_computePSF(
+                ldoffset, 0.0, 0, piaacmcopticalsystem.NBelem, 0,
+                0, 0, 0, &cval)
+        );
         valref = 0.25*cval;
-        if( fret != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
-        }
     }
 
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/psfi0_p0.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/psfi0_p0.fits", piaacmcparams.piaacmcconfdir);
         save_fits("psfi0", fname);
     }
 
@@ -414,19 +409,19 @@ errno_t PIAACMCsimul_eval_poly_design()
 
     {
         double cval = 0.0;
-        errno_t fret = PIAACMCsimul_computePSF(-ldoffset, 0.0, 0, optsyst[0].NBelem,
-                                               0, 0, 0, 0, &cval);
-        if( fret != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
-        }
+        FUNC_CHECK_RETURN(
+            PIAACMCsimul_computePSF(
+                -ldoffset, 0.0, 0, piaacmcopticalsystem.NBelem,
+                0, 0, 0, 0, &cval)
+        );
+
         valref += 0.25 * cval;
     }
 
 
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/psfi0_m0.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/psfi0_m0.fits", piaacmcparams.piaacmcconfdir);
         save_fits("psfi0", fname);
     }
 
@@ -447,18 +442,18 @@ errno_t PIAACMCsimul_eval_poly_design()
 
     {
         double cval = 0.0;
-        errno_t fret = PIAACMCsimul_computePSF(0.0, ldoffset, 0, optsyst[0].NBelem, 0,
-                                               0, 0, 0, &cval);
-        if( fret != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
-        }
+
+        FUNC_CHECK_RETURN(
+            PIAACMCsimul_computePSF(
+                0.0, ldoffset, 0, piaacmcopticalsystem.NBelem, 0,
+                0, 0, 0, &cval)
+        );
         valref += 0.25 * cval;
     }
 
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/psfi0_0p.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/psfi0_0p.fits", piaacmcparams.piaacmcconfdir);
         save_fits("psfi0", fname);
     }
 
@@ -479,12 +474,12 @@ errno_t PIAACMCsimul_eval_poly_design()
 
     {
         double cval = 0.0;
-        errno_t fret = PIAACMCsimul_computePSF(0.0, -ldoffset, 0, optsyst[0].NBelem,
-                                               0, 0, 0, 0, &cval);
-        if( fret != RETURN_SUCCESS)
-        {
-            FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
-        }
+        FUNC_CHECK_RETURN(
+            PIAACMCsimul_computePSF(
+                0.0, -ldoffset, 0, piaacmcopticalsystem.NBelem,
+                0, 0, 0, 0, &cval)
+        );
+
         valref += 0.25 * cval;
     }
 
@@ -492,7 +487,7 @@ errno_t PIAACMCsimul_eval_poly_design()
 
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/psfi0_0m.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/psfi0_0m.fits", piaacmcparams.piaacmcconfdir);
         save_fits("psfi0", fname);
     }
 
@@ -534,16 +529,16 @@ errno_t PIAACMCsimul_eval_poly_design()
         }
 
         FUNC_CHECK_RETURN(
-            PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0)
+            init_piaacmcopticalsystem(0.0, 0.0)
         ); // add error to the data
 
         FUNC_CHECK_RETURN(
-            PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, NULL)
+            PIAACMCsimul_computePSF(0.0, 0.0, 0, piaacmcopticalsystem.NBelem, 0, 0, 0, 0, NULL)
         );
 
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
-            WRITE_FULLFILENAME(fname, "%s/psfi0_opderr%02ld.fits", piaacmcsimul_var.piaacmcconfdir,
+            WRITE_FULLFILENAME(fname, "%s/psfi0_opderr%02ld.fits", piaacmcparams.piaacmcconfdir,
                                OPDmode);
             save_fits("psfi0", fname);
         }
@@ -591,7 +586,7 @@ errno_t PIAACMCsimul_eval_poly_design()
 
 
     // same as psfi0_extsrc
-    //    sprintf(fname, "%s/psfi0_starim.%s.fits", piaacmcsimul_var.piaacmcconfdir, piaacmcsimul_var.fnamedescr);
+    //    sprintf(fname, "%s/psfi0_starim.%s.fits", piaacmcparams.piaacmcconfdir, piaacmcparams.fnamedescr);
     //    save_fits("starim", fname);
 
 
@@ -600,8 +595,8 @@ errno_t PIAACMCsimul_eval_poly_design()
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "%s/psfi0_extsrc%2ld_sm%d.%s.fits",
-                           piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
-                           piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
+                           piaacmcparams.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
+                           piaacmcparams.SCORINGMASKTYPE, piaacmcparams.fnamedescr);
         FUNC_CHECK_RETURN(save_fits("starim", fname));
     }
 
@@ -609,8 +604,8 @@ errno_t PIAACMCsimul_eval_poly_design()
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "%s/psfi0INC_extsrc%2ld_sm%d.%s.fits",
-                           piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
-                           piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
+                           piaacmcparams.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
+                           piaacmcparams.SCORINGMASKTYPE, piaacmcparams.fnamedescr);
         FUNC_CHECK_RETURN(save_fits("starimINC", fname));
     }
 
@@ -618,8 +613,8 @@ errno_t PIAACMCsimul_eval_poly_design()
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "%s/psfi0COH_extsrc%2ld_sm%d.%s.fits",
-                           piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
-                           piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
+                           piaacmcparams.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
+                           piaacmcparams.SCORINGMASKTYPE, piaacmcparams.fnamedescr);
         FUNC_CHECK_RETURN(save_fits("starimCOH", fname));
     }
 
@@ -628,7 +623,7 @@ errno_t PIAACMCsimul_eval_poly_design()
 
     {   /// compute contrast curve
         /// measure average contrast value, 2-6 lambda/D
-        double focscale = (2.0 * piaacmc[0].beamrad / piaacmc[0].pixscale) / piaacmc[0].size;
+        double focscale = (2.0 * piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale) / piaacmcopticaldesign.size;
         printf("focscale = %f\n", focscale);
         long eval_sepNBpt = (long) (eval_sepmaxld / eval_sepstepld);
         double * eval_contrastCurve = (double *) malloc(sizeof(double) * eval_sepNBpt);
@@ -708,8 +703,8 @@ errno_t PIAACMCsimul_eval_poly_design()
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
             WRITE_FULLFILENAME(fname, "%s/ContrastCurveP_extsrc%2ld_sm%d.%s.txt",
-                               piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
-                               piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
+                               piaacmcparams.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
+                               piaacmcparams.SCORINGMASKTYPE, piaacmcparams.fnamedescr);
 
             FILE * fp = fopen(fname, "w");
             float * rcarray = (float *) malloc(sizeof(float) * xsize * ysize * zsize);
@@ -763,8 +758,8 @@ errno_t PIAACMCsimul_eval_poly_design()
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
             WRITE_FULLFILENAME(fname, "%s/ContrastCurve_extsrc%2ld_sm%d.%s.txt",
-                               piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
-                               piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
+                               piaacmcparams.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
+                               piaacmcparams.SCORINGMASKTYPE, piaacmcparams.fnamedescr);
 
 
             FILE * fp = fopen(fname, "w");
@@ -795,30 +790,30 @@ errno_t PIAACMCsimul_eval_poly_design()
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
             WRITE_FULLFILENAME(fname, "%s/ContrastVal_extsrc%2ld_sm%d.%s.txt",
-                               piaacmcsimul_var.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
-                               piaacmcsimul_var.SCORINGMASKTYPE, piaacmcsimul_var.fnamedescr);
+                               piaacmcparams.piaacmcconfdir, (long)(-log10(ldoffset) * 10.0 + 0.1),
+                               piaacmcparams.SCORINGMASKTYPE, piaacmcparams.fnamedescr);
             FILE * fp = fopen(fname, "w");
             fprintf(fp, "# Contrast value\n");
             fprintf(fp,
-                    "# valref, aveC/aveCcnt, piaacmc[0].fpmaskradld, piaacmcsimul_var.PIAACMC_MASKRADLD, piaacmc[0].centObs0, piaacmc[0].centObs1, (long) (piaacmc[0].lambda*1e9), (long) (piaacmc[0].lambdaB+0.1), piaacmcsimul_var.PIAACMC_FPMsectors, piaacmc[0].NBrings, piaacmc[0].focmNBzone, piaacmc[0].nblambda, (long) (1000.0*ldoffset), piaacmc[0].fpmsagreg_coeff, piaacmcsimul_var.computePSF_ResolvedTarget, piaacmcsimul_var.computePSF_ResolvedTarget_mode\n");
+                    "# valref, aveC/aveCcnt, piaacmcopticaldesign.fpmaskradld, piaacmcparams.PIAACMC_MASKRADLD, piaacmcopticaldesign.centObs0, piaacmcopticaldesign.centObs1, (long) (piaacmcopticaldesign.lambda*1e9), (long) (piaacmcopticaldesign.lambdaB+0.1), piaacmcparams.PIAACMC_FPMsectors, piaacmcopticaldesign.NBrings, piaacmcopticaldesign.focmNBzone, piaacmcopticaldesign.nblambda, (long) (1000.0*ldoffset), piaacmcopticaldesign.fpmsagreg_coeff, piaacmcparams.computePSF_ResolvedTarget, piaacmcparams.computePSF_ResolvedTarget_mode\n");
             fprintf(fp, "#\n");
             fprintf(fp,
                     "%10g %10g %4.2f %4.2f %4.2f %4.2f %04ld %02ld %d %03ld %03ld %02d %03ld %7.3f %02d %d\n",
                     valref,
                     aveC / aveCcnt,
-                    piaacmc[0].fpmaskradld,
-                    piaacmcsimul_var.PIAACMC_MASKRADLD,
-                    piaacmc[0].centObs0,
-                    piaacmc[0].centObs1,
-                    (long)(piaacmc[0].lambda * 1e9),
-                    (long)(piaacmc[0].lambdaB + 0.1),
-                    piaacmcsimul_var.PIAACMC_FPMsectors,
-                    piaacmc[0].NBrings, piaacmc[0].focmNBzone,
-                    piaacmc[0].nblambda,
+                    piaacmcopticaldesign.fpmaskradld,
+                    piaacmcparams.PIAACMC_MASKRADLD,
+                    piaacmcopticaldesign.centObs0,
+                    piaacmcopticaldesign.centObs1,
+                    (long)(piaacmcopticaldesign.lambda * 1e9),
+                    (long)(piaacmcopticaldesign.lambdaB + 0.1),
+                    piaacmcparams.PIAACMC_FPMsectors,
+                    piaacmcopticaldesign.NBrings, piaacmcopticaldesign.focmNBzone,
+                    piaacmcopticaldesign.nblambda,
                     (long)(1000.0 * ldoffset),
-                    piaacmc[0].fpmsagreg_coeff,
-                    piaacmcsimul_var.computePSF_ResolvedTarget,
-                    piaacmcsimul_var.computePSF_ResolvedTarget_mode
+                    piaacmcopticaldesign.fpmsagreg_coeff,
+                    piaacmcparams.computePSF_ResolvedTarget,
+                    piaacmcparams.computePSF_ResolvedTarget_mode
                    );
             fclose(fp);
         }

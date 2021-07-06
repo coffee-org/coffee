@@ -10,7 +10,10 @@ message(" SRCNAME = ${SRCNAME} -> LIBNAME = ${LIBNAME}")
 # list source files (.c) other than modulename.c
 set(SOURCEFILES
 	${SRCNAME}.c
+    init_piaacmcopticaldesign.c
+    init_piaacmcopticalsystem.c
     PIAACMC_f_evalmask.c
+    PIAACMCsimul_exec.c
     PIAACMCsimul_loadsavepiaacmcconf.c
     PIAACMCsimul_measure_transm_curve.c
     PIAACMCsimul_achromFPMsol_eval.c
@@ -21,11 +24,8 @@ set(SOURCEFILES
     PIAACMCsimul_free.c
     PIAACMCsimul_computePSF.c
     PIAACMCsimul_eval_poly_design.c
-    PIAACMCsimul_init.c
-    PIAACMCsimul_exec.c
     PIAACMCsimul_run.c
     exec_compute_image.c
-    PIAACMCsimul_initpiaacmcconf.c
     exec_computePSF_no_fpm.c
     FocalPlaneMask/exec_multizone_fpm_calib.c
     FocalPlaneMask/exec_optimize_fpm_zones.c
@@ -54,6 +54,8 @@ set(INCLUDEFILES
     exec_compute_image.h
     exec_computePSF_no_fpm.h
     exec_optimize_PIAA_shapes_fpmtransm.h
+    init_piaacmcopticaldesign.h
+    init_piaacmcopticalsystem.h
     PIAACMC_f_evalmask.h
     PIAACMCsimul_achromFPMsol_eval.h
     PIAACMCsimul_achromFPMsol_eval_zonezderivative.c
@@ -61,8 +63,6 @@ set(INCLUDEFILES
     PIAACMCsimul_computePSF.h
     PIAACMCsimul_eval_poly_design.h
     PIAACMCsimul_exec.h
-    PIAACMCsimul_init.h
-    PIAACMCsimul_initpiaacmcconf.h
     PIAACMCsimul_loadsavepiaacmcconf.h
     PIAACMCsimul_measure_transm_curve.h
     PIAACMCsimul_run.h

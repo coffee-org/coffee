@@ -1,7 +1,5 @@
-#ifndef _PIAACMCSIMUL_H
-#define _PIAACMCSIMUL_H
-
-
+#ifndef PIAACMCSIMUL_H
+#define PIAACMCSIMUL_H
 
 #define ApoFitCosFact 1.0
 
@@ -9,8 +7,9 @@
 #include <stdint.h>
 
 #include "CommandLineInterface/CLIcore.h"
+#include "OptSystProp/OptSystProp.h"
 
-#include "PIAAshape/mkPIAAMshapes_from_RadSag.h"
+//#include "PIAAshape/mkPIAAMshapes_from_RadSag.h"
 
 //
 // *****************************************************************************************************
@@ -59,7 +58,7 @@ typedef struct
     double *zonezbest_array;
     double *dphadz_array;
     double *outtmp_array;
-    long LOOPCNT;
+    long    LOOPCNT;
 
     long vsize;
 
@@ -88,12 +87,12 @@ typedef struct
 
 
     // Linear Optimization
-    int LINOPT;                         // 1 if linear optimization should be started
-    long linopt_number_param;           // number of optimization paramters
-    int linopt_paramtype[10000];        // _DATATYPE_FLOAT or _DATATYPE_DOUBLE
-    float *linopt_paramvalf[10000];     // array of pointers, float
-    double *linopt_paramval[10000];     // array of pointers, double
-    double linopt_paramrefval[10000];
+    int     LINOPT;                         // 1 if linear optimization should be started
+    long    linopt_number_param;            // number of optimization paramters
+    int     linopt_paramtype[10000];        // _DATATYPE_FLOAT or _DATATYPE_DOUBLE
+    float  *linopt_paramvalf[10000];        // array of pointers, float
+    double *linopt_paramval[10000];         // array of pointers, double
+    double  linopt_paramrefval[10000];
 
     double linopt_paramdelta[10000];
     double linopt_paramdeltaval[10000];
@@ -121,7 +120,7 @@ typedef struct
     char fnamedescr_conf[STRINGMAXLEN_FILENAME]; // File name descriptor for focal plane mask configuration, inserted inside output file names
 
 
-} PIAACMCsimul_varType;
+} PIAACMCSIMUL_PARAMS;
 
 
 
@@ -169,17 +168,38 @@ typedef struct
     // 0: no PIAA,
     // 1: PIAA
 
-    float PIAA0pos; // conjugation (z) of first PIAA surface [m]
-    float PIAAsep;  // separation between PIAA surfaces [m]
-    int   prePIAA0mask; // 1 if mask before PIAA surface 0
-    float prePIAA0maskpos; // position of mask before PIAA surface 0 [m]
-    int   postPIAA0mask; // 1 if mask after PIAA surface 0
-    float postPIAA0maskpos; // position of mask after PIAA surface 0 [m]
-    float PIAAcoeff; // fraction of apodization done by PIAA
-    int   invPIAAmode; // 0: no inv PIAA, 1: inv PIAA after Lyot stops, 2: inv PIAA before Lyot stops
+
+
+    // conjugation (z) of first PIAA surface [m]
+    float PIAA0pos;
+
+    // separation between PIAA surfaces [m]
+    float PIAAsep;
+
+    // 1 if mask before PIAA surface 0
+    int   prePIAA0mask;
+
+    // position of mask before PIAA surface 0 [m]
+    float prePIAA0maskpos;
+
+    // 1 if mask after PIAA surface 0
+    int   postPIAA0mask;
+
+    // position of mask after PIAA surface 0 [m]
+    float postPIAA0maskpos;
+
+    // fraction of apodization done by PIAA
+    float PIAAcoeff;
+
+    // 0: no inv PIAA, 1: inv PIAA after Lyot stops, 2: inv PIAA before Lyot stops
+    int   invPIAAmode;
+
     float LyotZmin;
     float LyotZmax;
-    float pupoutmaskrad; // output pupil mask radius (scaled to pupil radius)
+
+    // output pupil mask radius (scaled to pupil radius)
+    float pupoutmaskrad;
+
 
     // ========== WAVEFRONT CONTROL ==================
     int    nbDM; // number of deformable mirrors (10 max)
@@ -261,180 +281,16 @@ typedef struct
 } OPTPIAACMCDESIGN;
 
 
+extern PIAACMCSIMUL_PARAMS piaacmcparams;
+extern OPTPIAACMCDESIGN    piaacmcopticaldesign;
+extern OPTSYST             piaacmcopticalsystem;
 
-
-
-/* =============================================================================================== */
-/* =============================================================================================== */
-/** @name 1. INITIALIZATION, configurations
- *  Allocate memory, import/export configurations
- */
-///@{
-/* =============================================================================================== */
-/* =============================================================================================== */
 
 void __attribute__((constructor)) libinit_PIAACMCsimul();
 
-/**
- * @brief Module initialization
- *
- * Registers command line interface (CLI) commands
- *
- */
 errno_t init_PIAACMCsimul();
 
-
-//static void PIAACMCsimul_logFunctionCall(char *LogFileName,
-//        const char *FunctionName, long line, char *comments);
-
-
-
-/**
- * @brief Free PIAACMC memory
- *
- */
 void  PIAACMCsimul_free(void);
-
-
-/**
- * @brief initializes the optsyst structure to simulate reflective PIAACMC system
- */
-/*errno_t PIAACMCsimul_init(OPTPIAACMCDESIGN *design, long index, double TTxld,
-                          double TTyld);
-*/
-
-/**
- * @brief initializes configuration
- */
-/*errno_t PIAACMCsimul_initpiaacmcconf(long piaacmctype, double fpmradld,
-                                     double centobs0, double centobs1, int WFCmode, int load);
-*/
-
-//errno_t PIAACMCsimul_update_fnamedescr_conf();
-//errno_t PIAACMCsimul_update_fnamedescr();
-
-/**
- * @brief Save configuration
- */
-//errno_t PIAACMCsimul_savepiaacmcconf(const char *dname);
-
-/**
- * @brief Load configuration
- */
-//errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname);
-
-
-///@}
-
-
-
-
-/* =============================================================================================== */
-/* =============================================================================================== */
-/** @name 2. Focal plane mask construction
- *  Define focal plane mask geometry
- */
-///@{
-/* =============================================================================================== */
-/* =============================================================================================== */
-
-//imageID PIAACMCsimul_mkFPM_zonemap(const char *IDname);
-
-
-
-/* =============================================================================================== */
-/* =============================================================================================== */
-/** @name  5. Focal plane mask optimization
- *  Create, optimize and manage Focal plane solutions
- */
-///@{
-/* =============================================================================================== */
-/* =============================================================================================== */
-/*
-double PIAACMCsimul_achromFPMsol_eval(double *fpmresp_array,
-                                      double *zonez_array, double *dphadz_array, double *outtmp_array, long vsize,
-                                      long nbz, long nbl);
-
-errno_t PIAACMCsimul_achromFPMsol_eval_zonezderivative(long zone,
-        double *fpmresp_array, double *zonez_array, double *dphadz_array,
-        double *outtmp_array, long vsize, long nbz, long nbl);
-
-long PIAACMC_FPMresp_rmzones(const char *FPMresp_in_name,
-                             const char *FPMresp_out_name, long NBzones);
-
-long PIAACMC_FPMresp_resample(const char *FPMresp_in_name,
-                              const char *FPMresp_out_name, long NBlambda, long PTstep);
-*/
-///@}
-
-
-/* =============================================================================================== */
-/* =============================================================================================== */
-/** @name  6. Focal plane processing
- *  Process / resample focal plane solutions
- */
-///@{
-/* =============================================================================================== */
-/* =============================================================================================== */
-
-/*
-errno_t PIAACMC_FPM_process(const char *FPMsag_name, const char *zonescoord_name,
-                            long NBexp, const char *outname);
-
-long PIAACMC_FPMresp_resample(const char *FPMresp_in_name,
-                              const char *FPMresp_out_name, long NBlambda, long PTstep);
-*/
-///@}
-
-
-
-/* =============================================================================================== */
-/* =============================================================================================== */
-/** @name  7. High level routines
- *  High level optimization and evaluation routines
- */
-///@{
-/* =============================================================================================== */
-/* =============================================================================================== */
-
-/*
-errno_t PIAACMCsimul_exec(const char *confindex, long mode);
-
-errno_t PIAACMCsimul_computePSF(float xld, float yld, long startelem,
-                                long endelem, int savepsf, int sourcesize, int extmode, int outsave,
-                                double *contrastval);
-
-long PIAACMCsimul_CA2propCubeInt(const char *IDamp_name, const char *IDpha_name,
-                                 float zmin, float zmax, long NBz, const char *IDout_name);
-
-errno_t PIAACMCsimul_run(const char *confindex, long mode);
-
-
-errno_t PIAACMCsimul_exec_compute_image();
-
-errno_t PIAACMCsimul_exec_optimize_lyot_stop_position();
-
-errno_t PIAACMCsimul_exec_optimize_fpmtransmission();
-
-errno_t PIAACMCsimul_exec_computePSF_no_fpm(double *outval);
-
-errno_t PIAACMCsimul_exec_optimize_PIAA_shapes();
-
-int PIAACMCsimul_exec_optimize_lyot_stops_shapes_positions();
-
-errno_t PIAACMCsimul_exec_multizone_fpm_calib();
-
-errno_t PIAACMCsimul_exec_optimize_fpm_zones();
-
-errno_t PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm();
-
-errno_t PIAACMCsimul_measure_transm_curve();
-
-int PIAACMCsimul_eval_poly_design();
-*/
-
-///@}
-
 
 
 #endif

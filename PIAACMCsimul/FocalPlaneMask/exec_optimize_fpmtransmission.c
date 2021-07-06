@@ -25,21 +25,10 @@
 #include "PIAACMCsimul.h"
 
 #include "PIAACMCsimul_computePSF.h"
-#include "PIAACMCsimul_initpiaacmcconf.h"
+#include "init_piaacmcopticaldesign.h"
 #include "PIAACMCsimul_loadsavepiaacmcconf.h"
 
 #include "PIAAshape/makePIAAshapes.h"
-
-
-
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-extern OPTSYST *optsyst;
-
-extern OPTPIAACMCDESIGN *piaacmc;
-
-
-
 
 
 
@@ -53,7 +42,7 @@ For monochromatic, idealized PIAACMC, find the scalar transimssion of the unifor
 that provides best contrast in the evaluation zone
 
 Very similar to the Lyot stop search in mode 1: iterative refined marching, changing the
-the transmission value piaacmc[0].fpmaskamptransm, which
+the transmission value piaacmcopticaldesign.fpmaskamptransm, which
 is between 0 and 1
 
 Uses single on-axis light source
@@ -96,24 +85,24 @@ errno_t exec_optimize_fpmtransmission()
     /// ### Initialize as in mode 0
 
     FUNC_CHECK_RETURN(
-        PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 1)
+        init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 1)
     );
 
-    FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
+    FUNC_CHECK_RETURN(makePIAAshapes());
 
-    optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm
+    piaacmcopticalsystem.FOCMASKarray[0].mode = 1; // use 1-fpm
 
 
     /// ### Initialize search range and step
     range = 0.3;
     stepsize = range / 3.0;
-    paramref[0] =
-        piaacmc[0].fpmaskamptransm; // initialized in PIAACMCsimul_initpiaacmcconf
+    // initialized in PIAACMCsimul_initpiaacmcconf
+    paramref[0] = piaacmcopticaldesign.fpmaskamptransm;
     NBiter = 6;
 
 
     /// ### Scan parameter value
-    WRITE_FULLFILENAME(fnamelog, "%s/result_fpmt.log", piaacmcsimul_var.piaacmcconfdir);
+    WRITE_FULLFILENAME(fnamelog, "%s/result_fpmt.log", piaacmcparams.piaacmcconfdir);
     {
         FILE * fp = fopen(fnamelog, "w");
         fclose(fp);
@@ -122,10 +111,10 @@ errno_t exec_optimize_fpmtransmission()
     for(long iter = 0; iter < NBiter; iter++)
     {
         // starting point of march
-        piaacmc[0].fpmaskamptransm = paramref[0] - range;
+        piaacmcopticaldesign.fpmaskamptransm = paramref[0] - range;
 
         // store current value as best
-        parambest[0] = piaacmc[0].fpmaskamptransm;
+        parambest[0] = piaacmcopticaldesign.fpmaskamptransm;
 
         int loopOK = 1;
         double valbest = 1.0;
@@ -137,46 +126,40 @@ errno_t exec_optimize_fpmtransmission()
 
             printf("\n\n\n");
 
-            piaacmcsimul_var.FORCE_CREATE_fpmza =
+            piaacmcparams.FORCE_CREATE_fpmza =
                 1; // forces creation of new focal plane mask in the next two routines
 
             /// - Call PIAACMCsimul_initpiaacmcconf()
-            if(PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 0) != RETURN_SUCCESS)
-            {
-                FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
-            }
+            FUNC_CHECK_RETURN(init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 0));
 
             // compute on-axis PSF of all optical elements returning contrast in evaluation zone
-            // ************************* need to do all optsyst[0].NBelem?
+            // ************************* need to do all piaacmcopticalsystem.NBelem?
             /// - call PIAACMCsimul_computePSF() to evaluate design
-            {
-                errno_t fret = PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &val);
-                if( fret != RETURN_SUCCESS)
-                {
-                    FUNC_RETURN_FAILURE("Call to PIAACMCsimul_computePSF failed");
-                }
-            }
+            FUNC_CHECK_RETURN(
+                PIAACMCsimul_computePSF(
+                    0.0, 0.0, 0, piaacmcopticalsystem.NBelem, 0, 0, 0, 0, &val)
+            );
 
             if(val < valbest)
             {
                 // we have a better contrast!  Store it
-                parambest[0] = piaacmc[0].fpmaskamptransm;
+                parambest[0] = piaacmcopticaldesign.fpmaskamptransm;
                 valbest = val;
             }
 
             /// - write entry to output log file
             {
                 FILE * fp = fopen(fnamelog, "a");
-                fprintf(fp, " %+011.8lf", piaacmc[0].fpmaskamptransm);
+                fprintf(fp, " %+011.8lf", piaacmcopticaldesign.fpmaskamptransm);
                 fprintf(fp, " %12g  %8ld %12g %12g\n", val, iter, range, stepsize);
                 fclose(fp);
             }
 
             /// -  increment parameter
-            piaacmc[0].fpmaskamptransm += stepsize;
+            piaacmcopticaldesign.fpmaskamptransm += stepsize;
 
             // if we've reached the end of the range stop the loop
-            if(piaacmc[0].fpmaskamptransm > paramref[0] + range + 0.001 * stepsize)
+            if(piaacmcopticaldesign.fpmaskamptransm > paramref[0] + range + 0.001 * stepsize)
             {
                 loopOK = 0;
             }
@@ -201,22 +184,16 @@ errno_t exec_optimize_fpmtransmission()
         stepsize = range / 3.0;
     }
     // save final result
-    piaacmc[0].fpmaskamptransm = parambest[0];
+    piaacmcopticaldesign.fpmaskamptransm = parambest[0];
 
 // why? **************************
-    if(PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 0) != RETURN_SUCCESS)
-    {
-        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_initpiaacmcconf failed");
-    }
+    FUNC_CHECK_RETURN(init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 0));
 
     // save final result to disk
-    if(PIAACMCsimul_savepiaacmcconf(piaacmcsimul_var.piaacmcconfdir) != RETURN_SUCCESS)
-    {
-        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_savepiaacmcconf failed");
-    }
+    FUNC_CHECK_RETURN(PIAACMCsimul_savepiaacmcconf(piaacmcparams.piaacmcconfdir));
 
 
-    piaacmcsimul_var.FORCE_CREATE_fpmza = 0; // turning off to be good citizens
+    piaacmcparams.FORCE_CREATE_fpmza = 0; // turning off to be good citizens
 
     DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;

@@ -26,23 +26,12 @@
 
 #include "PIAACMCsimul_CA2propCubeInt.h"
 #include "PIAACMCsimul_computePSF.h"
-#include "PIAACMCsimul_init.h"
-#include "PIAACMCsimul_initpiaacmcconf.h"
+#include "init_piaacmcopticalsystem.h"
+#include "init_piaacmcopticaldesign.h"
 #include "PIAACMCsimul_loadsavepiaacmcconf.h"
 
 #include "PIAAshape/makePIAAshapes.h"
 #include "LyotStop/optimizeLyotStop.h"
-
-
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-extern OPTSYST *optsyst;
-
-extern OPTPIAACMCDESIGN *piaacmc;
-
-
-
-
 
 
 
@@ -153,9 +142,12 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     }
 
     /// ### Initialize as in mode 0
-    PIAACMCsimul_initpiaacmcconf(0, fpmradld, centobs0, centobs1, 0, 1);
-    makePIAAshapes(piaacmc);
-    optsyst[0].FOCMASKarray[0].mode = 1; // use 1-fpm
+    FUNC_CHECK_RETURN(
+        init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 1)
+    );
+
+    FUNC_CHECK_RETURN(makePIAAshapes());
+    piaacmcopticalsystem.FOCMASKarray[0].mode = 1; // use 1-fpm
 
 
 
@@ -183,25 +175,25 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     /// ### Identify post focal plane pupil plane (first pupil after focal plane mask)
 
     /// Provides reference complex amplitude plane for downstream analysis
-    FUNC_CHECK_RETURN(PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0));
+    FUNC_CHECK_RETURN(init_piaacmcopticalsystem(0.0, 0.0));
 
     printf("=========== %ld elements ======================================================\n",
-           optsyst[0].NBelem);
+           piaacmcopticalsystem.NBelem);
     // find the ID of the "post focal plane mask pupil" element
     long elem0 = 0;
-    for(long elem = 0; elem < optsyst[0].NBelem; elem++)
+    for(long elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
     {
-        if(strcmp("post focal plane mask pupil", optsyst[0].name[elem]) == 0)
+        if(strcmp("post focal plane mask pupil", piaacmcopticalsystem.name[elem]) == 0)
         {
             elem0 = elem;
             printf("post focal plane mask pupil = %ld\n", elem);
         }
         else
         {
-            printf("elem %ld : %s\n", elem, optsyst[0].name[elem]);
+            printf("elem %ld : %s\n", elem, piaacmcopticalsystem.name[elem]);
         }
     }
-    optsyst[0].keepMem[elem0] = 1; // keep it for future use
+    piaacmcopticalsystem.keepMem[elem0] = 1; // keep it for future use
 
 
 
@@ -216,7 +208,8 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     {
         double cval = 0.0;
         FUNC_CHECK_RETURN(
-            PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &cval)
+            PIAACMCsimul_computePSF(
+                0.0, 0.0, 0, piaacmcopticalsystem.NBelem, 0, 0, 0, 0, &cval)
         );
     }
 
@@ -232,8 +225,8 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     // args for the PIAACMCsimul_CA2propCubeInt function
 
     // set range of propagation
-    float zmin = piaacmc[0].LyotZmin;
-    float zmax = piaacmc[0].LyotZmax;
+    float zmin = piaacmcopticaldesign.LyotZmin;
+    float zmax = piaacmcopticaldesign.LyotZmax;
 
 
 
@@ -258,7 +251,7 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     /// load OAincohc if exist, maybe we've been here before
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/OAincohc.fits", piaacmcsimul_var.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname, "%s/OAincohc.fits", piaacmcparams.piaacmcconfdir);
         load_fits(fname, "OAincohc", 1, &IDc);
     }
 
@@ -296,7 +289,7 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
                             oaoffset * (1.0 + kr) / NBkr * cos( 2.0 * M_PI * k1 / NBincpt),
                             oaoffset * (1.0 + kr) / NBkr * sin(2.0 * M_PI * k1 / NBincpt),
                             0,
-                            optsyst[0].NBelem,
+                            piaacmcopticalsystem.NBelem,
                             0,
                             0,
                             0,
@@ -336,7 +329,7 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
 
         {   // save the final result
             char fname[STRINGMAXLEN_FULLFILENAME];
-            WRITE_FULLFILENAME(fname, "%s/OAincohc.fits", piaacmcsimul_var.piaacmcconfdir);
+            WRITE_FULLFILENAME(fname, "%s/OAincohc.fits", piaacmcparams.piaacmcconfdir);
             FUNC_CHECK_RETURN(save_fits("OAincohc", fname));
         }
     }
@@ -346,7 +339,9 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     /// ### Compute on-axis PSF 3D intensity to define light to reject
     {
         double cval = 0.0;
-        FUNC_CHECK_RETURN(PIAACMCsimul_computePSF(0.0, 0.0, 0, optsyst[0].NBelem, 0, 0, 0, 0, &cval));
+        FUNC_CHECK_RETURN(
+            PIAACMCsimul_computePSF(0.0, 0.0, 0, piaacmcopticalsystem.NBelem, 0, 0, 0, 0, &cval)
+        );
     }
     // propagate it into the optical system, with result in image named "iprop00"
 
@@ -365,10 +360,18 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     /// ### Optimize Lyot stops
 
     /// The actual Lyot stop shape and location optimization is done by PIAACMCsimul_optimizeLyotStop(), producing optimal Lyot stops in optLM*.fits
-    /// and position relative to elem0 in piaacmc[0].LyotStop_zpos
+    /// and position relative to elem0 in piaacmcopticaldesign.LyotStop_zpos
     FUNC_CHECK_RETURN(
-        optimizeLyotStop(fnamea, fnamep, "OAincohc", zmin, zmax, lstransm,
-                         NBpropstep, piaacmc[0].NBLyotStop, NULL)
+        optimizeLyotStop(
+            fnamea,
+            fnamep,
+            "OAincohc",
+            zmin,
+            zmax, lstransm,
+            NBpropstep,
+            piaacmcopticaldesign.NBLyotStop,
+            NULL
+        )
     );
 
     {
@@ -382,27 +385,27 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
         fprintf(fptest, "# \n");
         fprintf(fptest,
                 "# Lyot stop index   zmin   zmax    LyotStop_zpos    elemZpos[elem0]\n");
-        for(long ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
+        for(long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
         {
             fprintf(fptest, "%5ld  %f  %f     %f  %f\n", ls, zmin, zmax,
-                    piaacmc[0].LyotStop_zpos[ls], optsyst[0].elemZpos[elem0]);
+                    piaacmcopticaldesign.LyotStop_zpos[ls], piaacmcopticalsystem.elemZpos[elem0]);
         }
         fclose(fptest);
     }
 
     // convert Lyot stop position from relative to elem0 to absolute
-    for(long ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
+    for(long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
     {
-        piaacmc[0].LyotStop_zpos[ls] += optsyst[0].elemZpos[elem0];
+        piaacmcopticaldesign.LyotStop_zpos[ls] += piaacmcopticalsystem.elemZpos[elem0];
     }
 
     // and we're done!  save.
-    PIAACMCsimul_savepiaacmcconf(piaacmcsimul_var.piaacmcconfdir);
+    PIAACMCsimul_savepiaacmcconf(piaacmcparams.piaacmcconfdir);
     // copy to the final Lyot stop file for this mode
-    for(long ls = 0; ls < piaacmc[0].NBLyotStop; ls++)
+    for(long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
     {
         EXECUTE_SYSTEM_COMMAND("cp ./%s/optLM%02ld.fits ./%s/LyotStop%ld.fits",
-                               piaacmcsimul_var.piaacmcconfdir, ls, piaacmcsimul_var.piaacmcconfdir, ls);
+                               piaacmcparams.piaacmcconfdir, ls, piaacmcparams.piaacmcconfdir, ls);
     }
 
     DEBUG_TRACE_FEXIT();

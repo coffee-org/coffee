@@ -27,19 +27,10 @@
 #include "PIAACMCsimul.h"
 
 #include "PIAACMCsimul_achromFPMsol_eval.h"
-#include "PIAACMCsimul_init.h"
+#include "init_piaacmcopticalsystem.h"
 #include "PIAACMCsimul_loadsavepiaacmcconf.h"
 
 #include "PIAAshape/makePIAAshapes.h"
-
-
-
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-extern OPTSYST *optsyst;
-
-extern OPTPIAACMCDESIGN *piaacmc;
-
 
 
 
@@ -111,14 +102,9 @@ errno_t PIAACMCsimul_computePSF(
     (void) endelem;
 
 
-#ifdef PIAASIMUL_LOGFUNC1
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
-                                 "");
-#endif
-
 
     // size of one side of each image array
-    uint32_t size = piaacmc[0].size;
+    uint32_t size = piaacmcopticaldesign.size;
 
     // load an error if it exists
     imageID IDopderrC = image_ID("OPDerrC");
@@ -140,7 +126,7 @@ errno_t PIAACMCsimul_computePSF(
     }
 
     // focal plane plate scale in lambda/D per pixel
-    focscale = (2.0 * piaacmc[0].beamrad / piaacmc[0].pixscale) / piaacmc[0].size;
+    focscale = (2.0 * piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale) / piaacmcopticaldesign.size;
 
 
     /// ### Create scoring mask if it doesn't exist
@@ -154,7 +140,7 @@ errno_t PIAACMCsimul_computePSF(
             imageID IDsm;
             create_2Dimage_ID("scoringmask", size, size, &IDsm);
 
-            if(piaacmcsimul_var.SCORINGMASKTYPE == 0) // high density, wide
+            if(piaacmcparams.SCORINGMASKTYPE == 0) // high density, wide
             {
                 // draw an array of points, clip to desired subregions
                 for(uint32_t ii = 0; ii < size; ii++)
@@ -214,7 +200,7 @@ errno_t PIAACMCsimul_computePSF(
                         }
                     }
             }
-            if(piaacmcsimul_var.PIAACMC_save == 1)
+            if(piaacmcparams.PIAACMC_save == 1)
             {
                 // save a disgnostic image
 
@@ -223,8 +209,8 @@ errno_t PIAACMCsimul_computePSF(
                 WRITE_FULLFILENAME(
                     fname,
                     "%s/scoringmask%d.fits",
-                    piaacmcsimul_var.piaacmcconfdir,
-                    piaacmcsimul_var.SCORINGMASKTYPE
+                    piaacmcparams.piaacmcconfdir,
+                    piaacmcparams.SCORINGMASKTYPE
                 );
 
                 save_fits("scoringmask", fname);
@@ -235,7 +221,7 @@ errno_t PIAACMCsimul_computePSF(
             );
 
             // sums the image, giving the total number of pixels in the scoring mask
-            piaacmcsimul_var.SCORINGTOTAL = arith_image_total("scoringmask");
+            piaacmcparams.SCORINGTOTAL = arith_image_total("scoringmask");
 
             //exit(0);
 
@@ -246,21 +232,21 @@ errno_t PIAACMCsimul_computePSF(
 
 
 
-    /// ## Fast PSF computattion (if piaacmcsimul_var.computePSF_FAST_FPMresp = 1)
+    /// ## Fast PSF computattion (if piaacmcparams.computePSF_FAST_FPMresp = 1)
 
     /// @note Only possible if mode 11 has already been executed
-    if(piaacmcsimul_var.computePSF_FAST_FPMresp == 1)
+    if(piaacmcparams.computePSF_FAST_FPMresp == 1)
     {
         /// Compute the PSF as the complex amplitude for the evaluation points on the focal plane
         /// for a given FPM zone thickness based on the FPMresp array computed in mode 11
         PIAACMCsimul_achromFPMsol_eval(
-            piaacmcsimul_var.fpmresp_array,
-            piaacmcsimul_var.zonez_array,
-            piaacmcsimul_var.dphadz_array,
-            piaacmcsimul_var.outtmp_array,
-            piaacmcsimul_var.vsize,
-            data.image[piaacmc[0].zonezID].md[0].size[0],
-            optsyst[0].nblambda,
+            piaacmcparams.fpmresp_array,
+            piaacmcparams.zonez_array,
+            piaacmcparams.dphadz_array,
+            piaacmcparams.outtmp_array,
+            piaacmcparams.vsize,
+            data.image[piaacmcopticaldesign.zonezID].md[0].size[0],
+            piaacmcopticalsystem.nblambda,
             NULL
         );
 
@@ -278,40 +264,40 @@ errno_t PIAACMCsimul_computePSF(
             imageID ID = image_ID("imvect"); /// - Use \c imvect for storage if it exists, or create it
             if(ID == -1)
             {
-                create_2Dimage_ID("imvect", piaacmcsimul_var.vsize * optsyst[0].nblambda,
+                create_2Dimage_ID("imvect", piaacmcparams.vsize * piaacmcopticalsystem.nblambda,
                                   1, &ID);
             }
             /// - Write the result into \c imvect
             double value = 0.0;
             for(uint32_t ii = 0;
-                    ii < piaacmcsimul_var.vsize * optsyst[0].nblambda;
+                    ii < piaacmcparams.vsize * piaacmcopticalsystem.nblambda;
                     ii++) // for each wavelength
             {
-                data.image[ID].array.F[ii] = piaacmcsimul_var.outtmp_array[ii];
+                data.image[ID].array.F[ii] = piaacmcparams.outtmp_array[ii];
                 // square to give intensity
-                double tmpv = piaacmcsimul_var.outtmp_array[ii] * piaacmcsimul_var.outtmp_array[ii];
+                double tmpv = piaacmcparams.outtmp_array[ii] * piaacmcparams.outtmp_array[ii];
                 // total intensity = sum(intensity_i) = sum(Re_i^2 + Im_i^2)
                 value += tmpv;
             }
 
-            /// - Total flux in the output vector is stored in \c piaacmcsimul_var.PIAACMCSIMUL_VAL0 as total flux
-            piaacmcsimul_var.PIAACMCSIMUL_VAL0 = value;
+            /// - Total flux in the output vector is stored in \c piaacmcparams.PIAACMCSIMUL_VAL0 as total flux
+            piaacmcparams.PIAACMCSIMUL_VAL0 = value;
 
             /// set \c value to average value per area normalized to flux
             value = value / size / size /
-                    optsyst[0].flux[0]; // flux[0] is proportional to the number of lambda channels, so this normalization makes value independant of number of spectral channels
+                    piaacmcopticalsystem.flux[0]; // flux[0] is proportional to the number of lambda channels, so this normalization makes value independant of number of spectral channels
             // here value is the total light (averaged across spectral channels) in the measurement points, normalized to the input flux
             // actual average contrast, averaging over # of pixels and physical area
-            avContrast = value / (piaacmcsimul_var.SCORINGTOTAL * focscale * focscale);
+            avContrast = value / (piaacmcparams.SCORINGTOTAL * focscale * focscale);
 
 
-            //        printf("Peak constrast (rough estimate)= %g\n", peakcontrast/size/size/optsyst[0].flux[0]/focscale/focscale*3.0);
+            //        printf("Peak constrast (rough estimate)= %g\n", peakcontrast/size/size/piaacmcopticalsystem.flux[0]/focscale/focscale*3.0);
             //        printf("value1 = %g\n", value1);
-            //		printf("Total light in scoring field = %g  -> Average contrast = %g   (%g)\n", value, value/(arith_image_total("scoringmask")*focscale*focscale), value1/piaacmcsimul_var.CnormFactor/optsyst[0].nblambda);
+            //		printf("Total light in scoring field = %g  -> Average contrast = %g   (%g)\n", value, value/(arith_image_total("scoringmask")*focscale*focscale), value1/piaacmcparams.CnormFactor/piaacmcopticalsystem.nblambda);
         }
 
     }
-    else /// ## Full/Slow PSF computation (if piaacmcsimul_var.computePSF_FAST_FPMresp = 0)
+    else /// ## Full/Slow PSF computation (if piaacmcparams.computePSF_FAST_FPMresp = 0)
     {
         /// The PSF for an extended source is approximated as
         /// a collection of point sources.
@@ -355,35 +341,29 @@ errno_t PIAACMCsimul_computePSF(
             // initialize first point source, which sets optsyst
             if(extmode == 0)
             {
-                if( PIAACMCsimul_init(piaacmc, 0, xld, yld) != RETURN_SUCCESS)
-                {
-                    FUNC_RETURN_FAILURE("Call to function PIAACMCsimul_init failed");
-                }
+                FUNC_CHECK_RETURN(init_piaacmcopticalsystem(xld, yld));
             }
             else
             {
-                if(PIAACMCsimul_init(piaacmc, 0, xld + rad1, yld) != RETURN_SUCCESS)
-                {
-                    FUNC_RETURN_FAILURE("Call to function PIAACMCsimul_init failed");
-                }
+                FUNC_CHECK_RETURN(init_piaacmcopticalsystem(xld + rad1, yld));
             }
 
-            makePIAAshapes(piaacmc);
+            makePIAAshapes();
 
             // propagate it (optsyst is a global), output in psfc0 (complex amlitude)
             // and psfi0 (intensity)
             {
-                errno_t fret = OptSystProp_run(
-                                   optsyst,
-                                   0,
-                                   startelem, optsyst[0].NBelem,
-                                   piaacmcsimul_var.piaacmcconfdir,
-                                   0);
+                FUNC_CHECK_RETURN(
+                    OptSystProp_run(
+                        &piaacmcopticalsystem,
+                        0,
+                        startelem,
+                        piaacmcopticalsystem.NBelem,
+                        piaacmcparams.piaacmcconfdir,
+                        0)
+                );
 
-                if( fret != RETURN_SUCCESS)
-                {
-                    FUNC_RETURN_FAILURE("Call to OptSystProp_run failed");
-                }
+
             }
 
 
@@ -400,7 +380,7 @@ errno_t PIAACMCsimul_computePSF(
 
             // save the intensity of the first point
             copy_image_ID("psfi0", "psfi0ext", 0);
-            //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
+            //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcparams.piaacmcconfdir, imindex);
             //save_fits("psfi0", fname);
             imindex++;
 
@@ -411,22 +391,20 @@ errno_t PIAACMCsimul_computePSF(
                 double pha = 2.0 * M_PI / 3.0; // 1/3 around the circle
 
                 {
-                    errno_t fret = PIAACMCsimul_init(piaacmc, 0, xld + rad1 * cos(pha), yld + rad1 * sin(pha));
-                    if(fret != RETURN_SUCCESS)
-                    {
-                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
-                    }
+                    FUNC_CHECK_RETURN(
+                        init_piaacmcopticalsystem(xld + rad1 * cos(pha), yld + rad1 * sin(pha))
+                    );
                 }
 
-                FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
+                FUNC_CHECK_RETURN(makePIAAshapes());
 
                 {
                     errno_t fret = OptSystProp_run(
-                                       optsyst,
+                                       &piaacmcopticalsystem,
                                        0,
                                        startelem,
-                                       optsyst[0].NBelem,
-                                       piaacmcsimul_var.piaacmcconfdir,
+                                       piaacmcopticalsystem.NBelem,
+                                       piaacmcparams.piaacmcconfdir,
                                        0);
                     if( fret != RETURN_SUCCESS)
                     {
@@ -445,7 +423,7 @@ errno_t PIAACMCsimul_computePSF(
 
                 // add the intensity to build up PSF for extended source
                 arith_image_add_inplace("psfi0ext", "psfi0");
-                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
+                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcparams.piaacmcconfdir, imindex);
                 //save_fits("psfi0", fname);
                 imindex++;
 
@@ -453,28 +431,22 @@ errno_t PIAACMCsimul_computePSF(
                 // do the same for the third point
 
                 pha = 4.0 * M_PI / 3.0; // 2/3 around the circle
-                {
-                    errno_t fret = PIAACMCsimul_init(piaacmc, 0, xld + rad1 * cos(pha), yld + rad1 * sin(pha));
-                    if(fret != RETURN_SUCCESS)
-                    {
-                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
-                    }
-                }
+                FUNC_CHECK_RETURN(
+                    init_piaacmcopticalsystem(xld + rad1 * cos(pha), yld + rad1 * sin(pha))
+                );
 
-                FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
+                FUNC_CHECK_RETURN(makePIAAshapes());
 
                 {
-                    errno_t fret = OptSystProp_run(
-                                       optsyst,
-                                       0,
-                                       startelem,
-                                       optsyst[0].NBelem,
-                                       piaacmcsimul_var.piaacmcconfdir,
-                                       0);
-                    if( fret != RETURN_SUCCESS)
-                    {
-                        FUNC_RETURN_FAILURE("Call to OptSystProp_run failed");
-                    }
+                    FUNC_CHECK_RETURN(
+                        OptSystProp_run(
+                            &piaacmcopticalsystem,
+                            0,
+                            startelem,
+                            piaacmcopticalsystem.NBelem,
+                            piaacmcparams.piaacmcconfdir,
+                            0)
+                    );
                 }
 
                 {
@@ -487,7 +459,7 @@ errno_t PIAACMCsimul_computePSF(
 
                 // add the intensity to build up PSF for extended source
                 arith_image_add_inplace("psfi0ext", "psfi0");
-                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
+                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcparams.piaacmcconfdir, imindex);
                 //save_fits("psfi0", fname);
                 imindex++;
             }
@@ -497,24 +469,20 @@ errno_t PIAACMCsimul_computePSF(
             {
                 // keep going for the other three points if desired, on the outer radius
                 double pha = M_PI / 3.0;
-                {
-                    errno_t fret = PIAACMCsimul_init(piaacmc, 0, xld + rad2 * cos(pha), yld + rad2 * sin(pha));
-                    if( fret != RETURN_SUCCESS)
-                    {
-                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
-                    }
-                }
+                FUNC_CHECK_RETURN(
+                    init_piaacmcopticalsystem(xld + rad2 * cos(pha), yld + rad2 * sin(pha))
+                );
 
-                FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
+                FUNC_CHECK_RETURN(makePIAAshapes());
 
 
                 FUNC_CHECK_RETURN(
                     OptSystProp_run(
-                        optsyst,
+                        &piaacmcopticalsystem,
                         0,
                         startelem,
-                        optsyst[0].NBelem,
-                        piaacmcsimul_var.piaacmcconfdir,
+                        piaacmcopticalsystem.NBelem,
+                        piaacmcparams.piaacmcconfdir,
                         0)
                 );
 
@@ -527,30 +495,26 @@ errno_t PIAACMCsimul_computePSF(
                 }
 
                 arith_image_add_inplace("psfi0ext", "psfi0");
-                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
+                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcparams.piaacmcconfdir, imindex);
                 //save_fits("psfi0", fname);
                 imindex++;
 
 
 
                 pha = 2.0 * M_PI / 3.0 + M_PI / 3.0;
-                {
-                    errno_t fret = PIAACMCsimul_init(piaacmc, 0, xld + rad2 * cos(pha), yld + rad2 * sin(pha));
-                    if( fret != RETURN_SUCCESS)
-                    {
-                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
-                    }
-                }
+                FUNC_CHECK_RETURN(
+                    init_piaacmcopticalsystem(xld + rad2 * cos(pha), yld + rad2 * sin(pha))
+                );
 
-                FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
+                FUNC_CHECK_RETURN(makePIAAshapes());
 
                 FUNC_CHECK_RETURN(
                     OptSystProp_run(
-                        optsyst,
+                        &piaacmcopticalsystem,
                         0,
                         startelem,
-                        optsyst[0].NBelem,
-                        piaacmcsimul_var.piaacmcconfdir,
+                        piaacmcopticalsystem.NBelem,
+                        piaacmcparams.piaacmcconfdir,
                         0)
                 );
 
@@ -563,30 +527,27 @@ errno_t PIAACMCsimul_computePSF(
                 }
 
                 arith_image_add_inplace("psfi0ext", "psfi0");
-                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
+                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcparams.piaacmcconfdir, imindex);
                 //save_fits("psfi0", fname);
                 imindex++;
 
 
                 pha = 4.0 * M_PI / 3.0 + M_PI / 3.0;
 
-                {
-                    errno_t fret = PIAACMCsimul_init(piaacmc, 0, xld + rad2 * cos(pha), yld + rad2 * sin(pha));
-                    if( fret != RETURN_SUCCESS)
-                    {
-                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
-                    }
-                }
+                FUNC_CHECK_RETURN(
+                    init_piaacmcopticalsystem(xld + rad2 * cos(pha), yld + rad2 * sin(pha))
+                );
 
-                FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
+
+                FUNC_CHECK_RETURN(makePIAAshapes());
 
                 FUNC_CHECK_RETURN(
                     OptSystProp_run(
-                        optsyst,
+                        &piaacmcopticalsystem,
                         0,
                         startelem,
-                        optsyst[0].NBelem,
-                        piaacmcsimul_var.piaacmcconfdir,
+                        piaacmcopticalsystem.NBelem,
+                        piaacmcparams.piaacmcconfdir,
                         0)
                 );
 
@@ -599,7 +560,7 @@ errno_t PIAACMCsimul_computePSF(
                 }
 
                 arith_image_add_inplace("psfi0ext", "psfi0");
-                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex);
+                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcparams.piaacmcconfdir, imindex);
                 //save_fits("psfi0", fname);
                 imindex++;
 
@@ -618,7 +579,9 @@ errno_t PIAACMCsimul_computePSF(
             for(long OPDmode = 0; OPDmode < nbOPDerr; OPDmode++)
             {
                 imageID IDopderr;
-                create_2Dimage_ID("opderr", size, size, &IDopderr);
+                FUNC_CHECK_RETURN(
+                    create_2Dimage_ID("opderr", size, size, &IDopderr)
+                );
 
                 // "opderr" is a standard name read by PIAACMCsimul_init
                 for(uint64_t ii = 0; ii < size * size; ii++)
@@ -627,23 +590,19 @@ errno_t PIAACMCsimul_computePSF(
                                                        OPDmode + ii];
                 }
 
-                {
-                    errno_t fret = PIAACMCsimul_init(piaacmc, 0, 0.0, 0.0); // add error to the data
-                    if( fret != RETURN_SUCCESS)
-                    {
-                        FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
-                    }
-                }
+                FUNC_CHECK_RETURN(
+                    init_piaacmcopticalsystem(0.0, 0.0)
+                ); // add error to the data
 
-                FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
+                FUNC_CHECK_RETURN(makePIAAshapes());
 
                 FUNC_CHECK_RETURN(
                     OptSystProp_run(
-                        optsyst,
+                        &piaacmcopticalsystem,
                         0,
                         startelem,
-                        optsyst[0].NBelem,
-                        piaacmcsimul_var.piaacmcconfdir,
+                        piaacmcopticalsystem.NBelem,
+                        piaacmcparams.piaacmcconfdir,
                         0)
                 );
 
@@ -656,7 +615,7 @@ errno_t PIAACMCsimul_computePSF(
                 }
 
                 arith_image_add_inplace("psfi0ext", "psfi0");
-                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcsimul_var.piaacmcconfdir, imindex); //TEST
+                //sprintf(fname, "%s/psfi0_pt%03ld.fits", piaacmcparams.piaacmcconfdir, imindex); //TEST
                 //save_fits("psfi0", fname); //TEST
                 delete_image_ID("opderr", DELETE_IMAGE_ERRMODE_WARNING);
 
@@ -676,10 +635,10 @@ errno_t PIAACMCsimul_computePSF(
                 WRITE_FULLFILENAME(
                     fname,
                     "%s/psfi0_exsrc%03d_sm%d.%s.fits",
-                    piaacmcsimul_var.piaacmcconfdir,
+                    piaacmcparams.piaacmcconfdir,
                     sourcesize,
-                    piaacmcsimul_var.SCORINGMASKTYPE,
-                    piaacmcsimul_var.fnamedescr
+                    piaacmcparams.SCORINGMASKTYPE,
+                    piaacmcparams.fnamedescr
                 );
 
                 save_fits("psfi0ext", fname);
@@ -703,7 +662,7 @@ errno_t PIAACMCsimul_computePSF(
 
                 {
                     long offset = nbelem /
-                                  piaacmc[0].nblambda; // number of pixels per lambda x2 (re, im)
+                                  piaacmcopticaldesign.nblambda; // number of pixels per lambda x2 (re, im)
                     printf("offset = %ld\n", offset);
 
                     // number of pixels per lambda x 2 times the number of PSFs
@@ -712,7 +671,7 @@ errno_t PIAACMCsimul_computePSF(
 
                     // make an imvect for each lambda
                     imageID ID;
-                    create_2Dimage_ID("imvect", offset1, piaacmc[0].nblambda, &ID);
+                    create_2Dimage_ID("imvect", offset1, piaacmcopticaldesign.nblambda, &ID);
 
 
                     // fill in with each imvectp* created above
@@ -721,7 +680,7 @@ errno_t PIAACMCsimul_computePSF(
                         char imname[STRINGMAXLEN_IMGNAME];
                         WRITE_IMAGENAME(imname, "imvectp%02ld", imindex);
                         imageID ID1 = image_ID(imname);
-                        for(long kl = 0; kl < piaacmc[0].nblambda; kl++)
+                        for(long kl = 0; kl < piaacmcopticaldesign.nblambda; kl++)
                             for(long ii = 0; ii < offset; ii++)
                             {
                                 data.image[ID].array.F[kl * offset1 + imindex * offset + ii] =
@@ -752,10 +711,10 @@ errno_t PIAACMCsimul_computePSF(
             }
 
 
-            for(long elem = 0; elem < optsyst[0].NBelem; elem++)
+            for(long elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
             {
-                printf("    FLUX %3ld   %12.4lf %8.6lf\n", elem, optsyst[0].flux[elem],
-                       optsyst[0].flux[elem] / optsyst[0].flux[0]);
+                printf("    FLUX %3ld   %12.4lf %8.6lf\n", elem, piaacmcopticalsystem.flux[elem],
+                       piaacmcopticalsystem.flux[elem] / piaacmcopticalsystem.flux[0]);
             }
 
 
@@ -768,67 +727,67 @@ errno_t PIAACMCsimul_computePSF(
                 WRITE_FULLFILENAME(
                     fname,
                     "%s/flux_exsrc%03d_sm%d.%s.txt",
-                    piaacmcsimul_var.piaacmcconfdir,
+                    piaacmcparams.piaacmcconfdir,
                     sourcesize,
-                    piaacmcsimul_var.SCORINGMASKTYPE,
-                    piaacmcsimul_var.fnamedescr
+                    piaacmcparams.SCORINGMASKTYPE,
+                    piaacmcparams.fnamedescr
                 );
 
                 FILE * fpflux = fopen(fname, "w");
-                for(long elem = 0; elem < optsyst[0].NBelem; elem++)
+                for(long elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
                 {
-                    fprintf(fpflux, "%18.16lf %18.16lf  %d\n", optsyst[0].flux[elem],
-                            optsyst[0].flux[elem] / optsyst[0].flux[0], optsyst[0].nblambda);
+                    fprintf(fpflux, "%18.16lf %18.16lf  %d\n", piaacmcopticalsystem.flux[elem],
+                            piaacmcopticalsystem.flux[elem] / piaacmcopticalsystem.flux[0], piaacmcopticalsystem.nblambda);
                 }
-                fprintf(fpflux, "W0  %d\n", optsyst[0].nblambda);
+                fprintf(fpflux, "W0  %d\n", piaacmcopticalsystem.nblambda);
                 fclose(fpflux);
 
                 EXECUTE_SYSTEM_COMMAND("cp %s %s/tmp_flux.txt", fname,
-                                       piaacmcsimul_var.piaacmcconfdir);
+                                       piaacmcparams.piaacmcconfdir);
             }
 
 
 
             // compute average contrast
-            value = value / size / size / optsyst[0].flux[0];
-            avContrast = value / (piaacmcsimul_var.SCORINGTOTAL * focscale * focscale);
+            value = value / size / size / piaacmcopticalsystem.flux[0];
+            avContrast = value / (piaacmcparams.SCORINGTOTAL * focscale * focscale);
 
-            //           piaacmcsimul_var.CnormFactor = size*size*optsyst[0].flux[0]*arith_image_total("scoringmask")*focscale*focscale; // /optsyst[0].nblambda;
-            piaacmcsimul_var.CnormFactor = focscale * focscale * size * size *
-                                           optsyst[0].flux[0] / optsyst[0].nblambda;
+            //           piaacmcparams.CnormFactor = size*size*piaacmcopticalsystem.flux[0]*arith_image_total("scoringmask")*focscale*focscale; // /piaacmcopticalsystem.nblambda;
+            piaacmcparams.CnormFactor = focscale * focscale * size * size *
+                                        piaacmcopticalsystem.flux[0] / piaacmcopticalsystem.nblambda;
 
-            if(piaacmcsimul_var.WRITE_OK == 1)
+            if(piaacmcparams.WRITE_OK == 1)
             {
                 char fname[STRINGMAXLEN_FULLFILENAME];
                 WRITE_FULLFILENAME(
                     fname,
                     "%s/CnormFactor.txt",
-                    piaacmcsimul_var.piaacmcconfdir
+                    piaacmcparams.piaacmcconfdir
                 );
 
                 FILE * fp = fopen(fname, "w");
                 fprintf(fp, "# Written by function PIAACMCsimul_computePSF()\n");
                 fprintf(fp,
-                        "# Cnormfactor = focscale*focscale*size*size*optsyst[0].flux[0]/optsyst[0].nblambda\n");
+                        "# Cnormfactor = focscale*focscale*size*size*piaacmcopticalsystem.flux[0]/piaacmcopticalsystem.nblambda\n");
                 fprintf(fp, "# 0    focscale  size  flux[0]  nblambda\n");
                 fprintf(fp, "\n");
 
-                fprintf(fp, "%g\n", piaacmcsimul_var.CnormFactor);
-                fprintf(fp, "0      %g %ul %g %d\n", focscale, size, optsyst[0].flux[0],
-                        optsyst[0].nblambda);
+                fprintf(fp, "%g\n", piaacmcparams.CnormFactor);
+                fprintf(fp, "0      %g %ul %g %d\n", focscale, size, piaacmcopticalsystem.flux[0],
+                        piaacmcopticalsystem.nblambda);
                 fclose(fp);
             }
 
             printf("COMPUTING RESOLVED SOURCE PSF\n");
-            printf("SCORINGTOTAL = %f  %f\n", piaacmcsimul_var.SCORINGTOTAL,
+            printf("SCORINGTOTAL = %f  %f\n", piaacmcparams.SCORINGTOTAL,
                    arith_image_total("scoringmask"));
             printf("Peak constrast (rough estimate)= %g\n",
-                   peakcontrast / size / size / optsyst[0].flux[0] / focscale / focscale /
+                   peakcontrast / size / size / piaacmcopticalsystem.flux[0] / focscale / focscale /
                    normcoeff / normcoeff);
 
             avContrast = value / (arith_image_total("scoringmask") * focscale * focscale);
             printf("Total light in scoring field = %g, peak PSF = %g   -> Average contrast = %g\n",
-                   value, piaacmc[0].peakPSF, avContrast);
+                   value, piaacmcopticaldesign.peakPSF, avContrast);
 
 
             if(outsave == 1)
@@ -839,10 +798,10 @@ errno_t PIAACMCsimul_computePSF(
                 WRITE_FULLFILENAME(
                     fname,
                     "%s/contrast_exsrc%03d_sm%d.%s.txt",
-                    piaacmcsimul_var.piaacmcconfdir,
+                    piaacmcparams.piaacmcconfdir,
                     sourcesize,
-                    piaacmcsimul_var.SCORINGMASKTYPE,
-                    piaacmcsimul_var.fnamedescr
+                    piaacmcparams.SCORINGMASKTYPE,
+                    piaacmcparams.fnamedescr
                 );
 
                 FILE * fp = fopen(fname, "w");
@@ -862,17 +821,14 @@ errno_t PIAACMCsimul_computePSF(
             // initialize first point source, which sets optsyst
 
             /// calls PIAACMCsimul_init()
-            {
-                errno_t fret = PIAACMCsimul_init(piaacmc, 0, xld, yld);
-                if( fret != RETURN_SUCCESS)
-                {
-                    FUNC_RETURN_FAILURE("Call to PIAACMCsimul_init failed");
-                }
-            }
+            FUNC_CHECK_RETURN(
+                init_piaacmcopticalsystem(xld, yld)
+            );
+
 
             /// calls PIAACMCsimul_makePIAAshapes()
 
-            FUNC_CHECK_RETURN(makePIAAshapes(piaacmc));
+            FUNC_CHECK_RETURN(makePIAAshapes());
 
 
 
@@ -883,11 +839,11 @@ errno_t PIAACMCsimul_computePSF(
 
             FUNC_CHECK_RETURN(
                 OptSystProp_run(
-                    optsyst,
+                    &piaacmcopticalsystem,
                     0,
                     startelem,
-                    optsyst[0].NBelem,
-                    piaacmcsimul_var.piaacmcconfdir,
+                    piaacmcopticalsystem.NBelem,
+                    piaacmcparams.piaacmcconfdir,
                     0)
             );
 
@@ -898,12 +854,12 @@ errno_t PIAACMCsimul_computePSF(
                 WRITE_FULLFILENAME(
                     fname,
                     "%s/psfi0_ptsrc_sm%d.%s.fits",
-                    piaacmcsimul_var.piaacmcconfdir,
-                    piaacmcsimul_var.SCORINGMASKTYPE,
-                    piaacmcsimul_var.fnamedescr
+                    piaacmcparams.piaacmcconfdir,
+                    piaacmcparams.SCORINGMASKTYPE,
+                    piaacmcparams.fnamedescr
                 );
 
-                save_fits("psfi0", fname);
+                FUNC_CHECK_RETURN(save_fits("psfi0", fname));
             }
 
 
@@ -958,12 +914,12 @@ errno_t PIAACMCsimul_computePSF(
 
 
                 // report the contrast
-                for(long elem = 0; elem < optsyst[0].NBelem; elem++)
+                for(long elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
                 {
-                    printf("    FLUX %3ld   %12.4lf %8.6lf\n", elem, optsyst[0].flux[elem],
-                           optsyst[0].flux[elem] / optsyst[0].flux[0]);
+                    printf("    FLUX %3ld   %12.4lf %8.6lf\n", elem, piaacmcopticalsystem.flux[elem],
+                           piaacmcopticalsystem.flux[elem] / piaacmcopticalsystem.flux[0]);
                 }
-//            value = value/size/size/optsyst[0].flux[0];
+//            value = value/size/size/piaacmcopticalsystem.flux[0];
 
                 if(outsave == 1)
                 {
@@ -973,44 +929,44 @@ errno_t PIAACMCsimul_computePSF(
                     WRITE_FULLFILENAME(
                         fname,
                         "%s/flux_ptsrc_sm%d.%s.txt",
-                        piaacmcsimul_var.piaacmcconfdir,
-                        piaacmcsimul_var.SCORINGMASKTYPE,
-                        piaacmcsimul_var.fnamedescr
+                        piaacmcparams.piaacmcconfdir,
+                        piaacmcparams.SCORINGMASKTYPE,
+                        piaacmcparams.fnamedescr
                     );
 
                     FILE * fpflux = fopen(fname, "w");
-                    for(long elem = 0; elem < optsyst[0].NBelem; elem++)
+                    for(long elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
                     {
-                        fprintf(fpflux, "%18.16lf %18.16lf  %d\n", optsyst[0].flux[elem],
-                                optsyst[0].flux[elem] / optsyst[0].flux[0], optsyst[0].nblambda);
+                        fprintf(fpflux, "%18.16lf %18.16lf  %d\n", piaacmcopticalsystem.flux[elem],
+                                piaacmcopticalsystem.flux[elem] / piaacmcopticalsystem.flux[0], piaacmcopticalsystem.nblambda);
                     }
                     fprintf(fpflux, "W1\n");
                     fclose(fpflux);
 
                     EXECUTE_SYSTEM_COMMAND("cp %s %s/tmp_flux.txt", fname,
-                                           piaacmcsimul_var.piaacmcconfdir);
+                                           piaacmcparams.piaacmcconfdir);
 
                 }
 
 
 
-                //         piaacmcsimul_var.CnormFactor = size*size*optsyst[0].flux[0]*arith_image_total("scoringmask")*focscale*focscale; // /optsyst[0].nblambda;
-                piaacmcsimul_var.CnormFactor = focscale * focscale * size * size *
-                                               optsyst[0].flux[0] / optsyst[0].nblambda;
+                //         piaacmcparams.CnormFactor = size*size*piaacmcopticalsystem.flux[0]*arith_image_total("scoringmask")*focscale*focscale; // /piaacmcopticalsystem.nblambda;
+                piaacmcparams.CnormFactor = focscale * focscale * size * size *
+                                            piaacmcopticalsystem.flux[0] / piaacmcopticalsystem.nblambda;
 
                 {
                     char fname[STRINGMAXLEN_FULLFILENAME];
-                    WRITE_FULLFILENAME(fname, "%s/CnormFactor.txt", piaacmcsimul_var.piaacmcconfdir);
+                    WRITE_FULLFILENAME(fname, "%s/CnormFactor.txt", piaacmcparams.piaacmcconfdir);
 
                     FILE * fp = fopen(fname, "w");
                     fprintf(fp, "# Written by function PIAACMCsimul_computePSF()\n");
                     fprintf(fp,
-                            "# Cnormfactor = focscale*focscale*size*size*optsyst[0].flux[0]/optsyst[0].nblambda\n");
+                            "# Cnormfactor = focscale*focscale*size*size*piaacmcopticalsystem.flux[0]/piaacmcopticalsystem.nblambda\n");
                     fprintf(fp, "# 1    focscale  size  flux[0]  nblambda\n");
                     fprintf(fp, "\n");
-                    fprintf(fp, "%g\n", piaacmcsimul_var.CnormFactor);
-                    fprintf(fp, "1      %g %ul %g %d\n", focscale, size, optsyst[0].flux[0],
-                            optsyst[0].nblambda);
+                    fprintf(fp, "%g\n", piaacmcparams.CnormFactor);
+                    fprintf(fp, "1      %g %ul %g %d\n", focscale, size, piaacmcopticalsystem.flux[0],
+                            piaacmcopticalsystem.nblambda);
                     fclose(fp);
                 }
                 // here we're essentially done!
@@ -1018,54 +974,54 @@ errno_t PIAACMCsimul_computePSF(
 
                 printf("COMPUTING UNRESOLVED SOURCE PSF -*- [%f x %f]\n", xld, yld);
                 printf("SCORINGTOTAL = %f  %f\n",
-                       piaacmcsimul_var.SCORINGTOTAL,
+                       piaacmcparams.SCORINGTOTAL,
                        arith_image_total("scoringmask"));
 
                 if((variable_ID("PIAACMC_NOFPM")) != -1)
                 {
                     imageID ID = image_ID("psfc0");
-                    piaacmc[0].peakPSF = 0.0;
+                    piaacmcopticaldesign.peakPSF = 0.0;
                     for(uint64_t ii = 0; ii < size * size; ii++)
                     {
                         double val = data.image[ID].array.CF[ii].re * data.image[ID].array.CF[ii].re +
                                      data.image[ID].array.CF[ii].im * data.image[ID].array.CF[ii].im;
-                        if(val > piaacmc[0].peakPSF)
+                        if(val > piaacmcopticaldesign.peakPSF)
                         {
-                            piaacmc[0].peakPSF = val;
+                            piaacmcopticaldesign.peakPSF = val;
                         }
                     }
 
                     FILE * fp = fopen("conf/conf_peakPSF.txt", "w");
-                    fprintf(fp, "%g\n", piaacmc[0].peakPSF);
+                    fprintf(fp, "%g\n", piaacmcopticaldesign.peakPSF);
                     fclose(fp);
                 }
 
 
-                if(piaacmc[0].peakPSF < 1.0)
+                if(piaacmcopticaldesign.peakPSF < 1.0)
                 {
                     printf("Peak constrast (rough estimate)= %g -> %g\n", peakcontrast,
-                           peakcontrast / (optsyst[0].flux[0]*optsyst[0].flux[0]));
-                    printf("optsyst[0].flux[0]  = %g\n", optsyst[0].flux[0]);
-                    printf("SCORINGMASKTYPE = %d\n", piaacmcsimul_var.SCORINGMASKTYPE);
-                    avContrast = value / (optsyst[0].flux[0] * optsyst[0].flux[0]) /
-                                 piaacmcsimul_var.SCORINGTOTAL;
+                           peakcontrast / (piaacmcopticalsystem.flux[0]*piaacmcopticalsystem.flux[0]));
+                    printf("piaacmcopticalsystem.flux[0]  = %g\n", piaacmcopticalsystem.flux[0]);
+                    printf("SCORINGMASKTYPE = %d\n", piaacmcparams.SCORINGMASKTYPE);
+                    avContrast = value / (piaacmcopticalsystem.flux[0] * piaacmcopticalsystem.flux[0]) /
+                                 piaacmcparams.SCORINGTOTAL;
                     printf("[0] Total light in scoring field = %g, peak PSF = %g, SCOTINGTOTAL = %g   -> Average contrast = %g\n",
-                           value, piaacmc[0].peakPSF,  piaacmcsimul_var.SCORINGTOTAL, avContrast);
+                           value, piaacmcopticaldesign.peakPSF,  piaacmcparams.SCORINGTOTAL, avContrast);
                 }
                 else
                 {
                     printf("Peak constrast = %g -> %g\n", peakcontrast,
-                           peakcontrast / piaacmc[0].peakPSF);
-                    printf("SCORINGMASKTYPE = %d\n", piaacmcsimul_var.SCORINGMASKTYPE);
-                    avContrast = value / piaacmc[0].peakPSF / piaacmcsimul_var.SCORINGTOTAL;
+                           peakcontrast / piaacmcopticaldesign.peakPSF);
+                    printf("SCORINGMASKTYPE = %d\n", piaacmcparams.SCORINGMASKTYPE);
+                    avContrast = value / piaacmcopticaldesign.peakPSF / piaacmcparams.SCORINGTOTAL;
                     printf("[1] Total light in scoring field = %g, peak PSF = %g, SCOTINGTOTAL = %g  -> Average contrast = %g\n",
-                           value, piaacmc[0].peakPSF, piaacmcsimul_var.SCORINGTOTAL, avContrast);
+                           value, piaacmcopticaldesign.peakPSF, piaacmcparams.SCORINGTOTAL, avContrast);
 
                     FILE * fp;
                     if((fp = fopen("PSFcontrastval.txt", "w")) != NULL)
                     {
-                        fprintf(fp, "%g %g\n", peakcontrast / piaacmc[0].peakPSF,
-                                value / piaacmc[0].peakPSF / piaacmcsimul_var.SCORINGTOTAL);
+                        fprintf(fp, "%g %g\n", peakcontrast / piaacmcopticaldesign.peakPSF,
+                                value / piaacmcopticaldesign.peakPSF / piaacmcparams.SCORINGTOTAL);
                         fclose(fp);
                     }
                 }
@@ -1077,9 +1033,9 @@ errno_t PIAACMCsimul_computePSF(
                     WRITE_FULLFILENAME(
                         fname,
                         "%s/contrast_ptsrc_sm%d.%s.txt",
-                        piaacmcsimul_var.piaacmcconfdir,
-                        piaacmcsimul_var.SCORINGMASKTYPE,
-                        piaacmcsimul_var.fnamedescr
+                        piaacmcparams.piaacmcconfdir,
+                        piaacmcparams.SCORINGMASKTYPE,
+                        piaacmcparams.fnamedescr
                     );
 
                     printf("saving contrast value [%g] -> %s\n", avContrast, fname);

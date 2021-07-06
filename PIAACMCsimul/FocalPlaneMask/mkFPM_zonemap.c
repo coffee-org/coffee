@@ -21,16 +21,6 @@
 
 
 
-
-
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-extern OPTSYST *optsyst;
-
-extern OPTPIAACMCDESIGN *piaacmc;
-
-
-
 /**
  * @param[out]  IDname  Name of output image
  */
@@ -65,10 +55,6 @@ errno_t mkFPM_zonemap(
     imageID ID1;
 
 
-#ifdef PIAASIMUL_LOGFUNC0
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__,
-                                 "");
-#endif
 
     printf("function PIAACMCsimul_mkFPM_zonemap\n");
     fflush(stdout);
@@ -79,31 +65,31 @@ errno_t mkFPM_zonemap(
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
-    sizearray[0] = piaacmc[0].fpmarraysize;
-    sizearray[1] = piaacmc[0].fpmarraysize;
+    sizearray[0] = piaacmcopticaldesign.fpmarraysize;
+    sizearray[1] = piaacmcopticaldesign.fpmarraysize;
     imageID ID;
     create_image_ID(IDname, 2, sizearray, _DATATYPE_UINT16, 0, 0, 0, &ID);
     free(sizearray);
 
-    nbsector = (uint_fast32_t *) malloc(sizeof(uint_fast32_t) * piaacmc[0].NBrings);
+    nbsector = (uint_fast32_t *) malloc(sizeof(uint_fast32_t) * piaacmcopticaldesign.NBrings);
     if(nbsector == NULL) {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
     nbsectorcumul = (uint_fast32_t *) malloc(sizeof(uint_fast32_t) *
-                    piaacmc[0].NBrings);
+                    piaacmcopticaldesign.NBrings);
     if(nbsectorcumul == NULL) {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    switch(piaacmcsimul_var.PIAACMC_FPMsectors)
+    switch(piaacmcparams.PIAACMC_FPMsectors)
     {
 
     case 0: // rings
         nbsectorcumul[0] = 1;
-        for(long ring = 1; ring < piaacmc[0].NBrings; ring++)
+        for(long ring = 1; ring < piaacmcopticaldesign.NBrings; ring++)
         {
             nbsectorcumul[ring] = nbsectorcumul[ring - 1] + 1;
         }
@@ -113,9 +99,9 @@ errno_t mkFPM_zonemap(
         WRITE_FULLFILENAME(
             fname,
             "%s/fpm_zonescoord_%d_%03ld.txt",
-            piaacmcsimul_var.piaacmcconfdir,
-            piaacmcsimul_var.PIAACMC_FPMsectors,
-            piaacmc[0].NBrings
+            piaacmcparams.piaacmcconfdir,
+            piaacmcparams.PIAACMC_FPMsectors,
+            piaacmcopticaldesign.NBrings
         );
         fp = fopen(fname, "w");
         //NBzones = 0;
@@ -123,7 +109,7 @@ errno_t mkFPM_zonemap(
         fprintf(fp, "0 0\n");
         nbsector[0] = 1;
         nbsectorcumul[0] = 1;
-        for(long ring = 1; ring < piaacmc[0].NBrings; ring++)
+        for(long ring = 1; ring < piaacmcopticaldesign.NBrings; ring++)
         {
 
             nbsector[ring] = 2 * (ring + 1);
@@ -136,7 +122,7 @@ errno_t mkFPM_zonemap(
         }
 
         fclose(fp);
-        for(long ring = 0; ring < piaacmc[0].NBrings; ring++)
+        for(long ring = 0; ring < piaacmcopticaldesign.NBrings; ring++)
         {
             printf("ring %ld : %ld %ld\n", ring, nbsector[ring], nbsectorcumul[ring]);
         }
@@ -146,9 +132,9 @@ errno_t mkFPM_zonemap(
         WRITE_FULLFILENAME(
             fname,
             "%s/fpm_zonescoord_%d_%03ld.txt",
-            piaacmcsimul_var.piaacmcconfdir,
-            piaacmcsimul_var.PIAACMC_FPMsectors,
-            piaacmc[0].NBrings
+            piaacmcparams.piaacmcconfdir,
+            piaacmcparams.PIAACMC_FPMsectors,
+            piaacmcopticaldesign.NBrings
         );
         fp = fopen(fname, "w");
         fprintf(fp, "# focal plane mask zones geometry\n");
@@ -162,22 +148,22 @@ errno_t mkFPM_zonemap(
         nbsector[0] = 1;
         nbsector[0] = 1;
         nbsectorcumul[0] = 1;
-        for(long ring = 1; ring < piaacmc[0].NBrings; ring++)
+        for(long ring = 1; ring < piaacmcopticaldesign.NBrings; ring++)
         {
             nbsector[ring] = 0;
             nbsectorcumul[ring] = 0;
         }
         hindex = 0;
         // hegagon side = s = ring unit
-        long ii1max = (long)(piaacmc[0].NBrings / 3 + 2);
-        long jj1max = (long)(piaacmc[0].NBrings / sqrt(3.0) + 2);
+        long ii1max = (long)(piaacmcopticaldesign.NBrings / 3 + 2);
+        long jj1max = (long)(piaacmcopticaldesign.NBrings / sqrt(3.0) + 2);
         for(long ii1 = -ii1max; ii1 < ii1max; ii1++)
             for(long jj1 = -jj1max; jj1 < jj1max; jj1++)
             {
                 double hx = hexstep * ii1 * 3;
                 double hy = hexstep * sqrt(3.0) * jj1;
                 long ring = (long) sqrt(hx * hx + hy * hy);
-                if(ring < piaacmc[0].NBrings)
+                if(ring < piaacmcopticaldesign.NBrings)
                 {
                     nbsector[ring] ++;
                     hex_x[hindex] = hx;
@@ -190,7 +176,7 @@ errno_t mkFPM_zonemap(
                 hx += hexstep * 1.5;
                 hy += hexstep * sqrt(3.0) / 2.0;
                 ring = (long) sqrt(hx * hx + hy * hy);
-                if(ring < piaacmc[0].NBrings)
+                if(ring < piaacmcopticaldesign.NBrings)
                 {
                     nbsector[ring] ++;
                     hex_x[hindex] = hx;
@@ -203,7 +189,7 @@ errno_t mkFPM_zonemap(
 
         fprintf(fp, "%5ld %5ld  %11.6f %11.6f\n", (long) 0, (long) 0, 0.0, 0.0);
         hcnt = 1;
-        for(long ring = 1; ring < piaacmc[0].NBrings; ring++)
+        for(long ring = 1; ring < piaacmcopticaldesign.NBrings; ring++)
         {
             for(hindex = 0; hindex < hindexMax; hindex++)
                 if(hex_ring[hindex] == ring)
@@ -219,7 +205,7 @@ errno_t mkFPM_zonemap(
             }
         }
         fclose(fp);
-        for(long ring = 0; ring < piaacmc[0].NBrings; ring++)
+        for(long ring = 0; ring < piaacmcopticaldesign.NBrings; ring++)
         {
             printf("ring %ld : %ld %ld\n", ring, nbsector[ring], nbsectorcumul[ring]);
         }
@@ -227,16 +213,16 @@ errno_t mkFPM_zonemap(
 
     default:
         printf("ERROR: FPMsector mode (%d) not recognized\n",
-               piaacmcsimul_var.PIAACMC_FPMsectors);
+               piaacmcparams.PIAACMC_FPMsectors);
         exit(0);
         break;
     }
 
 
 
-    if(piaacmc[0].NBringCentCone > 0)
+    if(piaacmcopticaldesign.NBringCentCone > 0)
     {
-        nbzonescc = nbsectorcumul[piaacmc[0].NBringCentCone - 1];
+        nbzonescc = nbsectorcumul[piaacmcopticaldesign.NBringCentCone - 1];
     }
     else
     {
@@ -245,20 +231,20 @@ errno_t mkFPM_zonemap(
 
 
 
-    //  ID = create_2Dimage_ID(IDname, piaacmc[0].fpmarraysize, piaacmc[0].fpmarraysize);
+    //  ID = create_2Dimage_ID(IDname, piaacmcopticaldesign.fpmarraysize, piaacmcopticaldesign.fpmarraysize);
 
 
-    if((piaacmcsimul_var.PIAACMC_FPMsectors == 0)
-            || (piaacmcsimul_var.PIAACMC_FPMsectors == 1))
+    if((piaacmcparams.PIAACMC_FPMsectors == 0)
+            || (piaacmcparams.PIAACMC_FPMsectors == 1))
     {
-        for(long ii = 0; ii < piaacmc[0].fpmarraysize; ii++)
-            for(long jj = 0; jj < piaacmc[0].fpmarraysize; jj++)
+        for(long ii = 0; ii < piaacmcopticaldesign.fpmarraysize; ii++)
+            for(long jj = 0; jj < piaacmcopticaldesign.fpmarraysize; jj++)
             {
-                double x = (2.0 * ii - 1.0 * piaacmc[0].fpmarraysize) / piaacmc[0].fpmarraysize /
-                           piaacmcsimul_var.FPMSCALEFACTOR;
+                double x = (2.0 * ii - 1.0 * piaacmcopticaldesign.fpmarraysize) / piaacmcopticaldesign.fpmarraysize /
+                           piaacmcparams.FPMSCALEFACTOR;
 
-                double y = (2.0 * jj - 1.0 * piaacmc[0].fpmarraysize) / piaacmc[0].fpmarraysize /
-                           piaacmcsimul_var.FPMSCALEFACTOR;
+                double y = (2.0 * jj - 1.0 * piaacmcopticaldesign.fpmarraysize) / piaacmcopticaldesign.fpmarraysize /
+                           piaacmcparams.FPMSCALEFACTOR;
 
                 double r = sqrt(x * x + y * y);
                 double PA = atan2(y, x);
@@ -272,28 +258,28 @@ errno_t mkFPM_zonemap(
                     PAf = 1.0 - eps;
                 }
 
-                long zi = (long) ceil((1.0 - r) * piaacmc[0].NBrings);
+                long zi = (long) ceil((1.0 - r) * piaacmcopticaldesign.NBrings);
 
 
                 if(zi < 0.1)
                 {
                     zi = 0;
                 }
-                if(zi > piaacmc[0].NBrings)
+                if(zi > piaacmcopticaldesign.NBrings)
                 {
-                    zi = piaacmc[0].NBrings;
+                    zi = piaacmcopticaldesign.NBrings;
                 }
 
-                long ring = piaacmc[0].NBrings - zi; // 0 for inner disk, increases outward
+                long ring = piaacmcopticaldesign.NBrings - zi; // 0 for inner disk, increases outward
                 if(zi == 0)
                 {
                     ring = -1;
                 }
 
                 long zoneindex;
-                if(piaacmcsimul_var.PIAACMC_FPMsectors == 0)
+                if(piaacmcparams.PIAACMC_FPMsectors == 0)
                 {
-                    zoneindex = piaacmc[0].NBrings - zi + 1;
+                    zoneindex = piaacmcopticaldesign.NBrings - zi + 1;
                     if(zi == 0)
                     {
                         zoneindex = 0;
@@ -317,9 +303,9 @@ errno_t mkFPM_zonemap(
                             zoneindex += (long) (PAf * nbsector[ring]);
                         }
 
-                        if(piaacmc[0].NBrings > 1)
+                        if(piaacmcopticaldesign.NBrings > 1)
                         {
-                            if(ring < piaacmc[0].NBringCentCone)
+                            if(ring < piaacmcopticaldesign.NBringCentCone)
                             {
                                 zoneindex = 0;
                             }
@@ -331,47 +317,47 @@ errno_t mkFPM_zonemap(
                     }
                 }
 
-                data.image[ID].array.UI16[jj * piaacmc[0].fpmarraysize + ii] = zoneindex;
+                data.image[ID].array.UI16[jj * piaacmcopticaldesign.fpmarraysize + ii] = zoneindex;
 
             }
 
-        if(piaacmcsimul_var.PIAACMC_FPMsectors == 0)
+        if(piaacmcparams.PIAACMC_FPMsectors == 0)
         {
-            if(piaacmc[0].NBrings > 1)
+            if(piaacmcopticaldesign.NBrings > 1)
             {
-                piaacmc[0].focmNBzone = piaacmc[0].NBrings - nbzonescc;
+                piaacmcopticaldesign.focmNBzone = piaacmcopticaldesign.NBrings - nbzonescc;
             }
             else
             {
-                piaacmc[0].focmNBzone = 1;
+                piaacmcopticaldesign.focmNBzone = 1;
             }
         }
         else
         {
-            if(piaacmc[0].NBrings > 1)
+            if(piaacmcopticaldesign.NBrings > 1)
             {
-                piaacmc[0].focmNBzone = nbsectorcumul[piaacmc[0].NBrings - 1] - nbzonescc;
+                piaacmcopticaldesign.focmNBzone = nbsectorcumul[piaacmcopticaldesign.NBrings - 1] - nbzonescc;
             }
             else
             {
-                piaacmc[0].focmNBzone = 1;
+                piaacmcopticaldesign.focmNBzone = 1;
             }
         }
     }
 
 
-    if(piaacmcsimul_var.PIAACMC_FPMsectors == 2)
+    if(piaacmcparams.PIAACMC_FPMsectors == 2)
     {
-        hexsteppix = 0.5 * piaacmc[0].fpmarraysize / piaacmc[0].NBrings *
-                     piaacmcsimul_var.FPMSCALEFACTOR;
+        hexsteppix = 0.5 * piaacmcopticaldesign.fpmarraysize / piaacmcopticaldesign.NBrings *
+                     piaacmcparams.FPMSCALEFACTOR;
         for(hindex = 0; hindex < hindexMax; hindex++)
         {
-            ID1 = make_hexagon("_TMPhex", piaacmc[0].fpmarraysize, piaacmc[0].fpmarraysize,
-                               0.5 * piaacmc[0].fpmarraysize + hex_x[hindex] * hexsteppix,
-                               0.5 * piaacmc[0].fpmarraysize + hex_y[hindex] * hexsteppix,
+            ID1 = make_hexagon("_TMPhex", piaacmcopticaldesign.fpmarraysize, piaacmcopticaldesign.fpmarraysize,
+                               0.5 * piaacmcopticaldesign.fpmarraysize + hex_x[hindex] * hexsteppix,
+                               0.5 * piaacmcopticaldesign.fpmarraysize + hex_y[hindex] * hexsteppix,
                                hexsteppix * (1.0 - hexgap) * (sqrt(3.0) / 2.0));
 
-            for(long ii = 0; ii < piaacmc[0].fpmarraysize * piaacmc[0].fpmarraysize; ii++)
+            for(long ii = 0; ii < piaacmcopticaldesign.fpmarraysize * piaacmcopticaldesign.fpmarraysize; ii++)
             {
                 if(data.image[ID1].array.F[ii] > 0.5)
                 {
@@ -381,24 +367,24 @@ errno_t mkFPM_zonemap(
             delete_image_ID("_TMPhex", DELETE_IMAGE_ERRMODE_WARNING);
         }
 
-        if(piaacmc[0].NBrings > 1)
+        if(piaacmcopticaldesign.NBrings > 1)
         {
-            piaacmc[0].focmNBzone = nbsectorcumul[piaacmc[0].NBrings - 1];
+            piaacmcopticaldesign.focmNBzone = nbsectorcumul[piaacmcopticaldesign.NBrings - 1];
         }
         else
         {
-            piaacmc[0].focmNBzone = 1;
+            piaacmcopticaldesign.focmNBzone = 1;
         }
     }
 
 
-    printf("[%d] piaacmc[0].focmNBzone  =  %ld %ld    %ld %ld   ->  %ld   (%ld)\n",
-           piaacmcsimul_var.PIAACMC_FPMsectors, piaacmc[0].NBrings,
-           nbsectorcumul[piaacmc[0].NBrings - 1], piaacmc[0].NBringCentCone, nbzonescc,
-           piaacmc[0].focmNBzone, piaacmc[0].NBrings);
+    printf("[%d] piaacmcopticaldesign.focmNBzone  =  %ld %ld    %ld %ld   ->  %ld   (%ld)\n",
+           piaacmcparams.PIAACMC_FPMsectors, piaacmcopticaldesign.NBrings,
+           nbsectorcumul[piaacmcopticaldesign.NBrings - 1], piaacmcopticaldesign.NBringCentCone, nbzonescc,
+           piaacmcopticaldesign.focmNBzone, piaacmcopticaldesign.NBrings);
 
 
-    if(piaacmcsimul_var.PIAACMC_FPMsectors != 0)
+    if(piaacmcparams.PIAACMC_FPMsectors != 0)
     {
         printf("Saving %s ....\n", IDname);
         save_fits(IDname, "__test_zonemap_00.fits"); //TEST
@@ -408,7 +394,7 @@ errno_t mkFPM_zonemap(
     free(nbsector);
     free(nbsectorcumul);
 
-    printf("NUMBER OF ZONES = %ld\n", piaacmc[0].focmNBzone); //TEST
+    printf("NUMBER OF ZONES = %ld\n", piaacmcopticaldesign.focmNBzone); //TEST
 
     if(outID != NULL)
     {

@@ -20,13 +20,6 @@
 
 
 
-extern OPTSYST *optsyst;
-
-extern PIAACMCsimul_varType piaacmcsimul_var;
-
-
-
-
 
 ///
 /// solves for focal plane mask solution using pre-computed zone responses
@@ -74,7 +67,7 @@ errno_t PIAACMCsimul_achromFPMsol_eval(
         long evalki;
         evalki = evalk * (nbz + 1) * vsize;
 
-        if(optsyst[0].FOCMASKarray[0].mode == 1) // include outer zone
+        if(piaacmcopticalsystem.FOCMASKarray[0].mode == 1) // include outer zone
         {
             // outer zone
             for(long evalii = 0; evalii < vsize / 2; evalii++)
@@ -114,7 +107,7 @@ errno_t PIAACMCsimul_achromFPMsol_eval(
             long evalmz, evalki1, evalkv;
             double evalcosp, evalsinp;
 
-            evalmz = piaacmcsimul_var.focmMode - 1;
+            evalmz = piaacmcparams.focmMode - 1;
             //double evalpha = zonez_array[evalmz] * dphadz_array[evalk];
             evalcosp = 1.0; //cos(evalpha);
             evalsinp = 0.0; //sin(evalpha);
@@ -138,7 +131,7 @@ errno_t PIAACMCsimul_achromFPMsol_eval(
 
 
     //	for(evalmz=0; evalmz<nbz; evalmz++)
-    //	outtmp_array[nbl*vsize + evalmz] = piaacmcsimul_var.PIAACMC_MASKregcoeff*zonez_array[evalmz]*sqrt(vsize*nbl/nbz);
+    //	outtmp_array[nbl*vsize + evalmz] = piaacmcparams.PIAACMC_MASKregcoeff*zonez_array[evalmz]*sqrt(vsize*nbl/nbz);
 
 
     double evalval = 0.0;
