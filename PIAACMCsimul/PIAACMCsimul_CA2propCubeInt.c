@@ -43,6 +43,8 @@ errno_t PIAACMCsimul_CA2propCubeInt(
 )
 {
     DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG %s %s %f %f %ld %s",
+                     IDamp_name, IDpha_name, zmin, zmax, NBz, IDout_name);
 
     imageID IDout;
     long nblambda;
@@ -51,17 +53,15 @@ errno_t PIAACMCsimul_CA2propCubeInt(
 
     uint32_t xsize;
     uint32_t ysize;
+    uint64_t xysize;
 
 
-    printf("PIAACMCsimul_CA2propCubeInt   : %s %s %f %f %ld %s\n", IDamp_name,
-           IDpha_name, zmin, zmax, NBz, IDout_name);
-    fflush(stdout);
-
-    //  list_image_ID();
     {
         imageID IDa = image_ID(IDamp_name);
         xsize = data.image[IDa].md[0].size[0];
         ysize = data.image[IDa].md[0].size[1];
+        xysize = xsize;
+        xysize *= ysize;
 
         create_2Dimage_ID("retmpim", xsize, ysize, NULL);
         create_2Dimage_ID("imtmpim", xsize, ysize, NULL);
@@ -104,8 +104,18 @@ errno_t PIAACMCsimul_CA2propCubeInt(
         fflush(stdout);
 
         zprop = zarray[l];
-        OptSystProp_propagateCube(&piaacmcopticalsystem, 0, IDamp_name, IDpha_name, "_tmppropamp",
-                                  "_tmpproppha", zprop, 0);
+        FUNC_CHECK_RETURN(
+            OptSystProp_propagateCube(
+                &piaacmcopticalsystem,
+                0,
+                IDamp_name,
+                IDpha_name,
+                "_tmppropamp",
+                "_tmpproppha",
+                zprop,
+                0
+            )
+        );
 
         imageID IDa = image_ID("_tmppropamp");
         // imageID IDp = image_ID("_tmpproppha");
@@ -115,19 +125,29 @@ errno_t PIAACMCsimul_CA2propCubeInt(
         for(long k = 0; k < nblambda; k++)
             for(long ii = 0; ii < xsize * ysize; ii++)
             {
-                data.image[IDout].array.F[l * xsize * ysize + ii] += data.image[IDa].array.F[ii]
-                        * data.image[IDa].array.F[k * xsize * ysize + ii];
+                data.image[IDout].array.F[l*xysize + ii] +=
+                    data.image[IDa].array.F[k*xysize+ii] * data.image[IDa].array.F[k*xysize+ii];
             }
 
 
 
-        delete_image_ID("_tmppropamp", DELETE_IMAGE_ERRMODE_WARNING);
-        delete_image_ID("_tmpproppha", DELETE_IMAGE_ERRMODE_WARNING);
+        FUNC_CHECK_RETURN(
+            delete_image_ID("_tmppropamp", DELETE_IMAGE_ERRMODE_WARNING)
+        );
+
+        FUNC_CHECK_RETURN(
+            delete_image_ID("_tmpproppha", DELETE_IMAGE_ERRMODE_WARNING)
+        );
     }
 
     free(zarray);
-    delete_image_ID("retmpim", DELETE_IMAGE_ERRMODE_WARNING);
-    delete_image_ID("imtmpim", DELETE_IMAGE_ERRMODE_WARNING);
+    FUNC_CHECK_RETURN(
+        delete_image_ID("retmpim", DELETE_IMAGE_ERRMODE_WARNING)
+    );
+
+    FUNC_CHECK_RETURN(
+        delete_image_ID("imtmpim", DELETE_IMAGE_ERRMODE_WARNING)
+    );
 
     if(outID != NULL)
     {

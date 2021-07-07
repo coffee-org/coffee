@@ -84,6 +84,7 @@ errno_t PIAACMCsimul_computePSF(
 )
 {
     DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG %f %f", xld, yld);
 
     // how to measure quality
     float focscale; // l/D per pix
@@ -100,7 +101,6 @@ errno_t PIAACMCsimul_computePSF(
 
     (void) savepsf;
     (void) endelem;
-
 
 
     // size of one side of each image array
@@ -826,9 +826,9 @@ errno_t PIAACMCsimul_computePSF(
             );
 
 
-            /// calls PIAACMCsimul_makePIAAshapes()
-
-            FUNC_CHECK_RETURN(makePIAAshapes());
+            FUNC_CHECK_RETURN(
+                makePIAAshapes()
+            );
 
 
 
@@ -844,7 +844,8 @@ errno_t PIAACMCsimul_computePSF(
                     startelem,
                     piaacmcopticalsystem.NBelem,
                     piaacmcparams.piaacmcconfdir,
-                    0)
+                    0
+                )
             );
 
             if(outsave == 1)
@@ -866,11 +867,19 @@ errno_t PIAACMCsimul_computePSF(
 //           list_image_ID();
             // linearize the result into imvect
             FUNC_CHECK_RETURN(
-                linopt_imtools_image_to_vec("psfc0", "pixindex", "pixmult", "imvect", NULL)
+                linopt_imtools_image_to_vec(
+                    "psfc0",
+                    "pixindex",
+                    "pixmult",
+                    "imvect",
+                    NULL
+                )
             );
 
 
-            save_fits("imvect", "./testdir/test_imvect.fits");
+            FUNC_CHECK_RETURN(
+                save_fits("imvect", "./testdir/test_imvect.fits")
+            );
 
 
             // extract amplitude and phase for diagnostics
@@ -894,7 +903,7 @@ errno_t PIAACMCsimul_computePSF(
 
 
             {
-                // compute average contrast
+                DEBUG_TRACEPOINT("compute average contrast");
                 double value = 0.0;
                 peakcontrast = 0.0;
                 {
@@ -913,7 +922,7 @@ errno_t PIAACMCsimul_computePSF(
                 }
 
 
-                // report the contrast
+                DEBUG_TRACEPOINT("report the contrast");
                 for(long elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
                 {
                     printf("    FLUX %3ld   %12.4lf %8.6lf\n", elem, piaacmcopticalsystem.flux[elem],
@@ -923,6 +932,8 @@ errno_t PIAACMCsimul_computePSF(
 
                 if(outsave == 1)
                 {
+                    DEBUG_TRACEPOINT("writing flux file");
+
                     PIAACMCsimul_update_fnamedescr();
 
                     char fname[STRINGMAXLEN_FULLFILENAME];
@@ -935,10 +946,17 @@ errno_t PIAACMCsimul_computePSF(
                     );
 
                     FILE * fpflux = fopen(fname, "w");
+                    if(fpflux == NULL)
+                    {
+                        PRINT_ERROR("cannot create file %s", fname);
+                        abort();
+                    }
                     for(long elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
                     {
-                        fprintf(fpflux, "%18.16lf %18.16lf  %d\n", piaacmcopticalsystem.flux[elem],
-                                piaacmcopticalsystem.flux[elem] / piaacmcopticalsystem.flux[0], piaacmcopticalsystem.nblambda);
+                        fprintf(fpflux, "%18.16lf %18.16lf  %d\n",
+                                piaacmcopticalsystem.flux[elem],
+                                piaacmcopticalsystem.flux[elem] / piaacmcopticalsystem.flux[0],
+                                piaacmcopticalsystem.nblambda);
                     }
                     fprintf(fpflux, "W1\n");
                     fclose(fpflux);
@@ -955,10 +973,17 @@ errno_t PIAACMCsimul_computePSF(
                                             piaacmcopticalsystem.flux[0] / piaacmcopticalsystem.nblambda;
 
                 {
+                    DEBUG_TRACEPOINT("writing CnormFactor file");
+
                     char fname[STRINGMAXLEN_FULLFILENAME];
                     WRITE_FULLFILENAME(fname, "%s/CnormFactor.txt", piaacmcparams.piaacmcconfdir);
 
                     FILE * fp = fopen(fname, "w");
+                    if(fp == NULL)
+                    {
+                        PRINT_ERROR("cannot create file %s", fname);
+                        abort();
+                    }
                     fprintf(fp, "# Written by function PIAACMCsimul_computePSF()\n");
                     fprintf(fp,
                             "# Cnormfactor = focscale*focscale*size*size*piaacmcopticalsystem.flux[0]/piaacmcopticalsystem.nblambda\n");
@@ -1017,6 +1042,7 @@ errno_t PIAACMCsimul_computePSF(
                     printf("[1] Total light in scoring field = %g, peak PSF = %g, SCOTINGTOTAL = %g  -> Average contrast = %g\n",
                            value, piaacmcopticaldesign.peakPSF, piaacmcparams.SCORINGTOTAL, avContrast);
 
+                    DEBUG_TRACEPOINT("writing contrast value to file");
                     FILE * fp;
                     if((fp = fopen("PSFcontrastval.txt", "w")) != NULL)
                     {
@@ -1026,6 +1052,7 @@ errno_t PIAACMCsimul_computePSF(
                     }
                 }
 
+                DEBUG_TRACEPOINT("outsave = %d", outsave);
                 if(outsave == 1)
                 {
                     PIAACMCsimul_update_fnamedescr();
@@ -1048,7 +1075,10 @@ errno_t PIAACMCsimul_computePSF(
         }
     }
 
-    *contrastval = avContrast;
+    if(contrastval != NULL)
+    {
+        *contrastval = avContrast;
+    }
 
     DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;

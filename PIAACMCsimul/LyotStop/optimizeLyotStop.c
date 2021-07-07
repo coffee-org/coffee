@@ -155,7 +155,9 @@ errno_t optimizeLyotStop(
     }
 
     imageID IDzone;
-    create_2Dimage_ID("LMzonemap", xsize, ysize, &IDzone);
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID("LMzonemap", xsize, ysize, &IDzone)
+    );
 
     for(uint32_t ii = 0; ii < xsize; ii++)
         for(uint32_t jj = 0; jj < ysize; jj++)
@@ -175,7 +177,9 @@ errno_t optimizeLyotStop(
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "%s/LMzonemap.fits", piaacmcparams.piaacmcconfdir);
-        save_fits("LMzonemap", fname);
+        FUNC_CHECK_RETURN(
+            save_fits("LMzonemap", fname)
+        );
     }
     // initialize zarray
     for(long l = 0; l < NBz; l++)
@@ -187,16 +191,24 @@ errno_t optimizeLyotStop(
 
 
     imageID IDre;
-    create_2Dimage_ID("retmpim", xsize, ysize, &IDre);
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID("retmpim", xsize, ysize, &IDre)
+    );
 
     imageID IDim;
-    create_2Dimage_ID("imtmpim", xsize, ysize, &IDim);
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID("imtmpim", xsize, ysize, &IDim)
+    );
 
     imageID ID_LMintC;
-    create_3Dimage_ID("LMintC", xsize, ysize, NBz, &ID_LMintC);
+    FUNC_CHECK_RETURN(
+        create_3Dimage_ID("LMintC", xsize, ysize, NBz, &ID_LMintC)
+    );
 
     imageID IDintg;
-    create_2Dimage_ID("tmpintg", xsize, ysize, &IDintg);
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID("tmpintg", xsize, ysize, &IDintg)
+    );
 
     float sigma = 0.01 * piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale;
     int filter_size = (long)(sigma * 2.0);
@@ -210,8 +222,17 @@ errno_t optimizeLyotStop(
         WRITE_IMAGENAME(namepha, "LMPpha%02ld", l);
 
         double zprop = zarray[l];
-        OptSystProp_propagateCube(&piaacmcopticalsystem, 0, IDamp_name, IDpha_name, nameamp, namepha,
-                                  zprop, 0);
+        FUNC_CHECK_RETURN(
+            OptSystProp_propagateCube(
+                &piaacmcopticalsystem,
+                0,
+                IDamp_name,
+                IDpha_name,
+                nameamp,
+                namepha,
+                zprop, 0
+            )
+        );
 
 
         imageID IDa1 = image_ID(nameamp);
@@ -245,9 +266,17 @@ errno_t optimizeLyotStop(
             }
             //data.image[IDa1].array.F[ii]*data.image[IDa1].array.F[ii]; //data.image[IDintgg].array.F[ii];
 
-            delete_image_ID("retmpimg", DELETE_IMAGE_ERRMODE_WARNING);
-            delete_image_ID("imtmpimg", DELETE_IMAGE_ERRMODE_WARNING);
-            delete_image_ID("tmpintgg", DELETE_IMAGE_ERRMODE_WARNING);
+            FUNC_CHECK_RETURN(
+                delete_image_ID("retmpimg", DELETE_IMAGE_ERRMODE_WARNING)
+            );
+
+            FUNC_CHECK_RETURN(
+                delete_image_ID("imtmpimg", DELETE_IMAGE_ERRMODE_WARNING)
+            );
+
+            FUNC_CHECK_RETURN(
+                delete_image_ID("tmpintgg", DELETE_IMAGE_ERRMODE_WARNING)
+            );
         }
 
         /*    for(ii=0; ii<xsize*ysize; ii++)
@@ -261,16 +290,27 @@ errno_t optimizeLyotStop(
                     tot2array[l*NBmasks+m] += pow(data.image[ID].array.F[l*xsize*ysize+ii], alpha);
                 }
             }*/
-        delete_image_ID(nameamp, DELETE_IMAGE_ERRMODE_WARNING);
-        delete_image_ID(namepha, DELETE_IMAGE_ERRMODE_WARNING);
+        FUNC_CHECK_RETURN(
+            delete_image_ID(nameamp, DELETE_IMAGE_ERRMODE_WARNING)
+        );
+
+        FUNC_CHECK_RETURN(
+            delete_image_ID(namepha, DELETE_IMAGE_ERRMODE_WARNING)
+        );
     }
-    delete_image_ID("retmpim", DELETE_IMAGE_ERRMODE_WARNING);
-    delete_image_ID("imtmpim", DELETE_IMAGE_ERRMODE_WARNING);
+
+    FUNC_CHECK_RETURN(
+        delete_image_ID("retmpim", DELETE_IMAGE_ERRMODE_WARNING)
+    );
+
+    FUNC_CHECK_RETURN(
+        delete_image_ID("imtmpim", DELETE_IMAGE_ERRMODE_WARNING)
+    );
 
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname,  "%s/LMintC.fits", piaacmcparams.piaacmcconfdir);
-        save_fits("LMintC", fname);
+        FUNC_CHECK_RETURN(save_fits("LMintC", fname));
     }
 
 
@@ -299,8 +339,14 @@ errno_t optimizeLyotStop(
         }
     }
 
-    create_2Dimage_ID("Lcomb", xsize, ysize, &IDmc);
-    create_2Dimage_ID("LcombOA", xsize, ysize, &IDmc1);
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID("Lcomb", xsize, ysize, &IDmc)
+    );
+
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID("LcombOA", xsize, ysize, &IDmc1)
+    );
+
     for(uint64_t ii = 0; ii < xysize; ii++)
     {
         data.image[IDmc1].array.F[ii] = 0.0;
@@ -350,10 +396,10 @@ errno_t optimizeLyotStop(
         char fname[STRINGMAXLEN_FULLFILENAME];
 
         WRITE_FULLFILENAME(fname, "%s/Lcomb.fits", piaacmcparams.piaacmcconfdir);
-        save_fits("Lcomb", fname);
+        FUNC_CHECK_RETURN(save_fits("Lcomb", fname));
 
         WRITE_FULLFILENAME(fname, "%s/LcombOA.fits", piaacmcparams.piaacmcconfdir);
-        save_fits("LcombOA", fname);
+        FUNC_CHECK_RETURN(save_fits("LcombOA", fname));
     }
 
 
@@ -368,13 +414,17 @@ errno_t optimizeLyotStop(
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "%s/LMask.fits", piaacmcparams.piaacmcconfdir);
-        save_fits("LMask", fname);
+        FUNC_CHECK_RETURN(save_fits("LMask", fname));
     }
 
-    delete_image_ID("Lcomb", DELETE_IMAGE_ERRMODE_WARNING);
+    FUNC_CHECK_RETURN(
+        delete_image_ID("Lcomb", DELETE_IMAGE_ERRMODE_WARNING)
+    );
 
     imageID IDlscumul;
-    create_2Dimage_ID("LMcumul", xsize, ysize, &IDlscumul);
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID("LMcumul", xsize, ysize, &IDlscumul)
+    );
 
     for(uint64_t ii = 0; ii < xysize; ii++)
     {
@@ -387,7 +437,9 @@ errno_t optimizeLyotStop(
         WRITE_IMAGENAME(name, "optLM%02ld", m);
 
         imageID IDm;
-        create_2Dimage_ID(name, xsize, ysize, &IDm);
+        FUNC_CHECK_RETURN(
+            create_2Dimage_ID(name, xsize, ysize, &IDm)
+        );
 
         for(uint32_t ii = 0; ii < xsize; ii++)
             for(uint32_t jj = 0; jj < ysize; jj++)
@@ -430,12 +482,14 @@ errno_t optimizeLyotStop(
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
             WRITE_FULLFILENAME(fname, "%s/optLM%02ld.fits", piaacmcparams.piaacmcconfdir, m);
-            save_fits(name, fname);
+            FUNC_CHECK_RETURN(save_fits(name, fname));
         }
     }
 
 
-    delete_image_ID("LMcumul", DELETE_IMAGE_ERRMODE_WARNING);
+    FUNC_CHECK_RETURN(
+        delete_image_ID("LMcumul", DELETE_IMAGE_ERRMODE_WARNING)
+    );
 
     free(totarray);
     free(tot2array);
@@ -444,7 +498,9 @@ errno_t optimizeLyotStop(
     free(zarray);
     free(rarray);
 
-    delete_image_ID("LMzonemap", DELETE_IMAGE_ERRMODE_WARNING);
+    FUNC_CHECK_RETURN(
+        delete_image_ID("LMzonemap", DELETE_IMAGE_ERRMODE_WARNING)
+    );
 
     if(outratioval != NULL)
     {
