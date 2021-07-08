@@ -884,7 +884,6 @@ errno_t PIAACMCsimul_computePSF(
             // extract amplitude and phase for diagnostics
             //mk_amph_from_complex("psfc0", "psfc0a", "psfc0p", 0);
             //save_fits("psfc0a", "test_psfc0a.fits");
-            //list_image_ID();
             //delete_image_ID("psfc0a");
             //delete_image_ID("psfc0p");
             //printf("saved -> test_psfc0a.fits\n");

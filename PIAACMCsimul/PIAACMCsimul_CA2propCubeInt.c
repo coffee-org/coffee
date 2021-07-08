@@ -97,8 +97,7 @@ errno_t PIAACMCsimul_CA2propCubeInt(
 
     for(long l = 0; l < NBz; l++)
     {
-        printf("l = %ld/%ld\n", l, NBz);
-        fflush(stdout);
+        DEBUG_TRACEPOINT("l = %ld/%ld", l, NBz);
 
         zprop = zarray[l];
         FUNC_CHECK_RETURN(

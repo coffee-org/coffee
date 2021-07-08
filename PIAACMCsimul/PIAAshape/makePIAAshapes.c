@@ -44,13 +44,13 @@
 errno_t makePIAAshapes()
 {
     DEBUG_TRACE_FSTART();
-    DEBUG_TRACEPOINT_LOG("PIAA material code = %d", piaacmcopticaldesign.PIAAmaterial_code);
+    DEBUG_TRACEPOINT("PIAA material code = %d", piaacmcopticaldesign.PIAAmaterial_code);
 
 
 
     // ============ construct PIAA shapes from fitting coefficients ==================
 
-    DEBUG_TRACEPOINT_LOG("PIAAmode %d", piaacmcopticaldesign.PIAAmode);
+    DEBUG_TRACEPOINT("PIAAmode %d", piaacmcopticaldesign.PIAAmode);
     if(piaacmcopticaldesign.PIAAmode == 1)
     {   // if using PIAA optics
 
@@ -153,7 +153,7 @@ errno_t makePIAAshapes()
             imageID IDpiaam0z = ID;
 
             // make lense shapes if applicable
-            DEBUG_TRACEPOINT_LOG("PIAA material code = %d", piaacmcopticaldesign.PIAAmaterial_code);
+            DEBUG_TRACEPOINT("PIAA material code = %d", piaacmcopticaldesign.PIAAmaterial_code);
             if(piaacmcopticaldesign.PIAAmaterial_code != 0)
             {   // refractive PIAA
                 // if piaar0zsag does not exist or is wrong size, create it

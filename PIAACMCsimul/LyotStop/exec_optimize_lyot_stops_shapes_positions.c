@@ -4,7 +4,8 @@
  *
  */
 
-
+// log all debug trace points to file
+#define DEBUGLOG
 
 // System includes
 #include <stdio.h>
@@ -16,6 +17,7 @@
 
 // milk includes
 #include "CommandLineInterface/CLIcore.h"
+
 
 #include "COREMOD_memory/COREMOD_memory.h"
 #include "COREMOD_iofits/COREMOD_iofits.h"
@@ -79,24 +81,26 @@ errno_t optimizeLyotStop_offaxis_min(
         create_2Dimage_ID("oals_val", xsize, ysize, &IDminflux)
     );
 
-    for(uint32_t ii = 0; ii < xsize; ii++)
-        for(uint32_t jj = 0; jj < ysize; jj++)
-        {
-            float minv = data.image[IDincohc].array.F[jj * xsize + ii];
-            uint32_t minindex = 0;
+    DEBUG_TRACEPOINT("scanning for minimum");
+    for(uint64_t ii = 0; ii < xysize; ii++)
+    {
+        float minv = data.image[IDincohc].array.F[ii];
+        uint32_t minindex = 0;
 
-            for(uint32_t kk = 1; kk < NBz; kk++)
+        for(uint32_t kk=1; kk < NBz; kk++)
+        {
+            float tmpv = data.image[IDincohc].array.F[xysize*kk + ii];
+            if(tmpv < minv)
             {
-                float tmpv = data.image[IDincohc].array.F[kk * xysize + jj * xsize + ii];
-                if(tmpv < minv)
-                {
-                    minv = tmpv;
-                    minindex = kk;
-                }
+                minv = tmpv;
+                minindex = kk;
             }
-            data.image[IDminflux].array.F[jj * xsize + ii] = minv;
-            data.image[IDindex].array.F[jj * xsize + ii] = (float) minindex;
         }
+        data.image[IDminflux].array.F[ii] = minv;
+        data.image[IDindex].array.F[ii] = (float) minindex;
+    }
+
+    DEBUG_TRACEPOINT("Saving minimum map to filesystem");
 
     FUNC_CHECK_RETURN(
         save_fits("oals_index", "test_oals_index.fits")
@@ -200,11 +204,11 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
         if(strcmp("post focal plane mask pupil", piaacmcopticalsystem.name[elem]) == 0)
         {
             elem0 = elem;
-            printf("post focal plane mask pupil = %ld\n", elem);
+            DEBUG_TRACEPOINT("post focal plane mask pupil = %ld", elem);
         }
         else
         {
-            printf("elem %ld : %s\n", elem, piaacmcopticalsystem.name[elem]);
+            DEBUG_TRACEPOINT("elem %ld : %s", elem, piaacmcopticalsystem.name[elem]);
         }
     }
     piaacmcopticalsystem.keepMem[elem0] = 1; // keep it for future use
@@ -218,7 +222,7 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     /// Multiple off-axis sources are propagated and the corresponding intensities added
     /// - -> **OAincohc**  Output incoherent image (3D)
 
-    // compute the reference on-axis PSF
+    DEBUG_TRACEPOINT("compute the reference on-axis PSF");
     {
         double cval = 0.0;
         FUNC_CHECK_RETURN(
@@ -228,13 +232,12 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     }
 
     // filenames of the complex amplitude and phase in the post FPM pupil plane indexed by elem0
-    char fnamea[STRINGMAXLEN_IMGNAME];
-    WRITE_IMAGENAME(fnamea, "WFamp0_%03ld", elem0);
+    char imnamea[STRINGMAXLEN_IMGNAME];
+    WRITE_IMAGENAME(imnamea, "WFamp0_%03ld", elem0);
 
-    char fnamep[STRINGMAXLEN_IMGNAME];
-    WRITE_IMAGENAME(fnamep, "WFpha0_%03ld", elem0);
+    char imnamep[STRINGMAXLEN_IMGNAME];
+    WRITE_IMAGENAME(imnamep, "WFpha0_%03ld", elem0);
 
-    printf("elem0 = %ld\n", elem0);
 
     // args for the PIAACMCsimul_CA2propCubeInt function
 
@@ -244,14 +247,14 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
 
 
 
-    // propagate complex amplitude in a range from zmin to zmax, where 0 is elem0
+    DEBUG_TRACEPOINT("propagate complex amplitude in a range from %f to %f", zmin, zmax);
     // computes the diffracted light from the on-axis source
     FUNC_CHECK_RETURN(
-        PIAACMCsimul_CA2propCubeInt(fnamea, fnamep, zmin, zmax, NBpropstep,
+        PIAACMCsimul_CA2propCubeInt(imnamea, imnamep, zmin, zmax, NBpropstep,
                                     "iproptmp", NULL)
     );
     // complex amplitude at elem0, only used to determine image size
-    IDa = image_ID(fnamea);
+    IDa = image_ID(imnamea);
 
     uint32_t xsize = data.image[IDa].md[0].size[0];
     uint32_t ysize = data.image[IDa].md[0].size[1];
@@ -286,18 +289,18 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
 
 
         // number of circle radii
-        long NBkr = 5;
-
+        long NBkr = 2;  //5
 
         // loop over radii
         for(long kr = 0; kr < NBkr; kr++)
         {
             // number of off-axis sources on each circle
-            long NBincpt = 15;
+            long NBincpt = 9; //15;
 
             // loop over points at current radius
             for(long k1 = 0; k1 < NBincpt; k1++)
             {
+                DEBUG_TRACEPOINT("OAincohc point %ld/%ld %ld/%ld", kr, NBkr, k1, NBincpt);
                 // compute PSF for a point at this angle with scaled offset
                 // PIAACMCsimul_computePSF changes fnamea and fnamep (in call to OptSystProp_run)!
                 {
@@ -322,7 +325,7 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
                 // propagate that elem0 from zmin to zmax with new PSF
                 imageID ID1;
                 FUNC_CHECK_RETURN(
-                    PIAACMCsimul_CA2propCubeInt(fnamea, fnamep, zmin, zmax, NBpropstep,
+                    PIAACMCsimul_CA2propCubeInt(imnamea, imnamep, zmin, zmax, NBpropstep,
                                                 "iproptmp", &ID1)
                 );
                 for(uint64_t ii = 0; ii < xysize; ii++)
@@ -367,12 +370,11 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     );
     // propagate it into the optical system, with result in image named "iprop00"
 
-    /// call function PIAACMCsimul_CA2propCubeInt() to compute 3D intensity cube
-    /// @param[out] iprop00 3D intensity image
+    DEBUG_TRACEPOINT("compute on-axis 3D intensity cube");
     FUNC_CHECK_RETURN(
         PIAACMCsimul_CA2propCubeInt(
-            fnamea,
-            fnamep,
+            imnamea,
+            imnamep,
             zmin,
             zmax,
             NBpropstep,
@@ -396,10 +398,11 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     // The actual Lyot stop shape and location optimization is done by PIAACMCsimul_optimizeLyotStop(),
     // producing optimal Lyot stops in optLM*.fits
     // and position relative to elem0 in piaacmcopticaldesign.LyotStop_zpos
+    DEBUG_TRACEPOINT("Optimize Lyot stop geometry");
     FUNC_CHECK_RETURN(
         optimizeLyotStop(
-            fnamea,
-            fnamep,
+            imnamea,
+            imnamep,
             "OAincohc",
             zmin,
             zmax,
@@ -413,6 +416,8 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     {
         char fptestname[STRINGMAXLEN_FILENAME];
         WRITE_FILENAME(fptestname, "conj_test.txt");
+
+        DEBUG_TRACEPOINT("write %s", fptestname);
 
         FILE * fptest = fopen(fptestname, "w");
         if(fptest == NULL)
