@@ -41,7 +41,7 @@
 
 /** @brief Make Lyot stops using off-axis light minimums
  *
- *  Finds minumum flux level in 3D intensity data cube
+ *  Finds minimum flux level in 3D intensity data cube
  *
  * @param[in]  IDincohc_name             image: Input 3D intensity
  * @param[out] test_oals_val.fits        FITS : Minimum 2D image
@@ -266,17 +266,23 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "%s/OAincohc.fits", piaacmcparams.piaacmcconfdir);
-        load_fits(fname, "OAincohc", 1, &IDc);
+        FUNC_CHECK_RETURN(
+            load_fits(fname, "OAincohc", LOADFITS_ERRMODE_WARNING, &IDc)
+        );
     }
 
-    if(IDc == -1) // OAincohc does not exist so we have to make it
-    {
+    DEBUG_TRACEPOINT("IDc = %ld", IDc);
+
+    if(IDc == -1)
+    {   // OAincohc does not exist so we have to make it
+
+        DEBUG_TRACEPOINT("Creating off-axis light 3D volumetric cube");
         // create image to receive sum
-        FUNC_CHECK_RETURN(create_3Dimage_ID("OAincohc", xsize, ysize, NBpropstep, &IDc));
+        FUNC_CHECK_RETURN(
+            create_3Dimage_ID("OAincohc", xsize, ysize, NBpropstep, &IDc)
+        );
 
         long cnt = 0; // initialize counter so later we can normalize by number of sources
-
-
 
 
         // number of circle radii
@@ -300,7 +306,7 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
 
                     FUNC_CHECK_RETURN(
                         PIAACMCsimul_computePSF(
-                            oaoffset * (1.0 + kr) / NBkr * cos( 2.0 * M_PI * k1 / NBincpt),
+                            oaoffset * (1.0 + kr) / NBkr * cos(2.0 * M_PI * k1 / NBincpt),
                             oaoffset * (1.0 + kr) / NBkr * sin(2.0 * M_PI * k1 / NBincpt),
                             0,
                             piaacmcopticalsystem.NBelem,
@@ -319,15 +325,17 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
                     PIAACMCsimul_CA2propCubeInt(fnamea, fnamep, zmin, zmax, NBpropstep,
                                                 "iproptmp", &ID1)
                 );
-                for(uint64_t ii = 0; ii < xysize; ii++) // ii is indexing x-y plane
-                {
+                for(uint64_t ii = 0; ii < xysize; ii++)
+                {   // ii is indexing x-y plane
                     for(long k = 0; k < NBpropstep; k++)
-                    {   // k is indexing z-direction. adding to IDc which looks right
-                        data.image[IDc].array.F[k * xsize * ysize + ii] += data.image[ID1].array.F[k *
-                                xsize * ysize + ii];
+                    {   // k is indexing z-direction. adding to IDc
+                        data.image[IDc].array.F[xysize*k + ii] +=
+                            data.image[ID1].array.F[xysize*k + ii];
                     }
                 }
-                FUNC_CHECK_RETURN(delete_image_ID("iproptmp", DELETE_IMAGE_ERRMODE_WARNING));
+                FUNC_CHECK_RETURN(
+                    delete_image_ID("iproptmp", DELETE_IMAGE_ERRMODE_WARNING)
+                );
                 cnt ++;
             }
         }
@@ -368,7 +376,7 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
             zmin,
             zmax,
             NBpropstep,
-            "OAincohc",
+            "iprop00",
             NULL
         )
     );
@@ -385,8 +393,9 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
 
     /// ### Optimize Lyot stops
 
-    /// The actual Lyot stop shape and location optimization is done by PIAACMCsimul_optimizeLyotStop(), producing optimal Lyot stops in optLM*.fits
-    /// and position relative to elem0 in piaacmcopticaldesign.LyotStop_zpos
+    // The actual Lyot stop shape and location optimization is done by PIAACMCsimul_optimizeLyotStop(),
+    // producing optimal Lyot stops in optLM*.fits
+    // and position relative to elem0 in piaacmcopticaldesign.LyotStop_zpos
     FUNC_CHECK_RETURN(
         optimizeLyotStop(
             fnamea,

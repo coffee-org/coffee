@@ -56,6 +56,17 @@ errno_t optimizeLyotStop(
 )
 {
     DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT(
+        "FARG %s %s %s %f %f %lf %ld %ld",
+        IDamp_name,
+        IDpha_name,
+        IDincohc_name,
+        zmin,
+        zmax,
+        throughput,
+        NBz,
+        NBmasks
+    );
 
     // initial guess places Lyot stops regularly from zmin to zmax
     // light propagates from zmin to zmax
@@ -64,78 +75,69 @@ errno_t optimizeLyotStop(
     double ratio = 1.0; // output metric... not used yet, currently a placeholder
 
     long nblambda; // number of wavelengths, read from input cube
-    float *zarray;
 
-    float *rinarray;
-    float *routarray;
     float dr = 0.02;
 
-
-    double *totarray;
-    double *tot2array;
-
     imageID IDincohc, IDint, IDmc, IDmc1;
-
-    float *rarray;
-
     double alpha = 1.01; // norm alpha used to identify best plane
 
 
 
-    zarray = (float *) malloc(sizeof(float) * NBz);
+    float * zarray = (float *) malloc(sizeof(float) * NBz);
     if(zarray == NULL) {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    rinarray = (float *) malloc(sizeof(float) * NBmasks);
+    float * rinarray = (float *) malloc(sizeof(float) * NBmasks);
     if(rinarray == NULL) {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    routarray = (float *) malloc(sizeof(float) * NBmasks);
+    float * routarray = (float *) malloc(sizeof(float) * NBmasks);
     if(routarray == NULL) {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    totarray = (double *) malloc(sizeof(double) * NBmasks * NBz);
+    double * totarray = (double *) malloc(sizeof(double) * NBmasks * NBz);
     if(totarray == NULL) {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    tot2array = (double *) malloc(sizeof(double) * NBmasks * NBz);
+    double * tot2array = (double *) malloc(sizeof(double) * NBmasks * NBz);
     if(tot2array == NULL) {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
+
+
     routarray[0] = 1.0;
-    rinarray[0] = 1.0 - 1.0 / NBmasks;
+    rinarray[0] = 1.0 - 1.0/NBmasks;
     for(long m = 1; m < NBmasks; m++)
     {
         routarray[m] = rinarray[m - 1];
         rinarray[m] = routarray[m] - (1.0 - piaacmcopticaldesign.centObs1) / NBmasks;
     }
-    rinarray[NBmasks - 1] = 0.0;
+    rinarray[NBmasks-1] = 0.0;
 
     for(long m = 0; m < NBmasks; m++)
     {
-        printf("annulus %ld : %f - %f\n", m, routarray[m], rinarray[m]);
+        DEBUG_TRACEPOINT("annulus %ld : %f - %f\n", m, routarray[m], rinarray[m]);
     }
 
 
     imageID IDa = image_ID(IDamp_name);
-//    imageID IDp = image_ID(IDpha_name);
     uint32_t xsize = data.image[IDa].md[0].size[0];
     uint32_t ysize = data.image[IDa].md[0].size[1];
     uint64_t xysize = xsize;
     xysize *= ysize;
 
 
-    rarray = (float *) malloc(sizeof(float) * xsize * ysize);
+    float * rarray = (float *) malloc(sizeof(float) * xsize * ysize);
     if(rarray == NULL) {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
@@ -186,8 +188,6 @@ errno_t optimizeLyotStop(
     {
         zarray[l] = zmin + (zmax - zmin) * l / (NBz - 1);
     }
-
-    //  save_fits(nameint, fname);
 
 
     imageID IDre;
@@ -318,8 +318,8 @@ errno_t optimizeLyotStop(
     for(long l = 0; l < NBz; l++)
         for(long m = 0; m < NBmasks; m++)
         {
-            totarray[l * NBmasks + m] = 0.0;
-            tot2array[l * NBmasks + m] = 0.0;
+            totarray[l*NBmasks + m] = 0.0;
+            tot2array[l*NBmasks + m] = 0.0;
         }
 
     for(long l = 0; l < NBz; l++)
@@ -331,10 +331,8 @@ errno_t optimizeLyotStop(
             if((m > -1) && (m < NBmasks) && (rarray[ii] < 1.0)
                     && (rarray[ii] > 0.9 * piaacmcopticaldesign.centObs1))
             {
-                totarray[l * NBmasks + m] += data.image[IDincohc].array.F[l * xsize * ysize +
-                                             ii];
-                tot2array[l * NBmasks + m] += pow(data.image[IDincohc].array.F[l * xsize * ysize
-                                                  + ii], alpha);
+                totarray[l*NBmasks + m] += data.image[IDincohc].array.F[l*xysize + ii];
+                tot2array[l*NBmasks + m] += pow(data.image[IDincohc].array.F[l*xysize + ii], alpha);
             }
         }
     }
@@ -353,9 +351,6 @@ errno_t optimizeLyotStop(
     }
 
     {
-        char fname1[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname1, "%s/LyotMasks_zpos.txt", piaacmcparams.piaacmcconfdir);
-        FILE * fp = fopen(fname1, "w");
         IDint = image_ID("LMintC");
         for(long m = 0; m < NBmasks; m++)
         {
@@ -364,7 +359,7 @@ errno_t optimizeLyotStop(
             double zbest = 0.0;
             for(long l = 0; l < NBz; l++)
             {
-                double val =  tot2array[l * NBmasks + m] / pow(totarray[l * NBmasks + m], alpha);
+                double val =  tot2array[l*NBmasks+m] / pow(totarray[l*NBmasks+m], alpha);
                 printf("MASK %ld   z(%ld)= %f  ->  %g   ( %g %g) \n", m, l, zarray[l], val,
                        tot2array[l * NBmasks + m], totarray[l * NBmasks + m]);
                 if(val > valbest)
@@ -374,21 +369,27 @@ errno_t optimizeLyotStop(
                     lbest = l;
                 }
             }
-            printf(" ==========  MASK %ld   BEST CONJUGATION : %ld %f (%g)\n", m, lbest,
+            printf(" ==========  MASK %ld   BEST CONJUGATION : %ld %f (%g)\n",
+                   m, lbest,
                    zbest, valbest);
             piaacmcopticaldesign.LyotStop_zpos[m] = zbest; // relative to starting plane
-            fprintf(fp, "%02ld %f\n", lbest, zbest);
+
+
+            {
+                char fname1[STRINGMAXLEN_FULLFILENAME];
+                WRITE_FULLFILENAME(fname1, "%s/LyotMasks_zpos.txt", piaacmcparams.piaacmcconfdir);
+                FILE * fp = fopen(fname1, "w");
+                fprintf(fp, "%02ld %f\n", lbest, zbest);
+                fclose(fp);
+            }
 
             for(uint64_t ii = 0; ii < xysize; ii++)
                 if(m == data.image[IDzone].array.F[ii])
                 {
-                    data.image[IDmc].array.F[ii] = data.image[IDint].array.F[lbest * xsize * ysize +
-                                                   ii];
-                    data.image[IDmc1].array.F[ii] = data.image[IDincohc].array.F[lbest * xsize *
-                                                    ysize + ii];
+                    data.image[IDmc].array.F[ii] = data.image[IDint].array.F[lbest*xysize+ii];
+                    data.image[IDmc1].array.F[ii] = data.image[IDincohc].array.F[lbest*xysize+ii];
                 }
         }
-        fclose(fp);
     }
 
     if(piaacmcparams.PIAACMC_save == 1)

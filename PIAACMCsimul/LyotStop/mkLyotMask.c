@@ -40,14 +40,21 @@
  */
 errno_t mkLyotMask(
     const char *__restrict__ IDincoh_name,
-    const char *__restrict__  IDmc_name,
-    const char *__restrict__  IDzone_name,
+    const char *__restrict__ IDmc_name,
+    const char *__restrict__ IDzone_name,
     double throughput,
-    const char *__restrict__  IDout_name,
+    const char *__restrict__ IDout_name,
     imageID *outID
 )
 {
     DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG %s %s %s %lf %s",
+                     IDincoh_name,
+                     IDmc_name,
+                     IDzone_name,
+                     throughput,
+                     IDout_name
+                    );
 
     imageID ID1;
     imageID IDmc, IDincoh, IDzone;
@@ -74,17 +81,21 @@ errno_t mkLyotMask(
     IDzone = image_ID(IDzone_name);
     uint32_t xsize = data.image[IDmc].md[0].size[0];
     uint32_t ysize = data.image[IDmc].md[0].size[1];
+    uint64_t xysize = xsize;
+    xysize *= ysize;
 
-    create_2Dimage_ID(IDout_name, xsize, ysize, &IDout);
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID(IDout_name, xsize, ysize, &IDout)
+    );
 
     // normalize both images to 1.0
     {
         double val = 0.0;
-        for(long ii = 0; ii < xsize * ysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
             val += data.image[IDmc].array.F[ii];
         }
-        for(long ii = 0; ii < xsize * ysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
             data.image[IDmc].array.F[ii] /= val;
         }
@@ -93,11 +104,11 @@ errno_t mkLyotMask(
 
     {
         double val = 0.0;
-        for(long ii = 0; ii < xsize * ysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
             val += data.image[IDincoh].array.F[ii];
         }
-        for(long ii = 0; ii < xsize * ysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
             data.image[IDincoh].array.F[ii] /= val;
         }
@@ -112,10 +123,10 @@ errno_t mkLyotMask(
         double val = 0.0;
         double val1 = 0.0;
 
-        for(long ii = 0; ii < xsize * ysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
             if((data.image[IDzone].array.F[ii] > -1)
-                    && (data.image[IDincoh].array.F[ii] / data.image[IDmc].array.F[ii] > rsl))
+                    && (data.image[IDincoh].array.F[ii]/data.image[IDmc].array.F[ii] > rsl))
             {
                 val += data.image[IDincoh].array.F[ii];
                 val1 += data.image[IDmc].array.F[ii];
@@ -155,7 +166,7 @@ errno_t mkLyotMask(
             double val = 0.0;
             double val1 = 0.0;
 
-            for(long ii = 0; ii < xsize * ysize; ii++)
+            for(uint64_t ii = 0; ii < xysize; ii++)
             {
                 if((data.image[IDzone].array.F[ii] > -1)
                         && (data.image[IDincoh].array.F[ii] / data.image[IDmc].array.F[ii] > rsl)
@@ -180,7 +191,7 @@ errno_t mkLyotMask(
             }
         }
 
-    for(long ii = 0; ii < xsize * ysize; ii++)
+    for(uint64_t ii = 0; ii < xysize; ii++)
     {
         if((data.image[IDzone].array.F[ii] > -1)
                 && (data.image[IDincoh].array.F[ii] / data.image[IDmc].array.F[ii] > rsl_best)
@@ -196,14 +207,19 @@ errno_t mkLyotMask(
 
     if(0)
     {
-        create_2Dimage_ID("postLMim", xsize, ysize, &ID1);
-        for(long ii = 0; ii < xsize * ysize; ii++)
+        FUNC_CHECK_RETURN(
+            create_2Dimage_ID("postLMim", xsize, ysize, &ID1)
+        );
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
             data.image[ID1].array.F[ii] = data.image[IDmc].array.F[ii] *
                                           data.image[IDout].array.F[ii];
         }
-        save_fits("postLMim", "postLMim.fits");
-        delete_image_ID("postLMim", DELETE_IMAGE_ERRMODE_WARNING);
+
+        FUNC_CHECK_RETURN(save_fits("postLMim", "postLMim.fits"));
+        FUNC_CHECK_RETURN(
+            delete_image_ID("postLMim", DELETE_IMAGE_ERRMODE_WARNING)
+        );
     }
 
     if(outID != NULL)

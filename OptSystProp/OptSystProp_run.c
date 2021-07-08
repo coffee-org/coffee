@@ -252,7 +252,6 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
             printf("============= elem %ld:  Opaque mask (%s) =================\n", elem,
                    data.image[ID].name);
             fflush(stdout);
-            //	list_image_ID();
 
             if(ID == -1)
             {
@@ -262,9 +261,6 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
 
             //	save_fits(data.image[ID].name, "opmask.fits"); //TEST
             //save_fits(data.image[IDa].name, "opmask1.fits"); //TEST
-
-            printf("ID = %ld\n", ID);
-            fflush(stdout);
 
             // achromatic (no wavelength dimension) vs chromatic (has wavelength dimension)
             if((data.image[ID].md[0].naxis == 2)
@@ -408,8 +404,6 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 list_image_ID();
                 FUNC_RETURN_FAILURE("image ID not found");
             }
-
-            list_image_ID();
 
             if(optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].init != 1)
             {
@@ -605,12 +599,6 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
                 }
 
 
-                //	      exit(0);
-                /*     list_image_ID();
-                     printf("fft_DFTinsertFPM  args :  %s %f\n", data.image[ID].name, optsyst[index].FOCMASKarray[i].zfactor);
-                     sleep(10); // TEST*/
-
-
 
                 // do DFT from pupil to pupil with an FPM in the middle
                 // so this does pupil1 -> DFT -> FPM -> DFT -> pupil2
@@ -776,8 +764,6 @@ errno_t OptSystProp_run(OPTSYST    *optsyst,
 
             }
             long elemindex = optsyst[index].elemarrayindex[elem];
-
-            list_image_ID();
 
             printf("optsyst[index].FOCMASKarray[elemindex].mode = %d\n", optsyst[index].FOCMASKarray[elemindex].mode);
             if(optsyst[index].FOCMASKarray[elemindex].mode == 1)

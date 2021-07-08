@@ -617,7 +617,7 @@ printhelp ()
 {
 echo
 echo "------------------------------------------------------------------------"
-echo -e "\033[1m                 PIAACMC DESIGN: TOP LEVEL SCRIPT \033[0m"
+echo -e "\033[1m                 PIAACMC DESIGN SCRIPT \033[0m"
 echo " "
 echo " Edit script to set PIAACMC design parameters"
 echo " Design parameters stored in conf/conf_<param>.txt"
@@ -797,19 +797,19 @@ chmod +x tmpcmd
 cp __test_zonemap_00.fits ./eval0/fpmzmap.fits
 
 cd piaacmcconf_i000/
-cp fpm_zonescoord*.txt ../eval0/
-cp ModesExpr_CPA.txt ../eval0/
-cp ModesExpr_CosRad.txt ../eval0/
-cp lambdalist.txt ../eval0/
-cp conjugations.txt ../eval0/
-cp piaacmcparams.conf ../eval0/
-cp LyotStop[0-9].fits ../eval0/
-cp piaa*modes.fits ../eval0/
-cp piaam[0-1]z.fits ../eval0/
-cp piaa[0-1]Cz.fits ../eval0/
-cp piaa[0-1]Fz.fits ../eval0/
-cp CnormFactor.txt ../eval0/
-cp psfi0_step699.fits ../eval0/psfi0_nofpm.fits
+cp fpm_zonescoord*.txt ../eval0/ || :
+cp ModesExpr_CPA.txt ../eval0/ || :
+cp ModesExpr_CosRad.txt ../eval0/ || :
+cp lambdalist.txt ../eval0/ || :
+cp conjugations.txt ../eval0/ || :
+cp piaacmcparams.conf ../eval0/ || :
+cp LyotStop*.fits ../eval0/ || :
+cp piaa*modes.fits ../eval0/ || :
+cp piaam[0-1]z.fits ../eval0/ || :
+cp piaa[0-1]Cz.fits ../eval0/ || :
+cp piaa[0-1]Fz.fits ../eval0/ || :
+cp CnormFactor.txt ../eval0/ || :
+cp psfi0_step699.fits ../eval0/psfi0_nofpm.fits || :
 cd ../eval0
 
 # compress some files

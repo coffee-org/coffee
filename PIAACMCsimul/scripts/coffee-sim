@@ -189,7 +189,7 @@ echo "$dirname1" > ./log/dirname1.txt
 if [ ! -d $dirname1 ]; then
 echo "CREATING DIRECTORY $dirname1"
 mkdir -p $dirname1
-cp $dirname/pupa0_1024.fits $dirname1/
+cp $dirname/pupa0_*.fits $dirname1/
 cp $dirname/piaa0Cmodes.fits $dirname1/
 cp $dirname/piaa0Fmodes.fits $dirname1/
 cp $dirname/piaa1Cmodes.fits $dirname1/
@@ -223,7 +223,7 @@ echo "IMPORTING MONOCHROMATIC SOLUTION ... "
 sleep 2
 echo "CREATING DIRECTORY $dirname"
 mkdir -p $dirname
-cp $dirname1/pupa0_1024.fits $dirname/
+cp $dirname1/pupa0_*.fits $dirname/
 cp $dirname1/piaa0Cmodes.fits $dirname/
 cp $dirname1/piaa0Fmodes.fits $dirname/
 cp $dirname1/piaa1Cmodes.fits $dirname/

@@ -286,7 +286,7 @@ static errno_t PIAACMCsimul_initpiaacmcconf_readconfparams(
         FILE *fp;
         if((fp = fopen("conf/conf_peakPSF.txt", "r")) != NULL)
         {
-            DEBUG_TRACEPOINT_LOG("File conf/conf_peakPSF.txt open for reading");
+            DEBUG_TRACEPOINT("File conf/conf_peakPSF.txt open for reading");
             if(fscanf(fp, "%f", &piaacmcopticaldesign.peakPSF) != 1)
             {
                 FUNC_RETURN_FAILURE("Cannot read value from file conf/conf_peakPSF.txt");
@@ -297,7 +297,7 @@ static errno_t PIAACMCsimul_initpiaacmcconf_readconfparams(
         {
             piaacmcopticaldesign.peakPSF = -1.0;
         }
-        DEBUG_TRACEPOINT_LOG("piaacmcopticaldesign.peakPSF = %f", piaacmcopticaldesign.peakPSF);
+        DEBUG_TRACEPOINT("piaacmcopticaldesign.peakPSF = %f", piaacmcopticaldesign.peakPSF);
     }
 
 
@@ -309,7 +309,7 @@ static errno_t PIAACMCsimul_initpiaacmcconf_readconfparams(
             piaacmcopticaldesign.PIAAmode = (int)(data.variable[IDv].value.f + 0.01);
         }
     }
-    DEBUG_TRACEPOINT_LOG("piaacmcopticaldesign.PIAAmode = %d", piaacmcopticaldesign.PIAAmode);
+    DEBUG_TRACEPOINT("piaacmcopticaldesign.PIAAmode = %d", piaacmcopticaldesign.PIAAmode);
 
 
     piaacmcopticaldesign.PIAAcoeff = 1.0;
@@ -320,7 +320,7 @@ static errno_t PIAACMCsimul_initpiaacmcconf_readconfparams(
             piaacmcopticaldesign.PIAAcoeff = data.variable[IDv].value.f;
         }
     }
-    DEBUG_TRACEPOINT_LOG("piaacmcopticaldesign.PIAAcoeff = %f", piaacmcopticaldesign.PIAAcoeff);
+    DEBUG_TRACEPOINT("piaacmcopticaldesign.PIAAcoeff = %f", piaacmcopticaldesign.PIAAcoeff);
 
 
     if(piaacmcopticaldesign.PIAAmode == 0)
@@ -338,7 +338,7 @@ static errno_t PIAACMCsimul_initpiaacmcconf_readconfparams(
             }
         }
     }
-    DEBUG_TRACEPOINT_LOG("piaacmcopticaldesign.invPIAAmode = %d", piaacmcopticaldesign.invPIAAmode);
+    DEBUG_TRACEPOINT("piaacmcopticaldesign.invPIAAmode = %d", piaacmcopticaldesign.invPIAAmode);
 
 
 
@@ -404,7 +404,7 @@ static errno_t PIAACMCsimul_initpiaacmcconf_readconfparams(
             FUNC_RETURN_FAILURE("Cannot create file \"%s\"", fname);
         }
     }
-    DEBUG_TRACEPOINT_LOG("piaacmcopticaldesign.fpmmaterial_code = %d", piaacmcopticaldesign.fpmmaterial_code);
+    DEBUG_TRACEPOINT("piaacmcopticaldesign.fpmmaterial_code = %d", piaacmcopticaldesign.fpmmaterial_code);
 
 
 
@@ -585,7 +585,7 @@ static errno_t PIAACMCsimul_initpiaacmcconf_readconfparams(
     }
 
 
-    DEBUG_TRACEPOINT_LOG("piaacmctype = %ld", piaacmctype);
+    DEBUG_TRACEPOINT("piaacmctype = %ld", piaacmctype);
 
     if(piaacmctype == 0) // idealized focal plane mask
     {
@@ -711,7 +711,7 @@ static errno_t make_C_F_modes(
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "ref/Cmodes_%ld.fits", piaacmcopticaldesign.size);
 
-        DEBUG_TRACEPOINT_LOG("piaacmcparams.FORCE_CREATE_Cmodes = %d", piaacmcparams.FORCE_CREATE_Cmodes);
+        DEBUG_TRACEPOINT("piaacmcparams.FORCE_CREATE_Cmodes = %d", piaacmcparams.FORCE_CREATE_Cmodes);
 
         if(piaacmcparams.FORCE_CREATE_Cmodes == 0)
         {
@@ -730,7 +730,7 @@ static errno_t make_C_F_modes(
             piaacmcparams.CREATE_Cmodes = 1;
         }
 
-        DEBUG_TRACEPOINT_LOG("piaacmcparams.FORCE_CREATE_Cmodes = %d", piaacmcparams.FORCE_CREATE_Cmodes);
+        DEBUG_TRACEPOINT("piaacmcparams.FORCE_CREATE_Cmodes = %d", piaacmcparams.FORCE_CREATE_Cmodes);
 
         if(piaacmcparams.CREATE_Cmodes == 1)
         {
@@ -750,7 +750,7 @@ static errno_t make_C_F_modes(
                 Cmsize++;
             }
             piaacmcopticaldesign.Cmsize = Cmsize;
-            DEBUG_TRACEPOINT_LOG("run linopt_imtools_makeCosRadModes");
+            DEBUG_TRACEPOINT("run linopt_imtools_makeCosRadModes");
             linopt_imtools_makeCosRadModes("Cmodes", Cmsize, piaacmcopticaldesign.piaaNBCmodesmax,
                                            ApoFitCosFact * beamrad, 2.0, NULL);
             piaacmcopticaldesign.CmodesID = image_ID("Cmodes");
@@ -771,7 +771,7 @@ static errno_t make_C_F_modes(
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "ref/Fmodes_%ld.fits", piaacmcopticaldesign.size);
 
-        DEBUG_TRACEPOINT_LOG("piaacmcparams.FORCE_CREATE_Fmodes = %d", piaacmcparams.FORCE_CREATE_Fmodes);
+        DEBUG_TRACEPOINT("piaacmcparams.FORCE_CREATE_Fmodes = %d", piaacmcparams.FORCE_CREATE_Fmodes);
 
         if(piaacmcparams.FORCE_CREATE_Fmodes == 0)
         {
@@ -790,7 +790,7 @@ static errno_t make_C_F_modes(
             piaacmcparams.CREATE_Fmodes = 1;
         }
 
-        DEBUG_TRACEPOINT_LOG("piaacmcparams.FORCE_CREATE_Fmodes = %d", piaacmcparams.FORCE_CREATE_Fmodes);
+        DEBUG_TRACEPOINT("piaacmcparams.FORCE_CREATE_Fmodes = %d", piaacmcparams.FORCE_CREATE_Fmodes);
 
         if(piaacmcparams.CREATE_Fmodes == 1)
         {
@@ -800,7 +800,7 @@ static errno_t make_C_F_modes(
                 Fmsize = size;
             }
             piaacmcopticaldesign.Fmsize = Fmsize;
-            DEBUG_TRACEPOINT_LOG("run linopt_imtools_makeCPAmodes");
+            DEBUG_TRACEPOINT("run linopt_imtools_makeCPAmodes");
             linopt_imtools_makeCPAmodes("Fmodes",  Fmsize, piaacmcopticaldesign.piaaCPAmax, 0.8,
                                         beamrad, 2.0, 1, NULL);
             piaacmcopticaldesign.FmodesID = image_ID("Fmodes");
@@ -941,7 +941,7 @@ static errno_t setupPIAAshapes(
                 if(fp != NULL)
                 {
                     // if file not found, this is not a failure - it will be created below
-                    DEBUG_TRACEPOINT_LOG("loading %s", fname);
+                    DEBUG_TRACEPOINT("loading %s", fname);
 
                     float tmpf = 0.0;
                     if(fscanf(fp, "%f", &tmpf) == 1)
@@ -957,7 +957,7 @@ static errno_t setupPIAAshapes(
                 }
                 else
                 {
-                    DEBUG_TRACEPOINT_LOG("file %s not found", fname);
+                    DEBUG_TRACEPOINT("file %s not found", fname);
                 }
             }
         }
@@ -971,7 +971,7 @@ static errno_t setupPIAAshapes(
             || (piaacmcopticaldesign.piaa1CmodesID == -1)
             || (piaacmcopticaldesign.piaa1FmodesID == -1))
     {
-        DEBUG_TRACEPOINT_LOG("creating piaa modes files");
+        DEBUG_TRACEPOINT("creating piaa modes files");
 
         // We start from 2D apodization map
         char fname[STRINGMAXLEN_FULLFILENAME];
@@ -989,7 +989,7 @@ static errno_t setupPIAAshapes(
         // if the 2D apodization map cannot be loaded, then we create it
         if(IDtmp1 == -1) // CREATE APODIZATION
         {
-            DEBUG_TRACEPOINT_LOG("creating apodization");
+            DEBUG_TRACEPOINT("creating apodization");
 
             EXECUTE_SYSTEM_COMMAND(
                 "cp %s/piaaref/apo2Drad.fits %s/apo2Drad.fits",
@@ -1004,7 +1004,7 @@ static errno_t setupPIAAshapes(
 
             if(IDtmp2 == -1)
             {
-                DEBUG_TRACEPOINT_LOG("Creating 2D apodization for idealized circular monochromatic PIAACMC");
+                DEBUG_TRACEPOINT("Creating 2D apodization for idealized circular monochromatic PIAACMC");
 
                 // 2D apodization is a prolate spheroidal function, iteratively computed
                 // The function is first computed at low resolution (faster), and then expanded
@@ -1091,7 +1091,7 @@ static errno_t setupPIAAshapes(
                 if((piaacmctype == 0) &&
                         (loaded == 0)) // idealized focal plane mask
                 {
-                    DEBUG_TRACEPOINT_LOG("Idealized focal plane mask");
+                    DEBUG_TRACEPOINT("Idealized focal plane mask");
 
                     piaacmcopticaldesign.fpmaskamptransm =
                         -data.variable[variable_ID("APLCmaskCtransm")].value.f;
@@ -1136,7 +1136,7 @@ static errno_t setupPIAAshapes(
         if(piaacmcopticaldesign.PIAAmode == 0)
         {   // no PIAA optics
 
-            DEBUG_TRACEPOINT_LOG("everything goes to the conventional apodizer");
+            DEBUG_TRACEPOINT("everything goes to the conventional apodizer");
 
             for(uint64_t ii = 0; ii < xysize; ii++)
             {
@@ -1147,7 +1147,7 @@ static errno_t setupPIAAshapes(
         else
         {   // PIAA optics
 
-            DEBUG_TRACEPOINT_LOG("sharing podization, coeff = %f", piaacmcopticaldesign.PIAAcoeff);
+            DEBUG_TRACEPOINT("sharing podization, coeff = %f", piaacmcopticaldesign.PIAAcoeff);
             for(uint64_t ii = 0; ii < xysize; ii++)
             {
                 // fraction of apodization done by PIAA - between 0 and 1
@@ -1200,7 +1200,7 @@ static errno_t setupPIAAshapes(
         // piaam0z, piaam1z
         //
         {
-            DEBUG_TRACEPOINT_LOG("Make 2D sag maps");
+            DEBUG_TRACEPOINT("Make 2D sag maps");
             WRITE_FULLFILENAME(fname, "%s/PIAA_Mshapes.txt", piaacmcparams.piaacmcconfdir);
 
             double beamradpix = piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale;
@@ -1224,7 +1224,7 @@ static errno_t setupPIAAshapes(
         DEBUG_TRACEPOINT("piaacmcparams.PIAACMC_save %d", piaacmcparams.PIAACMC_save);
         if(piaacmcparams.PIAACMC_save == 1)
         {
-            DEBUG_TRACEPOINT_LOG("saving files");
+            DEBUG_TRACEPOINT("saving files");
 
             WRITE_FULLFILENAME(fname, "%s/piaam0z.fits", piaacmcparams.piaacmcconfdir);
             FUNC_CHECK_RETURN(
@@ -1294,8 +1294,15 @@ static errno_t setupPIAAshapes(
         fflush(stdout);
 
         FUNC_CHECK_RETURN(
-            linopt_imtools_image_fitModes("piaa0zcrop", "Cmodes", "maskfit", 1.0e-6,
-                                          "piaa0Cmodescoeff", 0, NULL)
+            linopt_imtools_image_fitModes(
+                "piaa0zcrop",
+                "Cmodes",
+                "maskfit",
+                1.0e-6,
+                "piaa0Cmodescoeff",
+                0,
+                NULL
+            )
         );
 
         EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_piaa0Cmodes.dat",
@@ -1307,15 +1314,21 @@ static errno_t setupPIAAshapes(
         //      save_fits("piaa0Cmodescoeff", fname);
 
         FUNC_CHECK_RETURN(
-            linopt_imtools_image_fitModes("piaa1zcrop", "Cmodes", "maskfit", 1.0e-6,
-                                          "piaa1Cmodescoeff", 0, NULL)
+            linopt_imtools_image_fitModes(
+                "piaa1zcrop",
+                "Cmodes",
+                "maskfit",
+                1.0e-6,
+                "piaa1Cmodescoeff",
+                0,
+                NULL
+            )
         );
 
-        EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_piaa1Cmodes.dat",
-                               piaacmcparams.piaacmcconfdir, piaacmcparams.piaacmcconfdir);
+        EXECUTE_SYSTEM_COMMAND(
+            "mv eigenv.dat %s/eigenv_piaa1Cmodes.dat",
+            piaacmcparams.piaacmcconfdir);
 
-        //      sprintf(fname, "%s/piaa1Cmodescoeff.fits", piaacmcparams.piaacmcconfdir);
-        //      save_fits("piaa1Cmodescoeff", fname);
 
 
         // The coefficients are re-expanded to 2D maps :
@@ -1489,7 +1502,7 @@ static errno_t setupPIAAshapes(
 
         // At this point, we have a modal representation of PIAA optics shapes
         //
-        DEBUG_TRACEPOINT_LOG("saving piaa modes files");
+        DEBUG_TRACEPOINT("saving piaa modes files");
 
         WRITE_FULLFILENAME(fname, "%s/piaaref/piaa0Cmodes.fits", piaacmcparams.piaacmcconfdir);
         FUNC_CHECK_RETURN(
@@ -1618,12 +1631,12 @@ errno_t init_piaacmcopticaldesign(
 
     if(load == 1)
     {
-        DEBUG_TRACEPOINT_LOG("Loading PIAACMC configuration");
+        DEBUG_TRACEPOINT("Loading PIAACMC configuration");
         EXECUTE_SYSTEM_COMMAND("mkdir -p %s", piaacmcparams.piaacmcconfdir);
         loaded = PIAACMCsimul_loadpiaacmcconf(piaacmcparams.piaacmcconfdir);
         if(loaded == 0)
         {
-            DEBUG_TRACEPOINT_LOG("Saving default configuration");
+            DEBUG_TRACEPOINT("Saving default configuration");
             saveconf = 1;
         }
     }
@@ -1665,10 +1678,10 @@ errno_t init_piaacmcopticaldesign(
         }
     }
 
-    DEBUG_TRACEPOINT_LOG("piaacmcopticaldesign.PIAAmaterial_name = %s", piaacmcopticaldesign.PIAAmaterial_name);
+    DEBUG_TRACEPOINT("piaacmcopticaldesign.PIAAmaterial_name = %s", piaacmcopticaldesign.PIAAmaterial_name);
     piaacmcopticaldesign.PIAAmaterial_code = OpticsMaterials_code(
                 piaacmcopticaldesign.PIAAmaterial_name);
-    DEBUG_TRACEPOINT_LOG("piaacmcopticaldesign.PIAAmaterial_code = %d", piaacmcopticaldesign.PIAAmaterial_code);
+    DEBUG_TRACEPOINT("piaacmcopticaldesign.PIAAmaterial_code = %d", piaacmcopticaldesign.PIAAmaterial_code);
 
     {   // write PIAA material
         char fname[STRINGMAXLEN_FULLFILENAME];
@@ -1703,7 +1716,7 @@ errno_t init_piaacmcopticaldesign(
     beamradpix = piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale;
     size = piaacmcopticaldesign.size;
 
-    DEBUG_TRACEPOINT_LOG("BEAM RADIUS :  %f / %f =  %f pix, size = %ld", piaacmcopticaldesign.beamrad,
+    DEBUG_TRACEPOINT("BEAM RADIUS :  %f / %f =  %f pix, size = %ld", piaacmcopticaldesign.beamrad,
                          piaacmcopticaldesign.pixscale, beamradpix, size);
 
 
@@ -1713,7 +1726,7 @@ errno_t init_piaacmcopticaldesign(
 
 
     // ==================== CREATE DMs ===============
-    DEBUG_TRACEPOINT_LOG("%d DM(s)", piaacmcopticaldesign.nbDM);
+    DEBUG_TRACEPOINT("%d DM(s)", piaacmcopticaldesign.nbDM);
     for(long iDM = 0; iDM < piaacmcopticaldesign.nbDM; iDM++)
     {
         printf("DM # %ld\n", iDM);
@@ -1858,7 +1871,7 @@ errno_t init_piaacmcopticaldesign(
     {
         piaacmcparams.CREATE_fpmzt = 1;
     }
-    DEBUG_TRACEPOINT_LOG("piaacmcparams.CREATE_fpmzt = %d", piaacmcparams.CREATE_fpmzt);
+    DEBUG_TRACEPOINT("piaacmcparams.CREATE_fpmzt = %d", piaacmcparams.CREATE_fpmzt);
 
 
     if(piaacmcparams.CREATE_fpmzt == 1)
@@ -1879,7 +1892,7 @@ errno_t init_piaacmcopticaldesign(
 
         if(piaacmctype == 0) // idealized focal plane mask
         {
-            DEBUG_TRACEPOINT_LOG("IDEALIZED FOCAL PLANE MASK");
+            DEBUG_TRACEPOINT("IDEALIZED FOCAL PLANE MASK");
 
             // measure dpha/dt
             double t0 = 1.0e-8;
@@ -1900,7 +1913,7 @@ errno_t init_piaacmcopticaldesign(
         }
         else
         {
-            DEBUG_TRACEPOINT_LOG("CREATING EXAMPLE FOCAL PLANE MASK  %ld %d", piaacmctype, loaded);
+            DEBUG_TRACEPOINT("CREATING EXAMPLE FOCAL PLANE MASK  %ld %d", piaacmctype, loaded);
         }
 
         for(long ii = 0; ii < piaacmcopticaldesign.focmNBzone; ii++)

@@ -864,7 +864,6 @@ errno_t PIAACMCsimul_computePSF(
             }
 
 
-//           list_image_ID();
             // linearize the result into imvect
             FUNC_CHECK_RETURN(
                 linopt_imtools_image_to_vec(

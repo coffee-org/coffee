@@ -1653,9 +1653,9 @@ mv ./$1/psfi0.fits ./$1/psfi0_step004.fits
 
 cp ./$1/LMintC.fits ./$1/LMintC_step004.fits
 cp ./$1/LyotStop0.fits ./$1/LyotStop0_step004.fits
-cp ./$1/LyotStop1.fits ./$1/LyotStop1_step004.fits
-cp ./$1/LyotStop2.fits ./$1/LyotStop2_step004.fits
-cp ./$1/LyotStop3.fits ./$1/LyotStop3_step004.fits
+cp ./$1/LyotStop1.fits ./$1/LyotStop1_step004.fits || :
+cp ./$1/LyotStop2.fits ./$1/LyotStop2_step004.fits || :
+cp ./$1/LyotStop3.fits ./$1/LyotStop3_step004.fits || :
 
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step004.conf
 touch ./$1/step004.txt
@@ -1750,9 +1750,9 @@ cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step006.conf
 
 cp ./$1/LMintC.fits ./$1/LMintC_step006.fits
 cp ./$1/LyotStop0.fits ./$1/LyotStop0_step006.fits
-cp ./$1/LyotStop1.fits ./$1/LyotStop1_step006.fits
-cp ./$1/LyotStop2.fits ./$1/LyotStop2_step006.fits
-cp ./$1/LyotStop3.fits ./$1/LyotStop3_step006.fits
+cp ./$1/LyotStop1.fits ./$1/LyotStop1_step006.fits || :
+cp ./$1/LyotStop2.fits ./$1/LyotStop2_step006.fits || :
+cp ./$1/LyotStop3.fits ./$1/LyotStop3_step006.fits || :
 
 touch ./$1/step006.txt
  else
@@ -1948,9 +1948,9 @@ cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step009.conf
 cp ./$1/LMintC.fits ./$1/LMintC_step009.fits
 cp ./$1/OAincoh.fits ./$1/OAincoh_step009.fits 
 cp ./$1/LyotStop0.fits ./$1/LyotStop0_step009.fits
-cp ./$1/LyotStop1.fits ./$1/LyotStop1_step009.fits
-cp ./$1/LyotStop2.fits ./$1/LyotStop2_step009.fits
-cp ./$1/LyotStop3.fits ./$1/LyotStop3_step009.fits
+cp ./$1/LyotStop1.fits ./$1/LyotStop1_step009.fits || :
+cp ./$1/LyotStop2.fits ./$1/LyotStop2_step009.fits || :
+cp ./$1/LyotStop3.fits ./$1/LyotStop3_step009.fits || :
 
 touch ./$1/step009.txt
  else
@@ -2202,9 +2202,9 @@ cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 cp ./$1/LMintC.fits ./$1/LMintC_step013.fits
 cp ./$1/OAincoh.fits ./$1/OAincoh_step013.fits 
 cp ./$1/LyotStop0.fits ./$1/LyotStop0_step013.fits
-cp ./$1/LyotStop1.fits ./$1/LyotStop1_step013.fits
-cp ./$1/LyotStop2.fits ./$1/LyotStop2_step013.fits
-cp ./$1/LyotStop3.fits ./$1/LyotStop3_step013.fits
+cp ./$1/LyotStop1.fits ./$1/LyotStop1_step013.fits || :
+cp ./$1/LyotStop2.fits ./$1/LyotStop2_step013.fits || :
+cp ./$1/LyotStop3.fits ./$1/LyotStop3_step013.fits || :
 
 touch ./$1/step013.txt
  else

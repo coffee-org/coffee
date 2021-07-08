@@ -371,7 +371,6 @@ errno_t PIAACMCsimul_run(
                     zeroST = 1; // starting point = 0
                     printf("[%d] Adopting zero as starting point\n", __LINE__);
                     printf("piaacmcopticaldesign.zonezID = %ld\n", piaacmcopticaldesign.zonezID);
-                    list_image_ID();
                     fflush(stdout);
                     // zero out the current zoneID of array of sags
                     for(uint32_t k = 0; k < data.image[piaacmcopticaldesign.zonezID].md[0].size[0]; k++)
@@ -404,7 +403,6 @@ errno_t PIAACMCsimul_run(
                     zeroST = 1; // starting point = 0
                     printf("[%d] Adopting zero as starting point\n", __LINE__);
                     printf("piaacmcopticaldesign.zonezID = %ld\n", piaacmcopticaldesign.zonezID);
-                    list_image_ID();
                     fflush(stdout);
                     // zero out the current zoneID of array of sags
                     for(uint32_t k = 0; k < data.image[piaacmcopticaldesign.zonezID].md[0].size[0]; k++)
