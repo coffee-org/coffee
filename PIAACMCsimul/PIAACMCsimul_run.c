@@ -203,15 +203,27 @@ static errno_t PIAACMCsimul_setparam_variables(
         piaacmcparams.PIAACMC_fpmtype = (int)(data.variable[IDv].value.f + 0.1);
     }
 
-    FUNC_CHECK_RETURN(
-        init_piaacmcopticaldesign(
-            piaacmcparams.PIAACMC_fpmtype,
-            fpmradld,
-            centobs0,
-            centobs1,
-            0,
-            1
-        ));
+    {
+        uint64_t initflags = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT;
+
+        initflags |= INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
+        initflags |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
+
+        if(piaacmcparams.PIAACMC_fpmtype == 1)
+        {
+            initflags |= INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
+        }
+
+        FUNC_CHECK_RETURN(
+            init_piaacmcopticaldesign(
+                fpmradld,
+                centobs0,
+                centobs1,
+                initflags,
+                NULL
+            )
+        );
+    }
 
     DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;

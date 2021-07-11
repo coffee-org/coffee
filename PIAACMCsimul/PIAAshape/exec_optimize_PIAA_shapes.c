@@ -61,7 +61,13 @@ errno_t exec_optimize_PIAA_shapes()
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
-    FUNC_CHECK_RETURN(init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 1));
+    {
+        uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
+        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
+        FUNC_CHECK_RETURN(
+            init_piaacmcopticaldesign(fpmradld, centobs0, centobs1, initflag, NULL)
+        );
+    }
 
     piaacmcparams.LINOPT = 1; // perform linear optimization
     /*if((IDv = variable_ID("PIAACMC_nbiter")) != -1)

@@ -5,6 +5,8 @@
  *
  */
 
+// log all debug trace points to file
+//#define DEBUGLOG
 
 
 // System includes
@@ -31,22 +33,19 @@
 #include "PIAAshape/makePIAAshapes.h"
 
 
-
-
 /**
- * ---
+ * @brief Optimize focal plane mask transmission for monochromatic idealized PIAACMC (mode 2)
  *
- * ## Mode 2: Optimize focal plane mask transmission for monochromatic idealized PIAACMC
-
-For monochromatic, idealized PIAACMC, find the scalar transimssion of the uniform focal plane mask
-that provides best contrast in the evaluation zone
-
-Very similar to the Lyot stop search in mode 1: iterative refined marching, changing the
-the transmission value piaacmcopticaldesign.fpmaskamptransm, which
-is between 0 and 1
-
-Uses single on-axis light source
-**/
+ * For monochromatic, idealized PIAACMC, find the scalar transimssion of the uniform focal plane mask
+ * that provides best contrast in the evaluation zone.
+ *
+ * Very similar to the Lyot stop search in mode 1: iterative refined marching, changing the
+ * the transmission value piaacmcopticaldesign.fpmaskamptransm, which is between 0 and 1.
+ *
+ * Uses single on-axis light source.
+ *
+ * @return errno_t
+ */
 errno_t exec_optimize_fpmtransmission()
 {
     DEBUG_TRACE_FSTART();
@@ -83,12 +82,25 @@ errno_t exec_optimize_fpmtransmission()
 
 
     /// ### Initialize as in mode 0
+    {
+        uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT;
+        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
+        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
+        FUNC_CHECK_RETURN(
+            init_piaacmcopticaldesign(
+                fpmradld,
+                centobs0,
+                centobs1,
+                initflag,
+                NULL
+            )
+        );
+    }
+    DEBUG_TRACEPOINT("piaacmcopticaldesign.fpmaskamptransm %lf", piaacmcopticaldesign.fpmaskamptransm);
 
     FUNC_CHECK_RETURN(
-        init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 1)
+        makePIAAshapes()
     );
-
-    FUNC_CHECK_RETURN(makePIAAshapes());
 
     piaacmcopticalsystem.FOCMASKarray[0].mode = 1; // use 1-fpm
 
@@ -102,16 +114,29 @@ errno_t exec_optimize_fpmtransmission()
 
 
     /// ### Scan parameter value
+
+    // Each evaluation is recorded in log file
     WRITE_FULLFILENAME(fnamelog, "%s/result_fpmt.log", piaacmcparams.piaacmcconfdir);
     {
         FILE * fp = fopen(fnamelog, "w");
+        if(fp==NULL)
+        {
+            FUNC_RETURN_FAILURE("Cannot create file %s", fnamelog);
+            abort();
+        }
         fclose(fp);
     }
 
     for(long iter = 0; iter < NBiter; iter++)
     {
+        DEBUG_TRACEPOINT("iter %ld/%ld %lf %lf",
+                         iter, NBiter,
+                         paramref[0], range
+                        );
+
         // starting point of march
         piaacmcopticaldesign.fpmaskamptransm = paramref[0] - range;
+        DEBUG_TRACEPOINT("piaacmcopticaldesign.fpmaskamptransm %lf", piaacmcopticaldesign.fpmaskamptransm);
 
         // store current value as best
         parambest[0] = piaacmcopticaldesign.fpmaskamptransm;
@@ -126,18 +151,38 @@ errno_t exec_optimize_fpmtransmission()
 
             printf("\n\n\n");
 
-            piaacmcparams.FORCE_CREATE_fpmza =
-                1; // forces creation of new focal plane mask in the next two routines
+            // forces creation of new focal plane mask in the next two routines
+            piaacmcparams.FORCE_CREATE_fpmza = 1;
+
+            DEBUG_TRACEPOINT("coputePSF piaacmcopticaldesign.fpmaskamptransm %lf",
+                             piaacmcopticaldesign.fpmaskamptransm);
 
             /// - Call PIAACMCsimul_initpiaacmcconf()
-            FUNC_CHECK_RETURN(init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 0));
+            FUNC_CHECK_RETURN(
+                init_piaacmcopticaldesign(
+                    fpmradld,
+                    centobs0,
+                    centobs1,
+                    INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT,
+                    NULL
+                )
+            );
 
             // compute on-axis PSF of all optical elements returning contrast in evaluation zone
             // ************************* need to do all piaacmcopticalsystem.NBelem?
             /// - call PIAACMCsimul_computePSF() to evaluate design
+            DEBUG_TRACEPOINT("coputePSF piaacmcopticaldesign.fpmaskamptransm %lf",
+                             piaacmcopticaldesign.fpmaskamptransm);
+
             FUNC_CHECK_RETURN(
                 PIAACMCsimul_computePSF(
-                    0.0, 0.0, 0, piaacmcopticalsystem.NBelem, 0, 0, 0, 0, &val)
+                    0.0, 0.0, 0,
+                    piaacmcopticalsystem.NBelem,
+                    0,
+                    0,
+                    0,
+                    0,
+                    &val)
             );
 
             if(val < valbest)
@@ -156,9 +201,12 @@ errno_t exec_optimize_fpmtransmission()
             }
 
             /// -  increment parameter
+            DEBUG_TRACEPOINT("piaacmcopticaldesign.fpmaskamptransm %lf", piaacmcopticaldesign.fpmaskamptransm);
             piaacmcopticaldesign.fpmaskamptransm += stepsize;
+            DEBUG_TRACEPOINT("stepsize %lf -> %lf", stepsize, piaacmcopticaldesign.fpmaskamptransm);
 
             // if we've reached the end of the range stop the loop
+            DEBUG_TRACEPOINT("piaacmcopticaldesign.fpmaskamptransm = %lf", piaacmcopticaldesign.fpmaskamptransm);
             if(piaacmcopticaldesign.fpmaskamptransm > paramref[0] + range + 0.001 * stepsize)
             {
                 loopOK = 0;
@@ -187,10 +235,20 @@ errno_t exec_optimize_fpmtransmission()
     piaacmcopticaldesign.fpmaskamptransm = parambest[0];
 
 // why? **************************
-    FUNC_CHECK_RETURN(init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 0));
+    FUNC_CHECK_RETURN(
+        init_piaacmcopticaldesign(
+            fpmradld,
+            centobs0,
+            centobs1,
+            INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT,
+            NULL
+        )
+    );
 
     // save final result to disk
-    FUNC_CHECK_RETURN(PIAACMCsimul_savepiaacmcconf(piaacmcparams.piaacmcconfdir));
+    FUNC_CHECK_RETURN(
+        PIAACMCsimul_savepiaacmcconf(piaacmcparams.piaacmcconfdir)
+    );
 
 
     piaacmcparams.FORCE_CREATE_fpmza = 0; // turning off to be good citizens

@@ -116,9 +116,22 @@ errno_t exec_optimize_fpm_zones()
     //    data.image[IDstatus].array.UI16[0] = 0;
 
     // usual initialization
-    FUNC_CHECK_RETURN(
-        init_piaacmcopticaldesign(1, fpmradld, centobs0, centobs1, 0, 1)
-    );
+    {
+        uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT;
+        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
+        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
+        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
+
+        FUNC_CHECK_RETURN(
+            init_piaacmcopticaldesign(
+                fpmradld,
+                centobs0,
+                centobs1,
+                initflag,
+                NULL
+            )
+        );
+    }
 
     FUNC_CHECK_RETURN(makePIAAshapes());
 
@@ -205,20 +218,20 @@ errno_t exec_optimize_fpm_zones()
     piaacmcparams.zonez_array = data.image[piaacmcopticaldesign.zonezID].array.D;
     // allocate derivative of phase against thickness array
     piaacmcparams.dphadz_array = (double *) malloc(sizeof(
-                                        double) * piaacmcopticaldesign.nblambda);
+                                     double) * piaacmcopticaldesign.nblambda);
     // compute this derivative
     for(long k = 0; k < piaacmcopticaldesign.nblambda; k++)
     {
         // OPTICSMATERIALS_pha_lambda computes change in phase per unit thickness at specified wavelength
         // second arg is thickness, so 1.0 meters determines result per meter thickness
         piaacmcparams.dphadz_array[k] = OpticsMaterials_pha_lambda(
-                                               piaacmcopticaldesign.fpmmaterial_code, 1.0, piaacmcopticalsystem.lambdaarray[k]);
+                                            piaacmcopticaldesign.fpmmaterial_code, 1.0, piaacmcopticalsystem.lambdaarray[k]);
         printf("%ld  %g %g\n", k, piaacmcopticalsystem.lambdaarray[k],
                piaacmcparams.dphadz_array[k]);
     }
     piaacmcparams.outtmp_array = (double *) malloc(sizeof(double) *
-                                    (piaacmcparams.vsize * piaacmcopticaldesign.nblambda +
-                                     data.image[piaacmcopticaldesign.zonezID].md[0].size[0]));
+                                 (piaacmcparams.vsize * piaacmcopticaldesign.nblambda +
+                                  data.image[piaacmcopticaldesign.zonezID].md[0].size[0]));
 
     // do the fast optimization using the results of mode 11
     piaacmcparams.computePSF_FAST_FPMresp = 1;

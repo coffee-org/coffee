@@ -75,9 +75,21 @@ errno_t exec_computePSF_no_fpm(
 
 
     // init as in mode 0
-    FUNC_CHECK_RETURN(
-        init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 1)
-    );
+    {
+        uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT;
+        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
+        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
+
+        FUNC_CHECK_RETURN(
+            init_piaacmcopticaldesign(
+                fpmradld,
+                centobs0,
+                centobs1,
+                initflag,
+                NULL
+            )
+        );
+    }
 
     FUNC_CHECK_RETURN(makePIAAshapes());
 
@@ -90,7 +102,13 @@ errno_t exec_computePSF_no_fpm(
     piaacmcparams.FORCE_CREATE_fpmza = 1;
 
     FUNC_CHECK_RETURN(
-        init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 0)
+        init_piaacmcopticaldesign(
+            fpmradld,
+            centobs0,
+            centobs1,
+            INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT,
+            NULL
+        )
     );
 
     // compute the PSF for an on-axis source, all optical elements
@@ -102,9 +120,18 @@ errno_t exec_computePSF_no_fpm(
     // restore original configuration
     piaacmcopticaldesign.fpmaskamptransm = piaacmcparams.linopt_paramrefval[0];
 
-    FUNC_CHECK_RETURN(
-        init_piaacmcopticaldesign(0, fpmradld, centobs0, centobs1, 0, 0)
-    );
+    {
+        uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT;
+        FUNC_CHECK_RETURN(
+            init_piaacmcopticaldesign(
+                fpmradld,
+                centobs0,
+                centobs1,
+                initflag,
+                NULL
+            )
+        );
+    }
 
     FUNC_CHECK_RETURN(
         PIAACMCsimul_savepiaacmcconf(piaacmcparams.piaacmcconfdir)

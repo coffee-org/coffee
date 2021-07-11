@@ -97,16 +97,30 @@ errno_t exec_compute_image()
     piaacmcparams.FORCE_CREATE_fpmza = 1;
 
     // main initialization function to set up the piaacmc structure
-    FUNC_CHECK_RETURN(
-        init_piaacmcopticaldesign(
-            piaacmcparams.PIAACMC_fpmtype,
-            fpmradld,
-            centobs0,
-            centobs1,
-            PIAACMC_WFCmode,
-            1
-        )
-    );
+    {
+        uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT;
+        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
+        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
+
+        if(piaacmcparams.PIAACMC_fpmtype == 1)
+        {
+            initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
+        }
+
+        if(PIAACMC_WFCmode == 1)
+        {
+            initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__WSCMODE;
+        }
+        FUNC_CHECK_RETURN(
+            init_piaacmcopticaldesign(
+                fpmradld,
+                centobs0,
+                centobs1,
+                initflag,
+                NULL
+            )
+        );
+    }
 
     // make the mirror or lenses shapes
     FUNC_CHECK_RETURN(

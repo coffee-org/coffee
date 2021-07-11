@@ -123,15 +123,25 @@ errno_t PIAACMCsimul_eval_poly_design(
 
     piaacmcparams.FORCE_CREATE_fpmza = 1;
 
+    {
+        uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT;
+        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
+        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
 
-    FUNC_CHECK_RETURN(
-        init_piaacmcopticaldesign(
-            piaacmcparams.PIAACMC_fpmtype,
-            fpmradld,
-            centobs0, centobs1,
-            0,
-            1)
-    );
+        if(piaacmcparams.PIAACMC_fpmtype == 1)
+        {
+            initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
+        }
+        FUNC_CHECK_RETURN(
+            init_piaacmcopticaldesign(
+                fpmradld,
+                centobs0,
+                centobs1,
+                initflag,
+                NULL
+            )
+        );
+    }
 
     FUNC_CHECK_RETURN(
         makePIAAshapes()

@@ -79,9 +79,22 @@ errno_t exec_multizone_fpm_calib()
 
 
     // initialize
-    FUNC_CHECK_RETURN(
-        init_piaacmcopticaldesign(1, fpmradld, centobs0, centobs1, 0, 1)
-    );
+    {
+        uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT;
+        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
+        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
+        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
+
+        FUNC_CHECK_RETURN(
+            init_piaacmcopticaldesign(
+                fpmradld,
+                centobs0,
+                centobs1,
+                initflag,
+                NULL
+            )
+        );
+    }
 
     printf("piaacmcconfdir     : %s\n", piaacmcparams.piaacmcconfdir);
     printf("SCORINGMASKTYPE    : %d\n", piaacmcparams.SCORINGMASKTYPE);
@@ -171,10 +184,6 @@ errno_t exec_multizone_fpm_calib()
             piaacmcparams.FORCE_CREATE_fpmzmap = 1;
             piaacmcparams.FORCE_CREATE_fpmzt = 1;
             piaacmcparams.FORCE_CREATE_fpmza = 1;
-
-            FUNC_CHECK_RETURN(
-                init_piaacmcopticaldesign(1, fpmradld, centobs0, centobs1, 0, 1)
-            );
         }
         else
         {
@@ -183,12 +192,24 @@ errno_t exec_multizone_fpm_calib()
             piaacmcparams.FORCE_CREATE_fpmzmap = 0;
             piaacmcparams.FORCE_CREATE_fpmzt = 0;
             piaacmcparams.FORCE_CREATE_fpmza = 0;
-
-            FUNC_CHECK_RETURN(
-                init_piaacmcopticaldesign(1, fpmradld, centobs0, centobs1, 0, 1)
-            );
         }
 
+        {
+            uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT;
+            initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
+            initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
+            initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
+
+            FUNC_CHECK_RETURN(
+                init_piaacmcopticaldesign(
+                    fpmradld,
+                    centobs0,
+                    centobs1,
+                    initflag,
+                    NULL
+                )
+            );
+        }
 
 
         //char fname[STRINGMAXLEN_FULLFILENAME];
@@ -285,9 +306,19 @@ errno_t exec_multizone_fpm_calib()
                                                  piaacmcparams.LAMBDAEND) * piaacmcopticaldesign.Fratio *
                                           piaacmcparams.PIAACMC_MASKRADLD; // piaacmcparams.PIAACMC_MASKRADLD l/D radius at central lambda
             // initialize the optical system
-            FUNC_CHECK_RETURN(
-                init_piaacmcopticaldesign(1, fpmradld, centobs0, centobs1, 0, 0)
-            );
+            {
+                uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT;
+                initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
+                FUNC_CHECK_RETURN(
+                    init_piaacmcopticaldesign(
+                        fpmradld,
+                        centobs0,
+                        centobs1,
+                        initflag,
+                        NULL
+                    )
+                );
+            }
 
 
             //     printf("-------------------------- STEP 0005a  piaacmcopticaldesign.focmNBzone  =  %ld   (%ld)\n", piaacmcopticaldesign.focmNBzone, piaacmcopticaldesign.NBrings);
