@@ -1749,6 +1749,7 @@ mv ./$1/psfi0.fits ./$1/psfi0_step006.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step006.conf
 
 cp ./$1/LMintC.fits ./$1/LMintC_step006.fits
+cp ./$1/LcombOA.fits ./$1/LcombOA_step006.fits
 cp ./$1/LyotStop0.fits ./$1/LyotStop0_step006.fits
 cp ./$1/LyotStop1.fits ./$1/LyotStop1_step006.fits || :
 cp ./$1/LyotStop2.fits ./$1/LyotStop2_step006.fits || :
@@ -1826,8 +1827,8 @@ cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step$step.fits
 cp ./$1/piaa0Fmodes.fits ./$1/piaa0Fmodes_step$step.fits
 cp ./$1/piaa1Cmodes.fits ./$1/piaa1Cmodes_step$step.fits
 cp ./$1/piaa1Fmodes.fits ./$1/piaa1Fmodes_step$step.fits
-cp ./$1/fpm_zonez.fits ./$1/fpm_zonez_step$step.fits
-cp ./$1/fpm_zonea.fits ./$1/fpm_zonea_step$step.fits
+cp ./$1/fpm_zonez.fits ./$1/fpm_zonez_step$step.fits || :
+cp ./$1/fpm_zonea.fits ./$1/fpm_zonea_step$step.fits || :
 cp ./$1/linoptval.txt ./$1/linoptval_step007.txt
 touch ./$1/step007.txt
  else
@@ -1897,8 +1898,8 @@ cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step008.fits
 cp ./$1/piaa0Fmodes.fits ./$1/piaa0Fmodes_step008.fits
 cp ./$1/piaa1Cmodes.fits ./$1/piaa1Cmodes_step008.fits
 cp ./$1/piaa1Fmodes.fits ./$1/piaa1Fmodes_step008.fits
-cp ./$1/fpm_zonez.fits ./$1/fpm_zonez_step008.fits
-cp ./$1/fpm_zonea.fits ./$1/fpm_zonea_step008.fits
+cp ./$1/fpm_zonez.fits ./$1/fpm_zonez_step008.fits || :
+cp ./$1/fpm_zonea.fits ./$1/fpm_zonea_step008.fits || :
 cp ./$1/linoptval.txt ./$1/linoptval_step008.txt
 touch ./$1/step008.txt
  else
@@ -1946,7 +1947,7 @@ mv ./$1/psfi0.fits ./$1/psfi0_step009.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step009.conf
 
 cp ./$1/LMintC.fits ./$1/LMintC_step009.fits
-cp ./$1/OAincoh.fits ./$1/OAincoh_step009.fits 
+cp ./$1/LcombOA.fits ./$1/LcombOA_step009.fits
 cp ./$1/LyotStop0.fits ./$1/LyotStop0_step009.fits
 cp ./$1/LyotStop1.fits ./$1/LyotStop1_step009.fits || :
 cp ./$1/LyotStop2.fits ./$1/LyotStop2_step009.fits || :
@@ -2069,8 +2070,8 @@ cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step$step.fits
 cp ./$1/piaa0Fmodes.fits ./$1/piaa0Fmodes_step$step.fits
 cp ./$1/piaa1Cmodes.fits ./$1/piaa1Cmodes_step$step.fits
 cp ./$1/piaa1Fmodes.fits ./$1/piaa1Fmodes_step$step.fits
-cp ./$1/fpm_zonez.fits ./$1/fpm_zonez_step$step.fits
-cp ./$1/fpm_zonea.fits ./$1/fpm_zonea_step$step.fits
+cp ./$1/fpm_zonez.fits ./$1/fpm_zonez_step$step.fits || :
+cp ./$1/fpm_zonea.fits ./$1/fpm_zonea_step$step.fits || :
 cp ./$1/linoptval.txt ./$1/linoptval_step011.txt
 touch ./$1/step011.txt
  else
@@ -2147,8 +2148,8 @@ cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step$step.fits
 cp ./$1/piaa0Fmodes.fits ./$1/piaa0Fmodes_step$step.fits
 cp ./$1/piaa1Cmodes.fits ./$1/piaa1Cmodes_step$step.fits
 cp ./$1/piaa1Fmodes.fits ./$1/piaa1Fmodes_step$step.fits
-cp ./$1/fpm_zonez.fits ./$1/fpm_zonez_step$step.fits
-cp ./$1/fpm_zonea.fits ./$1/fpm_zonea_step$step.fits
+cp ./$1/fpm_zonez.fits ./$1/fpm_zonez_step$step.fits || :
+cp ./$1/fpm_zonea.fits ./$1/fpm_zonea_step$step.fits || :
 cp ./$1/linoptval.txt ./$1/linoptval_step012.txt
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 touch ./$1/step012.txt
@@ -2324,8 +2325,8 @@ cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step$step.fits
 cp ./$1/piaa0Fmodes.fits ./$1/piaa0Fmodes_step$step.fits
 cp ./$1/piaa1Cmodes.fits ./$1/piaa1Cmodes_step$step.fits
 cp ./$1/piaa1Fmodes.fits ./$1/piaa1Fmodes_step$step.fits
-cp ./$1/fpm_zonez.fits ./$1/fpm_zonez_step$step.fits
-cp ./$1/fpm_zonea.fits ./$1/fpm_zonea_step$step.fits
+cp ./$1/fpm_zonez.fits ./$1/fpm_zonez_step$step.fits || :
+cp ./$1/fpm_zonea.fits ./$1/fpm_zonea_step$step.fits || :
 cp ./$1/linoptval.txt ./$1/linoptval_step015.txt
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 touch ./$1/step015.txt
@@ -2400,8 +2401,8 @@ cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step$step.fits
 cp ./$1/piaa0Fmodes.fits ./$1/piaa0Fmodes_step$step.fits
 cp ./$1/piaa1Cmodes.fits ./$1/piaa1Cmodes_step$step.fits
 cp ./$1/piaa1Fmodes.fits ./$1/piaa1Fmodes_step$step.fits
-cp ./$1/fpm_zonez.fits ./$1/fpm_zonez_step$step.fits
-cp ./$1/fpm_zonea.fits ./$1/fpm_zonea_step$step.fits
+cp ./$1/fpm_zonez.fits ./$1/fpm_zonez_step$step.fits || :
+cp ./$1/fpm_zonea.fits ./$1/fpm_zonea_step$step.fits || :
 cp ./$1/linoptval.txt ./$1/linoptval_step016.txt
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 touch ./$1/step016.txt
@@ -2473,8 +2474,8 @@ cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step$step.fits
 cp ./$1/piaa0Fmodes.fits ./$1/piaa0Fmodes_step$step.fits
 cp ./$1/piaa1Cmodes.fits ./$1/piaa1Cmodes_step$step.fits
 cp ./$1/piaa1Fmodes.fits ./$1/piaa1Fmodes_step$step.fits
-cp ./$1/fpm_zonez.fits ./$1/fpm_zonez_step$step.fits
-cp ./$1/fpm_zonea.fits ./$1/fpm_zonea_step$step.fits
+cp ./$1/fpm_zonez.fits ./$1/fpm_zonez_step$step.fits || :
+cp ./$1/fpm_zonea.fits ./$1/fpm_zonea_step$step.fits || :
 cp ./$1/linoptval.txt ./$1/linoptval_step017.txt
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 touch ./$1/step017.txt
