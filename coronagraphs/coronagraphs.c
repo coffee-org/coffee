@@ -1156,9 +1156,6 @@ double coronagraph_make_2Dprolate_DFT(
         }
         //  save_fits("pupa0", "test_pupa0.fits"); //TEST
         //    save_fits(pupmask_name, "test_pupamask.fits");//TEST
-        //printf("Test wait\n");
-        //list_image_ID();
-        //	sleep(100.0); // TEST
     }
     //else
     //	 save_fits("pupa0", "test__pupa0.fits");//TEST
@@ -1568,8 +1565,6 @@ errno_t coronagraph_make_2Dprolate_CS(
     {
         FUNC_RETURN_FAILURE("Call to coronagraph_make_2Dprolate_DFT failed");
     }
-    //imageID IDout = image_ID("outapo");
-    list_image_ID();
 
     // extend outapo into radial profile and 2D image
     // this is done by finding best fit ??
@@ -8276,8 +8271,6 @@ int coronagraph_simul_MULTISTEP_APLC(
     printf("RADIUS = %f\n", trad_pix);
     IDa1 = make_disk("pa1", size, size, size / 2, size / 2, trad_pix + 2.0);
 
-    //  save_fl_fits("pa1", "pa110.fits");
-    //  list_image_ID();
 
     IDpupa0 = make_disk("pa0", size, size, size / 2, size / 2, trad_pix);
 
@@ -8571,7 +8564,6 @@ int coronagraph_simul_MULTISTEP_APLC(
             {
                 fft_DFTinsertFPM_re("pc1", "aplcfpm1", DFTZFACTOR, "pc2", NULL);
             }
-            //	  list_image_ID();
 
             if(0) // testing
             {
@@ -8872,8 +8864,6 @@ int coronagraph_simul_MULTISTEP_APLC(
 
     delete_image_ID("pc1", DELETE_IMAGE_ERRMODE_WARNING);
     delete_image_ID("pa0", DELETE_IMAGE_ERRMODE_WARNING);
-
-    // list_image_ID();
 
     return(0);
 }
