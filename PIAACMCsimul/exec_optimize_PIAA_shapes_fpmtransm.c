@@ -35,7 +35,7 @@
  *
  */
 
-errno_t PIAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm()
+errno_t exec_optimize_PIAA_shapes_fpmtransm()
 {
     DEBUG_TRACE_FSTART();
 
