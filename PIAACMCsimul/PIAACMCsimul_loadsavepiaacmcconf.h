@@ -10,7 +10,7 @@ errno_t PIAACMCsimul_update_fnamedescr_conf();
 errno_t PIAACMCsimul_update_fnamedescr();
 
 errno_t PIAACMCsimul_savepiaacmcconf(
-    const char *__restrict__ dname
+    const char *__restrict dname
 );
 
 #endif
