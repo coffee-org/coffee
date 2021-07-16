@@ -7,7 +7,7 @@
  */
 
 // log all debug trace points to file
-//#define DEBUGLOG
+#define DEBUGLOG
 
 // System includes
 
@@ -812,11 +812,27 @@ static errno_t make_C_F_modes(
             }
             piaacmcopticaldesign.Fmsize = Fmsize;
             DEBUG_TRACEPOINT("run linopt_imtools_makeCPAmodes");
-            linopt_imtools_makeCPAmodes("Fmodes",  Fmsize, piaacmcopticaldesign.piaaCPAmax, 0.8,
-                                        beamrad, 2.0, 1, NULL);
+            FUNC_CHECK_RETURN(
+                linopt_imtools_makeCPAmodes(
+                    "Fmodes",
+                    Fmsize,
+                    piaacmcopticaldesign.piaaCPAmax,
+                    0.8,
+                    beamrad,
+                    2.0,
+                    1,
+                    NULL)
+            );
             piaacmcopticaldesign.FmodesID = image_ID("Fmodes");
-            save_fits("Fmodes", fname);
-            save_fits("cpamodesfreq", "cpamodesfreq.fits");
+
+            FUNC_CHECK_RETURN(
+                save_fits("Fmodes", fname)
+            );
+
+            FUNC_CHECK_RETURN(
+                save_fits("cpamodesfreq", "cpamodesfreq.fits")
+            );
+
             EXECUTE_SYSTEM_COMMAND("mv ModesExpr_CPA.txt %s/", piaacmcparams.piaacmcconfdir);
         }
         piaacmcopticaldesign.NBFmodes = data.image[piaacmcopticaldesign.FmodesID].md[0].size[2];
