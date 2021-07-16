@@ -2201,7 +2201,7 @@ cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 
 cp ./$1/LMintC.fits ./$1/LMintC_step013.fits
-cp ./$1/OAincoh.fits ./$1/OAincoh_step013.fits 
+cp ./$1/LcombOA.fits ./$1/LcombOA_step013.fits
 cp ./$1/LyotStop0.fits ./$1/LyotStop0_step013.fits
 cp ./$1/LyotStop1.fits ./$1/LyotStop1_step013.fits || :
 cp ./$1/LyotStop2.fits ./$1/LyotStop2_step013.fits || :
