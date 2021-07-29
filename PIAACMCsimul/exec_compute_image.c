@@ -140,6 +140,10 @@ errno_t exec_compute_image()
 
         uint32_t *sizearray;
         sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
+        if(sizearray == NULL)
+        {
+            FUNC_RETURN_FAILURE("malloc error");
+        }
         sizearray[0] = piaacmcopticaldesign.size;
         sizearray[1] = piaacmcopticaldesign.size;
 
@@ -152,6 +156,10 @@ errno_t exec_compute_image()
 
         long sizecrop = piaacmcopticaldesign.size / 16;
         sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 3);
+        if(sizearray == NULL)
+        {
+            FUNC_RETURN_FAILURE("malloc error");
+        }
         sizearray[0] = sizecrop;
         sizearray[1] = sizecrop;
         sizearray[2] = piaacmcopticaldesign.nblambda;

@@ -192,6 +192,11 @@ errno_t PIAACMCsimul_eval_poly_design(
         zsize = data.image[ID].md[0].size[2];
 
         float * peakarray = (float *) malloc(sizeof(float) * zsize);
+        if(peakarray == NULL)
+        {
+            FUNC_RETURN_FAILURE("malloc error");
+        }
+
         for(uint32_t kk = 0; kk < zsize; kk++)
         {
             peakarray[kk] = 0.0;
@@ -243,8 +248,19 @@ errno_t PIAACMCsimul_eval_poly_design(
         double focscale = (2.0 * piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale) / piaacmcopticaldesign.size;
         printf("focscale = %f\n", focscale);
         long eval_sepNBpt = (long) (eval_sepmaxld / eval_sepstepld);
+
         double * eval_contrastCurve = (double *) malloc(sizeof(double) * eval_sepNBpt);
+        if(eval_contrastCurve == NULL)
+        {
+            FUNC_RETURN_FAILURE("malloc error");
+        }
+
         double * eval_contrastCurve_cnt = (double *) malloc(sizeof(double) * eval_sepNBpt);
+        if(eval_contrastCurve_cnt == NULL)
+        {
+            FUNC_RETURN_FAILURE("malloc error");
+        }
+
         for(long ri = 0; ri < eval_sepNBpt; ri++)
         {
             eval_contrastCurve[ri] = 0.0;
@@ -636,10 +652,31 @@ errno_t PIAACMCsimul_eval_poly_design(
         double focscale = (2.0 * piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale) / piaacmcopticaldesign.size;
         printf("focscale = %f\n", focscale);
         long eval_sepNBpt = (long) (eval_sepmaxld / eval_sepstepld);
+
         double * eval_contrastCurve = (double *) malloc(sizeof(double) * eval_sepNBpt);
+        if(eval_contrastCurve == NULL)
+        {
+            FUNC_RETURN_FAILURE("malloc error");
+        }
+
         double * eval_COHcontrastCurve = (double *) malloc(sizeof(double) * eval_sepNBpt);
+        if(eval_COHcontrastCurve == NULL)
+        {
+            FUNC_RETURN_FAILURE("malloc error");
+        }
+
         double * eval_INCcontrastCurve = (double *) malloc(sizeof(double) * eval_sepNBpt);
+        if(eval_INCcontrastCurve == NULL)
+        {
+            FUNC_RETURN_FAILURE("malloc error");
+        }
+
         double * eval_contrastCurve_cnt = (double *) malloc(sizeof(double) * eval_sepNBpt);
+        if(eval_contrastCurve_cnt == NULL)
+        {
+            FUNC_RETURN_FAILURE("malloc error");
+        }
+
         for(long ri = 0; ri < eval_sepNBpt; ri++)
         {
             eval_contrastCurve[ri] = 0.0;
@@ -717,7 +754,13 @@ errno_t PIAACMCsimul_eval_poly_design(
                                piaacmcparams.SCORINGMASKTYPE, piaacmcparams.fnamedescr);
 
             FILE * fp = fopen(fname, "w");
+
             float * rcarray = (float *) malloc(sizeof(float) * xsize * ysize * zsize);
+            if(rcarray == NULL)
+            {
+                FUNC_RETURN_FAILURE("malloc error");
+            }
+
             float drc = 0.2;
             long rcbinmax = 100;
             for(long rcbin = 0; rcbin < rcbinmax; rcbin++)

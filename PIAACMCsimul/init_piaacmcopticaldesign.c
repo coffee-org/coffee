@@ -1782,8 +1782,7 @@ errno_t init_piaacmcopticaldesign(
             uint32_t *sizearray;
             sizearray = (uint32_t *) malloc(sizeof(uint32_t) * 2);
             if(sizearray == NULL) {
-                PRINT_ERROR("malloc returns NULL pointer");
-                abort(); // or handle error in other ways
+                FUNC_RETURN_FAILURE("malloc returns NULL pointer");
             }
             sizearray[0] = size;
             sizearray[1] = size;

@@ -84,8 +84,7 @@ errno_t PIAACMCsimul_CA2propCubeInt(
     // initialize zarray
     zarray = (float *) malloc(sizeof(float) * NBz);
     if(zarray == NULL) {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort();
+        FUNC_RETURN_FAILURE("malloc returns NULL pointer");
     }
 
     for(long l = 0; l < NBz; l++)
