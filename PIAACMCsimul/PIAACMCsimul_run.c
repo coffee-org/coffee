@@ -84,15 +84,18 @@ static errno_t help_function()
 
 static errno_t compute_function()
 {
-    errno_t rval = 0;
+    DEBUG_TRACE_FSTART();
 
     INSERT_STD_PROCINFO_COMPUTEFUNC_START
 
-    rval = PIAACMCsimul_run(confindex,*mode);
+    FUNC_CHECK_RETURN(
+        PIAACMCsimul_run(confindex,*mode)
+    );
 
     INSERT_STD_PROCINFO_COMPUTEFUNC_END
 
-    return rval;
+    DEBUG_TRACE_FEXIT();
+    return RETURN_SUCCESS;
 }
 
 
