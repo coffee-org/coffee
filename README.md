@@ -34,7 +34,7 @@ To compile and install executable in local directory :
     git clone https://github.com/milk-org/milk.git
     cd milk
     ./fetch_coffee_dev.sh
-    ./compile.sh $PWD/local
+    MILK_PYTHON="OFF" ./compile.sh $PWD/local
 
 ## Run coffee
 
