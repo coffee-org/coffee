@@ -32,22 +32,22 @@ static CLICMDARGDEF farg[] =
     {
         CLIARG_IMG, ".FPMsag", "input FPM sag", "inFPMsag",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &FPMsagimname
+        (void **) &FPMsagimname, NULL
     },
     {
         CLIARG_STR, ".zcoordname", "sectors ASCII file", "coord.txt",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &zonescoordname
+        (void **) &zonescoordname, NULL
     },
     {
         CLIARG_LONG, ".NBexp", "number of exposures", "4",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &NBexpval
+        (void **) &NBexpval, NULL
     },
     {
         CLIARG_STR, ".outFPMsag", "output FPM sags", "outFPMsag",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &FPMsagoutimname
+        (void **) &FPMsagoutimname, NULL
     }
 };
 

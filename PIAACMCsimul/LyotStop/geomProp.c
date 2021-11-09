@@ -46,52 +46,52 @@ static CLICMDARGDEF farg[] =
     {
         CLIARG_IMG, ".inintim", "input intensity image", "pupin",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &inintensity_imname
+        (void **) &inintensity_imname, NULL
     },
     {
         CLIARG_IMG, ".insagim", "input 2D sag image", "piaa0z",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &sag2D_imname
+        (void **) &sag2D_imname, NULL
     },
     {
         CLIARG_STR, ".outintim", "output intensity image", "pupout",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &outintensity_imname
+        (void **) &outintensity_imname, NULL
     },
     {
         CLIARG_STR, ".outcntim", "output intensity image", "cntout",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &outcnt_imname
+        (void **) &outcnt_imname, NULL
     },
     {
         CLIARG_FLOAT, ".drindex", "delta refractive index", "2.0",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &drindexval
+        (void **) &drindexval, NULL
     },
     {
         CLIARG_FLOAT, ".pscale", "pixel scale", "0.00011",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &pscaleval
+        (void **) &pscaleval, NULL
     },
     {
         CLIARG_FLOAT, ".zprop", "propagation dist", "2.302606",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &zpropval
+        (void **) &zpropval, NULL
     },
     {
         CLIARG_FLOAT, ".krad", "kernel radius", "3.0",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &kradval
+        (void **) &kradval, NULL
     },
     {
         CLIARG_FLOAT, ".kstep", "kernel step", "0.5",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &kstepval
+        (void **) &kstepval, NULL
     },
     {
         CLIARG_FLOAT, ".rlim", "clear aperture", "200.0",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &rlimval
+        (void **) &rlimval, NULL
     }
 };
 

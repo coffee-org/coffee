@@ -30,17 +30,17 @@ static CLICMDARGDEF farg[] =
     {
         CLIARG_IMG, ".inimname", "input image: circular mask design", "imin",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &inimname
+        (void **) &inimname, NULL
     },
     {
         CLIARG_STR, ".secfname", "text file specifying which zones belong to which rings", "sec.txt",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &secfname
+        (void **) &secfname, NULL
     },
     {
         CLIARG_STR_NOT_IMG, ".outimname", "output sector mask design", "outim",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &outimname
+        (void **) &outimname, NULL
     }
 };
 

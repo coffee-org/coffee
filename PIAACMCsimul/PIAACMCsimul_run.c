@@ -55,12 +55,12 @@ static CLICMDARGDEF farg[] =
     {
         CLIARG_STR, ".confindex", "configuration index", "000",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &confindex
+        (void **) &confindex, NULL
     },
     {
         CLIARG_LONG, ".mode", "mode", "0",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &mode
+        (void **) &mode, NULL
     }
 };
 

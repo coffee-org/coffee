@@ -32,22 +32,22 @@ static CLICMDARGDEF farg[] =
     {
         CLIARG_IMG, ".FPMrespin", "input FPM response image", "FPMresp",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &FPMrespinimname
+        (void **) &FPMrespinimname, NULL
     },
     {
         CLIARG_IMG, ".FPMrespout", "output FPM response image", "FPMrespout",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &FPMrespoutimname
+        (void **) &FPMrespoutimname, NULL
     },
     {
         CLIARG_LONG, ".NBlambda", "", "10",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &NBlambdaval
+        (void **) &NBlambdaval, NULL
     },
     {
         CLIARG_LONG, ".PTstep", "EvalPts step", "2",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &PTstepval
+        (void **) &PTstepval, NULL
     }
 };
 

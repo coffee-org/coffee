@@ -30,17 +30,17 @@ static CLICMDARGDEF farg[] =
     {
         CLIARG_IMG, ".FPMrespin", "input FPM response image", "FPMresp",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &FPMrespinimname
+        (void **) &FPMrespinimname, NULL
     },
     {
         CLIARG_IMG, ".FPMrespout", "output FPM response image", "FPMrespout",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &FPMrespoutimname
+        (void **) &FPMrespoutimname, NULL
     },
     {
         CLIARG_LONG, ".NBzrm", "NBzone removed", "125",
         CLIARG_VISIBLE_DEFAULT,
-        (void **) &NBzrmval
+        (void **) &NBzrmval, NULL
     }
 };
 
