@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # exit on error
-set -e 
+set -e
 
 # debug mode
 #set -x
@@ -242,7 +242,7 @@ printhelp_designsteps()
 	echo -e "     \033[1m piaacmcparams.conf         \033[0m : contains updated conjugations (absolute)"
 	echo -e "     \033[1m piaacmcparams_step004.conf \033[0m : contains updated conjugations (absolute)"
 	echo ""
-	echo -e "\E[1;32m  DESCRIPTION:\E[0m" 
+	echo -e "\E[1;32m  DESCRIPTION:\E[0m"
 	echo "    Compute incoherent flux in search space -> OAincohc.fits"
 	echo ""
 	cecho "STEP 005 ----------------------------------------" $bwhite
@@ -326,8 +326,8 @@ printhelp ()
 	echo "  arg4 : pupil file                               $4"
 	echo "  arg5 : centobs 0                                $5"
 	echo "  arg6 : centobs 1                                $6"
-	echo "  arg7 : mask radius [l/D]  (idealized)           $7"	
-	echo "  arg8 : design lambda                            $8"	
+	echo "  arg7 : mask radius [l/D]  (idealized)           $7"
+	echo "  arg8 : design lambda                            $8"
 	echo "  arg9 : PIAA material                            $9"
 	echo "  arg10: Lyot Stop transm                         ${10}"
 	echo "  arg11: Number of Lyot Stops                     ${11}"
@@ -340,8 +340,8 @@ printhelp ()
 	echo "  arg18: focal plane material                     ${18}"
 	echo "  arg19: min sag [m]                              ${19}"
 	echo "  arg20: max sag [m]                              ${20}"
-	echo "  arg21  fpmregsag_coeff                          ${21}"   
-	echo "  arg22: fpmregsag_alpha                          ${22}" 
+	echo "  arg21  fpmregsag_coeff                          ${21}"
+	echo "  arg22: fpmregsag_alpha                          ${22}"
 	echo "  arg23: center cone nb rings                     ${23}"
 	echo "  arg24: center cone sag                          ${24}"
 	echo "  arg25: outer cone rad [l/D]                     ${25}"
@@ -375,7 +375,7 @@ if [ "$1" = "help" ] || [ "$#" -ne $NBARGS ]; then
 if [ "$#" -ne $NBARGS ]; then
 	echo "$0: Illegal number of parameters ($NBARGS params required, $# entered)"
 	echo "$0: Illegal number of parameters ($NBARGS params required, $# entered)" > $errorfile
-	checkerrorstatus 
+	checkerrorstatus
 fi
 	exitOK
 fi
@@ -714,7 +714,7 @@ echo "$datestr  $0  LINE $LINENO    step500  Copy point source mask to extended 
 echo "$datestr  $0  LINE $LINENO    step500  Copy point source mask to extended mask" >> cmdlog.txt
 echo "cp fpm_zonea00_20_001_001.fits fpm_zonea10_20_001_001.fits"
 echo "cp fpm_zonez00_20_001_001.fits fpm_zonez10_20_001_001.fits"
-printf "Copy monochromatic mask to polychromatic extended mask\n" 
+printf "Copy monochromatic mask to polychromatic extended mask\n"
 cleanup
 exitOK
 fi
@@ -743,7 +743,7 @@ touch ./$1/step699.run.txt
 cp ./$1/piaacmcparams_idealmonomask.conf ./$1/piaacmcparams.conf
 $execnamestring -n step699 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 PIAACMC_NOFPM=1
 PIAACMC_fpmtype=0
 PIAACMC_FPMsectors=0
@@ -788,7 +788,7 @@ $execnamestring -n step700 << EOF
 #
 PIAACMC_dftgrid=0
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 loadfits "OPDerr.fits" opderr
 PIAACMC_fpmtype=0
 PIAACMC_FPMsectors=0
@@ -884,9 +884,9 @@ echo "$datestr  $0  LINE $LINENO    step720  Compute on-axis polychromatic PSF" 
 echo "720" > ./$1/runstep
 touch ./$1/step720.run.txt
 $execnamestring -n step720 << EOF
-# 
+#
 PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1 
+PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_SAVE_fpm=1
@@ -915,13 +915,13 @@ if [ ! -f ./$1/step007.txt ]
  exit 1
  else
  echo "721: eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.01 l/D"
-echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7" 
+echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7"
 echo "721" > ./$1/runstep
 touch ./$1/step721.run.txt
 $execnamestring -n step721 << EOF
 #
 PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1 
+PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_ldoffset=0.01
@@ -950,12 +950,12 @@ echo "$datestr  $0  LINE $LINENO    step722  Eval polychromatic contrast for on-
  exit 1
  else
  echo "722: eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.03 l/D"
-echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7" 
+echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7"
 echo "722" > ./$1/runstep
 touch ./$1/step722.run.txt
 $execnamestring -n step722 << EOF
 PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1 
+PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_ldoffset=0.03
@@ -983,12 +983,12 @@ echo "$datestr  $0  LINE $LINENO    step723  Eval polychromatic contrast for on-
  exit
  else
  echo "723: eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.001 l/D"
-echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7" 
+echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7"
 echo "722" > ./$1/runstep
 touch ./$1/step723.run.txt
 $execnamestring -n step723 << EOF
 PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1 
+PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_ldoffset=0.001
@@ -1016,12 +1016,12 @@ echo "$datestr  $0  LINE $LINENO    step724  Eval polychromatic contrast for on-
  exit
  else
  echo "724: eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.003 l/D"
-echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7" 
+echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7"
 echo "724" > ./$1/runstep
 touch ./$1/step724.run.txt
 $execnamestring -n step724 << EOF
 PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1 
+PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_ldoffset=0.003
@@ -1049,12 +1049,12 @@ echo "$datestr  $0  LINE $LINENO    step725  Eval polychromatic contrast for on-
  exit
  else
  echo "725: eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.0001 l/D"
-echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7" 
+echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7"
 echo "725" > ./$1/runstep
 touch ./$1/step725.run.txt
 $execnamestring -n step725 << EOF
 PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1 
+PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_ldoffset=0.0001
@@ -1097,7 +1097,7 @@ echo "730" > ./$1/runstep
 touch ./$1/step730.run.txt
 $execnamestring -n step730 << EOF
 PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1 
+PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_WFCmode=1
@@ -1120,7 +1120,7 @@ echo "740" > ./$1/runstep
 touch ./$1/step740.run.txt
 $execnamestring -n step740 << EOF
 PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1 
+PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 PIAACMC_WFCmode=2
@@ -1151,12 +1151,12 @@ echo "$datestr  $0  LINE $LINENO    step750  transmission curve" >> cmdlog.txt
  exit
  else
  echo "750: transmission curve"
-echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $PIAACMC_extmode $2 $3 $5 $6 $7" 
+echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $PIAACMC_extmode $2 $3 $5 $6 $7"
 echo "750" > ./$1/runstep
 touch ./$1/step750.run.txt
 $execnamestring -n step750 << EOF
 PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1 
+PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_nblambda=$nblambda
 coffeepiaacmcsim.run $1 101
@@ -1296,7 +1296,7 @@ echo "$datestr  $0  LINE $LINENO    step800  Import FPM configuration setting fr
 touch ./$1/step800.run.txt
 echo "800" > ./$1/runstep
 $execnamestring -n step800 << EOF
-PIAACMC_fpmtype=1 
+PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 coffeepiaacmcsim.run $1 300
 exitCLI
@@ -1318,7 +1318,7 @@ echo "$datestr  $0  LINE $LINENO    step801  Remove FPM configuration settings" 
 echo "801" > ./$1/runstep
 touch ./$1/step801.run.txt
 $execnamestring -n step801 << EOF
-PIAACMC_fpmtype=1 
+PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 coffeepiaacmcsim.run $1 301
 exitCLI
@@ -1340,7 +1340,7 @@ echo "$datestr  $0  LINE $LINENO    step802  Restore FPM configuration settings"
 echo "802" > ./$1/runstep
 touch ./$1/step802.run.txt
 $execnamestring -n step802 << EOF
-PIAACMC_fpmtype=1 
+PIAACMC_fpmtype=1
 PIAACMC_FPMsectors=$FPMsectors
 PIAACMC_NBrings=$NBrings
 coffeepiaacmcsim.run $1 302
@@ -1444,7 +1444,7 @@ fi
 
 $execnamestring -n step000 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_nblambda=1
@@ -1459,7 +1459,7 @@ exitCLI
 EOF
 exit_on_error $? "$execnamestring"
 
-mv ./$1/psfi0.fits ./$1/psfi0_step000.fits 
+mv ./$1/psfi0.fits ./$1/psfi0_step000.fits
 touch ./$1/step000.txt
 else
  echo "$datestr  $0  LINE $LINENO    skip step 000 [  0] (Compute on-axis PSF, monochromatic, idealized PIAACMC, first iteration)"
@@ -1479,7 +1479,7 @@ rm -f _pupmaskload.fits
 fi
 
 
-if [ $state -eq $statestop ] 
+if [ $state -eq $statestop ]
 then
 echo "STATE STOP POINT (000)"
 sleep 5
@@ -1500,7 +1500,7 @@ checkexit
 # STEP 001: repeat above step to compute on-axis PSF
 #
 # -> piaacmcparams_01.conf
-# 
+#
 
 if [ 1 -eq ${state} ]
 then
@@ -1513,7 +1513,7 @@ echo "$datestr  $0  LINE $LINENO    step001  Compute on-axis PSF" >> cmdlog.txt
  touch ./$1/step001.run.txt
 $execnamestring -n step001 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_nblambda=1
@@ -1531,7 +1531,7 @@ exit_on_error $? "$execnamestring"
  cp ./$1/piaa1Fmodes.fits ./$1/piaa1Fmodes_step001.fits
  touch ./$1/step001.txt
  else
- echo "$datestr  $0  LINE $LINENO    skip step 001 [  0] (Compute on-axis PSF, monochromatic, idealized PIAACMC)" 
+ echo "$datestr  $0  LINE $LINENO    skip step 001 [  0] (Compute on-axis PSF, monochromatic, idealized PIAACMC)"
  echo "$datestr  $0  LINE $LINENO    skip step 001 [  0] (Compute on-axis PSF, monochromatic, idealized PIAACMC)" >> cmdlog.txt
  fi
 state="002"
@@ -1589,7 +1589,7 @@ echo "003" > ./$1/runstep
 touch ./$1/step003.run.txt
 $execnamestring -n step003 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_nblambda=1
@@ -1619,12 +1619,12 @@ checkexit
 
 #
 # STEP 004: compute Lyot stops shapes and locations
-# This is done in monochromatic light 
+# This is done in monochromatic light
 #
 # output:
 # LyotStop0.fits
 # ...
-# 
+#
 
 if [ "004" -eq ${state} ]
 then
@@ -1637,7 +1637,7 @@ echo "004" > ./$1/runstep
 touch ./$1/step004.run.txt
 $execnamestring -n step004 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_lstransm=$LStransm2
@@ -1675,7 +1675,7 @@ checkexit
 
 #
 # STEP 005: optimize focal plane mask transm
-# -> result_fpmt.log 
+# -> result_fpmt.log
 #
 if [ "005" -eq ${state} ]
 then
@@ -1688,7 +1688,7 @@ echo "005" > ./$1/runstep
 touch ./$1/step005.run.txt
 $execnamestring -n step005 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_nblambda=1
@@ -1715,7 +1715,7 @@ checkexit
 
 
 # STEP 006: compute Lyot stops shapes and locations, 2nd pass, LStransm0 throughput)
-# This is done in monochromatic light 
+# This is done in monochromatic light
 #
 # output:
 # LyotStop0.fits
@@ -1733,7 +1733,7 @@ echo "006" > ./$1/runstep
 touch ./$1/step006.run.txt
 $execnamestring -n step006 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_lstransm=$LStransm0
@@ -1794,7 +1794,7 @@ echo "007" > ./$1/runstep
 touch ./$1/step007.run.txt
 $execnamestring -n step007 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_nbiter=20
@@ -1866,7 +1866,7 @@ echo "008" > ./$1/runstep
 touch ./$1/step008.run.txt
 $execnamestring -n step008 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_nbiter=20
@@ -1931,7 +1931,7 @@ echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
 $execnamestring -n step009 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_lstransm=$LStransm1
@@ -1983,7 +1983,7 @@ echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
 $execnamestring -n step010 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_lstransm=$LStransm1
@@ -2036,7 +2036,7 @@ echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
 $execnamestring -n step011 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_nbiter=20
@@ -2115,7 +2115,7 @@ echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
 $execnamestring -n step012 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_nbiter=10
@@ -2183,7 +2183,7 @@ echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
 $execnamestring -n step013 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_lstransm=$LStransm2
@@ -2236,7 +2236,7 @@ echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
 $execnamestring -n step014 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_lstransm=$LStransm2
@@ -2292,7 +2292,7 @@ echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
 $execnamestring -n step015 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_nbiter=20
@@ -2368,7 +2368,7 @@ echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
 $execnamestring -n step016 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_nbiter=10
@@ -2441,7 +2441,7 @@ echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
 $execnamestring -n step017 << EOF
 # idealized mask
-PIAACMC_MASKRADLD=0.0 
+PIAACMC_MASKRADLD=0.0
 
 PIAACMC_resolved=0
 PIAACMC_nbiter=10
@@ -2555,7 +2555,7 @@ for thread in `seq 0 1 ${NBthreadsFPMrespm1}`;
 do
 echo "STARTING COMPONENT $thread"
 echo "waitforfile initOK_${pid}" > script${pid}FPMt${thread}n${NBthreadsFPMresp}
- 
+
 fifoname1="${fifoname}t${thread}n${NBthreadsFPMresp}"
 execname1="$execname -s $startupfile -f $fifoname1"
 
@@ -2630,7 +2630,7 @@ fi
 
 #mv ./$1/psfi0.fits ./$1/psfi0_step100.fits
  else
- echo "$datestr  $0  LINE $LINENO    skip step 100 [ 11] turn focal plane mask into zones, Compute polychromatic response to zones, store result in FPMresp" 
+ echo "$datestr  $0  LINE $LINENO    skip step 100 [ 11] turn focal plane mask into zones, Compute polychromatic response to zones, store result in FPMresp"
  echo "$datestr  $0  LINE $LINENO    skip step 100 [ 11] turn focal plane mask into zones, Compute polychromatic response to zones, store result in FPMresp" >> cmdlog.txt
  fi
 state="101"
@@ -2643,7 +2643,7 @@ checkexit
 
 
 # STEP 101: search for optimal FPM solution
-# 
+#
 
 if [ "101" -eq ${state} ]
 then
@@ -2713,8 +2713,3 @@ cleanup
 
 
 exitOK
-
-
-
-
-

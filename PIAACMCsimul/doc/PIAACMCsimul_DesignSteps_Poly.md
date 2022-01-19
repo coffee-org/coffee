@@ -20,7 +20,7 @@ Once the FPMresp... file is created, it is used by the search algorithm to quick
 
 The search algorithm proceeds as two nested loops (outer loop steps 1-4, inner loop steps 2-4):
 
-1. OUTER LOOP START ITERATION: starting point is chosen, either randomly or close to the best solution. 
+1. OUTER LOOP START ITERATION: starting point is chosen, either randomly or close to the best solution.
 2. INNER LOOP START ITERATION: Derivatives around the current point.
 3. For each predefined regularization coefficient :
 	a. An SVD-based inversion used to define a search direction
@@ -33,7 +33,3 @@ In the C code, this optimization corresponds to execution mode 13. To stop the l
 	touch piaacmcconf_i000/stoploop13.txt
 
 Note that this command will stop the loop on entering step 1, so the inner loop (steps 2-4) will still keep running until the solution stops improving.
-
-
-
-

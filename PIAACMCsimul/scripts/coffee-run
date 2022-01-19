@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # exit on error
-set -e 
+set -e
 
 # debug mode
 #set -x
@@ -409,7 +409,7 @@ printhelpeval0 ()
 	echo "- piaam0z.fits                             PIAA mirror 0 sag, 2D map [m]"
 	echo "     WRITTEN by function PIAACMCsimul_initpiaacmcconf()"
 	echo "     WRITTEN by function PIAACMCsimul_makePIAAshapes()"
-	echo ""	
+	echo ""
 	echo "- piaam1z.fits                             PIAA mirror 1 sag, 2D map [m]"
 	echo "     WRITTEN by function PIAACMCsimul_initpiaacmcconf()"
 	echo "     WRITTEN by function PIAACMCsimul_makePIAAshapes()"
@@ -429,7 +429,7 @@ printhelpeval0 ()
 	echo "- piaa1Fz.fits                            PIAA mirror 1 sag, 2D map, Fourier terms [m]"
 	echo "     WRITTEN by function PIAACMCsimul_initpiaacmcconf()"
 	echo "     WRITTEN by function PIAACMCsimul_makePIAAshapes()"
-	echo ""	
+	echo ""
 	echo "- conf_PIAAmaterial_code.txt               Code for PIAA material (for verification)"
 	echo "     WRITTEN by function PIAACMCsimul_initpiaacmcconf()"
 	echo "     WRITTEN by function PIAACMCsimul_makePIAAshapes()"
@@ -861,4 +861,3 @@ fi
 
 
 exitOK
-

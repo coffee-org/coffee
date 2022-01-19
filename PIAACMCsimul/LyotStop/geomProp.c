@@ -6,25 +6,19 @@
  *
  */
 
-
-
-#include <stdlib.h>
-#include <stdio.h>
 #include <math.h>
-
-
+#include <stdio.h>
+#include <stdlib.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
-#include "COREMOD_memory/COREMOD_memory.h"
 #include "COREMOD_iofits/COREMOD_iofits.h"
+#include "COREMOD_memory/COREMOD_memory.h"
+#include "CommandLineInterface/CLIcore.h"
 #include "image_filter/image_filter.h"
 
 #include "OptSystProp/OptSystProp.h"
 
 #include "PIAACMCsimul.h"
-
-
 
 // Local variables pointers
 static char *inintensity_imname;
@@ -38,78 +32,25 @@ static double *kradval;
 static double *kstepval;
 static double *rlimval;
 
+static CLICMDARGDEF farg[] = {
+    {CLIARG_IMG, ".inintim", "input intensity image", "pupin", CLIARG_VISIBLE_DEFAULT, (void **)&inintensity_imname,
+     NULL},
+    {CLIARG_IMG, ".insagim", "input 2D sag image", "piaa0z", CLIARG_VISIBLE_DEFAULT, (void **)&sag2D_imname, NULL},
+    {CLIARG_STR, ".outintim", "output intensity image", "pupout", CLIARG_VISIBLE_DEFAULT, (void **)&outintensity_imname,
+     NULL},
+    {CLIARG_STR, ".outcntim", "output intensity image", "cntout", CLIARG_VISIBLE_DEFAULT, (void **)&outcnt_imname,
+     NULL},
+    {CLIARG_FLOAT, ".drindex", "delta refractive index", "2.0", CLIARG_VISIBLE_DEFAULT, (void **)&drindexval, NULL},
+    {CLIARG_FLOAT, ".pscale", "pixel scale", "0.00011", CLIARG_VISIBLE_DEFAULT, (void **)&pscaleval, NULL},
+    {CLIARG_FLOAT, ".zprop", "propagation dist", "2.302606", CLIARG_VISIBLE_DEFAULT, (void **)&zpropval, NULL},
+    {CLIARG_FLOAT, ".krad", "kernel radius", "3.0", CLIARG_VISIBLE_DEFAULT, (void **)&kradval, NULL},
+    {CLIARG_FLOAT, ".kstep", "kernel step", "0.5", CLIARG_VISIBLE_DEFAULT, (void **)&kstepval, NULL},
+    {CLIARG_FLOAT, ".rlim", "clear aperture", "200.0", CLIARG_VISIBLE_DEFAULT, (void **)&rlimval, NULL}};
 
-
-
-static CLICMDARGDEF farg[] =
-{
-    {
-        CLIARG_IMG, ".inintim", "input intensity image", "pupin",
-        CLIARG_VISIBLE_DEFAULT,
-        (void **) &inintensity_imname, NULL
-    },
-    {
-        CLIARG_IMG, ".insagim", "input 2D sag image", "piaa0z",
-        CLIARG_VISIBLE_DEFAULT,
-        (void **) &sag2D_imname, NULL
-    },
-    {
-        CLIARG_STR, ".outintim", "output intensity image", "pupout",
-        CLIARG_VISIBLE_DEFAULT,
-        (void **) &outintensity_imname, NULL
-    },
-    {
-        CLIARG_STR, ".outcntim", "output intensity image", "cntout",
-        CLIARG_VISIBLE_DEFAULT,
-        (void **) &outcnt_imname, NULL
-    },
-    {
-        CLIARG_FLOAT, ".drindex", "delta refractive index", "2.0",
-        CLIARG_VISIBLE_DEFAULT,
-        (void **) &drindexval, NULL
-    },
-    {
-        CLIARG_FLOAT, ".pscale", "pixel scale", "0.00011",
-        CLIARG_VISIBLE_DEFAULT,
-        (void **) &pscaleval, NULL
-    },
-    {
-        CLIARG_FLOAT, ".zprop", "propagation dist", "2.302606",
-        CLIARG_VISIBLE_DEFAULT,
-        (void **) &zpropval, NULL
-    },
-    {
-        CLIARG_FLOAT, ".krad", "kernel radius", "3.0",
-        CLIARG_VISIBLE_DEFAULT,
-        (void **) &kradval, NULL
-    },
-    {
-        CLIARG_FLOAT, ".kstep", "kernel step", "0.5",
-        CLIARG_VISIBLE_DEFAULT,
-        (void **) &kstepval, NULL
-    },
-    {
-        CLIARG_FLOAT, ".rlim", "clear aperture", "200.0",
-        CLIARG_VISIBLE_DEFAULT,
-        (void **) &rlimval, NULL
-    }
-};
-
-static CLICMDDATA CLIcmddata =
-{
-    "piaacmcgeomprop",
-    "Geometric propagation from surface",
-    CLICMD_FIELDS_DEFAULTS
-};
-
+static CLICMDDATA CLIcmddata = {"piaacmcgeomprop", "Geometric propagation from surface", CLICMD_FIELDS_DEFAULTS};
 
 // detailed help
-static errno_t help_function()
-{
-    return RETURN_SUCCESS;
-}
-
-
+static errno_t help_function() { return RETURN_SUCCESS; }
 
 /**
  * @brief Lyot stops positions from zmin to zmax relative to current, working back (light goes from 0 to zmax)
@@ -126,22 +67,12 @@ static errno_t help_function()
  * @param[in]	rlim			float : clear aperture radius (don't compute outside this value) [pixel]
  * @param[out]  outID           output ID
 */
-errno_t PIAACMCsimul_geomProp(
-    const char *__restrict__ IDin_name,
-    const char *__restrict__ IDsag_name,
-    const char *__restrict__ IDout_name,
-    const char *__restrict__ IDoutcnt_name,
-    double drindex,
-    double pscale,
-    double zprop,
-    double krad,
-    double kstep,
-    double rlim,
-    imageID *outID
-)
+errno_t PIAACMCsimul_geomProp(const char *__restrict__ IDin_name, const char *__restrict__ IDsag_name,
+                              const char *__restrict__ IDout_name, const char *__restrict__ IDoutcnt_name,
+                              double drindex, double pscale, double zprop, double krad, double kstep, double rlim,
+                              imageID *outID)
 {
     DEBUG_TRACE_FSTART();
-
 
     imageID IDin = image_ID(IDin_name);
     uint32_t xsize = data.image[IDin].md[0].size[0];
@@ -150,22 +81,18 @@ errno_t PIAACMCsimul_geomProp(
     imageID IDsag = image_ID(IDsag_name);
 
     imageID IDout;
-    FUNC_CHECK_RETURN(
-        create_2Dimage_ID(IDout_name, xsize, ysize, &IDout)
-    );
+    FUNC_CHECK_RETURN(create_2Dimage_ID(IDout_name, xsize, ysize, &IDout));
 
     imageID IDoutcnt;
-    FUNC_CHECK_RETURN(
-        create_2Dimage_ID(IDoutcnt_name, xsize, ysize, &IDoutcnt)
-    );
+    FUNC_CHECK_RETURN(create_2Dimage_ID(IDoutcnt_name, xsize, ysize, &IDoutcnt));
 
     printf("kstep = %f\n", kstep);
 
-    for (float x = 0.5*xsize-rlim; x < 0.5*xsize+rlim; x += kstep )
-        for (float y = 0.5*ysize-rlim; y < 0.5*ysize+rlim; y += kstep )
+    for (float x = 0.5 * xsize - rlim; x < 0.5 * xsize + rlim; x += kstep)
+        for (float y = 0.5 * ysize - rlim; y < 0.5 * ysize + rlim; y += kstep)
         {
-            long ii0 = (long) (x+0.5);
-            long jj0 = (long) (y+0.5);
+            long ii0 = (long)(x + 0.5);
+            long jj0 = (long)(y + 0.5);
 
             double sumvx = 0.0;
             double sumvy = 0.0;
@@ -175,75 +102,78 @@ errno_t PIAACMCsimul_geomProp(
             double sumc = 0.0;
 
             long iimin, iimax, jjmin, jjmax;
-            iimin = ii0 - ((long) krad+1);
-            iimax = ii0 + ((long) krad+2);
-            jjmin = jj0 - ((long) krad+1);
-            jjmax = jj0 + ((long) krad+2);
+            iimin = ii0 - ((long)krad + 1);
+            iimax = ii0 + ((long)krad + 2);
+            jjmin = jj0 - ((long)krad + 1);
+            jjmax = jj0 + ((long)krad + 2);
 
-            if(iimin<0) {
+            if (iimin < 0)
+            {
                 PRINT_ERROR("iimin = %ld < 0  ii0 = %ld", iimin, ii0);
                 abort();
             }
-            if(iimax>xsize-1) {
-                PRINT_ERROR("iimax = %ld > %ld  ii0 = %ld", iimax, (long) (xsize-1), ii0);
+            if (iimax > xsize - 1)
+            {
+                PRINT_ERROR("iimax = %ld > %ld  ii0 = %ld", iimax, (long)(xsize - 1), ii0);
                 abort();
             }
 
-            if(jjmin<0) {
+            if (jjmin < 0)
+            {
                 PRINT_ERROR("jjmin = %ld < 0  jj0 = %ld", jjmin, jj0);
                 abort();
             }
-            if(jjmax>ysize-1) {
-                PRINT_ERROR("jjmax = %ld > %ld  jj0 = %ld", jjmax, (long) (ysize-1), jj0);
+            if (jjmax > ysize - 1)
+            {
+                PRINT_ERROR("jjmax = %ld > %ld  jj0 = %ld", jjmax, (long)(ysize - 1), jj0);
                 abort();
             }
 
             for (long ii = iimin; ii < iimax; ii++)
                 for (long jj = jjmin; jj < jjmax; jj++)
                 {
-                    float dx = 1.0*ii - x;
-                    float dy = 1.0*jj - y;
+                    float dx = 1.0 * ii - x;
+                    float dy = 1.0 * jj - y;
 
-                    float dr = sqrt(dx*dx+dy*dy)/krad;
-                    if(dr>1.0)
+                    float dr = sqrt(dx * dx + dy * dy) / krad;
+                    if (dr > 1.0)
                         dr = 1.0;
-                    float coeff = 0.5 + 0.5*cos(dr*M_PI);
+                    float coeff = 0.5 + 0.5 * cos(dr * M_PI);
 
-                    sumv += coeff * data.image[IDsag].array.F[jj*xsize+ii];
-                    sumvx += coeff * dx * data.image[IDsag].array.F[jj*xsize+ii];
-                    sumvy += coeff * dy * data.image[IDsag].array.F[jj*xsize+ii];
+                    sumv += coeff * data.image[IDsag].array.F[jj * xsize + ii];
+                    sumvx += coeff * dx * data.image[IDsag].array.F[jj * xsize + ii];
+                    sumvy += coeff * dy * data.image[IDsag].array.F[jj * xsize + ii];
                     sumvx0 += coeff * dx;
                     sumvy0 += coeff * dy;
                     sumc += coeff;
                 }
 
             // local slopes [unitless]
-            float slx = ( (sumvx / sumc) - (sumvx0 * (sumv/sumc) / sumc) ) / pscale;
-            float sly = ( (sumvy / sumc) - (sumvy0 * (sumv/sumc) / sumc) ) / pscale;
+            float slx = ((sumvx / sumc) - (sumvx0 * (sumv / sumc) / sumc)) / pscale;
+            float sly = ((sumvy / sumc) - (sumvy0 * (sumv / sumc) / sumc)) / pscale;
 
             // displacements [pix]
             float dii = (slx * zprop * drindex) / pscale;
             float djj = (sly * zprop * drindex) / pscale;
 
-            long ii1 = (long) ( x + dii + 0.5 );
-            long jj1 = (long) ( y + djj + 0.5 );
+            long ii1 = (long)(x + dii + 0.5);
+            long jj1 = (long)(y + djj + 0.5);
 
-            if((ii1>0)&&(ii1<xsize)&&(jj1>0)&&(jj1<ysize))
+            if ((ii1 > 0) && (ii1 < xsize) && (jj1 > 0) && (jj1 < ysize))
             {
-                data.image[IDout].array.F[jj1*xsize + ii1] += data.image[IDin].array.F[jj0*xsize + ii0];
-                data.image[IDoutcnt].array.F[jj1*xsize + ii1] += 1.0;
+                data.image[IDout].array.F[jj1 * xsize + ii1] += data.image[IDin].array.F[jj0 * xsize + ii0];
+                data.image[IDoutcnt].array.F[jj1 * xsize + ii1] += 1.0;
             }
         }
 
-    for(uint32_t ii1 = 0; ii1 < xsize; ii1++)
-        for(uint32_t jj1 = 0; jj1 < ysize; jj1++)
+    for (uint32_t ii1 = 0; ii1 < xsize; ii1++)
+        for (uint32_t jj1 = 0; jj1 < ysize; jj1++)
         {
-            if (data.image[IDoutcnt].array.F[jj1*xsize + ii1] > 0.1)
-                data.image[IDout].array.F[jj1*xsize + ii1] /= data.image[IDoutcnt].array.F[jj1*xsize + ii1];
+            if (data.image[IDoutcnt].array.F[jj1 * xsize + ii1] > 0.1)
+                data.image[IDout].array.F[jj1 * xsize + ii1] /= data.image[IDoutcnt].array.F[jj1 * xsize + ii1];
         }
 
-
-    if(outID != NULL)
+    if (outID != NULL)
     {
         *outID = IDout;
     }
@@ -252,29 +182,14 @@ errno_t PIAACMCsimul_geomProp(
     return RETURN_SUCCESS;
 }
 
-
-
-
-
 static errno_t compute_function()
 {
     DEBUG_TRACE_FSTART();
 
     INSERT_STD_PROCINFO_COMPUTEFUNC_START
 
-    PIAACMCsimul_geomProp(
-        inintensity_imname,
-        sag2D_imname,
-        outintensity_imname,
-        outcnt_imname,
-        *drindexval,
-        *pscaleval,
-        *zpropval,
-        *kradval,
-        *kstepval,
-        *rlimval,
-        NULL
-    );
+    PIAACMCsimul_geomProp(inintensity_imname, sag2D_imname, outintensity_imname, outcnt_imname, *drindexval, *pscaleval,
+                          *zpropval, *kradval, *kstepval, *rlimval, NULL);
 
     INSERT_STD_PROCINFO_COMPUTEFUNC_END
 
@@ -282,13 +197,11 @@ static errno_t compute_function()
     return RETURN_SUCCESS;
 }
 
-
-
-
 INSERT_STD_FPSCLIfunctions
 
-// Register function in CLI
-errno_t CLIADDCMD_PIAACMCsimul__LyotStop__PIAACMCsimul_geomProp()
+    // Register function in CLI
+    errno_t
+    CLIADDCMD_PIAACMCsimul__LyotStop__PIAACMCsimul_geomProp()
 {
     INSERT_STD_CLIREGISTERFUNC
     return RETURN_SUCCESS;

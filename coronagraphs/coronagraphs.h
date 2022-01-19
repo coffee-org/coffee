@@ -5,16 +5,16 @@
 #define CORONAGRAPHS_ARRAYSIZE 4096
 
 /** @brief Initialize module. */
-void __attribute__ ((constructor)) libinit_coronagraphs();
+void __attribute__((constructor)) libinit_coronagraphs();
 
 /** @brief Initialize command line interface. */
 int_fast8_t init_coronagraphs();
 
+errno_t coronagraph_make_2Dprolate(double masksizepix, double beamradpix, double centralObs, const char *outname,
+                                   long size, const char *pupmask_name, double *transmval);
 
-
-errno_t coronagraph_make_2Dprolate(double masksizepix, double beamradpix, double centralObs, const char *outname, long size, const char *pupmask_name, double *transmval);
-
-errno_t coronagraph_make_2Dprolateld(double masksizeld, double beamradpix, double centralObs, const char *outname, long size, const char *pupmask_name);
+errno_t coronagraph_make_2Dprolateld(double masksizeld, double beamradpix, double centralObs, const char *outname,
+                                     long size, const char *pupmask_name);
 
 errno_t coronagraph_update_2Dprolate(double masksizeld, double beamradpix, double centralObs, double zfactor);
 
@@ -56,6 +56,6 @@ errno_t coronagraph_userfunc();
 
 errno_t coronagraph_compute_limitcoeff();
 
-errno_t CORONAGRAPHS_scanPIAACMC_centObs_perf( double obs0input );
+errno_t CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input);
 
 #endif

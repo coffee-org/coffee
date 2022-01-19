@@ -7,58 +7,44 @@
 
 #define _GNU_SOURCE
 
-
 #define MODULE_SHORTNAME_DEFAULT "coffeepiaacmcsim"
-#define MODULE_DESCRIPTION       "PIAACMC simulation"
-
+#define MODULE_DESCRIPTION "PIAACMC simulation"
 
 #include "CommandLineInterface/CLIcore.h"
 
-#include "PIAACMCsimul.h"
 #include "OptSystProp/OptSystProp.h"
+#include "PIAACMCsimul.h"
 
 #include "PIAACMCsimul_run.h"
 
-#include "FocalPlaneMask/FPMresp_rmzones.h"
-#include "FocalPlaneMask/FPMresp_resample.h"
 #include "FocalPlaneMask/FPM_process.h"
+#include "FocalPlaneMask/FPMresp_resample.h"
+#include "FocalPlaneMask/FPMresp_rmzones.h"
 #include "FocalPlaneMask/rings2sectors.h"
 
 #include "LyotStop/geomProp.h"
 
-
-
-# ifdef HAVE_LIBGOMP
+#ifdef HAVE_LIBGOMP
 #include <omp.h>
 #define OMP_NELEMENT_LIMIT 1000000
 #endif
 
-
-
 // static int INITSTATUS_PIAACMCsimul = 0;
-
-
-
 
 /// optical system description
 //OPTSYST *optsyst;
 
-
 //OPTPIAACMCDESIGN *piaacmcoptdesign;
 
 PIAACMCSIMUL_PARAMS piaacmcparams;
-OPTPIAACMCDESIGN    piaacmcopticaldesign;
-OPTSYST             piaacmcopticalsystem;
-
+OPTPIAACMCDESIGN piaacmcopticaldesign;
+OPTSYST piaacmcopticalsystem;
 
 INIT_MODULE_LIB(coffee_PIAACMCsimul)
-
-
 
 /** @name MODULE INITIALIZATION
  * Registers CLI commands
 */
-
 
 static errno_t init_module_CLI()
 {
@@ -111,8 +97,7 @@ static errno_t init_module_CLI()
     piaacmcparams.CnormFactor = 1.0;
 
     piaacmcparams.computePSF_FAST_FPMresp = 0;
-    piaacmcparams.computePSF_ResolvedTarget =
-        0; // source size = 1e-{0.1*computePSF_ResolvedTarget}
+    piaacmcparams.computePSF_ResolvedTarget = 0; // source size = 1e-{0.1*computePSF_ResolvedTarget}
     piaacmcparams.computePSF_ResolvedTarget_mode =
         0; // 0: source is simulated as 3 points, 1: source is simulated as 6 points
     piaacmcparams.PIAACMC_FPM_FASTDERIVATIVES = 0;
@@ -133,117 +118,3 @@ static errno_t init_module_CLI()
 
     return RETURN_SUCCESS;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -3,11 +3,6 @@
 
 errno_t CLIADDCMD_PIAACMCsimul__ring2sectors();
 
-errno_t rings2sectors(
-    const char *IDin_name,
-    const char *sectfname,
-    const char *IDout_name,
-    imageID    *outID
-);
+errno_t rings2sectors(const char *IDin_name, const char *sectfname, const char *IDout_name, imageID *outID);
 
 #endif

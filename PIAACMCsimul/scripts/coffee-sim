@@ -2,7 +2,7 @@
 
 
 # exit on error
-#set -e 
+#set -e
 
 
 size=1024 # default
@@ -268,5 +268,3 @@ coffee-runPIAACMC $dirname $size $pscale $pupfile $coin $coout $fpmrad $lambda $
 
 
 # line 630
-
-

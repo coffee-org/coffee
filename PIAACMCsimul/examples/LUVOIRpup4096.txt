@@ -6,4 +6,3 @@ LUVOIR l/D units use D = 16.195m
 
 distance between bottom and lower lines in pupil: 3780.8 pix = 15.9058256 m
 On PIAACMC implementation, this should be equal to 9mm on DM (30 actuators)
-

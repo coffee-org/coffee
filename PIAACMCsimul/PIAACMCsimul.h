@@ -3,7 +3,6 @@
 
 #define ApoFitCosFact 1.0
 
-
 #include <stdint.h>
 
 #include "CommandLineInterface/CLIcore.h"
@@ -19,8 +18,8 @@
 typedef struct
 {
 
-    char piaacmcconfdir[STRINGMAXLEN_DIRNAME];          ///  Current configuration directory
-    int  optsystinit;
+    char piaacmcconfdir[STRINGMAXLEN_DIRNAME]; ///  Current configuration directory
+    int optsystinit;
 
     int FORCE_CREATE_Cmodes;
     int CREATE_Cmodes;
@@ -43,7 +42,7 @@ typedef struct
     int focmMode; // if != -1, compute only impulse response to corresponding zone
     int PIAACMC_FPMsectors;
 
-    double FPMSCALEFACTOR;	/// undersize mask in array to avoid edge clipping
+    double FPMSCALEFACTOR; /// undersize mask in array to avoid edge clipping
 
     double LAMBDASTART;
     double LAMBDAEND;
@@ -58,14 +57,14 @@ typedef struct
     double *zonezbest_array;
     double *dphadz_array;
     double *outtmp_array;
-    long    LOOPCNT;
+    long LOOPCNT;
 
     long vsize;
 
     double CnormFactor; // for contrast normalization
 
     int computePSF_FAST_FPMresp;
-    int computePSF_ResolvedTarget; // source size = 1e-{0.1*computePSF_ResolvedTarget}
+    int computePSF_ResolvedTarget;      // source size = 1e-{0.1*computePSF_ResolvedTarget}
     int computePSF_ResolvedTarget_mode; // 0: source is simulated as 3 points, 1: source is simulated as 6 points
     int PIAACMC_FPM_FASTDERIVATIVES;
 
@@ -73,7 +72,7 @@ typedef struct
     double MODampl;
     int SCORINGMASKTYPE;
     int PIAACMC_save;
-//	float PIAACMC_MASKregcoeff;
+    //	float PIAACMC_MASKregcoeff;
     int PIAACMC_fpmtype; // 0 for idealized PIAACMC focal plane mask, 1 for physical focal plane mask
 
     long PIAACMC_FPMresp_mp;
@@ -85,20 +84,19 @@ typedef struct
     double PIAACMCSIMUL_VAL0;
     double PIAACMCSIMUL_VALREF;
 
-
     // Linear Optimization
-    int     LINOPT;                         // 1 if linear optimization should be started
-    long    linopt_number_param;            // number of optimization paramters
-    int     linopt_paramtype[10000];        // _DATATYPE_FLOAT or _DATATYPE_DOUBLE
-    float  *linopt_paramvalf[10000];        // array of pointers, float
-    double *linopt_paramval[10000];         // array of pointers, double
-    double  linopt_paramrefval[10000];
+    int LINOPT;                     // 1 if linear optimization should be started
+    long linopt_number_param;       // number of optimization paramters
+    int linopt_paramtype[10000];    // _DATATYPE_FLOAT or _DATATYPE_DOUBLE
+    float *linopt_paramvalf[10000]; // array of pointers, float
+    double *linopt_paramval[10000]; // array of pointers, double
+    double linopt_paramrefval[10000];
 
     double linopt_paramdelta[10000];
     double linopt_paramdeltaval[10000];
-    double linopt_parammaxstep[10000];  // maximum single iteration step
-    double linopt_parammin[10000];      // minimum value
-    double linopt_parammax[10000];      // maximum value
+    double linopt_parammaxstep[10000]; // maximum single iteration step
+    double linopt_parammin[10000];     // minimum value
+    double linopt_parammax[10000];     // maximum value
 
     int linopt_REGPIAASHAPES;
     float linopt_piaa0C_regcoeff;
@@ -115,24 +113,17 @@ typedef struct
 
     long linopt_NBiter;
 
-
-    char fnamedescr[STRINGMAXLEN_FILENAME]; // File name descriptor for focal plane mask, inserted inside output file names
-    char fnamedescr_conf[STRINGMAXLEN_FILENAME]; // File name descriptor for focal plane mask configuration, inserted inside output file names
-
+    char fnamedescr
+        [STRINGMAXLEN_FILENAME]; // File name descriptor for focal plane mask, inserted inside output file names
+    char fnamedescr_conf
+        [STRINGMAXLEN_FILENAME]; // File name descriptor for focal plane mask configuration, inserted inside output file names
 
 } PIAACMCSIMUL_PARAMS;
-
-
-
-
-
-
 
 //
 // *****************************************************************************************************
 // -------------------------- structure defining a reflective PIAACMC system ---------------------------
 // *****************************************************************************************************
-
 
 #define STRINGMAXLEN_PIAACMCSIMUL_MATERIALNAME 10
 
@@ -144,31 +135,27 @@ typedef struct
 
     // ======= SEED RADIAL PIAACMC PARAMETERS ======
 
-    double centObs0;     /**< input central obstruction */
-    double centObs1;     /**< output central obstruction */
-    double r0lim;        /**< outer radius after extrapolation, piaa mirror 0 */
-    double r1lim;        /**< outer radius after extrapolation, piaa mirror 1 */
-    long   NBradpts;     /**< number of points for common r0, r1, piaa sags 1D table */
-
+    double centObs0; /**< input central obstruction */
+    double centObs1; /**< output central obstruction */
+    double r0lim;    /**< outer radius after extrapolation, piaa mirror 0 */
+    double r1lim;    /**< outer radius after extrapolation, piaa mirror 1 */
+    long NBradpts;   /**< number of points for common r0, r1, piaa sags 1D table */
 
     // Wavelength
-    int    nblambda;
-    double lambda; // central wavelength [m]
-    double lambdaB; // spectral bandwidth [%]
+    int nblambda;
+    double lambda;            // central wavelength [m]
+    double lambdaB;           // spectral bandwidth [%]
     double lambdaarray[2000]; // [m]  lambdaarray is also defined in OptSystProp structure
-
 
     // ====== Overall OPTICAL Geometry ===============
 
-    float beamrad;  // [m]
-    long  size;
+    float beamrad; // [m]
+    long size;
     float pixscale; // [m/pix]
 
     int PIAAmode;
     // 0: no PIAA,
     // 1: PIAA
-
-
 
     // conjugation (z) of first PIAA surface [m]
     float PIAA0pos;
@@ -177,13 +164,13 @@ typedef struct
     float PIAAsep;
 
     // 1 if mask before PIAA surface 0
-    int   prePIAA0mask;
+    int prePIAA0mask;
 
     // position of mask before PIAA surface 0 [m]
     float prePIAA0maskpos;
 
     // 1 if mask after PIAA surface 0
-    int   postPIAA0mask;
+    int postPIAA0mask;
 
     // position of mask after PIAA surface 0 [m]
     float postPIAA0maskpos;
@@ -192,7 +179,7 @@ typedef struct
     float PIAAcoeff;
 
     // 0: no inv PIAA, 1: inv PIAA after Lyot stops, 2: inv PIAA before Lyot stops
-    int   invPIAAmode;
+    int invPIAAmode;
 
     float LyotZmin;
     float LyotZmax;
@@ -200,29 +187,27 @@ typedef struct
     // output pupil mask radius (scaled to pupil radius)
     float pupoutmaskrad;
 
-
     // ========== WAVEFRONT CONTROL ==================
-    int    nbDM; // number of deformable mirrors (10 max)
+    int nbDM;         // number of deformable mirrors (10 max)
     double DMpos[10]; // DM conjugation in collimated space
-    long   ID_DM[10];  // DM image identifier
-
+    long ID_DM[10];   // DM image identifier
 
     // ========= LYOT STOPS ============
-    long    NBLyotStop;          /**< Number of Lyot stops */
-    long    IDLyotStop[10];
-    double  LyotStop_zpos[10];
+    long NBLyotStop; /**< Number of Lyot stops */
+    long IDLyotStop[10];
+    double LyotStop_zpos[10];
 
     // ======= Optics shapes modes ============
     char PIAAmaterial_name[10];
-    int  PIAAmaterial_code;
+    int PIAAmaterial_code;
     long CmodesID; // Cosine radial mode
-    long Cmsize; // cosine modes size
+    long Cmsize;   // cosine modes size
     long NBCmodes;
     long piaaNBCmodesmax; // maximum number of radial cosine modes for PIAA optics
 
-    long  FmodesID; // Fourier 2D modes
-    long  Fmsize;
-    long  NBFmodes;
+    long FmodesID; // Fourier 2D modes
+    long Fmsize;
+    long NBFmodes;
     float piaaCPAmax; // maximum spatial frequency (CPA) for PIAA optics
 
     long piaa0CmodesID;
@@ -233,33 +218,32 @@ typedef struct
     // PSF flux calib
     float peakPSF;
 
-
     // ========= Focal Plane Mask ============
 
-    double fpmaskradld; // mask radius [l/d] for the idealized PIAACMC starting point
-    long   focmNBzone; // number of zones
-    double Fratio; // beam Fratio at focal plane
-    long   zonezID;  // focm zone material thickness, double precision image, named fpmzt / fpm_zonez.fits
+    double fpmaskradld;     // mask radius [l/d] for the idealized PIAACMC starting point
+    long focmNBzone;        // number of zones
+    double Fratio;          // beam Fratio at focal plane
+    long zonezID;           // focm zone material thickness, double precision image, named fpmzt / fpm_zonez.fits
     double fpmaskamptransm; // mask amplitude transmission (normally 1.0)
-    long   zoneaID;  // focm zone amplitude transmission, double precision image, named fpmza / fpm_zonea.fits
-    double fpzfactor; // focal plane mask DFT zoom factor
+    long zoneaID;           // focm zone amplitude transmission, double precision image, named fpmza / fpm_zonea.fits
+    double fpzfactor;       // focal plane mask DFT zoom factor
 
     double fpmRad; // outer radius of physical focal plane mask [m]
 
-    long   NBrings; // number of rings
+    long NBrings;     // number of rings
     double fpmminsag; // [m]
     double fpmmaxsag; // [m]
     double fpmsagreg_coeff;
     double fpmsagreg_alpha;
-    long   NBringCentCone; // number of rings that the central cone occupies
-    double fpmCentConeRad; // [m]
-    double fpmCentConeZ; // peak sag of central cone [m]
-    double fpmOuterConeZ; // outer sag offset [m]
+    long NBringCentCone;      // number of rings that the central cone occupies
+    double fpmCentConeRad;    // [m]
+    double fpmCentConeZ;      // peak sag of central cone [m]
+    double fpmOuterConeZ;     // outer sag offset [m]
     double fpmOuterConeRadld; // outer radius (end of outer cone) [lambda/D]
-    double fpmOuterConeRad; // [m]
-    long   fpmarraysize;
-    char   fpmmaterial_name[STRINGMAXLEN_PIAACMCSIMUL_MATERIALNAME];
-    int    fpmmaterial_code;
+    double fpmOuterConeRad;   // [m]
+    long fpmarraysize;
+    char fpmmaterial_name[STRINGMAXLEN_PIAACMCSIMUL_MATERIALNAME];
+    int fpmmaterial_code;
 
     // Mask description
     //
@@ -277,20 +261,16 @@ typedef struct
     // outside of the outer cone, the sag is constant at fpmOuterZ
     //
 
-
 } OPTPIAACMCDESIGN;
 
-
 extern PIAACMCSIMUL_PARAMS piaacmcparams;
-extern OPTPIAACMCDESIGN    piaacmcopticaldesign;
-extern OPTSYST             piaacmcopticalsystem;
-
+extern OPTPIAACMCDESIGN piaacmcopticaldesign;
+extern OPTSYST piaacmcopticalsystem;
 
 void __attribute__((constructor)) libinit_PIAACMCsimul();
 
 errno_t init_PIAACMCsimul();
 
-void  PIAACMCsimul_free(void);
-
+void PIAACMCsimul_free(void);
 
 #endif

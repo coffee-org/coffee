@@ -16,24 +16,24 @@ mkdir -p conf
 
 # PIAA optics (PIAACMC)
 echo "1" > ./conf/conf_PIAAmode.txt             # PIAA mode (0: classical apodization, 1: PIAA)
-echo "0" > conf/conf_invPIAAmode.txt            # inverse PIAA 
+echo "0" > conf/conf_invPIAAmode.txt            # inverse PIAA
 echo "1.0" > ./conf/conf_fpmradld.txt           # focal plane mask radius [l/D]
 echo "0.3" > conf/conf_coin.txt                 # input central obstruction
 echo "0.25" > conf/conf_coout.txt                # output central obstruction
 echo "1" > conf/conf_PIAAcirc.txt               # 1 if forcing PIAA shapes to be circular
 
 echo "0.5" > conf/conf_REGPIAACALPHA.txt
-echo "1000.0" > conf/conf_REGPIAACCOEFF.txt  
-echo "0.5" > conf/conf_REGPIAAFALPHA.txt  
+echo "1000.0" > conf/conf_REGPIAACCOEFF.txt
+echo "0.5" > conf/conf_REGPIAAFALPHA.txt
 echo "1000.0" > conf/conf_REGPIAAFCOEFF.txt
 
 
-# LYOT STOP(S) DESIGN: 
+# LYOT STOP(S) DESIGN:
 echo "0.80" > ./conf/conf_LStransm.txt          # Lyot stop transmission
 echo "1650" > ./conf/conf_lambda.txt            # Wavelength for monochromatic design [nm]
 
- 
-# FOCAL PLANE MASK DESIGN: 
+
+# FOCAL PLANE MASK DESIGN:
 echo "Mirror" > ./conf/conf_fpmmaterial.txt          # focal plane mask material
 echo "2" > ./conf/conf_FPMsectors.txt                # mask geometry: 0=disk, 1=sectors, 2=hexagonal tiling
 echo "20" > ./conf/conf_NBrings.txt                  # number of rings in focal plane mask
@@ -48,7 +48,7 @@ echo "0" > ./conf/conf_fpmocradld.txt                # outer cone outer radius [
 echo "0" > ./conf/conf_fpmocz.txt                    # sag at inner edge of outer cone (sag = 0 at outer edge), set to 0 if no outer cone
 
 
-# OPTIMIZATION PARAMETERS: 
+# OPTIMIZATION PARAMETERS:
 echo "1650" > ./conf/conf_mlambda.txt           # central wavelength for polychromatic design [nm]
 echo "1.0" > ./conf/conf_mlambdaB.txt           # spectral bandwidth [%]
 echo "5" > ./conf/conf_nblambda.txt             # Number of wavelength values
@@ -56,7 +56,7 @@ echo "30" > ./conf/conf_ssize.txt               # source angular size for mask o
 echo "1" > ./conf/conf_extmode.txt              # source extent mode (0: 1 point, 1: 3 points; 2: 6 points)
 
 
-# OPTICAL DESIGN: 
+# OPTICAL DESIGN:
 echo "1024" > ./conf/conf_size.txt              # array size
 echo "0.00385" > ./conf/conf_beamrad.txt        # beam radius [mm]
 echo "0.0000171112" > ./conf/conf_pscale.txt    # pixel scale in pupil [m/pix]
@@ -186,7 +186,3 @@ Average contrast = 5.92969e-07
 # STEP 017
 # runtime = 64m57.106s
 Average contrast = 5.77441e-07
-
-
-
-

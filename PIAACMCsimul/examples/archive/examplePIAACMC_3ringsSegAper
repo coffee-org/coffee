@@ -81,8 +81,8 @@ echo "0.14" > conf/conf_coout.txt
 echo "1.2" > conf/conf_fpmradld.txt
 
 echo "0.5" > conf/conf_REGPIAACALPHA.txt
-echo "1000.0" > conf/conf_REGPIAACCOEFF.txt  
-echo "0.5" > conf/conf_REGPIAAFALPHA.txt  
+echo "1000.0" > conf/conf_REGPIAACCOEFF.txt
+echo "0.5" > conf/conf_REGPIAAFALPHA.txt
 echo "1000.0" > conf/conf_REGPIAAFCOEFF.txt
 
 
@@ -172,15 +172,15 @@ echo "0.5" > conf/conf_LyotZmax.txt
 # complete step 007 : tune PIAA shapes and focal plane mask transm, 10 cosine modes, 5 Fourier modes
 ./run optsingle 8
 # this step takes approximately 4hr (PIAACMC_dftgrid=2)
-# to monitor optimization, view linoptval.txt with tail -f 
+# to monitor optimization, view linoptval.txt with tail -f
 # [0] Total light in scoring field = 1.29693e+06, peak PSF = -1, SCOTINGTOTAL = 2436   -> Average contrast = 5.01802e-08
 
 
 # complete step 008 :  tune PIAA shapes and focal plane mask transm, 20 cosine modes, 20 Fourier modes
 ./run optsingle 9
 # this step takes approximately  (PIAACMC_dftgrid=2)
-# to monitor optimization, view linoptval.txt with tail -f 
-# >>->     3             3.01625e-08 <-          5.35473e-08 
+# to monitor optimization, view linoptval.txt with tail -f
+# >>->     3             3.01625e-08 <-          5.35473e-08
 
 
 
@@ -193,7 +193,7 @@ echo "0.5" > conf/conf_LyotZmax.txt
 # complete step 010: Tune Lyot stops conjugations
 ./run optsingle 11
 # this step takes approximately 22mn
-# to monitor progress: tail -f result_LMpos.log 
+# to monitor progress: tail -f result_LMpos.log
 # [0] Total light in scoring field = 1.81457e+06, peak PSF = -1, SCOTINGTOTAL = 2436   -> Average contrast = 7.02082e-08
 
 
@@ -259,7 +259,7 @@ echo "2.0e-6" > conf/conf_fpmmaxsag.txt
 ./run optsingle 200
 
 # this command will run for a few hrs if the number of focal plane mask zones is large
-# the complex amplitude response of each mask zone is computed 
+# the complex amplitude response of each mask zone is computed
 # Several sub-processes are launched, each computing a subset of the total number of zones
 # you can follow the progress of each subprocess in the corresponding tmux sessions
 # the tmux session names are PID followed by FPMt<index>n<NBindex>
@@ -269,11 +269,3 @@ echo "2.0e-6" > conf/conf_fpmmaxsag.txt
 #
 # when all threads complete, the files are merged into a single FPMresp file
 #
-
-
-
-
-
-
-
-

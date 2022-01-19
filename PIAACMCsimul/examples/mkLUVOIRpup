@@ -58,4 +58,3 @@ gzip pupLUVOIRap6.2048.370.fits
 
 rm pupLUVOIRap6.1024.208.fits.gz
 gzip pupLUVOIRap6.1024.208.fits
-

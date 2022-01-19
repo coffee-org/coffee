@@ -55,7 +55,7 @@ echo "------------------------------------------------------------------------"
 
 printHELP1 ()
 {
-    printf "%20s       Create Subaru pupil\n" "$0" 
+    printf "%20s       Create Subaru pupil\n" "$0"
 }
 
 
@@ -109,8 +109,8 @@ for arg in "$@"; do
   shift
   case "$arg" in
     "--help") set -- "$@" "-h" ;;
-    "--help1") 
-set -- "$@" "-h" 
+    "--help1")
+set -- "$@" "-h"
 singlelinehelp=1;
 ;;
     *)        set -- "$@" "$arg"
@@ -149,7 +149,7 @@ while getopts :hmnz FLAG; do
   esac
 done
 
-shift $((OPTIND-1))  
+shift $((OPTIND-1))
 
 
 
@@ -201,7 +201,7 @@ fi
 
 
 #
-# spider offset = 0.16135 x puprad 
+# spider offset = 0.16135 x puprad
 # spider centerline intersects x-axis at +spoffr (two right spiders) and -spoffr (two left spiders)
 # Note that setting this parameter to zero would have all spiders originate from center of pupil
 #
@@ -212,7 +212,7 @@ spoffr=0.16135
 # This is the angle between x axis and spiders
 # spiders are not 90 deg apart. The opening angle between spiders on the right and left sides are 103.5
 # The opening angles at the top and bottom are 180-103.5 = 76.5 deg
-# 
+#
 PA=0.903208
 
 
@@ -345,7 +345,7 @@ savefits pupm1 "!tmp_pupSubarum_${size}_${pupradpix}.fits"
 #loadfits "pup_measured_internal.fits" mpup
 #mpup1=0.0-mpup/700000
 #resizeim pup1r pup1rr 451 451
-#addim pup1rr mpup1 pupadd 73 100 
+#addim pup1rr mpup1 pupadd 73 100
 #savefits pup1r "!pup1r.fits"
 #savefits pupadd "!pupadd.fits"
 exit

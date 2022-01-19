@@ -6,7 +6,7 @@
 ## 1. Copy scripts to local directory
 
 Create symbolic link to CLI in system or user path:
-	
+
 	sudo ln -s /<srcdir>/bin/coffee /usr/local/bin/coffee
 
 Create symbolic link to syncscripts into work directory:
@@ -43,16 +43,16 @@ The quickest way to get started is to setup and modify one of the example design
 This will configure all necessary files for a specific configuration. You can view parameters with :
 
 	./runPIAACMCdesign -l
-	
+
 If optimizing in APLC mode (no PIAA optics, type (after the -e command above):
 
 	./runPIAACMCdesign -a
-	
-	
+
+
 ### 2.2. Setup from example script
 
 If examples are loaded, one of the `example/setup_XXXX` script can be copied in the working directory and executed to setup the corresponding configuration
-	
+
 
 ***
 
@@ -83,10 +83,10 @@ In the focal plane optimization mode, the search status appears in files:
 
 	tail -f piaacmcconf_i000/linoptval.txt
 	tail -f piaacmcconf_i000/mode13*.opt.txt
-	
-	
 
-In the search mode, the code runs for a pre-determined amount of time. You can track progress in file `timeused.txt`. The first number is the search time elapsed, and the second number is the amount of total search time. To change / shorten the search time : 
+
+
+In the search mode, the code runs for a pre-determined amount of time. You can track progress in file `timeused.txt`. The first number is the search time elapsed, and the second number is the amount of total search time. To change / shorten the search time :
 
 	cat "3600" > searchtime.txt  # sets total search time to 1hr
 
@@ -107,4 +107,3 @@ Modes 300 and 400-402 are used to evaluate solution performance:
              #         400  : evaluation, level 0 (on-axis PSF)
              #         401  : evaluation, level 1 (level0 + extended source with OPD errors)
              #         402  : evaluation, level 2 (level 1 + transmission curve)
-

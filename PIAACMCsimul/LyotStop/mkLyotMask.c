@@ -5,22 +5,16 @@
  *
  */
 
-
-
-#include <stdlib.h>
 #include <stdio.h>
-
+#include <stdlib.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
-#include "COREMOD_memory/COREMOD_memory.h"
 #include "COREMOD_iofits/COREMOD_iofits.h"
+#include "COREMOD_memory/COREMOD_memory.h"
+#include "CommandLineInterface/CLIcore.h"
 #include "info/info.h"
 
-
 #include "PIAACMCsimul/PIAACMCsimul.h"
-
-
 
 /**
  * @brief Make Lyot stop geometry
@@ -38,23 +32,12 @@
  * @param[out] outID
  * @return errno_t
  */
-errno_t mkLyotMask(
-    const char *__restrict__ IDincoh_name,
-    const char *__restrict__ IDmc_name,
-    const char *__restrict__ IDzone_name,
-    double throughput,
-    const char *__restrict__ IDout_name,
-    imageID *outID
-)
+errno_t mkLyotMask(const char *__restrict__ IDincoh_name, const char *__restrict__ IDmc_name,
+                   const char *__restrict__ IDzone_name, double throughput, const char *__restrict__ IDout_name,
+                   imageID *outID)
 {
     DEBUG_TRACE_FSTART();
-    DEBUG_TRACEPOINT("FARG %s %s %s %lf %s",
-                     IDincoh_name,
-                     IDmc_name,
-                     IDzone_name,
-                     throughput,
-                     IDout_name
-                    );
+    DEBUG_TRACEPOINT("FARG %s %s %s %lf %s", IDincoh_name, IDmc_name, IDzone_name, throughput, IDout_name);
 
     imageID ID1;
     imageID IDmc, IDincoh, IDzone;
@@ -62,7 +45,6 @@ errno_t mkLyotMask(
     imageID IDout;
     //float sigma = 4.0;
     //int filter_size = 10;
-
 
     NBiter = 100;
 
@@ -84,49 +66,44 @@ errno_t mkLyotMask(
     uint64_t xysize = xsize;
     xysize *= ysize;
 
-    FUNC_CHECK_RETURN(
-        create_2Dimage_ID(IDout_name, xsize, ysize, &IDout)
-    );
+    FUNC_CHECK_RETURN(create_2Dimage_ID(IDout_name, xsize, ysize, &IDout));
 
     // normalize both images to 1.0
     {
         double val = 0.0;
-        for(uint64_t ii = 0; ii < xysize; ii++)
+        for (uint64_t ii = 0; ii < xysize; ii++)
         {
             val += data.image[IDmc].array.F[ii];
         }
-        for(uint64_t ii = 0; ii < xysize; ii++)
+        for (uint64_t ii = 0; ii < xysize; ii++)
         {
             data.image[IDmc].array.F[ii] /= val;
         }
     }
 
-
     {
         double val = 0.0;
-        for(uint64_t ii = 0; ii < xysize; ii++)
+        for (uint64_t ii = 0; ii < xysize; ii++)
         {
             val += data.image[IDincoh].array.F[ii];
         }
-        for(uint64_t ii = 0; ii < xysize; ii++)
+        for (uint64_t ii = 0; ii < xysize; ii++)
         {
             data.image[IDincoh].array.F[ii] /= val;
         }
     }
 
-
-
     // estimate iteratively rsl0, the threshold in offaxis/onaxis starlight that will achieve the goal throughput
     double rsl = 1.0;
-    for(iter = 0; iter < NBiter; iter++)
+    for (iter = 0; iter < NBiter; iter++)
     {
         double val = 0.0;
         double val1 = 0.0;
 
-        for(uint64_t ii = 0; ii < xysize; ii++)
+        for (uint64_t ii = 0; ii < xysize; ii++)
         {
-            if((data.image[IDzone].array.F[ii] > -1)
-                    && (data.image[IDincoh].array.F[ii]/data.image[IDmc].array.F[ii] > rsl))
+            if ((data.image[IDzone].array.F[ii] > -1) &&
+                (data.image[IDincoh].array.F[ii] / data.image[IDmc].array.F[ii] > rsl))
             {
                 val += data.image[IDincoh].array.F[ii];
                 val1 += data.image[IDmc].array.F[ii];
@@ -138,7 +115,7 @@ errno_t mkLyotMask(
             }
         }
         printf("rsl = %f  ->  %f %f   (%f)\n", rsl, val, val1, throughput);
-        if(val > throughput) // too much light came through
+        if (val > throughput) // too much light came through
         {
             rsl *= 1.1;
         }
@@ -153,49 +130,45 @@ errno_t mkLyotMask(
     double v0 = img_percentile(IDmc_name, 0.99);
     printf("v0 = %lf\n", v0);
 
-
-
-
     double bestval = 1.0; // to be minized: total starlight transmitted
     double rsl_best = 0.0;
     double v_best = 0.0;
 
-    for(rsl = 0.0 * rsl0; rsl < 2.0 * rsl0; rsl += 0.02 * rsl0)
-        for(double v = 0.00000001 * v0; v < 50.0 * v0; v *= 1.2)
+    for (rsl = 0.0 * rsl0; rsl < 2.0 * rsl0; rsl += 0.02 * rsl0)
+        for (double v = 0.00000001 * v0; v < 50.0 * v0; v *= 1.2)
         {
             double val = 0.0;
             double val1 = 0.0;
 
-            for(uint64_t ii = 0; ii < xysize; ii++)
+            for (uint64_t ii = 0; ii < xysize; ii++)
             {
-                if((data.image[IDzone].array.F[ii] > -1)
-                        && (data.image[IDincoh].array.F[ii] / data.image[IDmc].array.F[ii] > rsl)
-                        && (data.image[IDmc].array.F[ii] < v))
+                if ((data.image[IDzone].array.F[ii] > -1) &&
+                    (data.image[IDincoh].array.F[ii] / data.image[IDmc].array.F[ii] > rsl) &&
+                    (data.image[IDmc].array.F[ii] < v))
                 {
                     val += data.image[IDincoh].array.F[ii];
                     val1 += data.image[IDmc].array.F[ii];
                 }
             }
 
-            if(val > throughput)
+            if (val > throughput)
             {
-                if(val1 < bestval)
+                if (val1 < bestval)
                 {
                     bestval = val1;
                     rsl_best = rsl;
                     v_best = v;
-                    printf("BEST SOLUTION: %.12lf / %.12lf    %.12lf / %.12lf  -> %.12lf  %.12lf\n",
-                           rsl_best, rsl0, v_best, v0, val, bestval);
+                    printf("BEST SOLUTION: %.12lf / %.12lf    %.12lf / %.12lf  -> %.12lf  %.12lf\n", rsl_best, rsl0,
+                           v_best, v0, val, bestval);
                 }
-
             }
         }
 
-    for(uint64_t ii = 0; ii < xysize; ii++)
+    for (uint64_t ii = 0; ii < xysize; ii++)
     {
-        if((data.image[IDzone].array.F[ii] > -1)
-                && (data.image[IDincoh].array.F[ii] / data.image[IDmc].array.F[ii] > rsl_best)
-                && (data.image[IDmc].array.F[ii] < v_best))
+        if ((data.image[IDzone].array.F[ii] > -1) &&
+            (data.image[IDincoh].array.F[ii] / data.image[IDmc].array.F[ii] > rsl_best) &&
+            (data.image[IDmc].array.F[ii] < v_best))
         {
             data.image[IDout].array.F[ii] = 1.0;
         }
@@ -205,24 +178,19 @@ errno_t mkLyotMask(
         }
     }
 
-    if(0)
+    if (0)
     {
-        FUNC_CHECK_RETURN(
-            create_2Dimage_ID("postLMim", xsize, ysize, &ID1)
-        );
-        for(uint64_t ii = 0; ii < xysize; ii++)
+        FUNC_CHECK_RETURN(create_2Dimage_ID("postLMim", xsize, ysize, &ID1));
+        for (uint64_t ii = 0; ii < xysize; ii++)
         {
-            data.image[ID1].array.F[ii] = data.image[IDmc].array.F[ii] *
-                                          data.image[IDout].array.F[ii];
+            data.image[ID1].array.F[ii] = data.image[IDmc].array.F[ii] * data.image[IDout].array.F[ii];
         }
 
         FUNC_CHECK_RETURN(save_fits("postLMim", "postLMim.fits"));
-        FUNC_CHECK_RETURN(
-            delete_image_ID("postLMim", DELETE_IMAGE_ERRMODE_WARNING)
-        );
+        FUNC_CHECK_RETURN(delete_image_ID("postLMim", DELETE_IMAGE_ERRMODE_WARNING));
     }
 
-    if(outID != NULL)
+    if (outID != NULL)
     {
         *outID = IDout;
     }
@@ -230,8 +198,3 @@ errno_t mkLyotMask(
     DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;
 }
-
-
-
-
-

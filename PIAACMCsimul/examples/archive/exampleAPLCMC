@@ -65,7 +65,7 @@ echo "0" > ./conf/conf_PIAAmode.txt
 # set pre-apodizer to pupil plane conjugation
 echo "0.0" > ./conf/conf_prePIAA0maskpos.txt
 
-# set output pupil mask radius to 1.0 
+# set output pupil mask radius to 1.0
 echo "1.0" > ./conf/conf_pupoutmaskrad.txt
 
 
@@ -123,7 +123,7 @@ echo "2.0e-6" > conf/conf_fpmmaxsag.txt
 ./run optsingle 200
 
 # this command will run for a few hrs if the number of focal plane mask zones is large
-# the complex amplitude response of each mask zone is computed 
+# the complex amplitude response of each mask zone is computed
 # Several sub-processes are launched, each computing a subset of the total number of zones
 # you can follow the progress of each subprocess in the corresponding tmux sessions
 # the tmux session names are PID followed by FPMt<index>n<NBindex>
@@ -135,7 +135,7 @@ echo "2.0e-6" > conf/conf_fpmmaxsag.txt
 # The optimizer then searches for the optimal solution for 7200 sec
 # progress can be tracked by monitoring the file named "mode13_.....opt.txt" (use tail -f command)
 # the 5th number, which is in "( .. )" shows the current best value for contrast
-# 
+#
 # To stop the optimizer, create/edit a file named "searchtime.txt" and enter a small value (for example 100.0) which defines the maximum search time, and wait for the process to end
 #
 # you can track progress against the search time by displaying file timeused.txt
@@ -152,9 +152,3 @@ echo "2.0e-6" > conf/conf_fpmmaxsag.txt
 # run polychromatic propagation
 ./run proppoly 1
 # computes polychromatic PSF - takes approximately 20mn
-
-
-
-
-
-

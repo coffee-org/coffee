@@ -79,7 +79,7 @@ while getopts :htcs:e:dx FLAG; do
     c) # clear
     echo "Clearing all directory and files"
 	echo "REMOVING:"
-    ls | grep -v syncscripts 
+    ls | grep -v syncscripts
     ls | grep -v syncscripts | xargs rm -rf
     ;;
     e) # export script to directory
@@ -106,7 +106,7 @@ while getopts :htcs:e:dx FLAG; do
   esac
 done
 
-	
+
 shift $((OPTIND-1))
 
 
@@ -140,8 +140,8 @@ fi
 printHELP
         exit
 fi
-	
-	
+
+
 
 
 
@@ -162,7 +162,7 @@ echo ""
 #srcdir="$HOME/src/PIAACMCdesign/src/PIAACMCsimul/scripts"
 
 echo "Destination directory  :  $destdir"
-echo "Source      directory  :  $srcdir" 
+echo "Source      directory  :  $srcdir"
 
 
 
@@ -205,5 +205,3 @@ do
 	fi
 	fi
 done
-
-

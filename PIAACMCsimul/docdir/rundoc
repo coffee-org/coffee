@@ -7,6 +7,3 @@ do
   # take action on each file. $f store current file name
   md2html $f
 done
-
-
-

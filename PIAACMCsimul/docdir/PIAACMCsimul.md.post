@@ -33,7 +33,7 @@ The scripts can be linked to your working directory by executing the following c
 Then, execute in your work directory:
 
 	./syncscripts
-	
+
 This will install all required scripts in workdirectory and install any packages required.
 
 Code is composed of a several layers (from high to low) :
@@ -57,10 +57,10 @@ Script                   Description
 
 
 
-[Detailed description of script run](PIAACMCsimul_script_run.html)  
-[Detailed description of script runopt](PIAACMCsimul_script_runopt.html)  
-[Detailed description of script sim](PIAACMCsimul_script_sim.html)  
-[Detailed description of script runPIAACMC](PIAACMCsimul_script_runPIAACMC.html)  
+[Detailed description of script run](PIAACMCsimul_script_run.html)
+[Detailed description of script runopt](PIAACMCsimul_script_runopt.html)
+[Detailed description of script sim](PIAACMCsimul_script_sim.html)
+[Detailed description of script runPIAACMC](PIAACMCsimul_script_runPIAACMC.html)
 
 
 
@@ -80,7 +80,7 @@ The quickest way to get started is to setup and modify one of the example design
 This will configure all necessary files for a specific configuration. You can view parameters with :
 
 	./runPIAACMCdesign -l
-	
+
 If optimizing in APLC mode (no PIAA optics), type (after the -e command above):
 
 	./runPIAACMCdesign -a
@@ -110,7 +110,7 @@ Note that this may take a long time to run ... (days ?). The polychromatic desig
 ## Overview
 
 
-The design proceeds in discrete steps. The example scripts show the individual steps, and each step is executed with a separate command line. 
+The design proceeds in discrete steps. The example scripts show the individual steps, and each step is executed with a separate command line.
 
 Steps from 0 to 99 are executed sequentially to design a monochromatic PIAACMC. For these steps, the user may run multiple steps with a single command. For example, running step 18 will execute all steps from 0 to 17 included. If a step has already been completed, it will not be re-run.
 
@@ -132,7 +132,7 @@ The monochromatic PIAACMC design process is as follows:
 
 ## STEP 000 (MODE=0): Create an idealized centrally obscured apodized PIAACMC monochromatic design
 
-This is meant as a starting point for the PIAACMC, which will then be optimized further. This step takes a few minutes, and upon normal completion, display: 
+This is meant as a starting point for the PIAACMC, which will then be optimized further. This step takes a few minutes, and upon normal completion, display:
 
 ~~~
 ./runPIAACMC REACHED STATE EXIT POINT (1)
@@ -546,7 +546,7 @@ Once the FPMresp... file is created, it is used by the search algorithm to quick
 
 The search algorithm proceeds as two nested loops (outer loop steps 1-4, inner loop steps 2-4):
 
-1. OUTER LOOP START ITERATION: starting point is chosen, either randomly or close to the best solution. 
+1. OUTER LOOP START ITERATION: starting point is chosen, either randomly or close to the best solution.
 2. INNER LOOP START ITERATION: Derivatives around the current point.
 3. For each predefined regularization coefficient :
 	a. An SVD-based inversion used to define a search direction
@@ -575,7 +575,7 @@ Mode		 Description
 ------------ ---------------------------------------------------------------------------------------------------------------------
 0            Compute on-axis propagation for specified configuration. If configuration does not exist, create idealized monochromatic PIAACMC (intended to create a new index) and compute on-axis propagation
 
-1            Optimize Lyot stop(s) locations (scan) 
+1            Optimize Lyot stop(s) locations (scan)
 
 2            Optimize focal plane mask transmission for idealized monochromatic PIAACMC (scan)
 
@@ -648,20 +648,20 @@ PIAACMC_fpmradld     Focal plane mask outer radius
 
 * if configuration directory exists, use it and load configuration file ( function  PIAAsimul_loadpiaacmcconf ), otherwise, create it
 
-* load/create Cmodes 
+* load/create Cmodes
 
 * load/create Fmodes
 
 * load mode coefficients for piaa shapes if they exist. If not:
-	
+
 	* create radial apodization for centrally obscured idealized monochromatic PIAACMC
-	
+
 	* fit / extrapolate radial apodization profile with cosines
-	
+
 	* using above fit, create 2D radial sag for both PIAA optics ( -> PIAA_Mshapes.txt)
-	
+
 	* make 2D sag maps for both optics ( -> piaa0z.fits, piaa1z.fits)
-	
+
 	* fit 2D sag maps with Cmodes and Fmodes coefficients ( -> piaa0Cmodes, piaa0Fmodes, piaa1Cmodes, piaa1Fmodes )
 
 * load/create focal plane mask zone map. This is the map that defines the geometry (which ring is where)
@@ -705,10 +705,10 @@ PIAACMC_fpmradld     Focal plane mask outer radius
 APLCmaskCtransm.txt ??
 fpm_ampl.fits
 fpm_pha.fits
-FPmask.tmp.fits 
+FPmask.tmp.fits
 
 
-#### Configuration : 
+#### Configuration :
 
 Output file	| Notes
 ----------------|-------------------------------------
@@ -736,7 +736,7 @@ Output file	| Notes
 ./piaaconfxxx/piaam0z.fits	| PIAA M0 shape (2D sag)
 ./piaaconfxxx/piaam1z.fits	| PIAA M1 shape (2D sag)
 ./piaaconfxxx/PIAA_Mshapes.txt	| PIAA shapes (radial txt file, cols: r0, z0, r1, z1)
-./piaaconfxxx/piaa0Fz.fits	| PIAA M0 shape, Fourier components (2D file)	
+./piaaconfxxx/piaa0Fz.fits	| PIAA M0 shape, Fourier components (2D file)
 ./piaaconfxxx/piaa1Fz.fits	| PIAA M1 shape, Fourier components (2D file)
 ./piaaconfxxx/piaa0Cmodes.fits  | idealized PIAACMC mirror 0 cosine modes (copied from ./piaaref/)
 ./piaaconfxxx/piaa0Fmodes.fits  | idealized PIAACMC mirror 0 Fourier modes (copied from ./piaaref/)
@@ -848,7 +848,7 @@ Every time a PSF is computed, the following 3 functions are created in that orde
 	- compute radial PIAA sag, make 2D sag maps
 	- MAKE FOCAL PLANE MASK
 	- MAKE LYOT STOPS (LOADING/CREATING LYOT MASK)
-	
+
 - `PIAACMCsimul_init(piaacmc, 0, xld, yld)` : initializes optical system to piaacmc design
 
 - `PIAACMCsimul_makePIAAshapes(piaacmc, 0)` : create 2D PIAA shapes (`piaam0z` and `piaam1z`) from coefficient values and modes
@@ -881,16 +881,16 @@ The scripts produce an APLC design by setting `PIAAmode = 0`. In that case, only
 
 ### Overall flow
 
-FPM optimization is done as `mode = 13` in the main routine. It is called from the `runPIAACMC` script.  
+FPM optimization is done as `mode = 13` in the main routine. It is called from the `runPIAACMC` script.
 The `PIAACMCsimul_run(char *confindex, long mode)` function loop-calls the `PIAACMCsimul_exec(char *confindex, long mode)` function with mode 13 until search time is reached.
 
 Each search proceeds as follows :
 
 - a starting point is picked. A random integer `zeroST` encodes the starting poing:
-	- 0: 
+	- 0:
 	- 1: start at zero
 	- 2: start at best solution
-	
+
 - run `PIAACMCsimul_exec` in mode 13
 	- randomly move next to starting point
 	- compute value and store it to valref variable
@@ -901,7 +901,7 @@ Each search proceeds as follows :
 			- do a linescan descent along the vector identified by SVD, with the alphareg regularization coefficient
 			- the best value is stored as `bestval` and the corresponding parameters into `data.image[IDoptvec].array.F[i]`
 			- store best values in `PIAACMCSIMUL_VAL`, and reference value in `PIAACMCSIMUL_VALREF`
-		
+
 
 - `computePSF_FAST_FPMresp = 1` : uses pre-computed complex amplitude zones response to evaluate FPM solutions
 - `PIAACMC_FPM_FASTDERIVATIVES = 1`
@@ -929,7 +929,3 @@ Average contrast = 5.964e-05
 0.001 -> Average contrast = 8.57575e-07, 1.9e-7
 0.01  -> Average contrast = 7.99085e-07, 2.0e-7
 7.8294e-07
-
-
-
-

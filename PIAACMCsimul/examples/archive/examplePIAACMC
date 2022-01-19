@@ -80,7 +80,7 @@ echo "------------------------------------------------------------------------"
 
 printHELP1 ()
 {
-    printf "%20s       PIAACMC design script\n" "$0" 
+    printf "%20s       PIAACMC design script\n" "$0"
 }
 
 
@@ -137,8 +137,8 @@ for arg in "$@"; do
   shift
   case "$arg" in
     "--help") set -- "$@" "-h" ;;
-    "--help1") 
-set -- "$@" "-h" 
+    "--help1")
+set -- "$@" "-h"
 singlelinehelp=1;
 ;;
     *)        set -- "$@" "$arg"
@@ -148,7 +148,7 @@ done
 
 
 # Save intermediate steps
-SAVESTEP=0 
+SAVESTEP=0
 
 # by default, skip setup
 MKSETUP=0
@@ -170,14 +170,14 @@ while getopts :hH:L:N:Cc FLAG; do
       fi
       exit
       ;;
-    \?) 
+    \?)
       echo -e \\n"Option -${BOLD}$OPTARG${NORM} not allowed."
       printHEL
       ;;
   esac
 done
 
-shift $((OPTIND-1))  
+shift $((OPTIND-1))
 
 
 
@@ -289,8 +289,8 @@ echo "0.2" > conf/conf_coout.txt
 echo "1.0" > conf/conf_fpmradld.txt
 
 echo "0.5" > conf/conf_REGPIAACALPHA.txt
-echo "1000.0" > conf/conf_REGPIAACCOEFF.txt  
-echo "0.5" > conf/conf_REGPIAAFALPHA.txt  
+echo "1000.0" > conf/conf_REGPIAACCOEFF.txt
+echo "0.5" > conf/conf_REGPIAAFALPHA.txt
 echo "1000.0" > conf/conf_REGPIAAFCOEFF.txt
 
 
@@ -417,7 +417,7 @@ if [ "$SAVESTEP" = "1" ]; then
 cp -rf $PWD $PWD.step${step}
 fi
 # this step takes approximately 4hr (PIAACMC_dftgrid=2)
-# to monitor optimization, view linoptval.txt with tail -f 
+# to monitor optimization, view linoptval.txt with tail -f
 
 # complete step 008 :  tune PIAA shapes and focal plane mask transm, 20 cosine modes, 20 Fourier modes
 step="009"
@@ -426,7 +426,7 @@ if [ "$SAVESTEP" = "1" ]; then
 cp -rf $PWD $PWD.step${step}
 fi
 # this step takes approximately 6hr (PIAACMC_dftgrid=2)
-# to monitor optimization, view linoptval.txt with tail -f 
+# to monitor optimization, view linoptval.txt with tail -f
 # contrast =          1.22808e-06
 
 # complete step 009 : Compute Lyot stops shapes and locations, 3nd pass, throughput = LStransm1
@@ -447,7 +447,7 @@ if [ "$SAVESTEP" = "1" ]; then
 cp -rf $PWD $PWD.step${step}
 fi
 # this step takes approximately 1hr
-# to monitor progress: tail -f result_LMpos.log 
+# to monitor progress: tail -f result_LMpos.log
 
 # [0] Total light in scoring field = 1.67163e+09, peak PSF = -1, SCOTINGTOTAL = 2436   -> Average contrast = 4.98592e-06
 # [0] Total light in scoring field = 1.62817e+09, peak PSF = -1, SCOTINGTOTAL = 2436   -> Average contrast = 4.8563e-06
@@ -501,10 +501,10 @@ cp -rf $PWD $PWD.step${step}
 fi
 # [0] Total light in scoring field = 6.07659e+08, peak PSF = -1, SCOTINGTOTAL = 2436   -> Average contrast = 1.81245e-06
 
-# skip steps 16 
+# skip steps 16
 touch ./piaacmcconf_i000/step016.txt
 # [0] Total light in scoring field = 857055, peak PSF = -1, SCOTINGTOTAL = 2436   -> Average contrast = 3.31607e-08
-# 
+#
 
 # skip steps 17
 touch ./piaacmcconf_i000/step017.txt
@@ -541,7 +541,7 @@ echo "2.0e-6" > conf/conf_fpmmaxsag.txt
 
 
 # this command will run for a few hrs if the number of focal plane mask zones is large
-# the complex amplitude response of each mask zone is computed 
+# the complex amplitude response of each mask zone is computed
 # Several sub-processes are launched, each computing a subset of the total number of zones
 # you can follow the progress of each subprocess in the corresponding tmux sessions
 # the tmux session names are PID followed by FPMt<index>n<NBindex>
@@ -555,7 +555,7 @@ echo "2.0e-6" > conf/conf_fpmmaxsag.txt
 # the optsingle 200 command includes both the creation of the FPMresp file (which is skipped if the file already exists) and a search for the optimal solution
 # Finding the optimal solution requires multiple searches, so you can re-launch the optsingle 200 command multiple time
 # Results are written in a file names piaacmcconf_i000/mode13_....opt.txt
-# the 5th number (in parentheses) shows the best solution 
+# the 5th number (in parentheses) shows the best solution
 
 #
 # OPTIMIZATION PHASE
@@ -593,5 +593,3 @@ echo "2.0e-6" > conf/conf_fpmmaxsag.txt
 
 
 #
-
-

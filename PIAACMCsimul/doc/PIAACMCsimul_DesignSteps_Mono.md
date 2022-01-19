@@ -36,7 +36,7 @@ The monochromatic PIAACMC design process is as follows:
 
 ## 2. STEP 000 (MODE=0): Create an idealized centrally obscured apodized PIAACMC monochromatic design
 
-This is meant as a starting point for the PIAACMC, which will then be optimized further. This step takes a few minutes, and upon normal completion, displays: 
+This is meant as a starting point for the PIAACMC, which will then be optimized further. This step takes a few minutes, and upon normal completion, displays:
 
 ~~~
 ./runPIAACMC REACHED STATE EXIT POINT (1)
@@ -118,13 +118,13 @@ Runtime 00:01:36 (size 1024)
 
 ## STEP 001: Propagate solution and compute PSF
 
-The previous solution is propagated. This should yield the same result as step 0. 
+The previous solution is propagated. This should yield the same result as step 0.
 
 Output file                             | Description
 ----------------------------------------|--------------------------------------------------------------------------
 piaacmcconf_i000/WFamp0_xxx.fits        | Amplitude in plane xxx
 piaacmcconf_i000/WFpha0_xxx.fits        | Phase in plane xxx
-piaacmcconf_i000/psfi0_step001.fits     | On-axis PSF 
+piaacmcconf_i000/psfi0_step001.fits     | On-axis PSF
 
 
 ~~~
@@ -179,7 +179,7 @@ Output file                             | Description
 ----------------------------------------|--------------------------------------------------------------------------
 piaacmcconf_i000/WFamp0_xxx.fits        | Amplitude in plane xxx
 piaacmcconf_i000/WFpha0_xxx.fits        | Phase in plane xxx
-piaacmcconf_i000/psfi0_step003.fits     | On-axis PSF 
+piaacmcconf_i000/psfi0_step003.fits     | On-axis PSF
 
 
 ~~~
@@ -306,7 +306,7 @@ Runtime 00:09 (size 2048)
 
 ## STEP 006 (mode = 5): Compute Lyot stops shapes and locations, 2nd pass, 70% throughput
 
-Source code: 
+Source code:
 
 ~~~
 BEST SOLUTION: 30.006465758591 / 50.010776264318    0.000000319995 / 0.000021330725  -> 0.602147984170  0.001772430096
@@ -359,7 +359,7 @@ Last lines of file `linoptval.txt`:
 ##  [     7 /    20 ]   1.000      0.457732   2.74739e-08   (reg =  5.99475e-09 [1]  1.99516e-14 [1]   contrast =          2.14791e-08)       [0] [31] bestval =  2.74617e-08
 ##  [     7 /    20 ]   1.000      0.550478   2.74509e-08   (reg =  6.06494e-09 [1]  1.99516e-14 [1]   contrast =          2.13859e-08)       [0] [31]  -> BEST VECTOR =======
 ##  [     7 /    20 ]   1.000      0.661774   2.74541e-08   (reg =  6.14971e-09 [1]  1.99516e-14 [1]   contrast =          2.13043e-08)       [0] [31] bestval =  2.74509e-08
-->     7             2.74509e-08 <-          2.14234e-07 
+->     7             2.74509e-08 <-          2.14234e-07
 ~~~
 
 Runtime 01:11:45 (size 1024)
@@ -390,7 +390,7 @@ Last lines of file `linoptval.txt`:
 ##  [     3 /  1000 ]   1.000      0.002400   1.41794e-08   (reg =  7.60516e-09 [1]  1.99516e-14 [1]   contrast =          6.57427e-09)       [0] [81] bestval =  1.41791e-08
 ##  [     3 /  1000 ]   1.000      0.004080    1.4179e-08   (reg =  7.60565e-09 [1]  1.99516e-14 [1]   contrast =          6.57337e-09)       [0] [81]  -> BEST VECTOR =======
 ##  [     3 /  1000 ]   1.000      0.006096   1.41796e-08   (reg =  7.60623e-09 [1]  1.99516e-14 [1]   contrast =          6.57337e-09)       [0] [81] bestval =   1.4179e-08
-->     3              1.4179e-08 <-          2.74509e-08 
+->     3              1.4179e-08 <-          2.74509e-08
 ~~~
 
 Runtime 00:34:35 (size 1024)
@@ -613,7 +613,7 @@ Output:
 ##  [     3 /    10 ]   0.800      0.004080   1.20893e-08   (reg =  7.67796e-09 [1]  1.99516e-14 [1]   contrast =          4.41131e-09)       [0] [281] bestval =   1.2089e-08
 ##  [     3 /    10 ]   1.000      0.001000   1.20891e-08   (reg =  7.67802e-09 [1]  1.99516e-14 [1]   contrast =           4.4111e-09)       [0] [281] bestval =   1.2089e-08
 ##  [     3 /    10 ]   1.000      0.002400   1.20893e-08   (reg =  7.67796e-09 [1]  1.99516e-14 [1]   contrast =          4.41135e-09)       [0] [281] bestval =   1.2089e-08
-->     3              1.2089e-08 <-          1.44694e-08 
+->     3              1.2089e-08 <-          1.44694e-08
 ~~~
 
 
@@ -720,7 +720,7 @@ Output:
 ##  [     3 /    20 ]   1.000      0.001000   1.57528e-08   (reg =  7.81254e-09 [1]  1.99516e-14 [1]   contrast =          7.94027e-09)       [0] [81] bestval =  1.57523e-08
 ##  [     3 /    20 ]   1.000      0.002400   1.57524e-08   (reg =  7.81261e-09 [1]  1.99516e-14 [1]   contrast =          7.93977e-09)       [0] [81] bestval =  1.57523e-08
 ##  [     3 /    20 ]   1.000      0.004080    1.5753e-08   (reg =  7.81268e-09 [1]  1.99516e-14 [1]   contrast =          7.94025e-09)       [0] [81] bestval =  1.57523e-08
-->     3             1.57523e-08 <-          1.72109e-08 
+->     3             1.57523e-08 <-          1.72109e-08
 ~~~
 
 

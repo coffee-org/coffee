@@ -2,7 +2,7 @@
 
 
 # exit on error
-set -e 
+set -e
 
 # debug mode
 #set -x
@@ -238,14 +238,14 @@ function SetConfig_PIAACMCnearIRlenses2048 {
     LyotZmin="-0.1"
     LyotZmax="0.1"
     pupoutmaskrad="0.98"
-    
+
     fpmmaterial="SiO2"
     FPMsectors="2"
-    
+
     # LYOT STOP(S) DESIGN
     LStransm="0.90"
     NBls="1"
-    
+
     set_optconfig=1
 }
 
@@ -710,46 +710,46 @@ fi
 
 
 if [ "$SETparams" = "1" ]; then
-    
+
     # Subaru PIAACMC
     if [ "$DesignExampleIndex" -eq 0 ]; then
         loadPup_Subaru2048
         SetConfig_PIAACMCnearIRlenses2048
         SetOptParam
     fi
-    
-    
-    
+
+
+
     # WFIRST optical
     if [ "$DesignExampleIndex" -eq 1 ]; then
         loadPup_WFIRST1024
         SetConfig_PIAACMCvisMirrorGregorian1024
         SetOptParam
     fi
-    
+
     # Segmented aperture, 3 rings
     if [ "$DesignExampleIndex" -eq 2 ]; then
         loadPup_seg3rings1024
         SetConfig_PIAACMCvisMirrorGregorian1024
         SetOptParam
     fi
-    
-    
-    
+
+
+
     # LUVOIR 1024, 1300nm
     if [ "$DesignExampleIndex" -eq 3 ]; then
         loadPup_LUVOIR1024
-        
+
         size="1024"
         invPIAAmode=0
         lambda="1300"
         PIAAmaterial="Mirror"
         beamrad="0.0188474"
-        
+
         pscale="0.00008812832432"
         # 2048: "0.00003916814414"
         # 4096: "0.00001958407207"
-        
+
         Fratio="85.9"
         PIAAsep="0.405"
         PIAAr0lim="1.15"
@@ -763,10 +763,10 @@ if [ "$SETparams" = "1" ]; then
         LyotZmin="-0.5"
         LyotZmax="0.0"
         pupoutmaskrad="0.98"
-        
+
         fpmmaterial="Mirror"
         FPMsectors="2"
-        
+
         lambdaB="10"    # spectral band (%)
         mlambdaB="$lambdaB"
         fpmradld="1.2"
@@ -781,23 +781,23 @@ if [ "$SETparams" = "1" ]; then
         NBls="2"
         set_optparam="1"
     fi
-    
-    
-    
+
+
+
     # LUVOIR 2048, 1300nm
     if [ "$DesignExampleIndex" -eq 4 ]; then
         loadPup_LUVOIR2048
-        
+
         size="2048"
         invPIAAmode=0
         lambda="1300"
         PIAAmaterial="Mirror"
         beamrad="0.0188474"
-        
+
         pscale="0.00003916814414"
         # 2048: "0.00003916814414"
         # 4096: "0.00001958407207"
-        
+
         Fratio="85.9"
         PIAAsep="0.405"
         PIAAr0lim="1.15"
@@ -811,10 +811,10 @@ if [ "$SETparams" = "1" ]; then
         LyotZmin="-0.5"
         LyotZmax="0.0"
         pupoutmaskrad="0.98"
-        
+
         fpmmaterial="Mirror"
         FPMsectors="2"
-        
+
         lambdaB="10"    # spectral band (%)
         mlambdaB="$lambdaB"
         fpmradld="1.2"
@@ -829,10 +829,10 @@ if [ "$SETparams" = "1" ]; then
         NBls="2"
         set_optparam="1"
     fi
-    
-    
-    
-    
+
+
+
+
     # Subaru APLCMC
     if [ "$DesignExampleIndex" -eq 5 ]; then
         loadPup_Subaru1024
@@ -1558,11 +1558,3 @@ if [ "$step" = "$mSTEP" ]; then
         rsync -au --progress $PWD/ $PWD.step${step}
     fi
 fi
-
-
-
-
-
-
-
-
