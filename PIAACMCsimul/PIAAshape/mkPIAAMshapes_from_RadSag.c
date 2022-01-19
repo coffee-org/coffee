@@ -12,9 +12,10 @@
 #include <omp.h>
 #endif
 
+#include "CommandLineInterface/CLIcore.h"
+
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
-#include "CommandLineInterface/CLIcore.h"
 
 /**
  * @brief Make PIAA OPD screens from radial sag profile

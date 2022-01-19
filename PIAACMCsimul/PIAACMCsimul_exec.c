@@ -20,11 +20,13 @@
 #include <gsl/gsl_vector.h>
 
 // milk includes
+#include "CommandLineInterface/CLIcore.h"
+
 #include "COREMOD_arith/COREMOD_arith.h"
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
 #include "COREMOD_tools/COREMOD_tools.h"
-#include "CommandLineInterface/CLIcore.h"
+
 #include "image_gen/image_gen.h"
 #include "statistic/statistic.h"
 

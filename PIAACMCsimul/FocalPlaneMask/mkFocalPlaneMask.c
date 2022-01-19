@@ -11,9 +11,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "CommandLineInterface/CLIcore.h"
+
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
-#include "CommandLineInterface/CLIcore.h"
+
 #include "OpticsMaterials/OpticsMaterials.h"
 
 #include "OptSystProp/OptSystProp.h"

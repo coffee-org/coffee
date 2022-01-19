@@ -11,10 +11,11 @@
 #include <stdio.h>
 
 // milk includes
+#include "CommandLineInterface/CLIcore.h"
 //   core modules
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
-#include "CommandLineInterface/CLIcore.h"
+
 #include "image_basic/image_basic.h"
 //   other modules
 

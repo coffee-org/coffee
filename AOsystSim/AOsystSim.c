@@ -44,10 +44,11 @@
 // cfitsTK includes
 
 //   core modules
+#include "CommandLineInterface/CLIcore.h"
+
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
 #include "COREMOD_tools/COREMOD_tools.h"
-#include "CommandLineInterface/CLIcore.h"
 
 //   other modules
 #include "AOsystSim/AOsystSim.h"

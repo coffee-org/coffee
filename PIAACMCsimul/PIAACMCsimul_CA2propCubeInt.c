@@ -12,8 +12,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "COREMOD_memory/COREMOD_memory.h"
 #include "CommandLineInterface/CLIcore.h"
+
+#include "COREMOD_memory/COREMOD_memory.h"
 
 #include "OptSystProp/OptSystProp.h"
 
