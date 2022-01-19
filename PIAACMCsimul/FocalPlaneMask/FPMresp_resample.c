@@ -11,8 +11,9 @@
 #include <stdlib.h>
 
 // milk includes
-#include "COREMOD_memory/COREMOD_memory.h"
 #include "CommandLineInterface/CLIcore.h"
+
+#include "COREMOD_memory/COREMOD_memory.h"
 
 // Local variables pointers
 static char *FPMrespinimname;
