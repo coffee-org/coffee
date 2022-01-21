@@ -23,12 +23,18 @@
 /// all arrays pre-allocated outside this function
 ///
 errno_t PIAACMCsimul_achromFPMsol_eval(
-    double *restrict fpmresp_array, /// @param[in] fpmresp_array   Mask zones responses, double array
-    double *restrict zonez_array,   /// @param[in] zonez_array     Zone thicknesses, double array
+    double
+        *restrict fpmresp_array, /// @param[in] fpmresp_array   Mask zones responses, double array
+    double
+        *restrict zonez_array, /// @param[in] zonez_array     Zone thicknesses, double array
     double
         *restrict dphadz_array, /// @param[in] dphadz_array    For each lambda, pha = thickness x dphadt_array[lambdaindex]
-    double *restrict outtmp_array, /// @param[out] outtmp_array   Output temp array
-    long vsize, long nbz, long nbl, double *outval)
+    double
+        *restrict outtmp_array, /// @param[out] outtmp_array   Output temp array
+    long    vsize,
+    long    nbz,
+    long    nbl,
+    double *outval)
 {
     DEBUG_TRACE_FSTART();
     //	long evali;
@@ -43,7 +49,10 @@ errno_t PIAACMCsimul_achromFPMsol_eval(
     // indexing :  k*(data.image[piaacmc[0].zonezID].md[0].size[0]+1)*vsize + mz*vsize + ii
 
 #ifdef PIAASIMUL_LOGFUNC1
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__, "");
+    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log",
+                                 __FUNCTION__,
+                                 __LINE__,
+                                 "");
 #endif
 
     for (long evalk = 0; evalk < nbl; evalk++) // wavelength index
@@ -51,13 +60,15 @@ errno_t PIAACMCsimul_achromFPMsol_eval(
         long evalki;
         evalki = evalk * (nbz + 1) * vsize;
 
-        if (piaacmcopticalsystem.FOCMASKarray[0].mode == 1) // include outer zone
+        if (piaacmcopticalsystem.FOCMASKarray[0].mode ==
+            1) // include outer zone
         {
             // outer zone
             for (long evalii = 0; evalii < vsize / 2; evalii++)
             {
-                outtmp_array[evalk * vsize + 2 * evalii] =
-                    fpmresp_array[evalk * (nbz + 1) * vsize + 2 * evalii]; // mz=0 -> mz*vsize not included in index
+                outtmp_array[evalk * vsize + 2 * evalii] = fpmresp_array
+                    [evalk * (nbz + 1) * vsize +
+                     2 * evalii]; // mz=0 -> mz*vsize not included in index
                 outtmp_array[evalk * vsize + 2 * evalii + 1] =
                     fpmresp_array[evalk * (nbz + 1) * vsize + 2 * evalii + 1];
             }
@@ -65,19 +76,21 @@ errno_t PIAACMCsimul_achromFPMsol_eval(
             // mask zones
             for (long evalmz = 0; evalmz < nbz; evalmz++)
             {
-                double evalpha = zonez_array[evalmz] *
-                                 dphadz_array[evalk]; // CHANGED sign to + on 2017-12-23 to adopt new sign convention
+                double evalpha =
+                    zonez_array[evalmz] *
+                    dphadz_array
+                        [evalk]; // CHANGED sign to + on 2017-12-23 to adopt new sign convention
                 double evalcosp = cos(evalpha);
                 double evalsinp = sin(evalpha);
-                long evalki1 = evalki + (evalmz + 1) * vsize;
-                long evalkv = evalk * vsize;
+                long   evalki1  = evalki + (evalmz + 1) * vsize;
+                long   evalkv   = evalk * vsize;
 
                 for (long evalii = 0; evalii < vsize / 2; evalii++)
                 {
-                    long evalii1 = 2 * evalii;
-                    long evalii2 = 2 * evalii + 1;
-                    double evalre = fpmresp_array[evalki1 + evalii1];
-                    double evalim = fpmresp_array[evalki1 + evalii2];
+                    long   evalii1 = 2 * evalii;
+                    long   evalii2 = 2 * evalii + 1;
+                    double evalre  = fpmresp_array[evalki1 + evalii1];
+                    double evalim  = fpmresp_array[evalki1 + evalii2];
                     double evalre1 = evalre * evalcosp - evalim * evalsinp;
                     double evalim1 = evalre * evalsinp + evalim * evalcosp;
                     outtmp_array[evalkv + evalii1] += evalre1;
@@ -87,22 +100,22 @@ errno_t PIAACMCsimul_achromFPMsol_eval(
         }
         else // single zone impulse
         {
-            long evalmz, evalki1, evalkv;
+            long   evalmz, evalki1, evalkv;
             double evalcosp, evalsinp;
 
             evalmz = piaacmcparams.focmMode - 1;
             //double evalpha = zonez_array[evalmz] * dphadz_array[evalk];
             evalcosp = 1.0; //cos(evalpha);
             evalsinp = 0.0; //sin(evalpha);
-            evalki1 = evalki + (evalmz + 1) * vsize;
-            evalkv = evalk * vsize;
+            evalki1  = evalki + (evalmz + 1) * vsize;
+            evalkv   = evalk * vsize;
 
             for (long evalii = 0; evalii < vsize / 2; evalii++)
             {
-                long evalii1 = 2 * evalii;
-                long evalii2 = 2 * evalii + 1;
-                double evalre = fpmresp_array[evalki1 + evalii1];
-                double evalim = fpmresp_array[evalki1 + evalii2];
+                long   evalii1 = 2 * evalii;
+                long   evalii2 = 2 * evalii + 1;
+                double evalre  = fpmresp_array[evalki1 + evalii1];
+                double evalim  = fpmresp_array[evalki1 + evalii2];
                 double evalre1 = evalre * evalcosp - evalim * evalsinp;
                 double evalim1 = evalre * evalsinp + evalim * evalcosp;
                 outtmp_array[evalkv + evalii1] = evalre1;

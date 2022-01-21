@@ -33,12 +33,17 @@
  *
  * optsyst.elemkeepmem	1 if element complex amplitude should be kept in memory after use
  */
-errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long elemend, const char *savedir, int sharedmem)
+errno_t OptSystProp_run(OPTSYST    *optsyst,
+                        long        index,
+                        long        elemstart,
+                        long        elemend,
+                        const char *savedir,
+                        int         sharedmem)
 {
     DEBUG_TRACE_FSTART();
 
-    long size;
-    long nblambda;
+    long     size;
+    long     nblambda;
     uint64_t size2;
 
     double proplim = 1.0e-4;
@@ -51,16 +56,16 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
     long emax;
 
     long elemstart1 = 0;
-    int elemOK;
+    int  elemOK;
 
     uint32_t *imsizearray;
 
     // number of pixels in one side of each square data array
-    size = optsyst[index].size;
-    size2 = size * size; // area = total number of pixels
+    size     = optsyst[index].size;
+    size2    = size * size; // area = total number of pixels
     nblambda = optsyst[index].nblambda;
 
-    imsizearray = (uint32_t *)malloc(sizeof(uint32_t) * 3);
+    imsizearray = (uint32_t *) malloc(sizeof(uint32_t) * 3);
     if (imsizearray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
@@ -81,7 +86,14 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
         imageID IDa = image_ID(imname);
         if (IDa == -1)
         {
-            create_image_ID(imname, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0, 0, &IDa);
+            create_image_ID(imname,
+                            3,
+                            imsizearray,
+                            _DATATYPE_FLOAT,
+                            sharedmem,
+                            0,
+                            0,
+                            &IDa);
             //    create_3Dimage_ID(imname, size, size, nblambda);
         }
 
@@ -101,7 +113,14 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
         imageID IDp = image_ID(imname);
         if (IDp == -1)
         {
-            create_image_ID(imname, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0, 0, NULL);
+            create_image_ID(imname,
+                            3,
+                            imsizearray,
+                            _DATATYPE_FLOAT,
+                            sharedmem,
+                            0,
+                            0,
+                            NULL);
             //create_3Dimage_ID(imname, size, size, nblambda);
         }
     }
@@ -111,7 +130,7 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
     // set up the data name stubs for later definition of file and data names
     // one for each defined element
     elemstart1 = 0;
-    elemOK = 1;
+    elemOK     = 1;
     // looking for the first defined element prior to input elemstart
     // or elemstart, whichever comes first
     while (elemOK == 1)
@@ -125,11 +144,18 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
         }
         else
         {
-            WRITE_IMAGENAME(imnameamp_in, "WFamp%ld_%03ld", index, elemstart1 - 1);
-            WRITE_IMAGENAME(imnamepha_in, "WFpha%ld_%03ld", index, elemstart1 - 1);
+            WRITE_IMAGENAME(imnameamp_in,
+                            "WFamp%ld_%03ld",
+                            index,
+                            elemstart1 - 1);
+            WRITE_IMAGENAME(imnamepha_in,
+                            "WFpha%ld_%03ld",
+                            index,
+                            elemstart1 - 1);
         }
         // skip elements that are not defined and and prior to the input elemstart
-        if (((ID1 = image_ID(imnameamp_in)) != -1) && ((ID2 = image_ID(imnamepha_in)) != -1) &&
+        if (((ID1 = image_ID(imnameamp_in)) != -1) &&
+            ((ID2 = image_ID(imnamepha_in)) != -1) &&
             (elemstart1 < elemstart + 1))
         {
             elemstart1++;
@@ -140,7 +166,14 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
             elemOK = 0;
         }
 
-        printf("%ld/%ld %d    %s %ld   %s %ld\n", elemstart1, elemstart, elemOK, imnameamp_in, ID1, imnamepha_in, ID2);
+        printf("%ld/%ld %d    %s %ld   %s %ld\n",
+               elemstart1,
+               elemstart,
+               elemOK,
+               imnameamp_in,
+               ID1,
+               imnamepha_in,
+               ID2);
     }
     // back up so we propagate from the current element to the next element
     elemstart1--;
@@ -150,7 +183,9 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
     emax = elemend;
     if (emax > optsyst[index].NBelem)
     {
-        emax = optsyst[index].NBelem; // make sure we're not doing too many elements, so user does not need
+        emax =
+            optsyst[index]
+                .NBelem; // make sure we're not doing too many elements, so user does not need
     }
     // to know how many elements there are
 
@@ -176,12 +211,16 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
         {
             // now there is a previous element
             // this is how we move down the elements
-            WRITE_IMAGENAME(imnameamp_in, "WFamp%ld_%03ld", index, elem - 1); // already exists
+            WRITE_IMAGENAME(imnameamp_in,
+                            "WFamp%ld_%03ld",
+                            index,
+                            elem - 1); // already exists
             WRITE_IMAGENAME(imnamepha_in, "WFpha%ld_%03ld", index, elem - 1);
             WRITE_IMAGENAME(imnameamp_out, "WFamp%ld_%03ld", index, elem);
             WRITE_IMAGENAME(imnamepha_out, "WFpha%ld_%03ld", index, elem);
             // propagation distance between elements
-            propdist = optsyst[index].elemZpos[elem] - optsyst[index].elemZpos[elem - 1];
+            propdist = optsyst[index].elemZpos[elem] -
+                       optsyst[index].elemZpos[elem - 1];
         }
 
         // delete the element data if it exists
@@ -202,7 +241,13 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
 
             printf("Propagating to element %ld  (%lf m)\n", elem, propdist);
             // do the real propagation via Fresnel propagation
-            OptSystProp_propagateCube(optsyst, 0, imnameamp_in, imnamepha_in, imnameamp_out, imnamepha_out, propdist,
+            OptSystProp_propagateCube(optsyst,
+                                      0,
+                                      imnameamp_in,
+                                      imnamepha_in,
+                                      imnameamp_out,
+                                      imnamepha_out,
+                                      propdist,
                                       sharedmem);
         }
         else // do the trivial identity propagation
@@ -214,10 +259,15 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
         imageID IDp = image_ID(imnamepha_out);
 
         /// discard element memory after used
-        printf("*********** %ld  -> %d\n", elem - 1, optsyst[index].keepMem[elem - 1]);
+        printf("*********** %ld  -> %d\n",
+               elem - 1,
+               optsyst[index].keepMem[elem - 1]);
         if ((optsyst[index].keepMem[elem - 1] == 0) && (sharedmem == 0))
         {
-            printf("********** Deleting element %ld      %s %s\n", elem - 1, imnameamp_in, imnamepha_in);
+            printf("********** Deleting element %ld      %s %s\n",
+                   elem - 1,
+                   imnameamp_in,
+                   imnamepha_in);
             delete_image_ID(imnameamp_in, DELETE_IMAGE_ERRMODE_WARNING);
             delete_image_ID(imnamepha_in, DELETE_IMAGE_ERRMODE_WARNING);
         }
@@ -231,7 +281,10 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
         if (optsyst[index].elemtype[elem] == 1) // AMPLITUDE MASK
         {
             imageID ID = optsyst[index].elemarrayindex[elem];
-            printf("============= elem %ld:  Opaque mask (%s) =================\n", elem, data.image[ID].name);
+            printf(
+                "============= elem %ld:  Opaque mask (%s) =================\n",
+                elem,
+                data.image[ID].name);
             fflush(stdout);
 
             if (ID == -1)
@@ -244,7 +297,8 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
             //save_fits(data.image[IDa].name, "opmask1.fits"); //TEST
 
             // achromatic (no wavelength dimension) vs chromatic (has wavelength dimension)
-            if ((data.image[ID].md[0].naxis == 2) || (data.image[ID].md[0].size[2] != nblambda))
+            if ((data.image[ID].md[0].naxis == 2) ||
+                (data.image[ID].md[0].size[2] != nblambda))
             {
                 // chromatic case: apply mask to each wavelength
                 //		printf("single dim %ld %ld\n", data.image[ID].md[0].size[2], nblambda);
@@ -254,11 +308,13 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
                 {
 #pragma omp for
 #endif
-                    for (long kl = 0; kl < nblambda; kl++) // loop over wavelengths
+                    for (long kl = 0; kl < nblambda;
+                         kl++) // loop over wavelengths
                         for (uint64_t ii = 0; ii < size2; ii++)
                         // actually apply the mask
                         {
-                            data.image[IDa].array.F[size2 * kl + ii] *= data.image[ID].array.F[ii];
+                            data.image[IDa].array.F[size2 * kl + ii] *=
+                                data.image[ID].array.F[ii];
                         }
 #ifdef HAVE_LIBGOMP
                 }
@@ -277,7 +333,8 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
                     for (uint64_t ii = 0; ii < size2 * nblambda; ii++)
                     // actually apply the mask
                     {
-                        data.image[IDa].array.F[ii] *= data.image[ID].array.F[ii];
+                        data.image[IDa].array.F[ii] *=
+                            data.image[ID].array.F[ii];
                     }
 #ifdef HAVE_LIBGOMP
                 }
@@ -297,8 +354,13 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
             // MIRROR SURFACE - STORED AS OPD MAP AS A SINGLE MAP (ACHROMATIC) OR A CUBE (CHROMATIC)
             printf("============= Mirror surface =======================\n");
             fflush(stdout);
-            imageID ID = optsyst[index].ASPHSURFMarray[optsyst[index].elemarrayindex[elem]].surfID;
-            printf("%d surface ID = %ld\n", optsyst[index].elemarrayindex[elem], ID);
+            imageID ID =
+                optsyst[index]
+                    .ASPHSURFMarray[optsyst[index].elemarrayindex[elem]]
+                    .surfID;
+            printf("%d surface ID = %ld\n",
+                   optsyst[index].elemarrayindex[elem],
+                   ID);
 
             if (ID == -1)
             {
@@ -322,7 +384,8 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
                         for (uint64_t ii = 0; ii < size2; ii++)
                         { // compute the change in phase
                             data.image[IDp].array.F[size2 * kl + ii] -=
-                                4.0 * M_PI * data.image[ID].array.F[ii] / optsyst[index].lambdaarray[kl];
+                                4.0 * M_PI * data.image[ID].array.F[ii] /
+                                optsyst[index].lambdaarray[kl];
                         }
 #ifdef HAVE_LIBGOMP
                 }
@@ -339,7 +402,9 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
                         for (uint64_t ii = 0; ii < size2; ii++)
                         { // compute the change in phase
                             data.image[IDp].array.F[size2 * kl + ii] -=
-                                4.0 * M_PI * data.image[ID].array.F[size2 * kl + ii] / optsyst[index].lambdaarray[kl];
+                                4.0 * M_PI *
+                                data.image[ID].array.F[size2 * kl + ii] /
+                                optsyst[index].lambdaarray[kl];
                         }
 #ifdef HAVE_LIBGOMP
                 }
@@ -351,14 +416,25 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
         if (optsyst[index].elemtype[elem] == 4)
         {
             // REFRACTIVE SURFACE - STORED AS SAG MAP AS A SINGLE MAP (ACHROMATIC) OR A CUBE (CHROMATIC)
-            printf("============= [%ld] Refractive surface =======================\n", elem);
+            printf(
+                "============= [%ld] Refractive surface "
+                "=======================\n",
+                elem);
             fflush(stdout);
 
-            imageID ID = optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].surfID;
-            DEBUG_TRACEPOINT("index %ld  elem %ld  %d surface ID : %ld", index, elem,
-                             optsyst[index].elemarrayindex[elem], ID);
+            imageID ID =
+                optsyst[index]
+                    .ASPHSURFRarray[optsyst[index].elemarrayindex[elem]]
+                    .surfID;
+            DEBUG_TRACEPOINT("index %ld  elem %ld  %d surface ID : %ld",
+                             index,
+                             elem,
+                             optsyst[index].elemarrayindex[elem],
+                             ID);
 
-            DEBUG_TRACEPOINT("refractive surface ID %ld %s", (long)ID, data.image[ID].md[0].name);
+            DEBUG_TRACEPOINT("refractive surface ID %ld %s",
+                             (long) ID,
+                             data.image[ID].md[0].name);
 
             if (ID == -1)
             {
@@ -366,28 +442,45 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
                 FUNC_RETURN_FAILURE("image ID not found");
             }
 
-            if (optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].init != 1)
+            if (optsyst[index]
+                    .ASPHSURFRarray[optsyst[index].elemarrayindex[elem]]
+                    .init != 1)
             {
                 for (long kl = 0; kl < nblambda; kl++)
                 {
                     // get the indices of refraction, n0 for ambient index, n1 for the lens index etc.
 
-                    double n0 =
-                        OpticsMaterials_n(optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].mat0,
-                                          optsyst[index].lambdaarray[kl]);
+                    double n0 = OpticsMaterials_n(
+                        optsyst[index]
+                            .ASPHSURFRarray[optsyst[index].elemarrayindex[elem]]
+                            .mat0,
+                        optsyst[index].lambdaarray[kl]);
 
-                    double n1 =
-                        OpticsMaterials_n(optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].mat1,
-                                          optsyst[index].lambdaarray[kl]);
+                    double n1 = OpticsMaterials_n(
+                        optsyst[index]
+                            .ASPHSURFRarray[optsyst[index].elemarrayindex[elem]]
+                            .mat1,
+                        optsyst[index].lambdaarray[kl]);
 
                     // set the resulting wavelength-dependent phase coefficient
-                    optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl] =
+                    optsyst[index]
+                        .ASPHSURFRarray[optsyst[index].elemarrayindex[elem]]
+                        .ncoeff[kl] =
                         2.0 * M_PI * (n0 - n1) / optsyst[index].lambdaarray[kl];
 
-                    DEBUG_TRACEPOINT("elem %ld ASPHSURFRarray %f %f -> ncoeff %ld = %lf", elem, n0, n1, kl,
-                                     optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl]);
+                    DEBUG_TRACEPOINT(
+                        "elem %ld ASPHSURFRarray %f %f -> ncoeff %ld = %lf",
+                        elem,
+                        n0,
+                        n1,
+                        kl,
+                        optsyst[index]
+                            .ASPHSURFRarray[optsyst[index].elemarrayindex[elem]]
+                            .ncoeff[kl]);
                 }
-                optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].init = 1;
+                optsyst[index]
+                    .ASPHSURFRarray[optsyst[index].elemarrayindex[elem]]
+                    .init = 1;
             }
 
             /*{   //TEST
@@ -412,7 +505,10 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
                         { // apply change in phase
                             data.image[IDp].array.F[size2 * kl + ii] +=
                                 data.image[ID].array.F[ii] *
-                                optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl];
+                                optsyst[index]
+                                    .ASPHSURFRarray[optsyst[index]
+                                                        .elemarrayindex[elem]]
+                                    .ncoeff[kl];
                         }
 #ifdef HAVE_LIBGOMP
                 }
@@ -430,7 +526,10 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
                         { // apply change in phase
                             data.image[IDp].array.F[size2 * kl + ii] +=
                                 data.image[ID].array.F[size2 * kl + ii] *
-                                optsyst[index].ASPHSURFRarray[optsyst[index].elemarrayindex[elem]].ncoeff[kl];
+                                optsyst[index]
+                                    .ASPHSURFRarray[optsyst[index]
+                                                        .elemarrayindex[elem]]
+                                    .ncoeff[kl];
                         }
 #ifdef HAVE_LIBGOMP
                 }
@@ -448,7 +547,8 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
         // apply a change in phase or amplitude
         if (optsyst[index].elemtype[elem] == 5)
         { // FOCAL PLANE MASK - MASK INPUT IS 1-MASK FOR EFFICIENT DFT
-            printf("============= [%ld] Focal Plane Mask ==============\n", elem);
+            printf("============= [%ld] Focal Plane Mask ==============\n",
+                   elem);
             fflush(stdout);
             // uses 1-fpm
 
@@ -462,14 +562,18 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
              }*/
 
             // convert input pupil amplitude and phase to Re and Im
-            imageID ID = mk_complex_from_amph(imnameamp_out, imnamepha_out, "_WFctmp", 0);
+            imageID ID = mk_complex_from_amph(imnameamp_out,
+                                              imnamepha_out,
+                                              "_WFctmp",
+                                              0);
             if (sharedmem == 0)
             {
                 delete_image_ID(imnameamp_out, DELETE_IMAGE_ERRMODE_WARNING);
                 delete_image_ID(imnamepha_out, DELETE_IMAGE_ERRMODE_WARNING);
             }
 
-            printf("optsyst[index].DFTgridpad = %ld\n", optsyst[index].DFTgridpad);
+            printf("optsyst[index].DFTgridpad = %ld\n",
+                   optsyst[index].DFTgridpad);
 
             // if we're subsampling in pixel space for faster DFTs
             if (optsyst[index].DFTgridpad > 0)
@@ -496,17 +600,27 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
                         for (uint32_t jj = 0; jj < size; jj++)
                         { // for each pixel
 
-                            float re = data.image[ID].array.CF[size2 * kl + jj * size + ii].re;
-                            float im = data.image[ID].array.CF[size2 * kl + jj * size + ii].im;
+                            float re =
+                                data.image[ID]
+                                    .array.CF[size2 * kl + jj * size + ii]
+                                    .re;
+                            float im =
+                                data.image[ID]
+                                    .array.CF[size2 * kl + jj * size + ii]
+                                    .im;
 
                             // find the nearest subsampled point to ii,jj
-                            long ii1 = offset + ((long)(ii / gsize)) * gsize;
-                            long jj1 = offset + ((long)(jj / gsize)) * gsize;
+                            long ii1 = offset + ((long) (ii / gsize)) * gsize;
+                            long jj1 = offset + ((long) (jj / gsize)) * gsize;
                             if ((ii1 < size) && (jj1 < size))
                             {
                                 // add the value at ii,jj to the nearest subsampled point
-                                data.image[IDre].array.F[size2 * kl + jj1 * size + ii1] += re;
-                                data.image[IDim].array.F[size2 * kl + jj1 * size + ii1] += im;
+                                data.image[IDre]
+                                    .array.F[size2 * kl + jj1 * size + ii1] +=
+                                    re;
+                                data.image[IDim]
+                                    .array.F[size2 * kl + jj1 * size + ii1] +=
+                                    im;
                             }
                         }
 
@@ -519,7 +633,7 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
                 delete_image_ID("dftgridim", DELETE_IMAGE_ERRMODE_WARNING);
 
                 long elemindex = optsyst[index].elemarrayindex[elem];
-                ID = optsyst[index].FOCMASKarray[elemindex].fpmID;
+                ID             = optsyst[index].FOCMASKarray[elemindex].fpmID;
                 printf("focm # %ld: %s\n", elemindex, data.image[ID].name);
 
                 //      printf("Saving to testfpm.fits\n");
@@ -532,7 +646,10 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
                 if (optsyst[index].SAVE == 1)
                 {
                     // make amp and phase files from complex
-                    mk_amph_from_complex(data.image[ID].name, "fpma", "fpmp", 0);
+                    mk_amph_from_complex(data.image[ID].name,
+                                         "fpma",
+                                         "fpmp",
+                                         0);
 
                     char fname[STRINGMAXLEN_FULLFILENAME];
 
@@ -551,8 +668,11 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
                 // output in last argument
                 // the focal plane mask is the second argument, which contains properties of the FPM
                 // that are applied as part of fft_DFTinsertFPM
-                fft_DFTinsertFPM("_WFctmpc", data.image[ID].name, optsyst[index].FOCMASKarray[elemindex].zfactor,
-                                 "_WFcout", NULL);
+                fft_DFTinsertFPM("_WFctmpc",
+                                 data.image[ID].name,
+                                 optsyst[index].FOCMASKarray[elemindex].zfactor,
+                                 "_WFcout",
+                                 NULL);
 
                 delete_image_ID("_WFctmpc", DELETE_IMAGE_ERRMODE_WARNING);
 
@@ -579,7 +699,8 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
                 // gsize is the grid spacing between subsampled pixels
                 // so the kernel spans one subsampled area
                 float *convkern;
-                convkern = (float *)malloc(sizeof(float) * (2 * gsize + 1) * (2 * gsize + 1));
+                convkern = (float *) malloc(sizeof(float) * (2 * gsize + 1) *
+                                            (2 * gsize + 1));
                 if (convkern == NULL)
                 {
                     PRINT_ERROR("malloc returns NULL pointer");
@@ -590,8 +711,8 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
                 for (long i = 0; i < 2 * gsize + 1; i++)
                     for (long j = 0; j < 2 * gsize + 1; j++)
                     {
-                        float u = fabs(1.0 * (i - gsize) / gsize);
-                        float t = fabs(1.0 * (j - gsize) / gsize);
+                        float u   = fabs(1.0 * (i - gsize) / gsize);
+                        float t   = fabs(1.0 * (j - gsize) / gsize);
                         float val = (1.0 - u) * (1.0 - t);
                         convkern[j * (2 * gsize + 1) + i] = val;
                         //printf("   %d %d %f\n", i, j, val);
@@ -612,23 +733,36 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
                 imageID IDim1;
                 create_3Dimage_ID("dftgridim1", size, size, nblambda, &IDim1);
 
-                for (long kl = 0; kl < nblambda; kl++)                                // for each wavelength
-                    for (long ii1 = offset + gsize; ii1 < size - gsize; ii1 += gsize) // for each subsampled pixel
-                        for (long jj1 = offset + gsize; jj1 < size - gsize; jj1 += gsize)
+                for (long kl = 0; kl < nblambda; kl++) // for each wavelength
+                    for (long ii1 = offset + gsize; ii1 < size - gsize;
+                         ii1 += gsize) // for each subsampled pixel
+                        for (long jj1 = offset + gsize; jj1 < size - gsize;
+                             jj1 += gsize)
                         {
                             // values of the DFT output on the subsampled pixels
-                            float re = data.image[ID].array.CF[size2 * kl + jj1 * size + ii1].re;
-                            float im = data.image[ID].array.CF[size2 * kl + jj1 * size + ii1].im;
+                            float re =
+                                data.image[ID]
+                                    .array.CF[size2 * kl + jj1 * size + ii1]
+                                    .re;
+                            float im =
+                                data.image[ID]
+                                    .array.CF[size2 * kl + jj1 * size + ii1]
+                                    .im;
 
                             for (long i = 0; i < 2 * gsize + 1; i++)
                                 for (long j = 0; j < 2 * gsize + 1; j++)
                                 {
-                                    long ii = ii1 + (i - gsize); // indices of the original pixels to interpolate onto
+                                    long ii =
+                                        ii1 +
+                                        (i -
+                                         gsize); // indices of the original pixels to interpolate onto
                                     long jj = jj1 + (j - gsize);
                                     // perform the convolution, saving the results in separate Re and Im arrays
-                                    data.image[IDre1].array.F[size2 * kl + jj * size + ii] +=
+                                    data.image[IDre1]
+                                        .array.F[size2 * kl + jj * size + ii] +=
                                         re * convkern[j * (2 * gsize + 1) + i];
-                                    data.image[IDim1].array.F[size2 * kl + jj * size + ii] +=
+                                    data.image[IDim1]
+                                        .array.F[size2 * kl + jj * size + ii] +=
                                         im * convkern[j * (2 * gsize + 1) + i];
                                 }
                         }
@@ -651,7 +785,7 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
             else /// If not subsampled :
             {
                 long i = optsyst[index].elemarrayindex[elem];
-                ID = optsyst[index].FOCMASKarray[i].fpmID;
+                ID     = optsyst[index].FOCMASKarray[i].fpmID;
                 printf("focm : %s\n", data.image[ID].name);
                 fflush(stdout);
 
@@ -676,7 +810,10 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
                 /// - output in last argument
                 ///
                 /// - the focal plane mask is the second argument, which contains properties of the FPM that are applied as part of fft_DFTinsertFPM()
-                fft_DFTinsertFPM("_WFctmp", data.image[ID].name, optsyst[index].FOCMASKarray[i].zfactor, "_WFcout",
+                fft_DFTinsertFPM("_WFctmp",
+                                 data.image[ID].name,
+                                 optsyst[index].FOCMASKarray[i].zfactor,
+                                 "_WFcout",
                                  NULL);
 
                 /* {   // TEST: OUPUT 1
@@ -703,17 +840,24 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
             }
             long elemindex = optsyst[index].elemarrayindex[elem];
 
-            printf("optsyst[index].FOCMASKarray[elemindex].mode = %d\n", optsyst[index].FOCMASKarray[elemindex].mode);
+            printf("optsyst[index].FOCMASKarray[elemindex].mode = %d\n",
+                   optsyst[index].FOCMASKarray[elemindex].mode);
             if (optsyst[index].FOCMASKarray[elemindex].mode == 1)
             {
                 // we are computing using the 1 - FPM trick, so subtract the DFT result from the input light
                 // this makes the larger computation more efficient
                 arith_image_sub_inplace("_WFctmp", "_WFcout");
-                mk_amph_from_complex("_WFctmp", imnameamp_out, imnamepha_out, 0);
+                mk_amph_from_complex("_WFctmp",
+                                     imnameamp_out,
+                                     imnamepha_out,
+                                     0);
             }
             else
             {
-                mk_amph_from_complex("_WFcout", imnameamp_out, imnamepha_out, 0);
+                mk_amph_from_complex("_WFcout",
+                                     imnameamp_out,
+                                     imnamepha_out,
+                                     0);
             }
 
             /* {
@@ -737,10 +881,14 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
             for (uint64_t ii = 0; ii < size2; ii++)
             {
                 optsyst[index].flux[elem] +=
-                    data.image[IDa].array.F[kl * size2 + ii] * data.image[IDa].array.F[kl * size2 + ii];
+                    data.image[IDa].array.F[kl * size2 + ii] *
+                    data.image[IDa].array.F[kl * size2 + ii];
             }
 
-        printf("Element %ld  [%ld %ld]  Flux = %lf\n", elem, nblambda, (long)size2,
+        printf("Element %ld  [%ld %ld]  Flux = %lf\n",
+               elem,
+               nblambda,
+               (long) size2,
                optsyst[index].flux[elem] / nblambda);
 
         if (isnan(optsyst[index].flux[elem]) != 0)
@@ -754,10 +902,18 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
 
             char fname[STRINGMAXLEN_FULLFILENAME];
 
-            WRITE_FULLFILENAME(fname, "./%s/WFamp%ld_%03ld.fits", savedir, index, elem);
+            WRITE_FULLFILENAME(fname,
+                               "./%s/WFamp%ld_%03ld.fits",
+                               savedir,
+                               index,
+                               elem);
             save_fits(imnameamp_out, fname);
 
-            WRITE_FULLFILENAME(fname, "./%s/WFpha%ld_%03ld.fits", savedir, index, elem);
+            WRITE_FULLFILENAME(fname,
+                               "./%s/WFpha%ld_%03ld.fits",
+                               savedir,
+                               index,
+                               elem);
             save_fits(imnamepha_out, fname);
 
             printf("done\n");
@@ -767,7 +923,8 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
 
     // we're at the last element so compute and save the final images psfi0 and psfc0
     //
-    if ((elem == optsyst[index].NBelem) && (optsyst[index].endmode == 0)) // Compute final focal plane image
+    if ((elem == optsyst[index].NBelem) &&
+        (optsyst[index].endmode == 0)) // Compute final focal plane image
     {
         char imnameamp[STRINGMAXLEN_IMGNAME];
         char imnamepha[STRINGMAXLEN_IMGNAME];
@@ -814,15 +971,18 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
         }
 
         {
-            imageID ID = image_ID(imnameamp);
+            imageID ID   = image_ID(imnameamp);
             imageID IDre = image_ID(imnamere);
             imageID IDim = image_ID(imnameim);
             // normalize so the intensity sums to 1
             for (uint64_t ii = 0; ii < size2 * nblambda; ii++)
             {
-                data.image[ID].array.F[ii] /= sqrt(size2 * optsyst[index].flux[0] / nblambda);
-                data.image[IDre].array.F[ii] /= sqrt(size2 * optsyst[index].flux[0] / nblambda);
-                data.image[IDim].array.F[ii] /= sqrt(size2 * optsyst[index].flux[0] / nblambda);
+                data.image[ID].array.F[ii] /=
+                    sqrt(size2 * optsyst[index].flux[0] / nblambda);
+                data.image[IDre].array.F[ii] /=
+                    sqrt(size2 * optsyst[index].flux[0] / nblambda);
+                data.image[IDim].array.F[ii] /=
+                    sqrt(size2 * optsyst[index].flux[0] / nblambda);
             }
         }
 
@@ -831,9 +991,12 @@ errno_t OptSystProp_run(OPTSYST *optsyst, long index, long elemstart, long eleme
             char imname[STRINGMAXLEN_IMGNAME];
 
             WRITE_IMAGENAME(imname, "psfi%ld", index);
-            arith_image_mult(imnameamp, imnameamp, imname); // intensity is amp^2
+            arith_image_mult(imnameamp,
+                             imnameamp,
+                             imname); // intensity is amp^2
 
-            double total = arith_image_total(imname) / nblambda; // total flux "averaged" over wavelength
+            double total = arith_image_total(imname) /
+                           nblambda; // total flux "averaged" over wavelength
             printf("TOTAL = %lf\n", total);
 
             if (optsyst[index].SAVE == 1)

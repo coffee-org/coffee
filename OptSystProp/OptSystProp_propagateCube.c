@@ -12,25 +12,35 @@
 #include "WFpropagate/WFpropagate.h"
 #include <math.h>
 
-errno_t OptSystProp_propagateCube(OPTSYST *optsyst, long index, const char *IDin_amp_name, const char *IDin_pha_name,
-                                  const char *IDout_amp_name, const char *IDout_pha_name, double zprop, int sharedmem)
+errno_t OptSystProp_propagateCube(OPTSYST    *optsyst,
+                                  long        index,
+                                  const char *IDin_amp_name,
+                                  const char *IDin_pha_name,
+                                  const char *IDout_amp_name,
+                                  const char *IDout_pha_name,
+                                  double      zprop,
+                                  int         sharedmem)
 {
     DEBUG_TRACE_FSTART();
-    DEBUG_TRACEPOINT("FARG prop %s %s -> %s %s, dist = %lf", IDin_amp_name, IDin_pha_name, IDout_amp_name,
-                     IDout_pha_name, zprop);
+    DEBUG_TRACEPOINT("FARG prop %s %s -> %s %s, dist = %lf",
+                     IDin_amp_name,
+                     IDin_pha_name,
+                     IDout_amp_name,
+                     IDout_pha_name,
+                     zprop);
 
     DEBUG_TRACEPOINT("propagating by %lf m", zprop);
 
-    imageID IDin_amp = image_ID(IDin_amp_name);
-    imageID IDin_pha = image_ID(IDin_pha_name);
-    uint32_t size = data.image[IDin_amp].md[0].size[0];
-    uint64_t size2 = size * size;
+    imageID  IDin_amp = image_ID(IDin_amp_name);
+    imageID  IDin_pha = image_ID(IDin_pha_name);
+    uint32_t size     = data.image[IDin_amp].md[0].size[0];
+    uint64_t size2    = size * size;
 
     imageID IDc_in;
 
     FUNC_CHECK_RETURN(create_2DCimage_ID("tmppropCin", size, size, &IDc_in));
 
-    uint32_t *imsizearray = (uint32_t *)malloc(sizeof(uint32_t) * 3);
+    uint32_t *imsizearray = (uint32_t *) malloc(sizeof(uint32_t) * 3);
     if (imsizearray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
@@ -43,15 +53,27 @@ errno_t OptSystProp_propagateCube(OPTSYST *optsyst, long index, const char *IDin
     imageID IDout_amp = image_ID(IDout_amp_name);
     if (IDout_amp == -1)
     {
-        FUNC_CHECK_RETURN(
-            create_image_ID(IDout_amp_name, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0, 0, &IDout_amp));
+        FUNC_CHECK_RETURN(create_image_ID(IDout_amp_name,
+                                          3,
+                                          imsizearray,
+                                          _DATATYPE_FLOAT,
+                                          sharedmem,
+                                          0,
+                                          0,
+                                          &IDout_amp));
     }
 
     imageID IDout_pha = image_ID(IDout_pha_name);
     if (IDout_pha == -1)
     {
-        FUNC_CHECK_RETURN(
-            create_image_ID(IDout_pha_name, 3, imsizearray, _DATATYPE_FLOAT, sharedmem, 0, 0, &IDout_pha));
+        FUNC_CHECK_RETURN(create_image_ID(IDout_pha_name,
+                                          3,
+                                          imsizearray,
+                                          _DATATYPE_FLOAT,
+                                          sharedmem,
+                                          0,
+                                          0,
+                                          &IDout_pha));
     }
     free(imsizearray);
 
@@ -62,7 +84,10 @@ errno_t OptSystProp_propagateCube(OPTSYST *optsyst, long index, const char *IDin
     {
         long IDc_out;
 
-        DEBUG_TRACEPOINT("kl = %d / %d  %g\n", kl, optsyst[index].nblambda, optsyst[index].lambdaarray[kl]);
+        DEBUG_TRACEPOINT("kl = %d / %d  %g\n",
+                         kl,
+                         optsyst[index].nblambda,
+                         optsyst[index].lambdaarray[kl]);
         // convert from amp/phase to Re/Im
         for (uint64_t ii = 0; ii < size2; ii++)
         {
@@ -72,22 +97,27 @@ errno_t OptSystProp_propagateCube(OPTSYST *optsyst, long index, const char *IDin
             data.image[IDc_in].array.CF[ii].im = amp * sin(pha);
         }
         // do the actual propagation
-        FUNC_CHECK_RETURN(Fresnel_propagate_wavefront("tmppropCin", "tmppropCout", optsyst[index].pixscale, zprop,
-                                                      optsyst[index].lambdaarray[kl]));
+        FUNC_CHECK_RETURN(
+            Fresnel_propagate_wavefront("tmppropCin",
+                                        "tmppropCout",
+                                        optsyst[index].pixscale,
+                                        zprop,
+                                        optsyst[index].lambdaarray[kl]));
 
         IDc_out = image_ID("tmppropCout");
         // convert back from Re/Im to amp/phase
         for (uint64_t ii = 0; ii < size2; ii++)
         {
-            double re = data.image[IDc_out].array.CF[ii].re;
-            double im = data.image[IDc_out].array.CF[ii].im;
+            double re  = data.image[IDc_out].array.CF[ii].re;
+            double im  = data.image[IDc_out].array.CF[ii].im;
             double amp = sqrt(re * re + im * im);
             double pha = atan2(im, re);
             data.image[IDout_amp].array.F[kl * size2 + ii] = amp;
             data.image[IDout_pha].array.F[kl * size2 + ii] = pha;
         }
 
-        FUNC_CHECK_RETURN(delete_image_ID("tmppropCout", DELETE_IMAGE_ERRMODE_WARNING));
+        FUNC_CHECK_RETURN(
+            delete_image_ID("tmppropCout", DELETE_IMAGE_ERRMODE_WARNING));
     }
 
     data.image[IDout_amp].md[0].cnt0++;

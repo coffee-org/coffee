@@ -46,7 +46,9 @@ errno_t exec_computePSF_no_fpm(double *outval)
     double centobs1 = 0.2;
     double val;
 
-    printf("=================================== mode 003 ===================================\n");
+    printf(
+        "=================================== mode 003 "
+        "===================================\n");
 
     // load some more cli variables
     {
@@ -69,7 +71,11 @@ errno_t exec_computePSF_no_fpm(double *outval)
         initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
         initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
 
-        FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld, centobs0, centobs1, initflag, NULL));
+        FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld,
+                                                    centobs0,
+                                                    centobs1,
+                                                    initflag,
+                                                    NULL));
     }
 
     FUNC_CHECK_RETURN(makePIAAshapes());
@@ -79,23 +85,40 @@ errno_t exec_computePSF_no_fpm(double *outval)
     piaacmcparams.linopt_paramrefval[0] = piaacmcopticaldesign.fpmaskamptransm;
 
     piaacmcopticaldesign.fpmaskamptransm = -1.0; // Remove focal plane mask
-    piaacmcparams.FORCE_CREATE_fpmza = 1;
+    piaacmcparams.FORCE_CREATE_fpmza     = 1;
 
     FUNC_CHECK_RETURN(
-        init_piaacmcopticaldesign(fpmradld, centobs0, centobs1, INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT, NULL));
+        init_piaacmcopticaldesign(fpmradld,
+                                  centobs0,
+                                  centobs1,
+                                  INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT,
+                                  NULL));
 
     // compute the PSF for an on-axis source, all optical elements
-    FUNC_CHECK_RETURN(PIAACMCsimul_computePSF(0.0, 0.0, 0, piaacmcopticalsystem.NBelem, 0, 0, 0, 0, &val));
+    FUNC_CHECK_RETURN(PIAACMCsimul_computePSF(0.0,
+                                              0.0,
+                                              0,
+                                              piaacmcopticalsystem.NBelem,
+                                              0,
+                                              0,
+                                              0,
+                                              0,
+                                              &val));
 
     // restore original configuration
     piaacmcopticaldesign.fpmaskamptransm = piaacmcparams.linopt_paramrefval[0];
 
     {
         uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT;
-        FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld, centobs0, centobs1, initflag, NULL));
+        FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld,
+                                                    centobs0,
+                                                    centobs1,
+                                                    initflag,
+                                                    NULL));
     }
 
-    FUNC_CHECK_RETURN(PIAACMCsimul_savepiaacmcconf(piaacmcparams.piaacmcconfdir));
+    FUNC_CHECK_RETURN(
+        PIAACMCsimul_savepiaacmcconf(piaacmcparams.piaacmcconfdir));
 
     piaacmcparams.FORCE_CREATE_fpmza = 0;
 

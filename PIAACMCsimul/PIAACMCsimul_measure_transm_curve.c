@@ -35,14 +35,16 @@ errno_t PIAACMCsimul_measure_transm_curve()
     DEBUG_TRACE_FSTART();
 
     imageID IDv;
-    double fpmradld = 0.95; // default
-    double centobs0 = 0.3;
-    double centobs1 = 0.2;
+    double  fpmradld = 0.95; // default
+    double  centobs0 = 0.3;
+    double  centobs1 = 0.2;
     //double valref;
     //    char fname[1500];
     //    char fnametransm[1500];
 
-    printf("=================================== mode 101 ===================================\n");
+    printf(
+        "=================================== mode 101 "
+        "===================================\n");
 
     if ((IDv = variable_ID("PIAACMC_centobs0")) != -1)
     {
@@ -61,7 +63,8 @@ errno_t PIAACMCsimul_measure_transm_curve()
     piaacmcparams.PIAACMC_fpmtype = 0; // idealized (default)
     if ((IDv = variable_ID("PIAACMC_fpmtype")) != -1)
     {
-        piaacmcparams.PIAACMC_fpmtype = (int)(data.variable[IDv].value.f + 0.1);
+        piaacmcparams.PIAACMC_fpmtype =
+            (int) (data.variable[IDv].value.f + 0.1);
     }
 
     piaacmcparams.FORCE_CREATE_fpmza = 1;
@@ -75,7 +78,11 @@ errno_t PIAACMCsimul_measure_transm_curve()
             initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
         }
 
-        FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld, centobs0, centobs1, initflag, NULL));
+        FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld,
+                                                    centobs0,
+                                                    centobs1,
+                                                    initflag,
+                                                    NULL));
     }
 
     FUNC_CHECK_RETURN(makePIAAshapes());
@@ -83,19 +90,32 @@ errno_t PIAACMCsimul_measure_transm_curve()
 
     {
         double cval = 0.0;
-        FUNC_CHECK_RETURN(PIAACMCsimul_computePSF(0.0, 0.0, 0, piaacmcopticalsystem.NBelem, 1, 0, 0, 0, &cval));
+        FUNC_CHECK_RETURN(PIAACMCsimul_computePSF(0.0,
+                                                  0.0,
+                                                  0,
+                                                  piaacmcopticalsystem.NBelem,
+                                                  1,
+                                                  0,
+                                                  0,
+                                                  0,
+                                                  &cval));
     }
 
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname, "%s/psfi0test_x00_y00.fits", piaacmcparams.piaacmcconfdir);
+        WRITE_FULLFILENAME(fname,
+                           "%s/psfi0test_x00_y00.fits",
+                           piaacmcparams.piaacmcconfdir);
         FUNC_CHECK_RETURN(save_fits("psfi0", fname));
     }
 
     char fnametransm[STRINGMAXLEN_FULLFILENAME];
     PIAACMCsimul_update_fnamedescr();
-    WRITE_FULLFILENAME(fnametransm, "%s/transmCurve_sm%d.%s.txt", piaacmcparams.piaacmcconfdir,
-                       piaacmcparams.SCORINGMASKTYPE, piaacmcparams.fnamedescr);
+    WRITE_FULLFILENAME(fnametransm,
+                       "%s/transmCurve_sm%d.%s.txt",
+                       piaacmcparams.piaacmcconfdir,
+                       piaacmcparams.SCORINGMASKTYPE,
+                       piaacmcparams.fnamedescr);
 
     FILE *fpt;
     fpt = fopen(fnametransm, "w");
@@ -107,7 +127,15 @@ errno_t PIAACMCsimul_measure_transm_curve()
     {
         double val;
 
-        FUNC_CHECK_RETURN(PIAACMCsimul_computePSF(xld, 0.0, 0, piaacmcopticalsystem.NBelem, 0, 0, 0, 0, NULL));
+        FUNC_CHECK_RETURN(PIAACMCsimul_computePSF(xld,
+                                                  0.0,
+                                                  0,
+                                                  piaacmcopticalsystem.NBelem,
+                                                  0,
+                                                  0,
+                                                  0,
+                                                  0,
+                                                  NULL));
 
         imageID ID = image_ID("psfi0");
         //            sprintf(fname, "psfi0transm_%04.1f.fits", xld);
@@ -130,7 +158,9 @@ errno_t PIAACMCsimul_measure_transm_curve()
                     dy = 1.0 * jj - 0.5 * ysize;
                     if ((dx * dx + dy * dy) < 30.0 * 30.0)
                     {
-                        val += data.image[ID].array.F[kk * xsize * ysize + jj * ysize + ii];
+                        val +=
+                            data.image[ID]
+                                .array.F[kk * xsize * ysize + jj * ysize + ii];
                     }
                 }
         }
@@ -140,7 +170,8 @@ errno_t PIAACMCsimul_measure_transm_curve()
         fprintf(fpt, "%10f %.18f\n", xld, val);
         fclose(fpt);
 
-        FUNC_CHECK_RETURN(delete_image_ID("psfi0", DELETE_IMAGE_ERRMODE_WARNING));
+        FUNC_CHECK_RETURN(
+            delete_image_ID("psfi0", DELETE_IMAGE_ERRMODE_WARNING));
 
         stepld = 0.001;
         stepld += 0.1 * xld;

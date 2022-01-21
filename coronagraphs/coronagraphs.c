@@ -65,17 +65,17 @@
 /* ================================================================== */
 /* ================================================================== */
 
-#define SWAP(x, y)                                                                                                     \
-    tmp = (x);                                                                                                         \
-    x = (y);                                                                                                           \
-    y = tmp;
-#define PI 3.14159265358979323846264338328
+#define SWAP(x, y)                                                             \
+    tmp = (x);                                                                 \
+    x   = (y);                                                                 \
+    y   = tmp;
+#define PI                    3.14159265358979323846264338328
 #define CORONAGRAPHSDATALOCAL "/data/tmp/coronagraphs"
-#define CORONAGRAPHSDATADIR ""
+#define CORONAGRAPHSDATADIR   ""
 
 #define CORONAGRAPHS_PSCALE 0.006 //0.05 /* pupil scale [m per pixel] */
 
-#define CORONAGRAPHS_TDIAM 2.4        /* telescope diameter, in meter */
+#define CORONAGRAPHS_TDIAM  2.4       /* telescope diameter, in meter */
 #define CORONAGRAPHS_LAMBDA 0.0000005 /* m */
 
 /* ================================================================== */
@@ -84,10 +84,11 @@
 /* ================================================================== */
 /* ================================================================== */
 
-static int useDFT = 1;
+static int    useDFT     = 1;
 static double DFTZFACTOR = 8.0; // zoom factor for DFTs of focal plane masks
 
-double CORONAGRAPHS_PIXSCALE = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / CORONAGRAPHS_ARRAYSIZE; // l/d per pixel
+double CORONAGRAPHS_PIXSCALE = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE /
+                               CORONAGRAPHS_ARRAYSIZE; // l/d per pixel
 double COROTMP1;
 double MASKSIZELD;
 
@@ -116,29 +117,31 @@ double MASKSIZELD;
 phase / amplitude aberrations, if any, are in "corpha" and "coramp" images
 */
 
-static int FPMASKSIZE_ERROR = 0; /* 1 if focal plane mask error is included (for chromaticity for example) */
+static int FPMASKSIZE_ERROR =
+    0; /* 1 if focal plane mask error is included (for chromaticity for example) */
 static double FPMASK_FACTOR =
     1.0; // if focal plane mask error included, multiplicative coefficient to the focal plane mask size - currently only for MULTI APLC
 static double FPMASK_FACTOR1 = 1.0;
 static double FPMASK_FACTOR2 = 1.1;
-static double FPM_TRANSM1 = 0.0;
-static double FPM_TRANSM2 = 1.0;
+static double FPM_TRANSM1    = 0.0;
+static double FPM_TRANSM2    = 1.0;
 
 /* arrays and numbers that need to be in memory to use various coronagraphs */
 /* 8 order BL Lyot */
-#define BL8MASK_NBSTEP 100000 /* number of points over which the BL mask is computed */
-#define BL8MASK_STEP 0.01     /* lambda/d per step */
+#define BL8MASK_NBSTEP                                                         \
+    100000 /* number of points over which the BL mask is computed */
+#define BL8MASK_STEP 0.01 /* lambda/d per step */
 static double BL8MASK[BL8MASK_NBSTEP];
-static double BL8MASK_m = 1.0;
-static double BL8MASK_l = 3.0;
+static double BL8MASK_m   = 1.0;
+static double BL8MASK_l   = 3.0;
 static double BL8MASK_eps = 0.6;
-static int BL8MODE = 1; /* 0 = circular, 1 = linear */
+static int    BL8MODE     = 1; /* 0 = circular, 1 = linear */
 
 /* 4 order BL Lyot */
 static double BL4MASK_eps = 0.21;
 
 /* Optical Differenciation Coronagraph */
-static double ODC_GAUSS = 10.0; /* in lambda/d */
+static double ODC_GAUSS   = 10.0; /* in lambda/d */
 static double ODCMASK_eps = 0.85;
 
 /* SHEAR4 */
@@ -146,10 +149,14 @@ static double SHEAR4_SHEAR = 0.1;
 
 /* R&R Phase mask */
 static double RRPM_RADIUS = 0.53773; /* phase mask radius in lambda/d */
-static double RRPM_P2 = -0.3207;     /* term of order 2 in polynomial pupil apodization */
-static double RRPM_P3 = 0.00952;     /* term of order 3 in polynomial pupil apodization */
-static double RRPM_P4 = 0.000658;    /* term of order 4 in polynomial pupil apodization */
-static double RRPM_P5 = 0.001127;    /* term of order 5 in polynomial pupil apodization */
+static double RRPM_P2 =
+    -0.3207; /* term of order 2 in polynomial pupil apodization */
+static double RRPM_P3 =
+    0.00952; /* term of order 3 in polynomial pupil apodization */
+static double RRPM_P4 =
+    0.000658; /* term of order 4 in polynomial pupil apodization */
+static double RRPM_P5 =
+    0.001127; /* term of order 5 in polynomial pupil apodization */
 static int RRPM_PIAA = 1;
 
 /* CPA */
@@ -160,21 +167,21 @@ static double CPAAPO[CPAAPO_NBPOINTS];
 #define CPAPPMASKRAD 1.0         /* in pupil unit */
 
 /* PIAA and PIAAC (both hybrids) */
-static double PIAACENTOBS = 0.0;
-static long PIAAAPO_NBPOINTS = 2042;
+static double  PIAACENTOBS      = 0.0;
+static long    PIAAAPO_NBPOINTS = 2042;
 static double *PIAAAPO;
 static double *PIAA_HYBRID_CPAAPO;
-static double PIAAAPO2D[CORONAGRAPHS_ARRAYSIZE * CORONAGRAPHS_ARRAYSIZE];
-static char PIAAAPO_FNAME[400] = "pup_10.411256_2.0";
-static char PIAAAPODIZE_2DAPOFNAME[400] = "APLCapo_4.200.1024.ref.gz";
+static double  PIAAAPO2D[CORONAGRAPHS_ARRAYSIZE * CORONAGRAPHS_ARRAYSIZE];
+static char    PIAAAPO_FNAME[400]          = "pup_10.411256_2.0";
+static char    PIAAAPODIZE_2DAPOFNAME[400] = "APLCapo_4.200.1024.ref.gz";
 
 /*#define PIAAAPO_FNAME "Apod04.dat.2"*/
-static int PIAAFPMASK = 0;
-static int PIAALOWFS = 1;
+static int    PIAAFPMASK    = 0;
+static int    PIAALOWFS     = 1;
 static double PIAAFPMASKRAD = 5.5;
-/* in l/d */                /* 4.25 is the critical size to maintain 1e-10 contrast at all separations  default=4.6*/
-#define PIAAPPMASKRAD 1.0   /* in pupil unit */
-#define PIAACPPMASKRAD1 1.0 /* in pupil unit */
+/* in l/d */ /* 4.25 is the critical size to maintain 1e-10 contrast at all separations  default=4.6*/
+#define PIAAPPMASKRAD   1.0        /* in pupil unit */
+#define PIAACPPMASKRAD1 1.0        /* in pupil unit */
 #define PIAA_HYBRID_CST 0.00000001 /* relative to peak */
 static double *piaaconfpup_amp_profile;
 static double *piaaconfr0;
@@ -191,9 +198,9 @@ static double *piaaconfM1;
 
 static int piaaconfdirection = 0;
 //static double PIAAFLUXFACTOR;
-static double PIAAOVERSIZE = 1.025;
-static int initPIAA = 0;
-static int AUTOPIAACMASK = 1;
+static double PIAAOVERSIZE  = 1.025;
+static int    initPIAA      = 0;
+static int    AUTOPIAACMASK = 1;
 static double APLC_CentOBS0 = 0.0;
 static double APLC_CentOBS1 = 0.0;
 
@@ -204,13 +211,13 @@ static double PIAAextfactor1 = 1.1;
 #define PIAAAIC_FIELDLIMIT 15.0 /* in l/d */
 
 /* APLC */
-static int APLC_PIAA = 0;            /* 1 if the apodization is performed by PIAA */
-static long NB_APLC_STEP = 0;        /* number of APLC steps */
+static int    APLC_PIAA    = 0; /* 1 if the apodization is performed by PIAA */
+static long   NB_APLC_STEP = 0; /* number of APLC steps */
 static double APLC_FPMASKsize = 4.2; /* APLC focal plane mask radius in l/d */
-static int APLC_FLIP = 0;            // output AIC in APLC PIAA
-static int APLC_PMASK = 0;           // 1 if focal plane mask in APLC has phase
+static int    APLC_FLIP       = 0;   // output AIC in APLC PIAA
+static int    APLC_PMASK      = 0;   // 1 if focal plane mask in APLC has phase
 static double FPMASK_transm_error = 0.0;
-static double FPMASK_size_error = 0.0;
+static double FPMASK_size_error   = 0.0;
 /* STRIPC */
 static double STRIPCOFFSET = 0.4;
 
@@ -218,17 +225,17 @@ static double STRIPCOFFSET = 0.4;
 static long OVC_CHARGE = 2;
 
 // RAW apodization
-static long aporawN;
+static long    aporawN;
 static double *aporaw_r; // radius
 static double *aporaw_v; // value
-static int fitapoINIT = 0;
-static long fitapoN = 5; // number of terms of form a exp(b x^c)
+static int     fitapoINIT = 0;
+static long    fitapoN    = 5; // number of terms of form a exp(b x^c)
 static double *fitapo_a;
 static double *fitapo_b;
 static double *fitapo_c;
 static double *fitapo_c1;
 
-static long LOOPCNT = 0;
+static long   LOOPCNT = 0;
 static double optval0;
 
 static long IDprol_init;
@@ -238,13 +245,13 @@ static long IDprol_peak;
 static long IDprol_fitapo_a, IDprol_fitapo_b, IDprol_fitapo_c;
 static long IDprol_fitfit;
 
-static double fitapo_minc = 0.1;
-static double APLCapo_CO_START = 0.0;
-static double APLCapo_CO_END = 0.5;
-static double APLCapo_CO_STEP = 0.001;
+static double fitapo_minc          = 0.1;
+static double APLCapo_CO_START     = 0.0;
+static double APLCapo_CO_END       = 0.5;
+static double APLCapo_CO_STEP      = 0.001;
 static double APLCapo_FPMRAD_START = 0.8;
-static double APLCapo_FPMRAD_END = 5.0;
-static double APLCapo_FPMRAD_STEP = 0.001;
+static double APLCapo_FPMRAD_END   = 5.0;
+static double APLCapo_FPMRAD_STEP  = 0.001;
 
 /* ================================================================== */
 /* ================================================================== */
@@ -265,13 +272,19 @@ INIT_MODULE_LIB(coronagraphs)
 
 static errno_t coronagraph_make_2Dprolate__cli()
 {
-    if (0 + CLI_checkarg(1, CLIARG_FLOAT) + CLI_checkarg(2, CLIARG_FLOAT) + CLI_checkarg(3, CLIARG_FLOAT) +
-            CLI_checkarg(4, CLIARG_STR_NOT_IMG) + CLI_checkarg(5, CLIARG_LONG) ==
+    if (0 + CLI_checkarg(1, CLIARG_FLOAT) + CLI_checkarg(2, CLIARG_FLOAT) +
+            CLI_checkarg(3, CLIARG_FLOAT) +
+            CLI_checkarg(4, CLIARG_STR_NOT_IMG) +
+            CLI_checkarg(5, CLIARG_LONG) ==
         0)
     {
-        coronagraph_make_2Dprolate(data.cmdargtoken[1].val.numf, data.cmdargtoken[2].val.numf,
-                                   data.cmdargtoken[3].val.numf, data.cmdargtoken[4].val.string,
-                                   data.cmdargtoken[5].val.numl, "NULLim", NULL);
+        coronagraph_make_2Dprolate(data.cmdargtoken[1].val.numf,
+                                   data.cmdargtoken[2].val.numf,
+                                   data.cmdargtoken[3].val.numf,
+                                   data.cmdargtoken[4].val.string,
+                                   data.cmdargtoken[5].val.numl,
+                                   "NULLim",
+                                   NULL);
 
         return CLICMD_SUCCESS;
     }
@@ -283,13 +296,18 @@ static errno_t coronagraph_make_2Dprolate__cli()
 
 static errno_t coronagraph_make_2Dprolateld__cli()
 {
-    if (0 + CLI_checkarg(1, CLIARG_FLOAT) + CLI_checkarg(2, CLIARG_FLOAT) + CLI_checkarg(3, CLIARG_FLOAT) +
-            CLI_checkarg(4, CLIARG_STR_NOT_IMG) + CLI_checkarg(5, CLIARG_LONG) ==
+    if (0 + CLI_checkarg(1, CLIARG_FLOAT) + CLI_checkarg(2, CLIARG_FLOAT) +
+            CLI_checkarg(3, CLIARG_FLOAT) +
+            CLI_checkarg(4, CLIARG_STR_NOT_IMG) +
+            CLI_checkarg(5, CLIARG_LONG) ==
         0)
     {
-        coronagraph_make_2Dprolateld(data.cmdargtoken[1].val.numf, data.cmdargtoken[2].val.numf,
-                                     data.cmdargtoken[3].val.numf, data.cmdargtoken[4].val.string,
-                                     data.cmdargtoken[5].val.numl, "NULL");
+        coronagraph_make_2Dprolateld(data.cmdargtoken[1].val.numf,
+                                     data.cmdargtoken[2].val.numf,
+                                     data.cmdargtoken[3].val.numf,
+                                     data.cmdargtoken[4].val.string,
+                                     data.cmdargtoken[5].val.numl,
+                                     "NULL");
 
         return CLICMD_SUCCESS;
     }
@@ -301,12 +319,14 @@ static errno_t coronagraph_make_2Dprolateld__cli()
 
 static errno_t coronagraph_update_2Dprolate__cli()
 {
-    if (0 + CLI_checkarg(1, CLIARG_FLOAT) + CLI_checkarg(2, CLIARG_FLOAT) + CLI_checkarg(3, CLIARG_FLOAT) +
-            CLI_checkarg(4, CLIARG_FLOAT) ==
+    if (0 + CLI_checkarg(1, CLIARG_FLOAT) + CLI_checkarg(2, CLIARG_FLOAT) +
+            CLI_checkarg(3, CLIARG_FLOAT) + CLI_checkarg(4, CLIARG_FLOAT) ==
         0)
     {
-        coronagraph_update_2Dprolate(data.cmdargtoken[1].val.numf, data.cmdargtoken[2].val.numf,
-                                     data.cmdargtoken[3].val.numf, data.cmdargtoken[4].val.numf);
+        coronagraph_update_2Dprolate(data.cmdargtoken[1].val.numf,
+                                     data.cmdargtoken[2].val.numf,
+                                     data.cmdargtoken[3].val.numf,
+                                     data.cmdargtoken[4].val.numf);
 
         return CLICMD_SUCCESS;
     }
@@ -318,12 +338,16 @@ static errno_t coronagraph_update_2Dprolate__cli()
 
 static errno_t coronagraph_simulPSF__cli()
 {
-    if (0 + CLI_checkarg(1, CLIARG_FLOAT) + CLI_checkarg(2, CLIARG_FLOAT) + CLI_checkarg(3, CLIARG_STR_NOT_IMG) +
+    if (0 + CLI_checkarg(1, CLIARG_FLOAT) + CLI_checkarg(2, CLIARG_FLOAT) +
+            CLI_checkarg(3, CLIARG_STR_NOT_IMG) +
             CLI_checkarg(4, CLIARG_LONG) ==
         0)
     {
-        coronagraph_simulPSF(data.cmdargtoken[1].val.numf, data.cmdargtoken[2].val.numf, data.cmdargtoken[3].val.string,
-                             data.cmdargtoken[4].val.numl, "");
+        coronagraph_simulPSF(data.cmdargtoken[1].val.numf,
+                             data.cmdargtoken[2].val.numf,
+                             data.cmdargtoken[3].val.string,
+                             data.cmdargtoken[4].val.numl,
+                             "");
 
         return CLICMD_SUCCESS;
     }
@@ -356,32 +380,63 @@ static errno_t CORONAGRAPHS_scanPIAACMC_centObs_perf__cli()
 static errno_t init_module_CLI()
 {
 
-    RegisterCLIcommand("cormk2Dprolate", __FILE__, coronagraph_make_2Dprolate__cli, "make 2D prolate",
-                       "<focal plane mask radius> <central obstruction> <image name>", "cormk2Dprolate 1.20 0.1 prolim",
-                       "coronagraph_make_2Dprolate(double masksize, double centralObs, const char *outname)");
+    RegisterCLIcommand(
+        "cormk2Dprolate",
+        __FILE__,
+        coronagraph_make_2Dprolate__cli,
+        "make 2D prolate",
+        "<focal plane mask radius> <central obstruction> <image name>",
+        "cormk2Dprolate 1.20 0.1 prolim",
+        "coronagraph_make_2Dprolate(double masksize, double centralObs, const "
+        "char *outname)");
+
+    RegisterCLIcommand("cormk2Dprolateld",
+                       __FILE__,
+                       coronagraph_make_2Dprolateld__cli,
+                       "make 2D prolate, l/D unit mask size",
+                       "<focal plane mask radius [l/D]> <central obstruction> "
+                       "<image name> <array size>",
+                       "cormk2Dprolateld 1.20 0.1 prolim 2048",
+                       "coronagraph_make_2Dprolateld(double masksizeld, double "
+                       "centralObs, const char *outname, long size)");
+
+    RegisterCLIcommand("corup2Dprolate",
+                       __FILE__,
+                       coronagraph_update_2Dprolate__cli,
+                       "update 2D prolate",
+                       "<focal plane mask radius [l/D]> <central obstruction> "
+                       "<DFT zoom factor>",
+                       "cormk2Dprolateld 1.20 0.1 4.0",
+                       "coronagraph_update_2Dprolate(double masksizeld, double "
+                       "centralObs, double zfactor)");
+
+    RegisterCLIcommand("corprolcomp",
+                       __FILE__,
+                       coronagraph_APLCapo_compile,
+                       "compile prolate functions data",
+                       "no argument",
+                       "corprolcomp",
+                       "int coronagraph_APLCapo_compile()");
 
     RegisterCLIcommand(
-        "cormk2Dprolateld", __FILE__, coronagraph_make_2Dprolateld__cli, "make 2D prolate, l/D unit mask size",
-        "<focal plane mask radius [l/D]> <central obstruction> <image name> <array size>",
-        "cormk2Dprolateld 1.20 0.1 prolim 2048",
-        "coronagraph_make_2Dprolateld(double masksizeld, double centralObs, const char *outname, long size)");
+        "corsimpsf",
+        __FILE__,
+        coronagraph_simulPSF__cli,
+        "create coronagraph PSF",
+        "<x [l/D]> <y [l/D]> <output image name> <coronagraph index>",
+        "corsimpsf 1.0 0.1 50",
+        "coronagraph_simulPSF(double xld, double yld, const char *psfname, "
+        "long coronagraph_type, const "
+        "char *options)");
 
-    RegisterCLIcommand("corup2Dprolate", __FILE__, coronagraph_update_2Dprolate__cli, "update 2D prolate",
-                       "<focal plane mask radius [l/D]> <central obstruction> <DFT zoom factor>",
-                       "cormk2Dprolateld 1.20 0.1 4.0",
-                       "coronagraph_update_2Dprolate(double masksizeld, double centralObs, double zfactor)");
-
-    RegisterCLIcommand("corprolcomp", __FILE__, coronagraph_APLCapo_compile, "compile prolate functions data",
-                       "no argument", "corprolcomp", "int coronagraph_APLCapo_compile()");
-
-    RegisterCLIcommand("corsimpsf", __FILE__, coronagraph_simulPSF__cli, "create coronagraph PSF",
-                       "<x [l/D]> <y [l/D]> <output image name> <coronagraph index>", "corsimpsf 1.0 0.1 50",
-                       "coronagraph_simulPSF(double xld, double yld, const char *psfname, long coronagraph_type, const "
-                       "char *options)");
-
-    RegisterCLIcommand("coroscanpiaacmcperf", __FILE__, CORONAGRAPHS_scanPIAACMC_centObs_perf__cli, "scan PIAACMC perf",
-                       "<input central obstruction>", "coroscanpiaacmcperf 0.2",
-                       "int CORONAGRAPHS_scanPIAACMC_centObs_perf( double obs0input )");
+    RegisterCLIcommand(
+        "coroscanpiaacmcperf",
+        __FILE__,
+        CORONAGRAPHS_scanPIAACMC_centObs_perf__cli,
+        "scan PIAACMC perf",
+        "<input central obstruction>",
+        "coroscanpiaacmcperf 0.2",
+        "int CORONAGRAPHS_scanPIAACMC_centObs_perf( double obs0input )");
 
     // add atexit functions here
 
@@ -397,27 +452,32 @@ static errno_t init_module_CLI()
 //
 // if pupmask does not exist, do not use it
 //
-errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double centralObs, const char *outname,
-                                   long size, const char *pupmask_name, double *transmval)
+errno_t coronagraph_make_2Dprolate(double      fpmradpix,
+                                   double      beamradpix,
+                                   double      centralObs,
+                                   const char *outname,
+                                   long        size,
+                                   const char *pupmask_name,
+                                   double     *transmval)
 {
     DEBUG_TRACE_FSTART();
 
-    FILE *fp;
-    long size2;
-    long IDfpmask;
-    long IDpupa0, IDpupp0, IDpupa0m, IDpupp0m;
-    double peak;
-    long IDprol, ID;
+    FILE       *fp;
+    long        size2;
+    long        IDfpmask;
+    long        IDpupa0, IDpupp0, IDpupa0m, IDpupp0m;
+    double      peak;
+    long        IDprol, ID;
     long double total, total0, total2;
-    long iter;
-    long NBiter = 40;
-    double transm;
-    long IDr, IDi, IDrcp, IDicp; //,ID1,ID2;
-    long IDprolr, IDproli, IDprolp;
-    char fname[1500];
-    long IDpupmask;
+    long        iter;
+    long        NBiter = 40;
+    double      transm;
+    long        IDr, IDi, IDrcp, IDicp; //,ID1,ID2;
+    long        IDprolr, IDproli, IDprolp;
+    char        fname[1500];
+    long        IDpupmask;
 
-    int CentralObstructionFlag = 0;
+    int  CentralObstructionFlag = 0;
     long IDpupa0co;
 
     size2 = size * size;
@@ -430,7 +490,7 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
     ID = variable_ID("PNBITER");
     if (ID != -1)
     {
-        NBiter = (long)(1.0 * data.variable[ID].value.f + 0.01);
+        NBiter = (long) (1.0 * data.variable[ID].value.f + 0.01);
     }
 
     MASKSIZELD = (2.0 * beamradpix / size) * fpmradpix;
@@ -442,10 +502,12 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
     create_2Dimage_ID("prolr", size, size, &IDprolr);
     create_2Dimage_ID("prolp", size, size, &IDprolp);
 
-    IDfpmask = make_subpixdisk("FPmask", size, size, size / 2, size / 2, fpmradpix);
+    IDfpmask =
+        make_subpixdisk("FPmask", size, size, size / 2, size / 2, fpmradpix);
     for (long ii = 0; ii < size2; ii++)
     {
-        data.image[IDfpmask].array.F[ii] = 1.0 * data.image[IDfpmask].array.F[ii];
+        data.image[IDfpmask].array.F[ii] =
+            1.0 * data.image[IDfpmask].array.F[ii];
         //      if(data.image[IDfpmask].array.F[ii]<0.01)
         //	data.image[IDfpmask].array.F[ii] = 0.0;
     }
@@ -467,13 +529,20 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
 
     if (IDpupa0 == -1)
     {
-        IDpupa0 = make_disk("pupa0", size, size, size / 2, size / 2, beamradpix);
+        IDpupa0 =
+            make_disk("pupa0", size, size, size / 2, size / 2, beamradpix);
         if (CentralObstructionFlag == 1)
         {
-            IDpupa0co = make_disk("pupa0co", size, size, size / 2, size / 2, beamradpix * centralObs);
+            IDpupa0co = make_disk("pupa0co",
+                                  size,
+                                  size,
+                                  size / 2,
+                                  size / 2,
+                                  beamradpix * centralObs);
             for (long ii = 0; ii < size * size; ii++)
             {
-                data.image[IDpupa0].array.F[ii] -= data.image[IDpupa0co].array.F[ii];
+                data.image[IDpupa0].array.F[ii] -=
+                    data.image[IDpupa0co].array.F[ii];
             }
             delete_image_ID("pupa0co", DELETE_IMAGE_ERRMODE_WARNING);
         }
@@ -483,7 +552,8 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
         {
             for (long ii = 0; ii < size * size; ii++)
             {
-                data.image[IDpupa0].array.F[ii] *= data.image[IDpupmask].array.F[ii];
+                data.image[IDpupa0].array.F[ii] *=
+                    data.image[IDpupmask].array.F[ii];
             }
         }
         save_fits("pupa0", "test_pupa0.fits");
@@ -516,18 +586,20 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
         {
             if (data.image[IDpupa0].array.F[jj * size + ii] > 0.01)
             {
-                double x = 1.0 * ii - size / 2;
-                double y = 1.0 * jj - size / 2;
+                double x  = 1.0 * ii - size / 2;
+                double y  = 1.0 * jj - size / 2;
                 double r2 = (x * x + y * y) / beamradpix / beamradpix;
-                data.image[IDprolr].array.F[jj * size + ii] = exp(-r2 * 0.73 / 5.0 * fpmradpix);
+                data.image[IDprolr].array.F[jj * size + ii] =
+                    exp(-r2 * 0.73 / 5.0 * fpmradpix);
                 data.image[IDproli].array.F[jj * size + ii] = 0.0;
-                data.image[IDprol].array.F[jj * size + ii] = data.image[IDprolr].array.F[jj * size + ii];
+                data.image[IDprol].array.F[jj * size + ii] =
+                    data.image[IDprolr].array.F[jj * size + ii];
             }
             else
             {
                 data.image[IDprolr].array.F[jj * size + ii] = 0.0;
                 data.image[IDproli].array.F[jj * size + ii] = 0.0;
-                data.image[IDprol].array.F[jj * size + ii] = 0.0;
+                data.image[IDprol].array.F[jj * size + ii]  = 0.0;
             }
         }
 
@@ -537,7 +609,7 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
         for (long ii = 0; ii < size2; ii++)
         {
             data.image[IDprolr].array.F[ii] = data.image[ID].array.F[ii];
-            data.image[IDprol].array.F[ii] = data.image[ID].array.F[ii];
+            data.image[IDprol].array.F[ii]  = data.image[ID].array.F[ii];
         }
     }
     delete_image_ID("apostart", DELETE_IMAGE_ERRMODE_WARNING);
@@ -550,8 +622,11 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
     {
         for (long ii = 0; ii < size2; ii++)
         {
-            data.image[IDpupa0m].array.F[ii] = data.image[IDpupa0].array.F[ii] * data.image[IDprol].array.F[ii];
-            data.image[IDpupp0m].array.F[ii] = data.image[IDpupp0].array.F[ii] + 0.0 * data.image[IDprolp].array.F[ii];
+            data.image[IDpupa0m].array.F[ii] = data.image[IDpupa0].array.F[ii] *
+                                               data.image[IDprol].array.F[ii];
+            data.image[IDpupp0m].array.F[ii] =
+                data.image[IDpupp0].array.F[ii] +
+                0.0 * data.image[IDprolp].array.F[ii];
         }
 
         mk_complex_from_amph("pupa0m", "pupp0", "pc1", 0);
@@ -565,11 +640,12 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
         total = 0.0;
         for (long ii = 0; ii < size2; ii++)
         {
-            total += data.image[IDprol].array.F[ii] * data.image[IDprol].array.F[ii];
+            total +=
+                data.image[IDprol].array.F[ii] * data.image[IDprol].array.F[ii];
         }
         transm = total / total0;
 
-        ID = image_ID("fa1m");
+        ID    = image_ID("fa1m");
         total = 0.0;
         for (long ii = 0; ii < size2; ii++)
         {
@@ -577,7 +653,7 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
         }
         total /= 1.0 * size2 * total0;
 
-        ID = image_ID("fa1");
+        ID     = image_ID("fa1");
         total2 = 0.0;
         for (long ii = 0; ii < size2; ii++)
         {
@@ -585,8 +661,12 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
         }
         total2 /= 1.0 * size2 * total0;
 
-        printf("%ld/%ld   FPmask throughput = %g    prolate throughput = %.18g\n", iter, NBiter,
-               (double)(total / total2), (double)transm);
+        printf(
+            "%ld/%ld   FPmask throughput = %g    prolate throughput = %.18g\n",
+            iter,
+            NBiter,
+            (double) (total / total2),
+            (double) transm);
 
         ID = image_ID("fp1");
         //      for(ii=0;ii<size2;ii++)
@@ -612,7 +692,9 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
             for (long jj = 1; jj < size; jj++)
             {
                 data.image[IDr].array.F[jj * size + ii] =
-                    data.image[IDrcp].array.F[(size - jj) * size + (size - ii)] / size2;
+                    data.image[IDrcp]
+                        .array.F[(size - jj) * size + (size - ii)] /
+                    size2;
             }
         peak = data.image[IDr].array.F[(size / 2) * size + size / 2];
         delete_image_ID("pr2cp", DELETE_IMAGE_ERRMODE_WARNING);
@@ -630,7 +712,9 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
             for (long jj = 1; jj < size; jj++)
             {
                 data.image[IDi].array.F[jj * size + ii] =
-                    data.image[IDicp].array.F[(size - jj) * size + (size - ii)] / size2;
+                    data.image[IDicp]
+                        .array.F[(size - jj) * size + (size - ii)] /
+                    size2;
             }
 
         printf("PEAK =  %f ", peak);
@@ -653,9 +737,18 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
         // Ideal complex transmission for FPM is MASKCAMULT = -(1.0-peak)/peak;
         //
         printf("------- MASK SIZE = %f l/D ------\n", MASKSIZELD);
-        sprintf(fname, "%s/APLCapo.%.3f.%.3f.info", data.SAVEDIR, MASKSIZELD, centralObs);
+        sprintf(fname,
+                "%s/APLCapo.%.3f.%.3f.info",
+                data.SAVEDIR,
+                MASKSIZELD,
+                centralObs);
         fp = fopen(fname, "w");
-        fprintf(fp, "%f %.18f %.18f %.18f %.18f\n", MASKSIZELD, (double)(total / total2), (double)transm, peak,
+        fprintf(fp,
+                "%f %.18f %.18f %.18f %.18f\n",
+                MASKSIZELD,
+                (double) (total / total2),
+                (double) transm,
+                peak,
                 centralObs);
         fprintf(fp, "# col 1 : Mask size in SYSTEM l/D\n");
         fprintf(fp, "# col 2 : Fraction of light going through FPmask\n");
@@ -673,8 +766,10 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
         for (long ii = 0; ii < size2; ii++)
             if (data.image[IDpupa0].array.F[ii] > 0.01)
             {
-                data.image[IDprolr].array.F[ii] = 1.0 * data.image[IDr].array.F[ii];
-                data.image[IDproli].array.F[ii] = 1.0 * data.image[IDi].array.F[ii];
+                data.image[IDprolr].array.F[ii] =
+                    1.0 * data.image[IDr].array.F[ii];
+                data.image[IDproli].array.F[ii] =
+                    1.0 * data.image[IDi].array.F[ii];
             }
 
         //      for(ii=0;ii<size2;ii++)
@@ -684,10 +779,13 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
             {
                 long ii1 = jj * size + ii;
                 data.image[IDprol].array.F[jj * size + ii] =
-                    sqrt(data.image[IDprolr].array.F[ii1] * data.image[IDprolr].array.F[ii1] +
-                         data.image[IDproli].array.F[ii1] * data.image[IDproli].array.F[ii1]);
+                    sqrt(data.image[IDprolr].array.F[ii1] *
+                             data.image[IDprolr].array.F[ii1] +
+                         data.image[IDproli].array.F[ii1] *
+                             data.image[IDproli].array.F[ii1]);
                 data.image[IDprolp].array.F[jj * size + ii] =
-                    -atan2(data.image[IDproli].array.F[ii1], data.image[IDprolr].array.F[ii1]);
+                    -atan2(data.image[IDproli].array.F[ii1],
+                           data.image[IDprolr].array.F[ii1]);
             }
 
         peak = 0.0;
@@ -736,7 +834,9 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
 
     for (long ii = 0; ii < size2; ii++)
     {
-        data.image[IDfpmask].array.F[ii] = 1.0 - data.image[IDfpmask].array.F[ii] * (1.0 + (1.0 - peak) / peak);
+        data.image[IDfpmask].array.F[ii] =
+            1.0 -
+            data.image[IDfpmask].array.F[ii] * (1.0 + (1.0 - peak) / peak);
     }
 
     //  save_fl_fits("FPmask","FPmask.fits");
@@ -764,53 +864,58 @@ errno_t coronagraph_make_2Dprolate(double fpmradpix, double beamradpix, double c
 // High definition prolate computation
 // Uses DFT
 //
-double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, double centralObs, const char *outname,
-                                      long size, const char *pupmask_name, double *transmval)
+double coronagraph_make_2Dprolate_DFT(double      fpmradpix,
+                                      double      beamradpix,
+                                      double      centralObs,
+                                      const char *outname,
+                                      long        size,
+                                      const char *pupmask_name,
+                                      double     *transmval)
 {
     DEBUG_TRACE_FSTART();
 
-    FILE *fp;
-    uint64_t size2;
-    imageID IDfpmask, IDfpmaskc, IDfpmaskz;
-    imageID IDpupa0, IDpupp0, IDpupa0m, IDpupp0m;
-    double peak;
-    imageID IDprol, ID;
+    FILE       *fp;
+    uint64_t    size2;
+    imageID     IDfpmask, IDfpmaskc, IDfpmaskz;
+    imageID     IDpupa0, IDpupp0, IDpupa0m, IDpupp0m;
+    double      peak;
+    imageID     IDprol, ID;
     long double total, total0, total2, v1;
-    long iter;
-    long NBiter = 10;
-    double transm;
-    imageID IDr, IDi;
-    imageID IDprolr, IDproli, IDprolp;
-    imageID IDpupmask;
+    long        iter;
+    long        NBiter = 10;
+    double      transm;
+    imageID     IDr, IDi;
+    imageID     IDprolr, IDproli, IDprolp;
+    imageID     IDpupmask;
 
-    int CentralObstructionFlag = 0;
+    int     CentralObstructionFlag = 0;
     imageID IDpupa0co;
 
     double re, im;
 
     // focal plane mask shape perturbations
-    long fpmshape_n = 20;
+    long    fpmshape_n = 20;
     double *fpmshape_ra;
     double *fpmshape_ka;
     double *fpmshape_pa;
 
     size2 = size * size;
 
-    fpmshape_ra = (double *)malloc(sizeof(double) * fpmshape_n);
+    fpmshape_ra = (double *) malloc(sizeof(double) * fpmshape_n);
     if (fpmshape_ra == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    fpmshape_ka = (double *)malloc(sizeof(double) * fpmshape_n);
+    fpmshape_ka = (double *) malloc(sizeof(double) * fpmshape_n);
     if (fpmshape_ka == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    fpmshape_pa = (double *)malloc(sizeof(double) * fpmshape_n);
+    fpmshape_pa = (double *) malloc(sizeof(double) * fpmshape_n);
     if (fpmshape_pa == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
@@ -831,10 +936,10 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
     ID = variable_ID("PNBITER");
     if (ID != -1)
     {
-        NBiter = (long)(1.0 * data.variable[ID].value.f + 0.01);
+        NBiter = (long) (1.0 * data.variable[ID].value.f + 0.01);
     }
 
-    v1 = 0.0;
+    v1         = 0.0;
     MASKSIZELD = (2.0 * beamradpix / size) * fpmradpix;
     printf("MASK SIZE = %f pixel = %f l/D\n", fpmradpix, MASKSIZELD);
     printf("PUPIL RADIUS = %f\n", beamradpix);
@@ -880,19 +985,34 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
             }
         }
 
-        printf("FPM SHAPE TERM %02ld : %f %f %f\n", k, fpmshape_ra[k], fpmshape_ka[k], fpmshape_pa[k]);
+        printf("FPM SHAPE TERM %02ld : %f %f %f\n",
+               k,
+               fpmshape_ra[k],
+               fpmshape_ka[k],
+               fpmshape_pa[k]);
     }
 
-    IDfpmask = make_subpixdisk("FPmask", size, size, size / 2, size / 2, fpmradpix);
-    IDfpmaskz = make_subpixdisk_perturb("FPmaskz", size, size, size / 2, size / 2, fpmradpix * DFTZFACTOR, fpmshape_n,
-                                        fpmshape_ra, fpmshape_ka, fpmshape_pa);
+    IDfpmask =
+        make_subpixdisk("FPmask", size, size, size / 2, size / 2, fpmradpix);
+    IDfpmaskz = make_subpixdisk_perturb("FPmaskz",
+                                        size,
+                                        size,
+                                        size / 2,
+                                        size / 2,
+                                        fpmradpix * DFTZFACTOR,
+                                        fpmshape_n,
+                                        fpmshape_ra,
+                                        fpmshape_ka,
+                                        fpmshape_pa);
 
     FUNC_CHECK_RETURN(create_2DCimage_ID("_fpmz", size, size, &IDfpmaskc));
 
     for (uint64_t ii = 0; ii < size2; ii++)
     {
-        data.image[IDfpmask].array.F[ii] = 1.0 * data.image[IDfpmaskz].array.F[ii];
-        data.image[IDfpmaskc].array.CF[ii].re = data.image[IDfpmaskz].array.F[ii];
+        data.image[IDfpmask].array.F[ii] =
+            1.0 * data.image[IDfpmaskz].array.F[ii];
+        data.image[IDfpmaskc].array.CF[ii].re =
+            data.image[IDfpmaskz].array.F[ii];
         data.image[IDfpmaskc].array.CF[ii].im = 0.0;
         //      if(data.image[IDfpmask].array.F[ii]<0.01)
         //	data.image[IDfpmask].array.F[ii] = 0.0;
@@ -918,9 +1038,11 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
 
         FUNC_CHECK_RETURN(save_fl_fits("_fpmzp", "_fpmzp.fits"));
 
-        FUNC_CHECK_RETURN(delete_image_ID("_fpmza", DELETE_IMAGE_ERRMODE_WARNING));
+        FUNC_CHECK_RETURN(
+            delete_image_ID("_fpmza", DELETE_IMAGE_ERRMODE_WARNING));
 
-        FUNC_CHECK_RETURN(delete_image_ID("_fpmzp", DELETE_IMAGE_ERRMODE_WARNING));
+        FUNC_CHECK_RETURN(
+            delete_image_ID("_fpmzp", DELETE_IMAGE_ERRMODE_WARNING));
     }
     // exit(0);
 
@@ -938,18 +1060,26 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
     if (IDpupa0 == -1)
     {
         //      printf("Creating pupil, radius = %f\n", beamradpix);
-        IDpupa0 = make_disk("pupa0", size, size, size / 2, size / 2, beamradpix);
+        IDpupa0 =
+            make_disk("pupa0", size, size, size / 2, size / 2, beamradpix);
 
         if (CentralObstructionFlag == 1)
         {
             //  printf("Central obstruction = %f\n", beamradpix*centralObs);
-            IDpupa0co = make_disk("pupa0co", size, size, size / 2, size / 2, beamradpix * centralObs);
+            IDpupa0co = make_disk("pupa0co",
+                                  size,
+                                  size,
+                                  size / 2,
+                                  size / 2,
+                                  beamradpix * centralObs);
             for (uint64_t ii = 0; ii < size * size; ii++)
             {
-                data.image[IDpupa0].array.F[ii] -= data.image[IDpupa0co].array.F[ii];
+                data.image[IDpupa0].array.F[ii] -=
+                    data.image[IDpupa0co].array.F[ii];
             }
 
-            FUNC_CHECK_RETURN(delete_image_ID("pupa0co", DELETE_IMAGE_ERRMODE_WARNING));
+            FUNC_CHECK_RETURN(
+                delete_image_ID("pupa0co", DELETE_IMAGE_ERRMODE_WARNING));
         }
 
         //   save_fits("pupa0", "test_pupa00.fits"); //TEST
@@ -958,7 +1088,8 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
         {
             for (uint64_t ii = 0; ii < size * size; ii++)
             {
-                data.image[IDpupa0].array.F[ii] *= data.image[IDpupmask].array.F[ii];
+                data.image[IDpupa0].array.F[ii] *=
+                    data.image[IDpupmask].array.F[ii];
             }
         }
         //  save_fits("pupa0", "test_pupa0.fits"); //TEST
@@ -994,18 +1125,20 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
         {
             if (data.image[IDpupa0].array.F[jj * size + ii] > 0.0001)
             {
-                double x = 1.0 * ii - size / 2;
-                double y = 1.0 * jj - size / 2;
+                double x  = 1.0 * ii - size / 2;
+                double y  = 1.0 * jj - size / 2;
                 double r2 = (x * x + y * y) / beamradpix / beamradpix;
-                data.image[IDprolr].array.F[jj * size + ii] = exp(-r2 * 0.73 / 5.0 * fpmradpix);
+                data.image[IDprolr].array.F[jj * size + ii] =
+                    exp(-r2 * 0.73 / 5.0 * fpmradpix);
                 data.image[IDproli].array.F[jj * size + ii] = 0.0;
-                data.image[IDprol].array.F[jj * size + ii] = data.image[IDprolr].array.F[jj * size + ii];
+                data.image[IDprol].array.F[jj * size + ii] =
+                    data.image[IDprolr].array.F[jj * size + ii];
             }
             else
             {
                 data.image[IDprolr].array.F[jj * size + ii] = 0.0;
                 data.image[IDproli].array.F[jj * size + ii] = 0.0;
-                data.image[IDprol].array.F[jj * size + ii] = 0.0;
+                data.image[IDprol].array.F[jj * size + ii]  = 0.0;
             }
         }
 
@@ -1015,10 +1148,11 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
         for (uint64_t ii = 0; ii < size2; ii++)
         {
             data.image[IDprolr].array.F[ii] = data.image[ID].array.F[ii];
-            data.image[IDprol].array.F[ii] = data.image[ID].array.F[ii];
+            data.image[IDprol].array.F[ii]  = data.image[ID].array.F[ii];
         }
     }
-    FUNC_CHECK_RETURN(delete_image_ID("apostart", DELETE_IMAGE_ERRMODE_WARNING));
+    FUNC_CHECK_RETURN(
+        delete_image_ID("apostart", DELETE_IMAGE_ERRMODE_WARNING));
 
     //
     // START LOOP
@@ -1029,8 +1163,11 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
         printf("[%ld/%ld - %ld] ", iter, NBiter, size2);
         for (uint64_t ii = 0; ii < size2; ii++)
         {
-            data.image[IDpupa0m].array.F[ii] = data.image[IDpupa0].array.F[ii] * data.image[IDprol].array.F[ii];
-            data.image[IDpupp0m].array.F[ii] = data.image[IDpupp0].array.F[ii] + 0.0 * data.image[IDprolp].array.F[ii];
+            data.image[IDpupa0m].array.F[ii] = data.image[IDpupa0].array.F[ii] *
+                                               data.image[IDprol].array.F[ii];
+            data.image[IDpupp0m].array.F[ii] =
+                data.image[IDpupp0].array.F[ii] +
+                0.0 * data.image[IDprolp].array.F[ii];
         }
 
         FUNC_CHECK_RETURN(mk_complex_from_amph("pupa0m", "pupp0", "pc1", 0));
@@ -1047,7 +1184,8 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
         //save_fl_fits("pupp0", "pupp0.fits");
         //printf("DFTZFACTOR = %f\n", DFTZFACTOR);
 
-        FUNC_CHECK_RETURN(fft_DFTinsertFPM("pc1", "_fpmz", DFTZFACTOR, "pc3", NULL));
+        FUNC_CHECK_RETURN(
+            fft_DFTinsertFPM("pc1", "_fpmz", DFTZFACTOR, "pc3", NULL));
 
         //      exit(0);
 
@@ -1055,7 +1193,8 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
         total = 0.0;
         for (uint64_t ii = 0; ii < size2; ii++)
         {
-            total += data.image[IDprol].array.F[ii] * data.image[IDprol].array.F[ii];
+            total +=
+                data.image[IDprol].array.F[ii] * data.image[IDprol].array.F[ii];
         }
         transm = total / total0;
 
@@ -1064,7 +1203,7 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
         total /= 1.0 * size2 * total0;
 
         // TOTAL LIGHT IN IMAGE -> total2
-        ID = image_ID("pc1");
+        ID     = image_ID("pc1");
         total2 = 0.0;
         for (uint64_t ii = 0; ii < size2; ii++)
         {
@@ -1076,8 +1215,12 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
         }
         total2 /= 1.0 * size2 * total0;
 
-        printf("%ld/%ld   FPmask throughput = %g    prolate throughput = %.18g\n", iter, NBiter,
-               (double)(total / total2), (double)transm);
+        printf(
+            "%ld/%ld   FPmask throughput = %g    prolate throughput = %.18g\n",
+            iter,
+            NBiter,
+            (double) (total / total2),
+            (double) transm);
 
         FUNC_CHECK_RETURN(mk_reim_from_complex("pc3", "pr2", "pi2", 0));
 
@@ -1103,17 +1246,28 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
 
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
-            WRITE_FULLFILENAME(fname, "%s/APLCapo.%.3f.%.3f.info", data.SAVEDIR, MASKSIZELD, centralObs);
+            WRITE_FULLFILENAME(fname,
+                               "%s/APLCapo.%.3f.%.3f.info",
+                               data.SAVEDIR,
+                               MASKSIZELD,
+                               centralObs);
 
             fp = fopen(fname, "w");
         }
-        fprintf(fp, "%f %.18f %.18f %.18f\n", MASKSIZELD, (double)(total / total2), (double)transm, peak);
+        fprintf(fp,
+                "%f %.18f %.18f %.18f\n",
+                MASKSIZELD,
+                (double) (total / total2),
+                (double) transm,
+                peak);
         fprintf(fp, "# Created by %s line %d\n", __FILE__, __LINE__);
         fprintf(fp, "# col 1: Mask size in SYSTEM l/D\n");
         fprintf(fp, "# col 2: Fraction of light going through FPmask\n");
         fprintf(fp, "# col 3: Prolate throughput if not done by PIAA\n");
         fprintf(fp, "# col 4: Peak\n");
-        fprintf(fp, "# ideal complex transmission for FPM is MASKCAMULT = %.18f\n", -(1.0 - peak) / peak);
+        fprintf(fp,
+                "# ideal complex transmission for FPM is MASKCAMULT = %.18f\n",
+                -(1.0 - peak) / peak);
         fclose(fp);
         printf("IDEAL COMPLEX TRANSMISSION = %g\n", -(1.0 - peak) / peak);
 
@@ -1130,14 +1284,19 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
         for (uint64_t ii = 0; ii < size2; ii++)
             if (data.image[IDpupa0].array.F[ii] > 0.0001)
             {
-                data.image[IDprolr].array.F[ii] = 1.0 * data.image[IDr].array.F[ii];
-                data.image[IDproli].array.F[ii] = 1.0 * data.image[IDi].array.F[ii];
+                data.image[IDprolr].array.F[ii] =
+                    1.0 * data.image[IDr].array.F[ii];
+                data.image[IDproli].array.F[ii] =
+                    1.0 * data.image[IDi].array.F[ii];
             }
 
         for (uint64_t ii = 0; ii < size2; ii++)
         {
-            data.image[IDprol].array.F[ii] = sqrt(data.image[IDprolr].array.F[ii] * data.image[IDprolr].array.F[ii] +
-                                                  data.image[IDproli].array.F[ii] * data.image[IDproli].array.F[ii]);
+            data.image[IDprol].array.F[ii] =
+                sqrt(data.image[IDprolr].array.F[ii] *
+                         data.image[IDprolr].array.F[ii] +
+                     data.image[IDproli].array.F[ii] *
+                         data.image[IDproli].array.F[ii]);
         }
 
         peak = 0.0;
@@ -1189,12 +1348,16 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
 
     for (uint64_t ii = 0; ii < size2; ii++)
     {
-        data.image[IDfpmask].array.F[ii] = 1.0 - data.image[IDfpmask].array.F[ii] * (1.0 + (1.0 - peak) / peak);
+        data.image[IDfpmask].array.F[ii] =
+            1.0 -
+            data.image[IDfpmask].array.F[ii] * (1.0 + (1.0 - peak) / peak);
     }
 
     for (uint64_t ii = 0; ii < size2; ii++)
     {
-        data.image[IDfpmaskz].array.F[ii] = 1.0 - data.image[IDfpmaskz].array.F[ii] * (1.0 + (1.0 - peak) / peak);
+        data.image[IDfpmaskz].array.F[ii] =
+            1.0 -
+            data.image[IDfpmaskz].array.F[ii] * (1.0 + (1.0 - peak) / peak);
     }
 
     //  save_fl_fits("FPmaskz","FPmask.fits");
@@ -1227,8 +1390,12 @@ double coronagraph_make_2Dprolate_DFT(double fpmradpix, double beamradpix, doubl
     return RETURN_SUCCESS;
 }
 
-errno_t coronagraph_make_2Dprolateld(double masksizeld, double beamradpix, double centralObs, const char *outname,
-                                     long size, const char *pupmask_name)
+errno_t coronagraph_make_2Dprolateld(double      masksizeld,
+                                     double      beamradpix,
+                                     double      centralObs,
+                                     const char *outname,
+                                     long        size,
+                                     const char *pupmask_name)
 {
     DEBUG_TRACE_FSTART();
 
@@ -1241,18 +1408,29 @@ errno_t coronagraph_make_2Dprolateld(double masksizeld, double beamradpix, doubl
 
     if (useDFT == 0)
     {
-        if (coronagraph_make_2Dprolate(fpmradpix, beamradpix, centralObs, outname, size, pupmask_name, NULL) !=
-            RETURN_SUCCESS)
+        if (coronagraph_make_2Dprolate(fpmradpix,
+                                       beamradpix,
+                                       centralObs,
+                                       outname,
+                                       size,
+                                       pupmask_name,
+                                       NULL) != RETURN_SUCCESS)
         {
             FUNC_RETURN_FAILURE("Call to coronagraph_make_2Dprolate failed");
         }
     }
     else
     {
-        if (coronagraph_make_2Dprolate_DFT(fpmradpix, beamradpix, centralObs, outname, size, pupmask_name, NULL) !=
-            RETURN_SUCCESS)
+        if (coronagraph_make_2Dprolate_DFT(fpmradpix,
+                                           beamradpix,
+                                           centralObs,
+                                           outname,
+                                           size,
+                                           pupmask_name,
+                                           NULL) != RETURN_SUCCESS)
         {
-            FUNC_RETURN_FAILURE("Call to coronagraph_make_2Dprolate_DFT failed");
+            FUNC_RETURN_FAILURE(
+                "Call to coronagraph_make_2Dprolate_DFT failed");
         }
     }
 
@@ -1263,17 +1441,25 @@ errno_t coronagraph_make_2Dprolateld(double masksizeld, double beamradpix, doubl
 // works for non circular pupil shape
 //
 // input is pupaCS
-errno_t coronagraph_make_2Dprolate_CS(double masksize, double beamradpix, const char *outname)
+errno_t coronagraph_make_2Dprolate_CS(double      masksize,
+                                      double      beamradpix,
+                                      const char *outname)
 {
     DEBUG_TRACE_FSTART();
 
     long size = CORONAGRAPHS_ARRAYSIZE;
 
-    (void)outname;
+    (void) outname;
 
     copy_image_ID("pupaCS", "pupa0", 0);
 
-    if (coronagraph_make_2Dprolate_DFT(masksize, beamradpix, 0.0, "outapo", size, "NULLim", NULL) != RETURN_SUCCESS)
+    if (coronagraph_make_2Dprolate_DFT(masksize,
+                                       beamradpix,
+                                       0.0,
+                                       "outapo",
+                                       size,
+                                       "NULLim",
+                                       NULL) != RETURN_SUCCESS)
     {
         FUNC_RETURN_FAILURE("Call to coronagraph_make_2Dprolate_DFT failed");
     }
@@ -1286,28 +1472,31 @@ errno_t coronagraph_make_2Dprolate_CS(double masksize, double beamradpix, const 
     return RETURN_SUCCESS;
 }
 
-errno_t coronagraph_update_2Dprolate(double masksizeld, double beamradpix, double centralObs, double zfactor)
+errno_t coronagraph_update_2Dprolate(double masksizeld,
+                                     double beamradpix,
+                                     double centralObs,
+                                     double zfactor)
 {
     DEBUG_TRACE_FSTART();
 
     /* masksizeld is in lambda/d */
     FILE *fp;
-    char fname[500];
-    char fnameprev[500];
-    char fnameinfo[500];
-    char fnameinfoprev[500];
-    char fnameprof[500];
-    char fname1[500];
-    char fname1prev[500];
-    char fnamenew[500];
+    char  fname[500];
+    char  fnameprev[500];
+    char  fnameinfo[500];
+    char  fnameinfoprev[500];
+    char  fnameprof[500];
+    char  fname1[500];
+    char  fname1prev[500];
+    char  fnamenew[500];
 
-    long size = CORONAGRAPHS_ARRAYSIZE;
+    long   size    = CORONAGRAPHS_ARRAYSIZE;
     double FFcoeff = 0.0;
-    long iter;
-    long ID, ID0, ID1, ID2;
-    long ii;
-    long iter1;
-    long NBiter1 = 1;
+    long   iter;
+    long   ID, ID0, ID1, ID2;
+    long   ii;
+    long   iter1;
+    long   NBiter1 = 1;
     //double transm;
     double tmp1, err;
 
@@ -1345,71 +1534,155 @@ errno_t coronagraph_update_2Dprolate(double masksizeld, double beamradpix, doubl
 
         if (CentralObstructionFlag == 0)
         {
-            sprintf(fname, "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL, MASKSIZELD, size);
-            sprintf(fnameinfo, "%s/APLCapo/APLCapo_%.3f.%ld.ref.info", CORONAGRAPHSDATALOCAL, MASKSIZELD, size);
+            sprintf(fname,
+                    "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz",
+                    CORONAGRAPHSDATALOCAL,
+                    MASKSIZELD,
+                    size);
+            sprintf(fnameinfo,
+                    "%s/APLCapo/APLCapo_%.3f.%ld.ref.info",
+                    CORONAGRAPHSDATALOCAL,
+                    MASKSIZELD,
+                    size);
         }
         else
         {
-            sprintf(fname, "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL, MASKSIZELD, centralObs,
+            sprintf(fname,
+                    "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz",
+                    CORONAGRAPHSDATALOCAL,
+                    MASKSIZELD,
+                    centralObs,
                     size);
-            sprintf(fnameinfo, "%s/APLCapo/APLCapo_%.3f.%.3f.%ld.ref.info", CORONAGRAPHSDATALOCAL, MASKSIZELD,
-                    centralObs, size);
+            sprintf(fnameinfo,
+                    "%s/APLCapo/APLCapo_%.3f.%.3f.%ld.ref.info",
+                    CORONAGRAPHSDATALOCAL,
+                    MASKSIZELD,
+                    centralObs,
+                    size);
         }
 
         if (CentralObstructionFlag == 0)
         {
-            sprintf(fnameprev, "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL,
-                    MASKSIZELD - masksizestep, size);
-            sprintf(fnameinfoprev, "%s/APLCapo/APLCapo_%.3f.%ld.ref.info", CORONAGRAPHSDATALOCAL,
-                    MASKSIZELD - masksizestep, size);
+            sprintf(fnameprev,
+                    "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz",
+                    CORONAGRAPHSDATALOCAL,
+                    MASKSIZELD - masksizestep,
+                    size);
+            sprintf(fnameinfoprev,
+                    "%s/APLCapo/APLCapo_%.3f.%ld.ref.info",
+                    CORONAGRAPHSDATALOCAL,
+                    MASKSIZELD - masksizestep,
+                    size);
         }
         else
         {
-            sprintf(fnameprev, "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL,
-                    MASKSIZELD - masksizestep, centralObs, size);
-            sprintf(fnameinfoprev, "%s/APLCapo/APLCapo_%.3f.%.3f.%ld.ref.info", CORONAGRAPHSDATALOCAL,
-                    MASKSIZELD - masksizestep, centralObs, size);
+            sprintf(fnameprev,
+                    "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz",
+                    CORONAGRAPHSDATALOCAL,
+                    MASKSIZELD - masksizestep,
+                    centralObs,
+                    size);
+            sprintf(fnameinfoprev,
+                    "%s/APLCapo/APLCapo_%.3f.%.3f.%ld.ref.info",
+                    CORONAGRAPHSDATALOCAL,
+                    MASKSIZELD - masksizestep,
+                    centralObs,
+                    size);
         }
 
-        sprintf(fnamenew, "%s/APLCapo/APLCapo_%.3f.%.3f.%ld.ref.new1", CORONAGRAPHSDATALOCAL, MASKSIZELD, centralObs,
+        sprintf(fnamenew,
+                "%s/APLCapo/APLCapo_%.3f.%.3f.%ld.ref.new1",
+                CORONAGRAPHSDATALOCAL,
+                MASKSIZELD,
+                centralObs,
                 size);
 
         //     if((file_exists(fname)==0)||(file_exists(fnameinfo)==0)) // don't compute if file is already here
         if (file_exists(fnamenew) == 0)
         {
             printf("Mask size = %f l/D\n", MASKSIZELD);
-            sprintf(fnamenew, "%s/APLCapo/APLCapo_%.3f.%.3f.%ld.ref.new1", CORONAGRAPHSDATALOCAL, MASKSIZELD,
-                    centralObs, size);
-            if (((file_exists(fnameprev) == 1) && (file_exists(fnameinfoprev) == 1)) &&
+            sprintf(fnamenew,
+                    "%s/APLCapo/APLCapo_%.3f.%.3f.%ld.ref.new1",
+                    CORONAGRAPHSDATALOCAL,
+                    MASKSIZELD,
+                    centralObs,
+                    size);
+            if (((file_exists(fnameprev) == 1) &&
+                 (file_exists(fnameinfoprev) == 1)) &&
                 ((file_exists(fname) == 0) || (file_exists(fnameinfo) == 0)))
             {
                 printf("COPY FROM PREVIOUS MASK SIZE\n");
                 if (CentralObstructionFlag == 0)
                 {
-                    sprintf(fname, "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL, MASKSIZELD, size);
-                    sprintf(fname1, "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL, MASKSIZELD, size);
-                    sprintf(fnameinfo, "%s/APLCapo/APLCapo_%.3f.%ld.ref.info", CORONAGRAPHSDATALOCAL, MASKSIZELD, size);
-                    sprintf(fnameprev, "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL,
-                            MASKSIZELD - masksizestep, size);
-                    sprintf(fname1prev, "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL,
-                            MASKSIZELD - masksizestep, size);
-                    sprintf(fnameinfoprev, "%s/APLCapo/APLCapo_%.3f.%ld.ref.info", CORONAGRAPHSDATALOCAL,
-                            MASKSIZELD - masksizestep, size);
+                    sprintf(fname,
+                            "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz",
+                            CORONAGRAPHSDATALOCAL,
+                            MASKSIZELD,
+                            size);
+                    sprintf(fname1,
+                            "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz",
+                            CORONAGRAPHSDATALOCAL,
+                            MASKSIZELD,
+                            size);
+                    sprintf(fnameinfo,
+                            "%s/APLCapo/APLCapo_%.3f.%ld.ref.info",
+                            CORONAGRAPHSDATALOCAL,
+                            MASKSIZELD,
+                            size);
+                    sprintf(fnameprev,
+                            "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz",
+                            CORONAGRAPHSDATALOCAL,
+                            MASKSIZELD - masksizestep,
+                            size);
+                    sprintf(fname1prev,
+                            "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz",
+                            CORONAGRAPHSDATALOCAL,
+                            MASKSIZELD - masksizestep,
+                            size);
+                    sprintf(fnameinfoprev,
+                            "%s/APLCapo/APLCapo_%.3f.%ld.ref.info",
+                            CORONAGRAPHSDATALOCAL,
+                            MASKSIZELD - masksizestep,
+                            size);
                 }
                 else
                 {
-                    sprintf(fname, "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL, MASKSIZELD,
-                            centralObs, size);
-                    sprintf(fname1, "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL, MASKSIZELD,
-                            centralObs, size);
-                    sprintf(fnameinfo, "%s/APLCapo/APLCapo_%.3f.%.3f.%ld.ref.info", CORONAGRAPHSDATALOCAL, MASKSIZELD,
-                            centralObs, size);
-                    sprintf(fnameprev, "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL,
-                            MASKSIZELD - masksizestep, centralObs, size);
-                    sprintf(fname1prev, "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL,
-                            MASKSIZELD - masksizestep, centralObs, size);
-                    sprintf(fnameinfoprev, "%s/APLCapo/APLCapo_%.3f.%.3f.%ld.ref.info", CORONAGRAPHSDATALOCAL,
-                            MASKSIZELD - masksizestep, centralObs, size);
+                    sprintf(fname,
+                            "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz",
+                            CORONAGRAPHSDATALOCAL,
+                            MASKSIZELD,
+                            centralObs,
+                            size);
+                    sprintf(fname1,
+                            "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz",
+                            CORONAGRAPHSDATALOCAL,
+                            MASKSIZELD,
+                            centralObs,
+                            size);
+                    sprintf(fnameinfo,
+                            "%s/APLCapo/APLCapo_%.3f.%.3f.%ld.ref.info",
+                            CORONAGRAPHSDATALOCAL,
+                            MASKSIZELD,
+                            centralObs,
+                            size);
+                    sprintf(fnameprev,
+                            "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz",
+                            CORONAGRAPHSDATALOCAL,
+                            MASKSIZELD - masksizestep,
+                            centralObs,
+                            size);
+                    sprintf(fname1prev,
+                            "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz",
+                            CORONAGRAPHSDATALOCAL,
+                            MASKSIZELD - masksizestep,
+                            centralObs,
+                            size);
+                    sprintf(fnameinfoprev,
+                            "%s/APLCapo/APLCapo_%.3f.%.3f.%ld.ref.info",
+                            CORONAGRAPHSDATALOCAL,
+                            MASKSIZELD - masksizestep,
+                            centralObs,
+                            size);
                 }
 
                 EXECUTE_SYSTEM_COMMAND("cp %s %s", fnameprev, fname);
@@ -1434,47 +1707,84 @@ errno_t coronagraph_update_2Dprolate(double masksizeld, double beamradpix, doubl
                 iter = 0;
                 while ((iter != 2) && (iter1 < NBiter1 + 1))
                 {
-                    printf(" ---- %f lambda/d  [%ld / %ld] ----\n", MASKSIZELD, iter1, NBiter1);
+                    printf(" ---- %f lambda/d  [%ld / %ld] ----\n",
+                           MASKSIZELD,
+                           iter1,
+                           NBiter1);
                     if (CentralObstructionFlag == 0)
                     {
-                        sprintf(fname, "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL, MASKSIZELD,
+                        sprintf(fname,
+                                "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz",
+                                CORONAGRAPHSDATALOCAL,
+                                MASKSIZELD,
                                 size);
-                        sprintf(fname1, "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL, MASKSIZELD,
+                        sprintf(fname1,
+                                "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.gz",
+                                CORONAGRAPHSDATALOCAL,
+                                MASKSIZELD,
                                 size);
-                        sprintf(fnameinfo, "%s/APLCapo/APLCapo_%.3f.%ld.ref.info", CORONAGRAPHSDATALOCAL, MASKSIZELD,
+                        sprintf(fnameinfo,
+                                "%s/APLCapo/APLCapo_%.3f.%ld.ref.info",
+                                CORONAGRAPHSDATALOCAL,
+                                MASKSIZELD,
                                 size);
                     }
                     else
                     {
-                        sprintf(fname, "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL, MASKSIZELD,
-                                centralObs, size);
-                        sprintf(fname1, "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz", CORONAGRAPHSDATALOCAL,
-                                MASKSIZELD, centralObs, size);
-                        sprintf(fnameinfo, "%s/APLCapo/APLCapo_%.3f.%.3f.%ld.ref.info", CORONAGRAPHSDATALOCAL,
-                                MASKSIZELD, centralObs, size);
+                        sprintf(fname,
+                                "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz",
+                                CORONAGRAPHSDATALOCAL,
+                                MASKSIZELD,
+                                centralObs,
+                                size);
+                        sprintf(fname1,
+                                "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.gz",
+                                CORONAGRAPHSDATALOCAL,
+                                MASKSIZELD,
+                                centralObs,
+                                size);
+                        sprintf(fnameinfo,
+                                "%s/APLCapo/APLCapo_%.3f.%.3f.%ld.ref.info",
+                                CORONAGRAPHSDATALOCAL,
+                                MASKSIZELD,
+                                centralObs,
+                                size);
                     }
 
                     load_fits(fname, "apostart", 1, NULL);
                     // save_fl_fits("apostart", "apostart.fits");
                     //	  exit(0);
-                    printf(".... STARTING OPTIMIZATION [%s] (%f %f %f)... \n", fname, MASKSIZELD, CORONAGRAPHS_PIXSCALE,
+                    printf(".... STARTING OPTIMIZATION [%s] (%f %f %f)... \n",
+                           fname,
+                           MASKSIZELD,
+                           CORONAGRAPHS_PIXSCALE,
                            centralObs);
 
                     double transm;
-                    if (coronagraph_make_2Dprolate_DFT(MASKSIZELD / CORONAGRAPHS_PIXSCALE, beamradpix, centralObs,
-                                                       "out", size, "NULLim", &transm) != RETURN_SUCCESS)
+                    if (coronagraph_make_2Dprolate_DFT(
+                            MASKSIZELD / CORONAGRAPHS_PIXSCALE,
+                            beamradpix,
+                            centralObs,
+                            "out",
+                            size,
+                            "NULLim",
+                            &transm) != RETURN_SUCCESS)
                     {
-                        FUNC_RETURN_FAILURE("Call to coronagraph_make_2Dprolate_DFT failed");
+                        FUNC_RETURN_FAILURE(
+                            "Call to coronagraph_make_2Dprolate_DFT failed");
                     }
 
                     save_fl_fits("out", fname1);
-                    ID = image_ID("out");
+                    ID  = image_ID("out");
                     err = 0.0;
                     for (ii = 0; ii < size * size; ii++)
                     {
-                        data.image[ID1].array.F[ii] = data.image[ID2].array.F[ii];
-                        data.image[ID2].array.F[ii] = data.image[ID].array.F[ii];
-                        tmp1 = data.image[ID1].array.F[ii] - data.image[ID2].array.F[ii];
+                        data.image[ID1].array.F[ii] =
+                            data.image[ID2].array.F[ii];
+                        data.image[ID2].array.F[ii] =
+                            data.image[ID].array.F[ii];
+                        tmp1 = data.image[ID1].array.F[ii] -
+                               data.image[ID2].array.F[ii];
                         err += tmp1 * tmp1;
                     }
                     if (iter1 == 0)
@@ -1483,17 +1793,32 @@ errno_t coronagraph_update_2Dprolate(double masksizeld, double beamradpix, doubl
                     }
                     if (CentralObstructionFlag == 0)
                     {
-                        sprintf(fnameprof, "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.prof", CORONAGRAPHSDATALOCAL,
-                                MASKSIZELD, size);
+                        sprintf(fnameprof,
+                                "%s/APLCapo/raw/APLCapo_%.3f.%ld.ref.prof",
+                                CORONAGRAPHSDATALOCAL,
+                                MASKSIZELD,
+                                size);
                     }
                     else
                     {
-                        sprintf(fnameprof, "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.prof", CORONAGRAPHSDATALOCAL,
-                                MASKSIZELD, centralObs, size);
+                        sprintf(fnameprof,
+                                "%s/APLCapo/raw/APLCapo_%.3f.%.3f.%ld.ref.prof",
+                                CORONAGRAPHSDATALOCAL,
+                                MASKSIZELD,
+                                centralObs,
+                                size);
                     }
-                    profile("out", "out.prof", size / 2, size / 2, 1.0, size / 2);
+                    profile("out",
+                            "out.prof",
+                            size / 2,
+                            size / 2,
+                            1.0,
+                            size / 2);
                     EXECUTE_SYSTEM_COMMAND("mv out.prof %s", fnameprof);
-                    EXECUTE_SYSTEM_COMMAND("cp APLCapo.%.3f.%.3f.info %s", MASKSIZELD, centralObs, fnameinfo);
+                    EXECUTE_SYSTEM_COMMAND("cp APLCapo.%.3f.%.3f.info %s",
+                                           MASKSIZELD,
+                                           centralObs,
+                                           fnameinfo);
 
                     delete_image_ID("apostart", DELETE_IMAGE_ERRMODE_WARNING);
 
@@ -1509,8 +1834,10 @@ errno_t coronagraph_update_2Dprolate(double masksizeld, double beamradpix, doubl
 
                 for (ii = 0; ii < size * size; ii++)
                 {
-                    data.image[ID0].array.F[ii] = data.image[ID2].array.F[ii] +
-                                                  FFcoeff * (data.image[ID2].array.F[ii] - data.image[ID1].array.F[ii]);
+                    data.image[ID0].array.F[ii] =
+                        data.image[ID2].array.F[ii] +
+                        FFcoeff * (data.image[ID2].array.F[ii] -
+                                   data.image[ID1].array.F[ii]);
                 }
                 save_fl_fits("apo", fname1);
             }
@@ -1532,9 +1859,9 @@ errno_t coronagraph_apofit_eval_r(double r, double *outval)
     DEBUG_TRACE_FSTART();
 
     double value = 0.0;
-    long n;
+    long   n;
     double rp;
-    double eps = 1.0e-8;
+    double eps  = 1.0e-8;
     double eps1 = 1.0e-4;
 
     double a = 8.0; // for extrapolation beyond r=1
@@ -1569,14 +1896,25 @@ errno_t coronagraph_apofit_eval_r(double r, double *outval)
         value = 0.0;
         for (n = 0; n < fitapoN; n++)
         {
-            printf("        :::: %ld  %f %f %f :::::\n", n, fitapo_a[n], fitapo_b[n], fitapo_c[n]);
+            printf("        :::: %ld  %f %f %f :::::\n",
+                   n,
+                   fitapo_a[n],
+                   fitapo_b[n],
+                   fitapo_c[n]);
         }
 
         for (n = 0; n < fitapoN; n++)
         {
             value += fitapo_a[n] * exp(fitapo_b[n] * pow(rp, fitapo_c[n]));
-            printf("---- %ld %f   %f %f %f -> %f %f -> %f\n", n, rp, fitapo_a[n], fitapo_b[n], fitapo_c[n],
-                   pow(rp, fitapo_c[n]), exp(fitapo_b[n] * pow(rp, fitapo_c[n])), value);
+            printf("---- %ld %f   %f %f %f -> %f %f -> %f\n",
+                   n,
+                   rp,
+                   fitapo_a[n],
+                   fitapo_b[n],
+                   fitapo_c[n],
+                   pow(rp, fitapo_c[n]),
+                   exp(fitapo_b[n] * pow(rp, fitapo_c[n])),
+                   value);
             fflush(stdout);
         }
     }
@@ -1595,9 +1933,9 @@ errno_t coronagraph_apofit_eval(double *outval)
     DEBUG_TRACE_FSTART();
 
     double value;
-    long i;
+    long   i;
     double r, v;
-    long n;
+    long   n;
     double tmpv;
 
     value = 0.0;
@@ -1605,7 +1943,11 @@ errno_t coronagraph_apofit_eval(double *outval)
     for (n = 0; n < fitapoN; n++)
     {
         // penalize negative and small values of fitao_c
-        value += 100.0 * pow(0.5 * (atan(-(fitapo_c[n] - 0.5) * 10.0 / (M_PI / 2)) / (M_PI / 2) + 1.0), 8.0);
+        value +=
+            100.0 * pow(0.5 * (atan(-(fitapo_c[n] - 0.5) * 10.0 / (M_PI / 2)) /
+                                   (M_PI / 2) +
+                               1.0),
+                        8.0);
         fitapo_c1[n] = fitapo_c[n];
         if (fitapo_c1[n] < fitapo_minc)
         {
@@ -1634,7 +1976,11 @@ errno_t coronagraph_apofit_eval(double *outval)
 
         for (n = 0; n < fitapoN; n++)
         {
-            printf("   :::: %ld  %f %f %f :::::\n", n, fitapo_a[n], fitapo_b[n], fitapo_c[n]);
+            printf("   :::: %ld  %f %f %f :::::\n",
+                   n,
+                   fitapo_a[n],
+                   fitapo_b[n],
+                   fitapo_c[n]);
         }
 
         printf("aporawN = %ld\n", aporawN);
@@ -1665,11 +2011,11 @@ errno_t coronagraph_apofit_eval(double *outval)
 
 double coronagraph_apofit_f_evalmask(const gsl_vector *v, void *params)
 {
-    double *p = (double *)params;
-    double value;
-    long n;
+    double *p = (double *) params;
+    double  value;
+    long    n;
 
-    (void)p;
+    (void) p;
 
     for (n = 0; n < fitapoN; n++)
     {
@@ -1694,29 +2040,30 @@ double coronagraph_apofit_f_evalmask(const gsl_vector *v, void *params)
 
 double coronagraph_apofit(const char *fnameout)
 {
-    FILE *fp;
-    long i;
+    FILE  *fp;
+    long   i;
     double r, v;
-    long n;
+    long   n;
 
-    const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex2rand;
+    const gsl_multimin_fminimizer_type *T =
+        gsl_multimin_fminimizer_nmsimplex2rand;
     gsl_multimin_fminimizer *s = NULL;
-    gsl_vector *ss, *x;
-    int status;
-    gsl_multimin_function fpmeval_func;
-    long NBoptVar;
-    long iterMax;
-    long ITERMAX = 200;
-    long iter1;
-    double eps1;
-    double bestvalue;
-    FILE *fpbest;
-    double KEEPlimit, KEEPlimit1;
-    int KEEP;
-    long KEEPcnt;
-    int OK = 0;
-    long iter;
-    double size;
+    gsl_vector              *ss, *x;
+    int                      status;
+    gsl_multimin_function    fpmeval_func;
+    long                     NBoptVar;
+    long                     iterMax;
+    long                     ITERMAX = 200;
+    long                     iter1;
+    double                   eps1;
+    double                   bestvalue;
+    FILE                    *fpbest;
+    double                   KEEPlimit, KEEPlimit1;
+    int                      KEEP;
+    long                     KEEPcnt;
+    int                      OK = 0;
+    long                     iter;
+    double                   size;
 
     double aRANGE = 10.0;
     double bRANGE = 5.0;
@@ -1734,29 +2081,29 @@ double coronagraph_apofit(const char *fnameout)
 
     printf("Preparing optimization ... \n");
     fflush(stdout);
-    NBoptVar = 3 * fitapoN;
-    x = gsl_vector_alloc(NBoptVar);
-    ss = gsl_vector_alloc(NBoptVar);
-    fpmeval_func.n = NBoptVar; /* number of function components */
-    fpmeval_func.f = &coronagraph_apofit_f_evalmask;
-    fpmeval_func.params = (void *)NULL;
-    s = gsl_multimin_fminimizer_alloc(T, NBoptVar);
+    NBoptVar            = 3 * fitapoN;
+    x                   = gsl_vector_alloc(NBoptVar);
+    ss                  = gsl_vector_alloc(NBoptVar);
+    fpmeval_func.n      = NBoptVar; /* number of function components */
+    fpmeval_func.f      = &coronagraph_apofit_f_evalmask;
+    fpmeval_func.params = (void *) NULL;
+    s                   = gsl_multimin_fminimizer_alloc(T, NBoptVar);
 
-    fitapo_a_best = (double *)malloc(sizeof(double) * fitapoN);
+    fitapo_a_best = (double *) malloc(sizeof(double) * fitapoN);
     if (fitapo_a_best == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    fitapo_b_best = (double *)malloc(sizeof(double) * fitapoN);
+    fitapo_b_best = (double *) malloc(sizeof(double) * fitapoN);
     if (fitapo_b_best == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    fitapo_c_best = (double *)malloc(sizeof(double) * fitapoN);
+    fitapo_c_best = (double *) malloc(sizeof(double) * fitapoN);
     if (fitapo_c_best == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
@@ -1768,7 +2115,7 @@ double coronagraph_apofit(const char *fnameout)
     printf("Reading previous best solution [%s] ... ", fnameout);
     fflush(stdout);
     fpbest = fopen(fnameout, "r");
-    OK = 0; // use previous solution ?
+    OK     = 0; // use previous solution ?
     if (fpbest != NULL)
     {
         OK = 1;
@@ -1784,13 +2131,17 @@ double coronagraph_apofit(const char *fnameout)
                 }
                 else
                 {
-                    fprintf(stderr, "Error: fscanf reached end of file, no matching characters, no matching failure\n");
+                    fprintf(stderr,
+                            "Error: fscanf reached end of file, no matching "
+                            "characters, no matching failure\n");
                 }
                 return RETURN_FAILURE;
             }
             else if (fscanfcnt != 1)
             {
-                fprintf(stderr, "Error: fscanf successfully matched and assigned %i input items, 1 expected\n",
+                fprintf(stderr,
+                        "Error: fscanf successfully matched and assigned %i "
+                        "input items, 1 expected\n",
                         fscanfcnt);
                 return RETURN_FAILURE;
             }
@@ -1804,7 +2155,11 @@ double coronagraph_apofit(const char *fnameout)
             {
                 int fscanfcnt;
 
-                fscanfcnt = fscanf(fpbest, " %lf %lf %lf", &fitapo_a_best[n], &fitapo_b_best[n], &fitapo_c_best[n]);
+                fscanfcnt = fscanf(fpbest,
+                                   " %lf %lf %lf",
+                                   &fitapo_a_best[n],
+                                   &fitapo_b_best[n],
+                                   &fitapo_c_best[n]);
                 if (fscanfcnt == EOF)
                 {
                     if (ferror(fpbest))
@@ -1814,13 +2169,16 @@ double coronagraph_apofit(const char *fnameout)
                     else
                     {
                         fprintf(stderr,
-                                "Error: fscanf reached end of file, no matching characters, no matching failure\n");
+                                "Error: fscanf reached end of file, no "
+                                "matching characters, no matching failure\n");
                     }
                     return RETURN_FAILURE;
                 }
                 else if (fscanfcnt != 3)
                 {
-                    fprintf(stderr, "Error: fscanf successfully matched and assigned %i input items, 3 expected\n",
+                    fprintf(stderr,
+                            "Error: fscanf successfully matched and assigned "
+                            "%i input items, 3 expected\n",
                             fscanfcnt);
                     return RETURN_FAILURE;
                 }
@@ -1840,7 +2198,7 @@ double coronagraph_apofit(const char *fnameout)
     {
         printf(" Using std starting point\n");
         fflush(stdout);
-        bestvalue = 100.0;
+        bestvalue        = 100.0;
         fitapo_a_best[0] = 1.0;
         fitapo_b_best[0] = -1.0;
         fitapo_c_best[0] = 1.0;
@@ -1853,14 +2211,15 @@ double coronagraph_apofit(const char *fnameout)
     }
 
     iterMax = 50000;
-    printf("----------- STARTING DOWNHILL SIMPLEX ------------- [%ld]\n", ITERMAX);
+    printf("----------- STARTING DOWNHILL SIMPLEX ------------- [%ld]\n",
+           ITERMAX);
     OK = 0; // did it improve ?
 
-    KEEPlimit = bestvalue;
+    KEEPlimit  = bestvalue;
     KEEPlimit1 = 3.0 * bestvalue;
-    KEEP = 0;
-    KEEPcnt = 0;
-    eps1 = 0.99999999;
+    KEEP       = 0;
+    KEEPcnt    = 0;
+    eps1       = 0.99999999;
     for (iter1 = 0; iter1 < ITERMAX; iter1++) // DOWNHILL SIMPLEX METHOD
     {
         printf("%05ld ", iter1);
@@ -1869,7 +2228,8 @@ double coronagraph_apofit(const char *fnameout)
         fflush(stdout);
 
         if ((iter1 == 0) ||
-            (OK == 1)) // set starting point = best point if 1st iteration or loop is still making progress
+            (OK ==
+             1)) // set starting point = best point if 1st iteration or loop is still making progress
         {
             KEEPcnt = 0;
             printf("BEST  ");
@@ -1917,7 +2277,8 @@ double coronagraph_apofit(const char *fnameout)
                 printf("KEEP  ");
                 fflush(stdout);
                 KEEPcnt++;
-                KEEPlimit = (0.94 * KEEPlimit + 0.05 * bestvalue) * 0.7 + 0.3 * s->fval;
+                KEEPlimit =
+                    (0.94 * KEEPlimit + 0.05 * bestvalue) * 0.7 + 0.3 * s->fval;
                 for (n = 0; n < fitapoN; n++)
                 {
                     gsl_vector_set(x, 3 * n, fitapo_a[n]);
@@ -1950,7 +2311,7 @@ double coronagraph_apofit(const char *fnameout)
         printf("I");
         fflush(stdout);
 
-        OK = 0;
+        OK      = 0;
         LOOPCNT = 0;
         do
         {
@@ -1966,7 +2327,7 @@ double coronagraph_apofit(const char *fnameout)
             //printf("*");
             //fflush(stdout);
 
-            size = gsl_multimin_fminimizer_size(s);
+            size   = gsl_multimin_fminimizer_size(s);
             status = gsl_multimin_test_size(size, 1e-11);
 
             //	  printf ("............[%05ld] %e  %e  (%e) ", iter, s->fval, size, bestvalue);
@@ -1976,7 +2337,11 @@ double coronagraph_apofit(const char *fnameout)
             {
                 if (status == GSL_SUCCESS)
                 {
-                    printf(" %e ->  %e [%5ld]  (%e)", optval0, s->fval, iter, bestvalue);
+                    printf(" %e ->  %e [%5ld]  (%e)",
+                           optval0,
+                           s->fval,
+                           iter,
+                           bestvalue);
                     if (OK == 1)
                     {
                         printf("  *");
@@ -2007,22 +2372,31 @@ double coronagraph_apofit(const char *fnameout)
                     }
 
                     //		  sprintf(fname,"apofitsol_params.txt");
-                    fpbest = fopen(fnameout, "w");
+                    fpbest    = fopen(fnameout, "w");
                     bestvalue = s->fval;
                     fprintf(fpbest, "%.20g", bestvalue);
 
                     for (n = 0; n < fitapoN; n++)
                     {
-                        fprintf(fpbest, " %15.10f %15.10f %15.10f", fitapo_a_best[n], fitapo_b_best[n],
+                        fprintf(fpbest,
+                                " %15.10f %15.10f %15.10f",
+                                fitapo_a_best[n],
+                                fitapo_b_best[n],
                                 fitapo_c_best[n]);
                     }
                     fprintf(fpbest, "\n");
                     n = 0;
-                    fprintf(fpbest, "f(x) = %15.10f * exp(%15.10f * x**%15.10f)", fitapo_a_best[n], fitapo_b_best[n],
+                    fprintf(fpbest,
+                            "f(x) = %15.10f * exp(%15.10f * x**%15.10f)",
+                            fitapo_a_best[n],
+                            fitapo_b_best[n],
                             fitapo_c_best[n]);
                     for (n = 1; n < fitapoN; n++)
                     {
-                        fprintf(fpbest, "+ %15.10f * exp(%15.10f * x**%15.10f)", fitapo_a_best[n], fitapo_b_best[n],
+                        fprintf(fpbest,
+                                "+ %15.10f * exp(%15.10f * x**%15.10f)",
+                                fitapo_a_best[n],
+                                fitapo_b_best[n],
                                 fitapo_c_best[n]);
                     }
                     fprintf(fpbest, "\n");
@@ -2103,32 +2477,33 @@ double coronagraph_apofit(const char *fnameout)
 //
 errno_t coronagraph_APLCapo_compile()
 {
-    FILE *fp;
+    FILE       *fp;
     struct stat buffer;
 
     double FITVLIMIT = 2.0e-5;
 
-    double co = 0.0;     // central obstruction
+    double co     = 0.0; // central obstruction
     double fpmrad = 0.8; // focal plane mask radius
-    long iisize, jjsize;
+    long   iisize, jjsize;
 
-    char fnameprolinfo[500];
-    char fnameout[500];
+    char   fnameprolinfo[500];
+    char   fnameout[500];
     double tmpf0, tmpf1, tmpf2, tmpf3;
 
-    int fitOK;
-    char fnameapofit[500];
-    char fnameapoprof[500];
-    long n;
+    int    fitOK;
+    char   fnameapofit[500];
+    char   fnameapoprof[500];
+    long   n;
     double fitv;
-    FILE *fpfit;
-    long cnt, i;
+    FILE  *fpfit;
+    long   cnt, i;
     double tmpf;
     double eps0 = 1.0e-8;
 
     // CREATE IMAGES
-    iisize = (long)((APLCapo_CO_END - APLCapo_CO_START) / APLCapo_CO_STEP);
-    jjsize = (long)((APLCapo_FPMRAD_END - APLCapo_FPMRAD_START) / APLCapo_FPMRAD_STEP);
+    iisize = (long) ((APLCapo_CO_END - APLCapo_CO_START) / APLCapo_CO_STEP);
+    jjsize = (long) ((APLCapo_FPMRAD_END - APLCapo_FPMRAD_START) /
+                     APLCapo_FPMRAD_STEP);
 
     create_2Dimage_ID("pinit", iisize, jjsize, &IDprol_init);
     create_2Dimage_ID("pffrac", iisize, jjsize, &IDprol_ffrac);
@@ -2151,7 +2526,7 @@ errno_t coronagraph_APLCapo_compile()
             if (ran1() < 1.01)
             {
 
-                co = APLCapo_CO_START + APLCapo_CO_STEP * ii;
+                co     = APLCapo_CO_START + APLCapo_CO_STEP * ii;
                 fpmrad = APLCapo_FPMRAD_START + APLCapo_FPMRAD_STEP * jj;
 
                 // .info file
@@ -2165,27 +2540,51 @@ errno_t coronagraph_APLCapo_compile()
                 // load info file for apodization
                 if (co < 0.0001)
                 {
-                    sprintf(fnameprolinfo, "%s/APLCapo/APLCapo_%5.3f.4096.ref.info", CORONAGRAPHSDATALOCAL, fpmrad);
-                    sprintf(fnameapoprof, "%s/APLCapo/raw/APLCapo_%.3f.4096.ref.prof", CORONAGRAPHSDATALOCAL, fpmrad);
+                    sprintf(fnameprolinfo,
+                            "%s/APLCapo/APLCapo_%5.3f.4096.ref.info",
+                            CORONAGRAPHSDATALOCAL,
+                            fpmrad);
+                    sprintf(fnameapoprof,
+                            "%s/APLCapo/raw/APLCapo_%.3f.4096.ref.prof",
+                            CORONAGRAPHSDATALOCAL,
+                            fpmrad);
                 }
                 else
                 {
-                    sprintf(fnameprolinfo, "%s/APLCapo/APLCapo_%5.3f.%5.3f.4096.ref.info", CORONAGRAPHSDATALOCAL,
-                            fpmrad, co);
-                    sprintf(fnameapoprof, "%s/APLCapo/raw/APLCapo_%.3f.%.3f.4096.ref.prof", CORONAGRAPHSDATALOCAL,
-                            fpmrad, co);
+                    sprintf(fnameprolinfo,
+                            "%s/APLCapo/APLCapo_%5.3f.%5.3f.4096.ref.info",
+                            CORONAGRAPHSDATALOCAL,
+                            fpmrad,
+                            co);
+                    sprintf(fnameapoprof,
+                            "%s/APLCapo/raw/APLCapo_%.3f.%.3f.4096.ref.prof",
+                            CORONAGRAPHSDATALOCAL,
+                            fpmrad,
+                            co);
                 }
 
-                if ((stat(fnameprolinfo, &buffer) == 0) && (stat(fnameapoprof, &buffer) == 0)) // if file exists
+                if ((stat(fnameprolinfo, &buffer) == 0) &&
+                    (stat(fnameapoprof, &buffer) == 0)) // if file exists
                 {
                     printf("\r");
-                    printf("%5ld/%5ld   %5ld/%5ld  %f %f  ", ii, iisize, jj, jjsize, co, fpmrad);
+                    printf("%5ld/%5ld   %5ld/%5ld  %f %f  ",
+                           ii,
+                           iisize,
+                           jj,
+                           jjsize,
+                           co,
+                           fpmrad);
 
                     fp = fopen(fnameprolinfo, "r");
                     {
                         int fscanfcnt;
 
-                        fscanfcnt = fscanf(fp, "%lf %lf %lf %lf\n", &tmpf0, &tmpf1, &tmpf2, &tmpf3);
+                        fscanfcnt = fscanf(fp,
+                                           "%lf %lf %lf %lf\n",
+                                           &tmpf0,
+                                           &tmpf1,
+                                           &tmpf2,
+                                           &tmpf3);
                         if (fscanfcnt == EOF)
                         {
                             if (ferror(fp))
@@ -2194,16 +2593,18 @@ errno_t coronagraph_APLCapo_compile()
                             }
                             else
                             {
-                                fprintf(
-                                    stderr,
-                                    "Error: fscanf reached end of file, no matching characters, no matching failure\n");
+                                fprintf(stderr,
+                                        "Error: fscanf reached end of file, no "
+                                        "matching characters, no matching "
+                                        "failure\n");
                             }
                             return RETURN_FAILURE;
                         }
                         else if (fscanfcnt != 4)
                         {
                             fprintf(stderr,
-                                    "Error: fscanf successfully matched and assigned %i input items, 4 expected\n",
+                                    "Error: fscanf successfully matched and "
+                                    "assigned %i input items, 4 expected\n",
                                     fscanfcnt);
                             return RETURN_FAILURE;
                         }
@@ -2212,36 +2613,40 @@ errno_t coronagraph_APLCapo_compile()
                     //	    fpmasktransm =  -(1.0-tmpf3)/tmpf3;
                     //data.image[IDfpmasktransm].array.F[fpmaskrad_index*obs1arraysize + obs1_index] = fpmasktransm;
 
-                    data.image[IDprol_init].array.F[jj * iisize + ii] = 1.0;
-                    data.image[IDprol_ffrac].array.F[jj * iisize + ii] = tmpf1;
+                    data.image[IDprol_init].array.F[jj * iisize + ii]   = 1.0;
+                    data.image[IDprol_ffrac].array.F[jj * iisize + ii]  = tmpf1;
                     data.image[IDprol_transm].array.F[jj * iisize + ii] = tmpf2;
-                    data.image[IDprol_peak].array.F[jj * iisize + ii] = tmpf3;
+                    data.image[IDprol_peak].array.F[jj * iisize + ii]   = tmpf3;
 
-                    sprintf(fnameapofit, "%s/APLCapo/APLCapo_%.3f.%.3f.4096.ref.prof.fitparams", CORONAGRAPHSDATALOCAL,
-                            fpmrad, co);
+                    sprintf(
+                        fnameapofit,
+                        "%s/APLCapo/APLCapo_%.3f.%.3f.4096.ref.prof.fitparams",
+                        CORONAGRAPHSDATALOCAL,
+                        fpmrad,
+                        co);
 
-                    fitapo_a = (double *)malloc(sizeof(double) * fitapoN);
+                    fitapo_a = (double *) malloc(sizeof(double) * fitapoN);
                     if (fitapo_a == NULL)
                     {
                         PRINT_ERROR("malloc returns NULL pointer");
                         abort(); // or handle error in other ways
                     }
 
-                    fitapo_b = (double *)malloc(sizeof(double) * fitapoN);
+                    fitapo_b = (double *) malloc(sizeof(double) * fitapoN);
                     if (fitapo_b == NULL)
                     {
                         PRINT_ERROR("malloc returns NULL pointer");
                         abort(); // or handle error in other ways
                     }
 
-                    fitapo_c = (double *)malloc(sizeof(double) * fitapoN);
+                    fitapo_c = (double *) malloc(sizeof(double) * fitapoN);
                     if (fitapo_c == NULL)
                     {
                         PRINT_ERROR("malloc returns NULL pointer");
                         abort(); // or handle error in other ways
                     }
 
-                    fitapo_c1 = (double *)malloc(sizeof(double) * fitapoN);
+                    fitapo_c1 = (double *) malloc(sizeof(double) * fitapoN);
                     if (fitapo_c1 == NULL)
                     {
                         PRINT_ERROR("malloc returns NULL pointer");
@@ -2264,7 +2669,8 @@ errno_t coronagraph_APLCapo_compile()
                         fp = fopen(fnameapofit, "r");
                         if (fp == NULL)
                         {
-                            printf("ERROR: file \"%s\" does not exist\n", fnameapofit);
+                            printf("ERROR: file \"%s\" does not exist\n",
+                                   fnameapofit);
                             exit(0);
                         }
 
@@ -2280,16 +2686,20 @@ errno_t coronagraph_APLCapo_compile()
                                 }
                                 else
                                 {
-                                    fprintf(stderr, "Error: fscanf reached end of file, no matching characters, no "
-                                                    "matching failure\n");
+                                    fprintf(stderr,
+                                            "Error: fscanf reached end of "
+                                            "file, no matching characters, no "
+                                            "matching failure\n");
                                 }
                                 return RETURN_FAILURE;
                             }
                             else if (fscanfcnt != 1)
                             {
-                                fprintf(stderr,
-                                        "Error: fscanf successfully matched and assigned %i input items, 1 expected\n",
-                                        fscanfcnt);
+                                fprintf(
+                                    stderr,
+                                    "Error: fscanf successfully matched and "
+                                    "assigned %i input items, 1 expected\n",
+                                    fscanfcnt);
                                 return RETURN_FAILURE;
                             }
                         }
@@ -2299,7 +2709,11 @@ errno_t coronagraph_APLCapo_compile()
                         {
                             int fscanfcnt;
 
-                            fscanfcnt = fscanf(fp, " %lf %lf %lf", &fitapo_a[n], &fitapo_b[n], &fitapo_c[n]);
+                            fscanfcnt = fscanf(fp,
+                                               " %lf %lf %lf",
+                                               &fitapo_a[n],
+                                               &fitapo_b[n],
+                                               &fitapo_c[n]);
                             if (fscanfcnt == EOF)
                             {
                                 if (ferror(fp))
@@ -2308,16 +2722,20 @@ errno_t coronagraph_APLCapo_compile()
                                 }
                                 else
                                 {
-                                    fprintf(stderr, "Error: fscanf reached end of file, no matching characters, no "
-                                                    "matching failure\n");
+                                    fprintf(stderr,
+                                            "Error: fscanf reached end of "
+                                            "file, no matching characters, no "
+                                            "matching failure\n");
                                 }
                                 return RETURN_FAILURE;
                             }
                             else if (fscanfcnt != 2)
                             {
-                                fprintf(stderr,
-                                        "Error: fscanf successfully matched and assigned %i input items, 2 expected\n",
-                                        fscanfcnt);
+                                fprintf(
+                                    stderr,
+                                    "Error: fscanf successfully matched and "
+                                    "assigned %i input items, 2 expected\n",
+                                    fscanfcnt);
                                 return RETURN_FAILURE;
                             }
                         }
@@ -2334,24 +2752,34 @@ errno_t coronagraph_APLCapo_compile()
                         fflush(stdout);
                     }
 
-                    if (fitOK == 0) // if file does not exist, or fit is not sufficiently good
+                    if (fitOK ==
+                        0) // if file does not exist, or fit is not sufficiently good
                     {
                         if (co > 0.0001)
                         {
-                            sprintf(fnameapoprof, "%s/APLCapo/raw/APLCapo_%.3f.%.3f.4096.ref.prof",
-                                    CORONAGRAPHSDATALOCAL, fpmrad, co);
+                            sprintf(fnameapoprof,
+                                    "%s/APLCapo/raw/"
+                                    "APLCapo_%.3f.%.3f.4096.ref.prof",
+                                    CORONAGRAPHSDATALOCAL,
+                                    fpmrad,
+                                    co);
                         }
                         else
                         {
-                            sprintf(fnameapoprof, "%s/APLCapo/raw/APLCapo_%.3f.4096.ref.prof", CORONAGRAPHSDATALOCAL,
+                            sprintf(fnameapoprof,
+                                    "%s/APLCapo/raw/APLCapo_%.3f.4096.ref.prof",
+                                    CORONAGRAPHSDATALOCAL,
                                     fpmrad);
                         }
 
-                        EXECUTE_SYSTEM_COMMAND("awk '{print $1,$2}' %s > apotmp.prof", fnameapoprof);
+                        EXECUTE_SYSTEM_COMMAND(
+                            "awk '{print $1,$2}' %s > apotmp.prof",
+                            fnameapoprof);
 
                         if ((fp = fopen("apotmp.prof", "r")) == NULL)
                         {
-                            printf("ERROR : cannot open file \"apotmp.prof\"\n");
+                            printf(
+                                "ERROR : cannot open file \"apotmp.prof\"\n");
                             exit(0);
                         }
                         else
@@ -2361,14 +2789,16 @@ errno_t coronagraph_APLCapo_compile()
                         }
 
                         // FIT APODIZATION WITH ANALYTICAL FUNCTION
-                        aporaw_r = (double *)malloc(sizeof(double) * PIAAAPO_NBPOINTS);
+                        aporaw_r = (double *) malloc(sizeof(double) *
+                                                     PIAAAPO_NBPOINTS);
                         if (aporaw_r == NULL)
                         {
                             PRINT_ERROR("malloc returns NULL pointer");
                             abort(); // or handle error in other ways
                         }
 
-                        aporaw_v = (double *)malloc(sizeof(double) * PIAAAPO_NBPOINTS);
+                        aporaw_v = (double *) malloc(sizeof(double) *
+                                                     PIAAAPO_NBPOINTS);
                         if (aporaw_v == NULL)
                         {
                             PRINT_ERROR("malloc returns NULL pointer");
@@ -2381,7 +2811,8 @@ errno_t coronagraph_APLCapo_compile()
                             {
                                 int fscanfcnt;
 
-                                fscanfcnt = fscanf(fp, "%lf %lf\n", &tmpf0, &tmpf);
+                                fscanfcnt =
+                                    fscanf(fp, "%lf %lf\n", &tmpf0, &tmpf);
                                 if (fscanfcnt == EOF)
                                 {
                                     if (ferror(fp))
@@ -2390,24 +2821,28 @@ errno_t coronagraph_APLCapo_compile()
                                     }
                                     else
                                     {
-                                        fprintf(stderr, "Error: fscanf reached end of file, no matching characters, no "
-                                                        "matching failure\n");
+                                        fprintf(
+                                            stderr,
+                                            "Error: fscanf reached end of "
+                                            "file, no matching characters, no "
+                                            "matching failure\n");
                                     }
                                     return RETURN_FAILURE;
                                 }
                                 else if (fscanfcnt != 2)
                                 {
-                                    fprintf(
-                                        stderr,
-                                        "Error: fscanf successfully matched and assigned %i input items, 2 expected\n",
-                                        fscanfcnt);
+                                    fprintf(stderr,
+                                            "Error: fscanf successfully "
+                                            "matched and assigned %i input "
+                                            "items, 2 expected\n",
+                                            fscanfcnt);
                                     return RETURN_FAILURE;
                                 }
                             }
                             if (tmpf > eps0)
                             {
-                                aporaw_r[cnt] = (double)(1.0 * tmpf0 / 200.0);
-                                aporaw_v[cnt] = (double)tmpf;
+                                aporaw_r[cnt] = (double) (1.0 * tmpf0 / 200.0);
+                                aporaw_v[cnt] = (double) tmpf;
                                 cnt++;
                             }
                         }
@@ -2430,16 +2865,20 @@ errno_t coronagraph_APLCapo_compile()
                                 }
                                 else
                                 {
-                                    fprintf(stderr, "Error: fscanf reached end of file, no matching characters, no "
-                                                    "matching failure\n");
+                                    fprintf(stderr,
+                                            "Error: fscanf reached end of "
+                                            "file, no matching characters, no "
+                                            "matching failure\n");
                                 }
                                 return RETURN_FAILURE;
                             }
                             else if (fscanfcnt != 1)
                             {
-                                fprintf(stderr,
-                                        "Error: fscanf successfully matched and assigned %i input items, 1 expected\n",
-                                        fscanfcnt);
+                                fprintf(
+                                    stderr,
+                                    "Error: fscanf successfully matched and "
+                                    "assigned %i input items, 1 expected\n",
+                                    fscanfcnt);
                                 return RETURN_FAILURE;
                             }
                         }
@@ -2449,7 +2888,11 @@ errno_t coronagraph_APLCapo_compile()
                         {
                             int fscanfcnt;
 
-                            fscanfcnt = fscanf(fpfit, " %lf %lf %lf", &fitapo_a[n], &fitapo_b[n], &fitapo_c[n]);
+                            fscanfcnt = fscanf(fpfit,
+                                               " %lf %lf %lf",
+                                               &fitapo_a[n],
+                                               &fitapo_b[n],
+                                               &fitapo_c[n]);
                             if (fscanfcnt == EOF)
                             {
                                 if (ferror(fp))
@@ -2458,16 +2901,20 @@ errno_t coronagraph_APLCapo_compile()
                                 }
                                 else
                                 {
-                                    fprintf(stderr, "Error: fscanf reached end of file, no matching characters, no "
-                                                    "matching failure\n");
+                                    fprintf(stderr,
+                                            "Error: fscanf reached end of "
+                                            "file, no matching characters, no "
+                                            "matching failure\n");
                                 }
                                 return RETURN_FAILURE;
                             }
                             else if (fscanfcnt != 3)
                             {
-                                fprintf(stderr,
-                                        "Error: fscanf successfully matched and assigned %i input items, 3 expected\n",
-                                        fscanfcnt);
+                                fprintf(
+                                    stderr,
+                                    "Error: fscanf successfully matched and "
+                                    "assigned %i input items, 3 expected\n",
+                                    fscanfcnt);
                                 return RETURN_FAILURE;
                             }
                         }
@@ -2481,9 +2928,15 @@ errno_t coronagraph_APLCapo_compile()
 
                     for (n = 0; n < fitapoN; n++)
                     {
-                        data.image[IDprol_fitapo_a].array.F[n * iisize * jjsize + jj * iisize + ii] = fitapo_a[n];
-                        data.image[IDprol_fitapo_b].array.F[n * iisize * jjsize + jj * iisize + ii] = fitapo_b[n];
-                        data.image[IDprol_fitapo_c].array.F[n * iisize * jjsize + jj * iisize + ii] = fitapo_c[n];
+                        data.image[IDprol_fitapo_a]
+                            .array.F[n * iisize * jjsize + jj * iisize + ii] =
+                            fitapo_a[n];
+                        data.image[IDprol_fitapo_b]
+                            .array.F[n * iisize * jjsize + jj * iisize + ii] =
+                            fitapo_b[n];
+                        data.image[IDprol_fitapo_c]
+                            .array.F[n * iisize * jjsize + jj * iisize + ii] =
+                            fitapo_c[n];
                     }
                     data.image[IDprol_fitfit].array.F[jj * iisize + ii] = fitv;
 
@@ -2542,40 +2995,41 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
 {
     DEBUG_TRACE_FSTART();
 
-    FILE *fp;
+    FILE    *fp;
     uint32_t size = CORONAGRAPHS_ARRAYSIZE;
-    double *r0, *r1;
-    long NBpoints0 = piaaconfNPUPFILESIZE;
-    double *pup;
-    double *pupsum, *pup0sum;
+    double  *r0, *r1;
+    long     NBpoints0 = piaaconfNPUPFILESIZE;
+    double  *pup;
+    double  *pupsum, *pup0sum;
     // long tmpl;
-    long NBpoints;
-    long NB_profile_pts;
+    long   NBpoints;
+    long   NB_profile_pts;
     double dr0, dr1, ndr0;
     double psr0;
-    long *cntarray;
-    long factor = 3;
+    long  *cntarray;
+    long   factor  = 3;
     double epsilon = 0.000000000001;
 
-    int file_write = 1; // 1 if writing output files
+    int   file_write = 1; // 1 if writing output files
     FILE *fpout;
 
-    double FLUXIN = 0.0001; // fraction of total flux to insert in central obstruction
+    double FLUXIN =
+        0.0001; // fraction of total flux to insert in central obstruction
 
     long i1;
 
-    double a, b, eps1;
+    double  a, b, eps1;
     imageID IDt, IDtt;
 
     //double total_ir = 0.0;
     //double total_or = 0.0;
     double normfactor = 1.0;
 
-    long NBistep;
-    double t0, t0cnt;
-    double dir, odir;
-    double verr;
-    double bstep;
+    long    NBistep;
+    double  t0, t0cnt;
+    double  dir, odir;
+    double  verr;
+    double  bstep;
     double *innerprof_cumul;
 
     double dx, dz, dist, slope, y3, r0c, r1c, r0n;
@@ -2585,7 +3039,7 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     long tmpstep = 1;
 
     printf("PIAA init    %ld points\n", PIAAAPO_NBPOINTS);
-    printf("piaaconfNPUPFILESIZE = %ld\n", (long)piaaconfNPUPFILESIZE);
+    printf("piaaconfNPUPFILESIZE = %ld\n", (long) piaaconfNPUPFILESIZE);
     printf("NBpoints0 = %ld\n", NBpoints0);
     printf("APLC_CentOBS0 = %f\n", APLC_CentOBS0);
     printf("APLC_CentOBS1 = %f\n", APLC_CentOBS1);
@@ -2604,14 +3058,14 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     //
 
     // allocate memory for profile
-    PIAAAPO = (double *)malloc(sizeof(double) * PIAAAPO_NBPOINTS);
+    PIAAAPO = (double *) malloc(sizeof(double) * PIAAAPO_NBPOINTS);
     if (PIAAAPO == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    PIAA_HYBRID_CPAAPO = (double *)malloc(sizeof(double) * PIAAAPO_NBPOINTS);
+    PIAA_HYBRID_CPAAPO = (double *) malloc(sizeof(double) * PIAAAPO_NBPOINTS);
     if (PIAA_HYBRID_CPAAPO == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
@@ -2775,8 +3229,8 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     /*  PIAAFLUXFACTOR = total1/total;*/
     printf("factor = %ld\n", factor);
 
-    double total = 0.0;
-    double total1 = 0.0;
+    double total    = 0.0;
+    double total1   = 0.0;
     double total_or = 0.0; // outer region
     double total_ir = 0.0; // inner region
     create_2Dimage_ID("apo2Dim", size, size, &IDt);
@@ -2784,17 +3238,17 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
 
     for (long ii = 0; ii < factor * size; ii += tmpstep)
     {
-        long ii1 = (long)((1.0 * ii - 0.5) / factor + 0.5);
+        long ii1 = (long) ((1.0 * ii - 0.5) / factor + 0.5);
 
         //      printf("%ld/%ld %ld %ld\n", ii, size, factor, ii1);
         //fflush(stdout);
 
         for (long jj = 0; jj < factor * size; jj += tmpstep)
         {
-            long jj1 = (long)((1.0 * jj - 0.5) / factor + 0.5);
-            double x = 1.0 / factor * (ii - factor * size / 2);
-            double y = 1.0 / factor * (jj - factor * size / 2);
-            double r = sqrt(x * x + y * y); /* in pixel */
+            long   jj1 = (long) ((1.0 * jj - 0.5) / factor + 0.5);
+            double x   = 1.0 / factor * (ii - factor * size / 2);
+            double y   = 1.0 / factor * (jj - factor * size / 2);
+            double r   = sqrt(x * x + y * y); /* in pixel */
             r /= CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
             //	 printf("%ld %ld   %ld %ld    %f\n", ii, jj, ii1, jj1, r);
             // fflush(stdout);
@@ -2822,11 +3276,13 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
             if ((ii1 > 0) && (jj1 > 0) && (ii1 < size) && (jj1 < size))
             {
                 PIAAAPO2D[jj1 * size + ii1] += value / factor / factor;
-                data.image[IDt].array.F[jj1 * size + ii1] = PIAAAPO2D[jj1 * size + ii1];
+                data.image[IDt].array.F[jj1 * size + ii1] =
+                    PIAAAPO2D[jj1 * size + ii1];
 
                 if ((r > APLC_CentOBS1) && (r < 1.0))
                 {
-                    data.image[IDtt].array.F[jj1 * size + ii1] = PIAAAPO2D[jj1 * size + ii1];
+                    data.image[IDtt].array.F[jj1 * size + ii1] =
+                        PIAAAPO2D[jj1 * size + ii1];
                 }
                 else
                 {
@@ -2847,7 +3303,9 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     printf("%g %g %g\n", total_ir / total, total / total, total_or / total);
 
     total_ir /= total;
-    printf("Light within central obstruction (0->%f) = %g\n", APLC_CentOBS1, total_ir);
+    printf("Light within central obstruction (0->%f) = %g\n",
+           APLC_CentOBS1,
+           total_ir);
     total_or /= total;
     printf("Light in outer ring (1->%f) = %g\n", PIAAextfactor1, total_or);
 
@@ -2858,7 +3316,9 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     //  EXECUTE_SYSTEM_COMMAND("rm apo2Dim.prof");
     //profile("apo2Dim", "apo2Dim.prof", 2048, 2048, 1.0, 500);
 
-    printf("GOAL = %g\n", total_ir / (APLC_CentOBS0 * APLC_CentOBS0 / (1.0 - APLC_CentOBS0 * APLC_CentOBS0)));
+    printf("GOAL = %g\n",
+           total_ir / (APLC_CentOBS0 * APLC_CentOBS0 /
+                       (1.0 - APLC_CentOBS0 * APLC_CentOBS0)));
 
     //  exit(0);
 
@@ -2867,11 +3327,11 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     //
 
     // Compute inner pseudo profile
-    b = 0.5;
-    bstep = 0.1;
-    verr = 1.0;
-    NBistep = 1000000;
-    innerprof_cumul = (double *)malloc(sizeof(double) * NBistep);
+    b               = 0.5;
+    bstep           = 0.1;
+    verr            = 1.0;
+    NBistep         = 1000000;
+    innerprof_cumul = (double *) malloc(sizeof(double) * NBistep);
     if (innerprof_cumul == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
@@ -2881,13 +3341,13 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     dir = 1.0; // initial direction
     while (fabs(verr) > 1.0e-9)
     {
-        t0 = 0.0;
+        t0    = 0.0;
         t0cnt = 0.0;
         for (long i = 0; i < NBistep; i++)
         {
             double x = 1.0 * i / NBistep;
-            a = 0.5;
-            eps1 = 1e-8;
+            a        = 0.5;
+            eps1     = 1e-8;
             if (x < eps1)
             {
                 x = eps1;
@@ -2896,13 +3356,17 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
             {
                 x = 1.0 - eps1;
             }
-            double value = b + (1.0 - b) * (0.5 + atan(-a / b / (x * x) + a / pow(x - 1.0, 2)) / M_PI);
+            double value =
+                b +
+                (1.0 - b) *
+                    (0.5 + atan(-a / b / (x * x) + a / pow(x - 1.0, 2)) / M_PI);
             t0 += x * value * value;
             innerprof_cumul[i] = t0;
             t0cnt += x;
         }
 
-        verr = t0 / t0cnt - total_ir / (APLC_CentOBS0 * APLC_CentOBS0 / (1.0 - APLC_CentOBS0 * APLC_CentOBS0));
+        verr = t0 / t0cnt - total_ir / (APLC_CentOBS0 * APLC_CentOBS0 /
+                                        (1.0 - APLC_CentOBS0 * APLC_CentOBS0));
 
         odir = dir;
         if (verr > 0.0) // too much light
@@ -2934,7 +3398,8 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     // compute oversizing of INPUT beam
     PIAAextfactor0 = sqrt((total_ir + 1.0 + total_or) / (1.0 + total_ir));
     printf("PIAAextfactor0 = %f  \n", PIAAextfactor0);
-    piaaconfpup_amp_profile = (double *)malloc(sizeof(double) * piaaconfNPUPFILESIZE);
+    piaaconfpup_amp_profile =
+        (double *) malloc(sizeof(double) * piaaconfNPUPFILESIZE);
     if (piaaconfpup_amp_profile == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
@@ -2959,35 +3424,35 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
         free(piaaconfr1);
     }
 
-    r0 = (double *)malloc(sizeof(double) * NBpoints0);
+    r0 = (double *) malloc(sizeof(double) * NBpoints0);
     if (r0 == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    r1 = (double *)malloc(sizeof(double) * NBpoints0);
+    r1 = (double *) malloc(sizeof(double) * NBpoints0);
     if (r1 == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    pup = (double *)malloc(sizeof(double) * piaaconfNPUPFILESIZE);
+    pup = (double *) malloc(sizeof(double) * piaaconfNPUPFILESIZE);
     if (pup == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    pupsum = (double *)malloc(sizeof(double) * piaaconfNPUPFILESIZE);
+    pupsum = (double *) malloc(sizeof(double) * piaaconfNPUPFILESIZE);
     if (pupsum == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    pup0sum = (double *)malloc(sizeof(double) * NBpoints0);
+    pup0sum = (double *) malloc(sizeof(double) * NBpoints0);
     if (pup0sum == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
@@ -3015,7 +3480,7 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
         if (r0[i] < APLC_CentOBS0)
         {
             double x = r0[i] / APLC_CentOBS0;
-            i1 = (long)(x * NBistep);
+            i1       = (long) (x * NBistep);
             if (i1 > NBistep - 1)
             {
                 i1 = NBistep - 1;
@@ -3024,7 +3489,8 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
         }
         else
         {
-            pup0sum[i] = FLUXIN + (r0[i] * r0[i] - PIAACENTOBS * PIAACENTOBS) / (1.0 - PIAACENTOBS * PIAACENTOBS);
+            pup0sum[i] = FLUXIN + (r0[i] * r0[i] - PIAACENTOBS * PIAACENTOBS) /
+                                      (1.0 - PIAACENTOBS * PIAACENTOBS);
         }
         //      else
         //pup0sum[i] = FLUXIN*(r0[i]*r0[i]/(PIAACENTOBS*PIAACENTOBS));
@@ -3036,14 +3502,14 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
 
     /* computing r1 from r0 */
     NB_profile_pts = piaaconfNPUPFILESIZE;
-    total = 0.0;
+    total          = 0.0;
     for (long ii = 0; ii < NB_profile_pts; ii++)
     {
         total += piaaconfpup_amp_profile[ii] * piaaconfpup_amp_profile[ii] * ii;
         pupsum[ii] = total;
     }
 
-    long i = 0;
+    long i  = 0;
     long ii = 0;
     //long cnt = 0;
     r0[0] = 0.0;
@@ -3051,12 +3517,14 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     for (i = 1; i < NBpoints0; i++)
     {
         double F0 = pup0sum[i];
-        while (((pupsum[ii] / pupsum[(long)(NB_profile_pts)-1]) < pup0sum[i]) && (ii < piaaconfNPUPFILESIZE))
+        while (
+            ((pupsum[ii] / pupsum[(long) (NB_profile_pts) -1]) < pup0sum[i]) &&
+            (ii < piaaconfNPUPFILESIZE))
         {
             ii++;
         }
-        double F1 = pupsum[ii - 1] / pupsum[(long)(NB_profile_pts)-1];
-        double F2 = pupsum[ii] / pupsum[(long)(NB_profile_pts)-1];
+        double F1 = pupsum[ii - 1] / pupsum[(long) (NB_profile_pts) -1];
+        double F2 = pupsum[ii] / pupsum[(long) (NB_profile_pts) -1];
 
         /* F0 = F1 + ( (F2-F1)/(ii^2-(ii-1)^2) * ((ii-1+x)^2-(ii-1)^2) ) */
         double fluxdens = 0.0;
@@ -3068,7 +3536,9 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
         {
             fluxdens = 0.0000000001;
         }
-        double x = sqrt((F0 - F1) / fluxdens + (1.0 * ii * ii - 2.0 * ii + 1.0)) + 1.0 - 1.0 * ii;
+        double x =
+            sqrt((F0 - F1) / fluxdens + (1.0 * ii * ii - 2.0 * ii + 1.0)) +
+            1.0 - 1.0 * ii;
 
         r1[i] = PIAAextfactor1 * (1.0 * ii - 1.0 + x) / (NB_profile_pts - 1);
         //      printf("%f %ld/%ld %ld %.18f %.18f %.18f %.18f %.18f %.18f\n", r0[i] , i, icentobs, ii, F0, F1, F2, x, fluxdens, r1[i]);
@@ -3078,8 +3548,8 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
 
     printf("Computing number of points [%ld]...", NBpoints0);
     fflush(stdout);
-    i = 0;
-    ii = 0;
+    i          = 0;
+    ii         = 0;
     double tmp = 0.0;
     //  fp1 = fopen("test_prof.txt", "w");
     while (i < NBpoints0 - 1)
@@ -3121,14 +3591,14 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     printf("\n%ld Points\n", NBpoints);
     fflush(stdout);
 
-    piaaconfr0 = (double *)malloc(sizeof(double) * NBpoints);
+    piaaconfr0 = (double *) malloc(sizeof(double) * NBpoints);
     if (piaaconfr0 == NULL)
     {
         printf("COULD NOT ALLOCATE MEMORY FOR piaaconfr0\n");
         exit(0);
     }
 
-    piaaconfr1 = (double *)malloc(sizeof(double) * NBpoints);
+    piaaconfr1 = (double *) malloc(sizeof(double) * NBpoints);
     if (piaaconfr0 == NULL)
     {
         printf("COULD NOT ALLOCATE MEMORY FOR piaaconfr1\n");
@@ -3138,8 +3608,8 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     printf("Filling up nr0 ...");
     fflush(stdout);
     /* fill up nr0 */
-    i = 0;
-    ii = 0;
+    i              = 0;
+    ii             = 0;
     piaaconfr0[ii] = 0.0;
 
     //cnt = 0;
@@ -3174,14 +3644,14 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
 
     printf("----- %ld    %ld %ld ----\n", ii, NBpoints, NBpoints0);
 
-    pup0sum = (double *)malloc(sizeof(double) * NBpoints);
+    pup0sum = (double *) malloc(sizeof(double) * NBpoints);
 
     for (i = 0; i < NBpoints; i++)
     {
         if (piaaconfr0[i] < APLC_CentOBS0)
         {
             double x = piaaconfr0[i] / APLC_CentOBS0;
-            i1 = (long)(x * NBistep);
+            i1       = (long) (x * NBistep);
             if (i1 > NBistep - 1)
             {
                 i1 = NBistep - 1;
@@ -3190,7 +3660,8 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
         }
         else
         {
-            pup0sum[i] = FLUXIN + (piaaconfr0[i] * piaaconfr0[i] - PIAACENTOBS * PIAACENTOBS) /
+            pup0sum[i] = FLUXIN + (piaaconfr0[i] * piaaconfr0[i] -
+                                   PIAACENTOBS * PIAACENTOBS) /
                                       (1.0 - PIAACENTOBS * PIAACENTOBS);
         }
         //      else
@@ -3207,17 +3678,20 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     total = 0.0;
     for (ii = 0; ii < NB_profile_pts; ii++)
     {
-        total += 2.0 * PI * piaaconfpup_amp_profile[ii] * piaaconfpup_amp_profile[ii] * ii; /* new */
+        total += 2.0 * PI * piaaconfpup_amp_profile[ii] *
+                 piaaconfpup_amp_profile[ii] * ii; /* new */
         pupsum[ii] = total;
     }
-    i = 0;
+    i  = 0;
     ii = 0;
 
     piaaconfr1[0] = 0.0;
     for (i = 1; i < NBpoints; i++)
     {
-        double F0 = pup0sum[i]; // fraction of total light inside input radius in input pupil
-        while (((pupsum[ii] / pupsum[NB_profile_pts - 1]) < pup0sum[i]) && (ii < NB_profile_pts))
+        double F0 = pup0sum
+            [i]; // fraction of total light inside input radius in input pupil
+        while (((pupsum[ii] / pupsum[NB_profile_pts - 1]) < pup0sum[i]) &&
+               (ii < NB_profile_pts))
         {
             ii++;
         }
@@ -3227,12 +3701,14 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
             F1 = pupsum[ii - 1] / pupsum[NB_profile_pts - 1];
         }
 
-        double F2 = pupsum[ii] / pupsum[NB_profile_pts - 1];
+        double F2       = pupsum[ii] / pupsum[NB_profile_pts - 1];
         double fluxdens = (F2 - F1) / (2.0 * PI * ii);
         /* compute pseudo radii psr0 and psr1 */
         psr0 = sqrt(1.0 * ii * ii - 1.0 * ii);
         //psr1 = sqrt(1.0 * ii * ii + 1.0 * ii);
-        piaaconfr1[i] = PIAAextfactor1 * sqrt((F0 - F1) / fluxdens / PI + psr0 * psr0) / (NB_profile_pts - 1);
+        piaaconfr1[i] = PIAAextfactor1 *
+                        sqrt((F0 - F1) / fluxdens / PI + psr0 * psr0) /
+                        (NB_profile_pts - 1);
     }
 
     piaaconfNBpoints = NBpoints;
@@ -3245,18 +3721,20 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     fflush(stdout);
 
     /* compute r1 as a function of r0 */
-    piaaconfr1fr0 = (double *)malloc(sizeof(double) * piaaconfNBr1fr0_pts);
-    cntarray = (long *)malloc(sizeof(long) * piaaconfNBr1fr0_pts);
+    piaaconfr1fr0 = (double *) malloc(sizeof(double) * piaaconfNBr1fr0_pts);
+    cntarray      = (long *) malloc(sizeof(long) * piaaconfNBr1fr0_pts);
 
     for (ii = 0; ii < piaaconfNBr1fr0_pts; ii++)
     {
         piaaconfr1fr0[ii] = 0.0;
-        cntarray[ii] = 0;
+        cntarray[ii]      = 0;
     }
 
     for (ii = 0; ii < NBpoints; ii++)
     {
-        long jj = (long)((piaaconfr0[ii] / PIAAextfactor0) * piaaconfNBr1fr0_pts + 0.5);
+        long jj =
+            (long) ((piaaconfr0[ii] / PIAAextfactor0) * piaaconfNBr1fr0_pts +
+                    0.5);
         if ((jj > -1) && (jj < piaaconfNBr1fr0_pts))
         {
             piaaconfr1fr0[jj] += piaaconfr1[ii];
@@ -3283,7 +3761,8 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
                 ii1++;
             }
             double x = (1.0 * ii - ii0) / (ii1 - ii0);
-            piaaconfr1fr0[ii] = (1.0 - x) * piaaconfr1fr0[ii0] + x * piaaconfr1fr0[ii1];
+            piaaconfr1fr0[ii] =
+                (1.0 - x) * piaaconfr1fr0[ii0] + x * piaaconfr1fr0[ii1];
         }
 
     if (file_write == 1)
@@ -3291,7 +3770,10 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
         fpout = fopen("PIAA_r0r1.txt", "w");
         for (ii = 0; ii < piaaconfNBr1fr0_pts; ii++)
         {
-            fprintf(fpout, "%18.16f %18.16f\n", PIAAextfactor0 * ii / piaaconfNBr1fr0_pts, piaaconfr1fr0[ii]);
+            fprintf(fpout,
+                    "%18.16f %18.16f\n",
+                    PIAAextfactor0 * ii / piaaconfNBr1fr0_pts,
+                    piaaconfr1fr0[ii]);
         }
         fclose(fpout);
     }
@@ -3300,21 +3782,21 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
 
     printf("Compute PIAA mirror shapes\n");
     piaaconfbeamradius = 0.01;
-    piaaconfdist = 1.0;
-    piaaconfM0 = (double *)malloc(sizeof(double) * piaaconfNBr1fr0_pts);
-    piaaconfM1 = (double *)malloc(sizeof(double) * piaaconfNBr1fr0_pts);
+    piaaconfdist       = 1.0;
+    piaaconfM0 = (double *) malloc(sizeof(double) * piaaconfNBr1fr0_pts);
+    piaaconfM1 = (double *) malloc(sizeof(double) * piaaconfNBr1fr0_pts);
 
     piaaconfM0[0] = 0.0;
     piaaconfM1[0] = piaaconfdist;
 
     for (i = 0; i < piaaconfNBr1fr0_pts - 1; i++)
     {
-        r0c = PIAAextfactor0 * i / piaaconfNBr1fr0_pts;
-        r1c = piaaconfr1fr0[i];
-        dx = (r0c - r1c) * piaaconfbeamradius;
-        dz = piaaconfM1[i] - piaaconfM0[i];
+        r0c  = PIAAextfactor0 * i / piaaconfNBr1fr0_pts;
+        r1c  = piaaconfr1fr0[i];
+        dx   = (r0c - r1c) * piaaconfbeamradius;
+        dz   = piaaconfM1[i] - piaaconfM0[i];
         dist = sqrt(dx * dx + dz * dz);
-        y3 = dist - dz;
+        y3   = dist - dz;
         if (fabs(dx) > 0.000000001)
         {
             slope = y3 / dx;
@@ -3324,7 +3806,8 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
             slope = 0.0;
         }
         r0n = PIAAextfactor0 * (i + 1) / piaaconfNBr1fr0_pts;
-        piaaconfM0[i + 1] = piaaconfM0[i] + slope * (r0n - r0c) * piaaconfbeamradius;
+        piaaconfM0[i + 1] =
+            piaaconfM0[i] + slope * (r0n - r0c) * piaaconfbeamradius;
 
         if (fabs(dx) > 0.000000001)
         {
@@ -3334,32 +3817,40 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
         {
             slope = 0.0;
         }
-        piaaconfM1[i + 1] = piaaconfM1[i] + slope * (piaaconfr1fr0[i + 1] - r1c) * piaaconfbeamradius;
+        piaaconfM1[i + 1] = piaaconfM1[i] + slope *
+                                                (piaaconfr1fr0[i + 1] - r1c) *
+                                                piaaconfbeamradius;
     }
 
     fp = fopen("PIAA_Mshapes.txt", "w");
     for (ii = 0; ii < piaaconfNBr1fr0_pts; ii++)
     {
-        fprintf(fp, "%18.16f %18.16f %18.16f %18.16f\n", PIAAextfactor0 * ii / piaaconfNBr1fr0_pts * piaaconfbeamradius,
-                piaaconfM0[ii], piaaconfr1fr0[ii] * piaaconfbeamradius, piaaconfM1[ii]);
+        fprintf(fp,
+                "%18.16f %18.16f %18.16f %18.16f\n",
+                PIAAextfactor0 * ii / piaaconfNBr1fr0_pts * piaaconfbeamradius,
+                piaaconfM0[ii],
+                piaaconfr1fr0[ii] * piaaconfbeamradius,
+                piaaconfM1[ii]);
     }
     fclose(fp);
 
     printf("compute r0 as a function of r1\n");
     fflush(stdout);
     /* compute r0 as a function of r1 */
-    piaaconfr0fr1 = (double *)malloc(sizeof(double) * piaaconfNBr1fr0_pts);
-    cntarray = (long *)malloc(sizeof(long) * piaaconfNBr1fr0_pts);
+    piaaconfr0fr1 = (double *) malloc(sizeof(double) * piaaconfNBr1fr0_pts);
+    cntarray      = (long *) malloc(sizeof(long) * piaaconfNBr1fr0_pts);
 
     for (ii = 0; ii < piaaconfNBr1fr0_pts; ii++)
     {
         piaaconfr0fr1[ii] = 0.0;
-        cntarray[ii] = 0;
+        cntarray[ii]      = 0;
     }
 
     for (ii = 0; ii < NBpoints; ii++)
     {
-        long jj = (long)((piaaconfr1[ii] / PIAAextfactor1) * piaaconfNBr1fr0_pts + 0.5);
+        long jj =
+            (long) ((piaaconfr1[ii] / PIAAextfactor1) * piaaconfNBr1fr0_pts +
+                    0.5);
         if ((jj > -1) && (jj < piaaconfNBr1fr0_pts))
         {
             piaaconfr0fr1[jj] += piaaconfr0[ii];
@@ -3386,7 +3877,8 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
                 ii1++;
             }
             double x = (1.0 * ii - ii0) / (ii1 - ii0);
-            piaaconfr0fr1[ii] = (1.0 - x) * piaaconfr0fr1[ii0] + x * piaaconfr0fr1[ii1];
+            piaaconfr0fr1[ii] =
+                (1.0 - x) * piaaconfr0fr1[ii0] + x * piaaconfr0fr1[ii1];
         }
 
     if (file_write == 1)
@@ -3394,7 +3886,10 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
         fpout = fopen("PIAA_r1r0.txt", "w");
         for (ii = 0; ii < piaaconfNBr1fr0_pts; ii++)
         {
-            fprintf(fpout, "%18.16f %18.16f\n", PIAAextfactor1 * ii / piaaconfNBr1fr0_pts, piaaconfr0fr1[ii]);
+            fprintf(fpout,
+                    "%18.16f %18.16f\n",
+                    PIAAextfactor1 * ii / piaaconfNBr1fr0_pts,
+                    piaaconfr0fr1[ii]);
         }
         fclose(fpout);
     }
@@ -3426,22 +3921,22 @@ int coronagraphs_free_PIAA()
 
 int coronagraph_telescope_pupil_Subaru_inside1(double x, double y)
 {
-    int inside;
+    int    inside;
     double r, PA;
-    double centobs = 0.285;
+    double centobs       = 0.285;
     double SPIDER_offset = -0.11;
-    double SPIDER_width = 0.0275; /* fraction of pupil diameter */
-    long nbarms = 4;
+    double SPIDER_width  = 0.0275; /* fraction of pupil diameter */
+    long   nbarms        = 4;
     double x1[4];
     double y1[4];
     double x2[4];
     double y2[4];
     double eps = 1e-20;
-    long arm;
+    long   arm;
     double tmpx, tmpy, x12, x13, y12, y13, asq, bsq, absq, dist;
 
     inside = 1;
-    r = sqrt(x * x + y * y);
+    r      = sqrt(x * x + y * y);
     if (r > 1.0)
     {
         inside = 0;
@@ -3451,7 +3946,7 @@ int coronagraph_telescope_pupil_Subaru_inside1(double x, double y)
         inside = 0;
     }
 
-    PA = 0.775;
+    PA    = 0.775;
     x1[0] = -sin(PA) * SPIDER_offset;
     x2[0] = cos(PA);
     y1[0] = cos(PA) * SPIDER_offset;
@@ -3475,25 +3970,26 @@ int coronagraph_telescope_pupil_Subaru_inside1(double x, double y)
     PA = 0.0;
     for (arm = 0; arm < nbarms; arm++)
     {
-        tmpx = x1[arm] * cos(PA) + y1[arm] * sin(PA);
-        tmpy = -x1[arm] * sin(PA) + y1[arm] * cos(PA);
+        tmpx    = x1[arm] * cos(PA) + y1[arm] * sin(PA);
+        tmpy    = -x1[arm] * sin(PA) + y1[arm] * cos(PA);
         x1[arm] = tmpx;
         y1[arm] = tmpy;
-        tmpx = x2[arm] * cos(PA) + y2[arm] * sin(PA);
-        tmpy = -x2[arm] * sin(PA) + y2[arm] * cos(PA);
+        tmpx    = x2[arm] * cos(PA) + y2[arm] * sin(PA);
+        tmpy    = -x2[arm] * sin(PA) + y2[arm] * cos(PA);
         x2[arm] = tmpx;
         y2[arm] = tmpy;
     }
 
     for (arm = 0; arm < nbarms; arm++)
     {
-        asq = (x1[arm] - x2[arm]) * (x1[arm] - x2[arm]) + (y1[arm] - y2[arm]) * (y1[arm] - y2[arm]);
+        asq = (x1[arm] - x2[arm]) * (x1[arm] - x2[arm]) +
+              (y1[arm] - y2[arm]) * (y1[arm] - y2[arm]);
         x12 = x2[arm] - x1[arm];
         y12 = y2[arm] - y1[arm];
 
-        bsq = (x1[arm] - x) * (x1[arm] - x) + (y1[arm] - y) * (y1[arm] - y);
-        x13 = x - x1[arm];
-        y13 = y - y1[arm];
+        bsq  = (x1[arm] - x) * (x1[arm] - x) + (y1[arm] - y) * (y1[arm] - y);
+        x13  = x - x1[arm];
+        y13  = y - y1[arm];
         absq = (x12 * x13 + y12 * y13) * (x12 * x13 + y12 * y13);
         if (bsq - absq / asq < eps)
         {
@@ -3519,8 +4015,8 @@ int coronagraph_telescope_pupil_Subaru_inside1(double x, double y)
 int coronagraphs_make_SUBARU_pupil()
 {
     // double epsilon = 0.0000000001;;
-    long Ssize = 4096;
-    double rad = 201.0;
+    long    Ssize = 4096;
+    double  rad   = 201.0;
     imageID ID;
     //  double PA,r0,r1;
     //  long size = 1024;
@@ -3564,7 +4060,8 @@ int coronagraphs_make_SUBARU_pupil()
             /*	r0 = r1;*/
             //x = r0*cos(PA);
             //y = r0*sin(PA);
-            data.image[ID].array.F[jj * Ssize + ii] = coronagraph_telescope_pupil_Subaru_inside1(x, y);
+            data.image[ID].array.F[jj * Ssize + ii] =
+                coronagraph_telescope_pupil_Subaru_inside1(x, y);
         }
 
     return (0);
@@ -3574,9 +4071,12 @@ int coronagraphs_make_SUBARU_pupil()
 // shape is applied on PIAA optic #2
 // ratio: distance between optics in pupil radius unit
 // z displacement is in pupil radius unit
-int coronagraph_PIAAperturbation(double *zarray, long *zindex, long NBzern, double ratio)
+int coronagraph_PIAAperturbation(double *zarray,
+                                 long   *zindex,
+                                 long    NBzern,
+                                 double  ratio)
 {
-    double trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
+    double  trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
     imageID IDzmap; // M1 sag map
     imageID IDdx;   // x displacement
     imageID IDdy;   // y displacement
@@ -3584,7 +4084,7 @@ int coronagraph_PIAAperturbation(double *zarray, long *zindex, long NBzern, doub
 
     uint32_t size = CORONAGRAPHS_ARRAYSIZE;
 
-    double eps = 1.0e-4;  // step to compute derivative [pupil radius]
+    double eps  = 1.0e-4; // step to compute derivative [pupil radius]
     double epst = 1.0e-3; // triangle radius
 
     printf("RADIUS = %f\n", trad_pix);
@@ -3614,19 +4114,19 @@ int coronagraph_PIAAperturbation(double *zarray, long *zindex, long NBzern, doub
             {
                 // point #0
 
-                double p0x0 = x0 + epst * cos(0.0);
-                double p0y0 = y0 + epst * sin(0.0);
-                double p0r0 = sqrt(p0x0 * p0x0 + p0y0 * p0y0);
+                double p0x0  = x0 + epst * cos(0.0);
+                double p0y0  = y0 + epst * sin(0.0);
+                double p0r0  = sqrt(p0x0 * p0x0 + p0y0 * p0y0);
                 double p0PA0 = atan2(p0y0, p0x0);
 
-                double p0x1 = p0x0 + eps;
-                double p0y1 = p0y0;
-                double p0r1 = sqrt(p0x1 * p0x1 + p0y1 * p0y1);
+                double p0x1  = p0x0 + eps;
+                double p0y1  = p0y0;
+                double p0r1  = sqrt(p0x1 * p0x1 + p0y1 * p0y1);
                 double p0PA1 = atan2(p0y1, p0x1);
 
-                double p0x2 = p0x0;
-                double p0y2 = p0y0 + eps;
-                double p0r2 = sqrt(p0x2 * p0x2 + p0y2 * p0y2);
+                double p0x2  = p0x0;
+                double p0y2  = p0y0 + eps;
+                double p0r2  = sqrt(p0x2 * p0x2 + p0y2 * p0y2);
                 double p0PA2 = atan2(p0y2, p0x2);
 
                 double p0v0 = 0.0;
@@ -3639,24 +4139,25 @@ int coronagraph_PIAAperturbation(double *zarray, long *zindex, long NBzern, doub
                     p0v2 += zarray[k] * Zernike_value(zindex[k], p0r2, p0PA2);
                 }
                 double p0dx =
-                    -2.0 * ratio * (p0v1 - p0v0) / (eps); // second term is unitless, result is in pupil radius
+                    -2.0 * ratio * (p0v1 - p0v0) /
+                    (eps); // second term is unitless, result is in pupil radius
                 double p0dy = -2.0 * ratio * (p0v2 - p0v0) / (eps);
 
                 // point #1
 
-                double p1x0 = x0 + epst * cos(2.0 * M_PI / 3.0);
-                double p1y0 = y0 + epst * sin(2.0 * M_PI / 3.0);
-                double p1r0 = sqrt(p1x0 * p1x0 + p1y0 * p1y0);
+                double p1x0  = x0 + epst * cos(2.0 * M_PI / 3.0);
+                double p1y0  = y0 + epst * sin(2.0 * M_PI / 3.0);
+                double p1r0  = sqrt(p1x0 * p1x0 + p1y0 * p1y0);
                 double p1PA0 = atan2(p1y0, p1x0);
 
-                double p1x1 = p1x0 + eps;
-                double p1y1 = p1y0;
-                double p1r1 = sqrt(p1x1 * p1x1 + p1y1 * p1y1);
+                double p1x1  = p1x0 + eps;
+                double p1y1  = p1y0;
+                double p1r1  = sqrt(p1x1 * p1x1 + p1y1 * p1y1);
                 double p1PA1 = atan2(p1y1, p1x1);
 
-                double p1x2 = p1x0;
-                double p1y2 = p1y0 + eps;
-                double p1r2 = sqrt(p1x2 * p1x2 + p1y2 * p1y2);
+                double p1x2  = p1x0;
+                double p1y2  = p1y0 + eps;
+                double p1r2  = sqrt(p1x2 * p1x2 + p1y2 * p1y2);
                 double p1PA2 = atan2(p1y2, p1x2);
 
                 double p1v0 = 0.0;
@@ -3670,24 +4171,25 @@ int coronagraph_PIAAperturbation(double *zarray, long *zindex, long NBzern, doub
                     p1v2 += zarray[k] * Zernike_value(zindex[k], p1r2, p1PA2);
                 }
                 double p1dx =
-                    -2.0 * ratio * (p1v1 - p1v0) / (eps); // second term is unitless, result is in pupil radius
+                    -2.0 * ratio * (p1v1 - p1v0) /
+                    (eps); // second term is unitless, result is in pupil radius
                 double p1dy = -2.0 * ratio * (p1v2 - p1v0) / (eps);
 
                 // point #2
 
-                double p2x0 = x0 + epst * cos(4.0 * M_PI / 3.0);
-                double p2y0 = y0 + epst * sin(4.0 * M_PI / 3.0);
-                double p2r0 = sqrt(p2x0 * p2x0 + p2y0 * p2y0);
+                double p2x0  = x0 + epst * cos(4.0 * M_PI / 3.0);
+                double p2y0  = y0 + epst * sin(4.0 * M_PI / 3.0);
+                double p2r0  = sqrt(p2x0 * p2x0 + p2y0 * p2y0);
                 double p2PA0 = atan2(p2y0, p2x0);
 
-                double p2x1 = p2x0 + eps;
-                double p2y1 = p2y0;
-                double p2r1 = sqrt(p2x1 * p2x1 + p2y1 * p2y1);
+                double p2x1  = p2x0 + eps;
+                double p2y1  = p2y0;
+                double p2r1  = sqrt(p2x1 * p2x1 + p2y1 * p2y1);
                 double p2PA1 = atan2(p2y1, p2x1);
 
-                double p2x2 = p2x0;
-                double p2y2 = p2y0 + eps;
-                double p2r2 = sqrt(p2x2 * p2x2 + p2y2 * p2y2);
+                double p2x2  = p2x0;
+                double p2y2  = p2y0 + eps;
+                double p2r2  = sqrt(p2x2 * p2x2 + p2y2 * p2y2);
                 double p2PA2 = atan2(p2y2, p2x2);
 
                 double p2v0 = 0.0;
@@ -3701,13 +4203,17 @@ int coronagraph_PIAAperturbation(double *zarray, long *zindex, long NBzern, doub
                     p2v2 += zarray[k] * Zernike_value(zindex[k], p2r2, p2PA2);
                 }
                 double p2dx =
-                    -2.0 * ratio * (p2v1 - p2v0) / (eps); // second term is unitless, result is in pupil radius
+                    -2.0 * ratio * (p2v1 - p2v0) /
+                    (eps); // second term is unitless, result is in pupil radius
                 double p2dy = -2.0 * ratio * (p2v2 - p2v0) / (eps);
 
-                data.image[IDzmap].array.F[jj * size + ii] = (p0v0 + p1v0 + p2v0) / 3.0;
+                data.image[IDzmap].array.F[jj * size + ii] =
+                    (p0v0 + p1v0 + p2v0) / 3.0;
 
-                data.image[IDdx].array.F[jj * size + ii] = (p0dx + p1dx + p2dx) / 3.0;
-                data.image[IDdy].array.F[jj * size + ii] = (p0dy + p1dy + p2dy) / 3.0;
+                data.image[IDdx].array.F[jj * size + ii] =
+                    (p0dx + p1dx + p2dx) / 3.0;
+                data.image[IDdy].array.F[jj * size + ii] =
+                    (p0dy + p1dy + p2dy) / 3.0;
 
                 double p0x0p = p0x0 + p0dx;
                 double p0y0p = p0y0 + p0dy;
@@ -3718,8 +4224,10 @@ int coronagraph_PIAAperturbation(double *zarray, long *zindex, long NBzern, doub
                 double p2x0p = p2x0 + p2dx;
                 double p2y0p = p2y0 + p2dy;
 
-                double Tpre = 0.5 * fabs((p0x0 - p2x0) * (p1y0 - p0y0) - (p0x0 - p1x0) * (p2y0 - p0y0));
-                double Tpost = 0.5 * fabs((p0x0p - p2x0p) * (p1y0p - p0y0p) - (p0x0p - p1x0p) * (p2y0p - p0y0p));
+                double Tpre  = 0.5 * fabs((p0x0 - p2x0) * (p1y0 - p0y0) -
+                                         (p0x0 - p1x0) * (p2y0 - p0y0));
+                double Tpost = 0.5 * fabs((p0x0p - p2x0p) * (p1y0p - p0y0p) -
+                                          (p0x0p - p1x0p) * (p2y0p - p0y0p));
 
                 //double x1 = p1x0p - p0x0p;
                 //double y1 = p1y0p - p0y0p;
@@ -3737,31 +4245,35 @@ int coronagraph_PIAAperturbation(double *zarray, long *zindex, long NBzern, doub
     return (0);
 }
 
-int coronagraphs_PIAA_apodize_beam(const char *ampl1, const char *opd1, const char *ampl2, const char *opd2)
+int coronagraphs_PIAA_apodize_beam(const char *ampl1,
+                                   const char *opd1,
+                                   const char *ampl2,
+                                   const char *opd2)
 {
     /* apodize a beam with PIAA */
     double PA;
     double r1, r2;
-    long ii, jj, ii2, jj2, iin, jjn;
-    long i;
+    long   ii, jj, ii2, jj2, iin, jjn;
+    long   i;
     double x, y;
-    long IDa1, IDo1, IDa2, IDo2;
+    long   IDa1, IDo1, IDa2, IDo2;
     double factor, r;
-    long *cntarray;
+    long  *cntarray;
     double total, totalcnt;
-    double epsilon = 0.0000000001;
-    long size = CORONAGRAPHS_ARRAYSIZE;
+    double epsilon  = 0.0000000001;
+    long   size     = CORONAGRAPHS_ARRAYSIZE;
     double trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
     double t, u;
     double v00, v01, v10, v11;
     double eps;
     double coeff;
 
-    int USE_2DPROL = 1; /* if set to 1, the 2D apodized pupil will be used to make the apodization */
+    int USE_2DPROL =
+        1; /* if set to 1, the 2D apodized pupil will be used to make the apodization */
     imageID ID_2DPROL;
-    char fname_2DPROL[400];
-    double totalProl = 0.0;
-    long totalProlcnt = 0;
+    char    fname_2DPROL[400];
+    double  totalProl    = 0.0;
+    long    totalProlcnt = 0;
 
     long size2;
 
@@ -3789,7 +4301,8 @@ int coronagraphs_PIAA_apodize_beam(const char *ampl1, const char *opd1, const ch
         {
             if (data.image[ID_2DPROL].array.F[ii] > 0.00001)
             {
-                totalProl += data.image[ID_2DPROL].array.F[ii] * data.image[ID_2DPROL].array.F[ii];
+                totalProl += data.image[ID_2DPROL].array.F[ii] *
+                             data.image[ID_2DPROL].array.F[ii];
                 totalProlcnt++;
             }
         }
@@ -3806,7 +4319,7 @@ int coronagraphs_PIAA_apodize_beam(const char *ampl1, const char *opd1, const ch
     create_2Dimage_ID(ampl2, size, size, &IDa2);
     create_2Dimage_ID(opd2, size, size, &IDo2);
 
-    cntarray = (long *)malloc(sizeof(long) * size * size);
+    cntarray = (long *) malloc(sizeof(long) * size * size);
 
     for (ii = 0; ii < size; ii++)
         for (jj = 0; jj < size; jj++)
@@ -3814,7 +4327,7 @@ int coronagraphs_PIAA_apodize_beam(const char *ampl1, const char *opd1, const ch
             cntarray[jj * size + ii] = 0;
         }
 
-    total = 0.0;
+    total    = 0.0;
     totalcnt = 0.0;
 
     // fptest = fopen("testfile.txt","w");
@@ -3824,11 +4337,11 @@ int coronagraphs_PIAA_apodize_beam(const char *ampl1, const char *opd1, const ch
     for (ii2 = 0; ii2 < size; ii2++)
         for (jj2 = 0; jj2 < size; jj2++)
         {
-            x = 1.0 * (ii2 - size / 2) / trad_pix;
-            y = 1.0 * (jj2 - size / 2) / trad_pix;
+            x  = 1.0 * (ii2 - size / 2) / trad_pix;
+            y  = 1.0 * (jj2 - size / 2) / trad_pix;
             r2 = sqrt(x * x + y * y);
             PA = atan2(y, x);
-            r = r2;
+            r  = r2;
 
             if (r2 < 1.0)
             {
@@ -3836,13 +4349,14 @@ int coronagraphs_PIAA_apodize_beam(const char *ampl1, const char *opd1, const ch
                 {
                     if (r2 < epsilon)
                     {
-                        i = 1;
+                        i  = 1;
                         r2 = 1.0 * i / piaaconfNBr1fr0_pts * PIAAextfactor1;
                     }
                     else
                     {
                         /* compute r1 */
-                        i = (long)(r2 * piaaconfNBr1fr0_pts / PIAAextfactor1 + 0.5);
+                        i = (long) (r2 * piaaconfNBr1fr0_pts / PIAAextfactor1 +
+                                    0.5);
                     }
 
                     if (i > piaaconfNBr1fr0_pts - 2)
@@ -3864,13 +4378,14 @@ int coronagraphs_PIAA_apodize_beam(const char *ampl1, const char *opd1, const ch
                 {
                     if (r2 < epsilon)
                     {
-                        i = 1;
+                        i  = 1;
                         r2 = 1.0 * i / piaaconfNBr1fr0_pts * PIAAextfactor0;
                     }
                     else
                     {
                         /* compute r1 */
-                        i = (long)(r2 * piaaconfNBr1fr0_pts / PIAAextfactor0 + 0.5);
+                        i = (long) (r2 * piaaconfNBr1fr0_pts / PIAAextfactor0 +
+                                    0.5);
                     }
 
                     if (i > piaaconfNBr1fr0_pts - 2)
@@ -3894,20 +4409,21 @@ int coronagraphs_PIAA_apodize_beam(const char *ampl1, const char *opd1, const ch
 
                 //	    data.image[IDr].array.F[jj2*size+ii2] = r1;
 
-                ii = (long)(0.5 * size + r1 * trad_pix * cos(PA));
-                t = 0.5 * size + r1 * trad_pix * cos(PA) - ii;
-                jj = (long)(0.5 * size + r1 * trad_pix * sin(PA));
-                u = 0.5 * size + r1 * trad_pix * sin(PA) - jj;
+                ii = (long) (0.5 * size + r1 * trad_pix * cos(PA));
+                t  = 0.5 * size + r1 * trad_pix * cos(PA) - ii;
+                jj = (long) (0.5 * size + r1 * trad_pix * sin(PA));
+                u  = 0.5 * size + r1 * trad_pix * sin(PA) - jj;
 
-                iin = (long)(0.5 * size + r1 * trad_pix * cos(PA) + 0.5);
-                jjn = (long)(0.5 * size + r1 * trad_pix * sin(PA) + 0.5);
+                iin = (long) (0.5 * size + r1 * trad_pix * cos(PA) + 0.5);
+                jjn = (long) (0.5 * size + r1 * trad_pix * sin(PA) + 0.5);
 
                 //	    printf("PIAAAPO2D = %f\n", PIAAAPO2D[size/2*size+size/2] );
 
-                if ((ii > -1) && (jj > -1) && (ii < size - 1) && (jj < size - 1))
+                if ((ii > -1) && (jj > -1) && (ii < size - 1) &&
+                    (jj < size - 1))
                 {
                     /*	data.image[IDa2].array.F[jj2*size+ii2] = data.image[IDa1].array.F[jj*size+ii]*factor;*/
-                    i = (long)(r * PIAAAPO_NBPOINTS);
+                    i = (long) (r * PIAAAPO_NBPOINTS);
                     if (i < PIAAAPO_NBPOINTS)
                     {
                         if (piaaconfdirection == 0)
@@ -3915,20 +4431,23 @@ int coronagraphs_PIAA_apodize_beam(const char *ampl1, const char *opd1, const ch
                             if (USE_2DPROL == 1)
                             {
                                 data.image[IDa2].array.F[jj2 * size + ii2] =
-                                    data.image[ID_2DPROL].array.F[jj2 * size + ii2] *
+                                    data.image[ID_2DPROL]
+                                        .array.F[jj2 * size + ii2] *
                                     data.image[IDa1].array.F[jjn * size + iin];
                             }
                             else
                             {
-                                data.image[IDa2].array.F[jj2 * size + ii2] = data.image[IDa1].array.F[jj * size + ii] *
-                                                                             PIAAAPO2D[jj2 * size + ii2] *
-                                                                             PIAA_HYBRID_CPAAPO[i];
+                                data.image[IDa2].array.F[jj2 * size + ii2] =
+                                    data.image[IDa1].array.F[jj * size + ii] *
+                                    PIAAAPO2D[jj2 * size + ii2] *
+                                    PIAA_HYBRID_CPAAPO[i];
                             }
                         }
                         else
                         {
                             data.image[IDa2].array.F[jj2 * size + ii2] =
-                                data.image[IDa1].array.F[jj * size + ii] / (PIAAAPO2D[jj * size + ii] + epsilon);
+                                data.image[IDa1].array.F[jj * size + ii] /
+                                (PIAAAPO2D[jj * size + ii] + epsilon);
                         }
                         if (r > PIAACPPMASKRAD1)
                         {
@@ -3938,43 +4457,57 @@ int coronagraphs_PIAA_apodize_beam(const char *ampl1, const char *opd1, const ch
                         if (1) // bilinear interpolation
                         {
                             data.image[IDo2].array.F[jj2 * size + ii2] =
-                                (1.0 - t) * (1.0 - u) * data.image[IDo1].array.F[jj * size + ii] +
-                                t * (1.0 - u) * data.image[IDo1].array.F[jj * size + ii + 1] +
-                                t * u * data.image[IDo1].array.F[(jj + 1) * size + ii + 1] +
-                                (1.0 - t) * u * data.image[IDo1].array.F[(jj + 1) * size + ii];
+                                (1.0 - t) * (1.0 - u) *
+                                    data.image[IDo1].array.F[jj * size + ii] +
+                                t * (1.0 - u) *
+                                    data.image[IDo1]
+                                        .array.F[jj * size + ii + 1] +
+                                t * u *
+                                    data.image[IDo1]
+                                        .array.F[(jj + 1) * size + ii + 1] +
+                                (1.0 - t) * u *
+                                    data.image[IDo1]
+                                        .array.F[(jj + 1) * size + ii];
                         }
                         else
                         {
                             v00 = data.image[IDo1].array.F[jj * size + ii];
                             v01 = data.image[IDo1].array.F[jj * size + ii + 1];
-                            v10 = data.image[IDo1].array.F[(jj + 1) * size + ii];
-                            v11 = data.image[IDo1].array.F[(jj + 1) * size + ii + 1];
+                            v10 =
+                                data.image[IDo1].array.F[(jj + 1) * size + ii];
+                            v11 = data.image[IDo1]
+                                      .array.F[(jj + 1) * size + ii + 1];
                             data.image[IDo2].array.F[jj2 * size + ii2] = 0.0;
-                            coeff = 0.0;
-                            eps = 1.0e-5;
+                            coeff                                      = 0.0;
+                            eps                                        = 1.0e-5;
                             if (v00 > eps)
                             {
-                                data.image[IDo2].array.F[jj2 * size + ii2] += (1.0 - t) * (1.0 - u) * v00;
+                                data.image[IDo2].array.F[jj2 * size + ii2] +=
+                                    (1.0 - t) * (1.0 - u) * v00;
                                 coeff += (1.0 - t) * (1.0 - u);
                             }
                             if (v01 > eps)
                             {
-                                data.image[IDo2].array.F[jj2 * size + ii2] += t * (1.0 - u) * v01;
+                                data.image[IDo2].array.F[jj2 * size + ii2] +=
+                                    t * (1.0 - u) * v01;
                                 coeff += t * (1.0 - u);
                             }
                             if (v10 > eps)
                             {
-                                data.image[IDo2].array.F[jj2 * size + ii2] += (1.0 - t) * u * v10;
+                                data.image[IDo2].array.F[jj2 * size + ii2] +=
+                                    (1.0 - t) * u * v10;
                                 coeff += (1.0 - t) * u;
                             }
                             if (v11 > eps)
                             {
-                                data.image[IDo2].array.F[jj2 * size + ii2] += t * u * v11;
+                                data.image[IDo2].array.F[jj2 * size + ii2] +=
+                                    t * u * v11;
                                 coeff += t * u;
                             }
                             if (coeff > eps)
                             {
-                                data.image[IDo2].array.F[jj2 * size + ii2] /= coeff;
+                                data.image[IDo2].array.F[jj2 * size + ii2] /=
+                                    coeff;
                             }
                         }
                         total += data.image[IDo2].array.F[jj2 * size + ii2];
@@ -4020,10 +4553,10 @@ int coronagraphs_PIAA_apodize_beam(const char *ampl1, const char *opd1, const ch
 
 int coronagraph_init_CPA()
 {
-    FILE *fp;
+    FILE    *fp;
     uint32_t size = CORONAGRAPHS_ARRAYSIZE;
-    imageID ID;
-    long factor = 9;
+    imageID  ID;
+    long     factor = 9;
     /*  double trad_pix = CORONAGRAPHS_TDIAM/CORONAGRAPHS_PSCALE/2.0;*/
     long ri1;
     char fname[200];
@@ -4037,7 +4570,7 @@ int coronagraph_init_CPA()
     }
     for (long i = 0; i < CPAAPO_NBPOINTS; i++)
     {
-        long tmpl;
+        long   tmpl;
         double tmpf;
         {
             int fscanfcnt;
@@ -4051,13 +4584,17 @@ int coronagraph_init_CPA()
                 }
                 else
                 {
-                    fprintf(stderr, "Error: fscanf reached end of file, no matching characters, no matching failure\n");
+                    fprintf(stderr,
+                            "Error: fscanf reached end of file, no matching "
+                            "characters, no matching failure\n");
                 }
                 return RETURN_FAILURE;
             }
             else if (fscanfcnt != 2)
             {
-                fprintf(stderr, "Error: fscanf successfully matched and assigned %i input items, 2 expected\n",
+                fprintf(stderr,
+                        "Error: fscanf successfully matched and assigned %i "
+                        "input items, 2 expected\n",
                         fscanfcnt);
                 return RETURN_FAILURE;
             }
@@ -4077,14 +4614,14 @@ int coronagraph_init_CPA()
     for (uint32_t ii = 0; ii < factor * size; ii++)
         for (uint32_t jj = 0; jj < factor * size; jj++)
         {
-            long ii1 = (long)((1.0 * ii - 0.5) / factor + 0.5);
-            long jj1 = (long)((1.0 * jj - 0.5) / factor + 0.5);
-            double x = 1.0 / factor * (ii - factor * size / 2);
-            double y = 1.0 / factor * (jj - factor * size / 2);
-            double r = sqrt(x * x + y * y); /* in pixel */
+            long   ii1 = (long) ((1.0 * ii - 0.5) / factor + 0.5);
+            long   jj1 = (long) ((1.0 * jj - 0.5) / factor + 0.5);
+            double x   = 1.0 / factor * (ii - factor * size / 2);
+            double y   = 1.0 / factor * (jj - factor * size / 2);
+            double r   = sqrt(x * x + y * y); /* in pixel */
             r /= CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
-            double ri = r * CPAAPO_NBPOINTS;
-            ri1 = (long)(ri);
+            double ri    = r * CPAAPO_NBPOINTS;
+            ri1          = (long) (ri);
             double alpha = ri - ri1;
             double value = 0.0;
             if (ri < CPAAPO_NBPOINTS - 1)
@@ -4097,7 +4634,8 @@ int coronagraph_init_CPA()
             }
             if ((ii1 > 0) && (jj1 > 0) && (ii1 < size) && (jj1 < size))
             {
-                data.image[ID].array.F[jj1 * size + ii1] += value / factor / factor;
+                data.image[ID].array.F[jj1 * size + ii1] +=
+                    value / factor / factor;
             }
         }
     sprintf(fname1, "%s/cpapup.ref.%ul", CORONAGRAPHSDATALOCAL, size);
@@ -4108,23 +4646,23 @@ int coronagraph_init_CPA()
 
 int coronagraph_init_ODC()
 {
-    long size = CORONAGRAPHS_ARRAYSIZE;
-    int factor = 4;
-    long sizeODC1 = (size / 2) * factor;
+    long    size     = CORONAGRAPHS_ARRAYSIZE;
+    int     factor   = 4;
+    long    sizeODC1 = (size / 2) * factor;
     double *ODC1m;
-    double x;
-    long ii, ii1, jj;
-    double max = 0.0;
-    long ID;
-    char fname1[200];
-    long index;
-    double tmp;
+    double  x;
+    long    ii, ii1, jj;
+    double  max = 0.0;
+    long    ID;
+    char    fname1[200];
+    long    index;
+    double  tmp;
 
-    ODC1m = (double *)malloc(sizeof(double) * sizeODC1);
+    ODC1m = (double *) malloc(sizeof(double) * sizeODC1);
 
     for (ii = 0; ii < sizeODC1; ii++)
     {
-        x = CORONAGRAPHS_PIXSCALE * ii;
+        x         = CORONAGRAPHS_PIXSCALE * ii;
         ODC1m[ii] = x * exp(-x * x / ODC_GAUSS / ODC_GAUSS);
         if (ODC1m[ii] > max)
         {
@@ -4141,17 +4679,17 @@ int coronagraph_init_ODC()
     create_2Dimage_ID("odcmref", size, size, &ID);
     for (ii = 0; ii < factor * size; ii++)
     {
-        ii1 = (long)((1.0 * ii - 0.5) / factor + 0.5);
-        x = 1.0 / factor * (ii - factor * size / 2);
+        ii1 = (long) ((1.0 * ii - 0.5) / factor + 0.5);
+        x   = 1.0 / factor * (ii - factor * size / 2);
         if (ii > factor * size / 2)
         {
             index = ii - factor * size / 2;
-            tmp = ODC1m[index];
+            tmp   = ODC1m[index];
         }
         else
         {
             index = factor * size / 2 - ii;
-            tmp = -ODC1m[index];
+            tmp   = -ODC1m[index];
         }
 
         if ((ii1 > 0) && (ii1 < size))
@@ -4171,28 +4709,28 @@ int coronagraph_init_ODC()
 
 int coronagraph_init_BL8()
 {
-    long size = CORONAGRAPHS_ARRAYSIZE;
+    long   size = CORONAGRAPHS_ARRAYSIZE;
     double x, y, r;
-    long i;
-    long ii, jj;
-    long ii1, jj1;
+    long   i;
+    long   ii, jj;
+    long   ii1, jj1;
     double tmp1, tmp2, tmp3;
     double x2, x3;
     double max;
-    long ID;
-    long factor = 9;
-    char fname1[200];
+    long   ID;
+    long   factor = 9;
+    char   fname1[200];
 
-    tmp1 = (BL8MASK_l - BL8MASK_m) / BL8MASK_l;
-    max = 0.0;
+    tmp1       = (BL8MASK_l - BL8MASK_m) / BL8MASK_l;
+    max        = 0.0;
     BL8MASK[0] = 0.0;
     for (i = 1; i < BL8MASK_NBSTEP; i++)
     {
-        x = BL8MASK_STEP * i;
-        x2 = PI * x * BL8MASK_eps / BL8MASK_l;
-        tmp2 = pow(sin(x2) / x2, BL8MASK_l);
-        x3 = PI * x * BL8MASK_eps / BL8MASK_m;
-        tmp3 = BL8MASK_m / BL8MASK_l * pow(sin(x3) / x3, BL8MASK_m);
+        x          = BL8MASK_STEP * i;
+        x2         = PI * x * BL8MASK_eps / BL8MASK_l;
+        tmp2       = pow(sin(x2) / x2, BL8MASK_l);
+        x3         = PI * x * BL8MASK_eps / BL8MASK_m;
+        tmp3       = BL8MASK_m / BL8MASK_l * pow(sin(x3) / x3, BL8MASK_m);
         BL8MASK[i] = tmp1 - tmp2 + tmp3;
         if (BL8MASK[i] > max)
         {
@@ -4208,22 +4746,24 @@ int coronagraph_init_BL8()
     for (ii = 0; ii < factor * size; ii++)
         for (jj = 0; jj < factor * size; jj++)
         {
-            ii1 = (long)((1.0 * ii - 0.5) / factor + 0.5);
-            jj1 = (long)((1.0 * jj - 0.5) / factor + 0.5);
-            x = 1.0 / factor * (ii - factor * size / 2);
-            y = 1.0 / factor * (jj - factor * size / 2);
-            r = sqrt(x * x + y * y);
+            ii1 = (long) ((1.0 * ii - 0.5) / factor + 0.5);
+            jj1 = (long) ((1.0 * jj - 0.5) / factor + 0.5);
+            x   = 1.0 / factor * (ii - factor * size / 2);
+            y   = 1.0 / factor * (jj - factor * size / 2);
+            r   = sqrt(x * x + y * y);
             r *= CORONAGRAPHS_PIXSCALE;
-            i = (long)(r / BL8MASK_STEP);
+            i = (long) (r / BL8MASK_STEP);
             if ((ii1 > 0) && (jj1 > 0) && (ii1 < size) && (jj1 < size))
             {
                 if (i > BL8MASK_NBSTEP)
                 {
-                    data.image[ID].array.F[jj1 * size + ii1] += 1.0 / factor / factor;
+                    data.image[ID].array.F[jj1 * size + ii1] +=
+                        1.0 / factor / factor;
                 }
                 else
                 {
-                    data.image[ID].array.F[jj1 * size + ii1] += BL8MASK[i] / factor / factor;
+                    data.image[ID].array.F[jj1 * size + ii1] +=
+                        BL8MASK[i] / factor / factor;
                 }
             }
         }
@@ -4234,22 +4774,24 @@ int coronagraph_init_BL8()
     for (ii = 0; ii < factor * size; ii++)
         for (jj = 0; jj < factor * size; jj++)
         {
-            ii1 = (long)((1.0 * ii - 0.5) / factor + 0.5);
-            jj1 = (long)((1.0 * jj - 0.5) / factor + 0.5);
-            x = 1.0 / factor * (ii - factor * size / 2);
-            y = 1.0 / factor * (jj - factor * size / 2);
-            r = sqrt(x * x);
+            ii1 = (long) ((1.0 * ii - 0.5) / factor + 0.5);
+            jj1 = (long) ((1.0 * jj - 0.5) / factor + 0.5);
+            x   = 1.0 / factor * (ii - factor * size / 2);
+            y   = 1.0 / factor * (jj - factor * size / 2);
+            r   = sqrt(x * x);
             r *= CORONAGRAPHS_PIXSCALE;
-            i = (long)(r / BL8MASK_STEP);
+            i = (long) (r / BL8MASK_STEP);
             if ((ii1 > 0) && (jj1 > 0) && (ii1 < size) && (jj1 < size))
             {
                 if (i > BL8MASK_NBSTEP)
                 {
-                    data.image[ID].array.F[jj1 * size + ii1] += 1.0 / factor / factor;
+                    data.image[ID].array.F[jj1 * size + ii1] +=
+                        1.0 / factor / factor;
                 }
                 else
                 {
-                    data.image[ID].array.F[jj1 * size + ii1] += BL8MASK[i] / factor / factor;
+                    data.image[ID].array.F[jj1 * size + ii1] +=
+                        BL8MASK[i] / factor / factor;
                 }
             }
         }
@@ -4261,32 +4803,33 @@ int coronagraph_init_BL8()
 
 int coronagraph_init_BL4()
 {
-    long size = CORONAGRAPHS_ARRAYSIZE;
+    long   size = CORONAGRAPHS_ARRAYSIZE;
     double x, y, r, rx;
-    long ii, jj;
-    long ii1, jj1;
+    long   ii, jj;
+    long   ii1, jj1;
     double tmp1, tmp2;
-    long ID;
-    long factor = 9;
-    char fname1[200];
+    long   ID;
+    long   factor = 9;
+    char   fname1[200];
 
     create_2Dimage_ID("bl4mref", size, size, &ID);
     for (ii = 0; ii < factor * size; ii++)
         for (jj = 0; jj < factor * size; jj++)
         {
-            ii1 = (long)((1.0 * ii - 0.5) / factor + 0.5);
-            jj1 = (long)((1.0 * jj - 0.5) / factor + 0.5);
-            x = 1.0 / factor * (ii - factor * size / 2);
-            y = 1.0 / factor * (jj - factor * size / 2);
-            rx = sqrt(x * x);
-            r = sqrt(x * x + y * y);
+            ii1 = (long) ((1.0 * ii - 0.5) / factor + 0.5);
+            jj1 = (long) ((1.0 * jj - 0.5) / factor + 0.5);
+            x   = 1.0 / factor * (ii - factor * size / 2);
+            y   = 1.0 / factor * (jj - factor * size / 2);
+            rx  = sqrt(x * x);
+            r   = sqrt(x * x + y * y);
             rx *= CORONAGRAPHS_PIXSCALE;
             r *= CORONAGRAPHS_PIXSCALE;
             tmp1 = sin(rx * PI * BL4MASK_eps / 2);
             tmp2 = exp(-(r / 50.0) * (r / 50.0) / 2);
             if ((ii1 > 0) && (jj1 > 0) && (ii1 < size) && (jj1 < size))
             {
-                data.image[ID].array.F[jj1 * size + ii1] += tmp1 * tmp1 * tmp2 / factor / factor;
+                data.image[ID].array.F[jj1 * size + ii1] +=
+                    tmp1 * tmp1 * tmp2 / factor / factor;
             }
         }
     sprintf(fname1, "%s/bl4m.ref.%ld", CORONAGRAPHSDATALOCAL, size);
@@ -4297,15 +4840,20 @@ int coronagraph_init_BL4()
 
 int coronagraph_init_RRPM()
 {
-    long size = CORONAGRAPHS_ARRAYSIZE;
-    long size2 = size * size;
+    long   size  = CORONAGRAPHS_ARRAYSIZE;
+    long   size2 = size * size;
     double x, y, r;
-    long ii, jj;
-    long ID;
+    long   ii, jj;
+    long   ID;
     double trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
-    char fname1[200];
+    char   fname1[200];
 
-    ID = make_subpixdisk("rrpmreffm", size, size, size / 2, size / 2, RRPM_RADIUS / CORONAGRAPHS_PIXSCALE);
+    ID = make_subpixdisk("rrpmreffm",
+                         size,
+                         size,
+                         size / 2,
+                         size / 2,
+                         RRPM_RADIUS / CORONAGRAPHS_PIXSCALE);
     for (ii = 0; ii < size2; ii++)
     {
         data.image[ID].array.F[ii] = 1.0 - 2.0 * data.image[ID].array.F[ii];
@@ -4321,7 +4869,8 @@ int coronagraph_init_RRPM()
             y = 1.0 * (jj - size / 2);
             r = sqrt(x * x + y * y) / trad_pix;
             data.image[ID].array.F[jj * size + ii] =
-                1.0 + RRPM_P2 * r * r + RRPM_P3 * pow(r, 3.0) + RRPM_P4 * pow(r, 4.0) + RRPM_P5 * pow(r, 5.0);
+                1.0 + RRPM_P2 * r * r + RRPM_P3 * pow(r, 3.0) +
+                RRPM_P4 * pow(r, 4.0) + RRPM_P5 * pow(r, 5.0);
             if (data.image[ID].array.F[jj * size + ii] > 1.0)
             {
                 data.image[ID].array.F[jj * size + ii] = 1.0;
@@ -4335,17 +4884,17 @@ int coronagraph_init_RRPM()
 
 int coronagraph_init_OVC(long charge)
 {
-    long size = CORONAGRAPHS_ARRAYSIZE;
+    long   size = CORONAGRAPHS_ARRAYSIZE;
     double x, y, theta, re, im;
-    long ii, jj;
-    long i, j;
-    long cnt;
-    long ssamp = 3;
-    long ID1, ID2;
-    char fname1[200];
+    long   ii, jj;
+    long   i, j;
+    long   cnt;
+    long   ssamp = 3;
+    long   ID1, ID2;
+    char   fname1[200];
     double eps = 1e-8;
-    char fnamea[200];
-    char fnamep[200];
+    char   fnamea[200];
+    char   fnamep[200];
 
     printf("Initializing OVC charge %ld...\n", charge);
     fflush(stdout);
@@ -4358,14 +4907,14 @@ int coronagraph_init_OVC(long charge)
     for (ii = 0; ii < size; ii++)
         for (jj = 0; jj < size; jj++)
         {
-            re = 0.0;
-            im = 0.0;
+            re  = 0.0;
+            im  = 0.0;
             cnt = 0;
             for (i = -ssamp; i < ssamp + 1; i++)
                 for (j = -ssamp; j < ssamp + 1; j++)
                 {
-                    x = 1.0 * (ii - size / 2) + 0.5 * i / (0.5 + ssamp);
-                    y = 1.0 * (jj - size / 2) + 0.5 * j / (0.5 + ssamp);
+                    x     = 1.0 * (ii - size / 2) + 0.5 * i / (0.5 + ssamp);
+                    y     = 1.0 * (jj - size / 2) + 0.5 * j / (0.5 + ssamp);
                     theta = 1.0 * charge * atan2(y, x);
                     if ((x * x + y * y) > eps)
                     {
@@ -4380,9 +4929,17 @@ int coronagraph_init_OVC(long charge)
             data.image[ID1].array.F[jj * size + ii] = atan2(im, re);
         }
 
-    sprintf(fname1, "%s/ovcref_fmp%ld.ref.%ld", CORONAGRAPHSDATALOCAL, charge, size);
+    sprintf(fname1,
+            "%s/ovcref_fmp%ld.ref.%ld",
+            CORONAGRAPHSDATALOCAL,
+            charge,
+            size);
     save_fl_fits(fnamep, fname1);
-    sprintf(fname1, "%s/ovcref_fma%ld.ref.%ld", CORONAGRAPHSDATALOCAL, charge, size);
+    sprintf(fname1,
+            "%s/ovcref_fma%ld.ref.%ld",
+            CORONAGRAPHSDATALOCAL,
+            charge,
+            size);
     save_fl_fits(fnamea, fname1);
 
     printf("done\n");
@@ -4393,30 +4950,34 @@ int coronagraph_init_OVC(long charge)
 
 int coronagraph_simul_SHEAR4(double xld, double yld, const char *psfname)
 {
-    long size = CORONAGRAPHS_ARRAYSIZE;
-    long IDa1, IDp1, IDc;
-    long ID;
+    long   size = CORONAGRAPHS_ARRAYSIZE;
+    long   IDa1, IDp1, IDc;
+    long   ID;
     double trad_pix;
-    long ii, jj;
+    long   ii, jj;
     double a1, a2, a3, a4, p1, p2, p3, p4, r1, r2, r3, r4, i1, i2, i3, i4;
-    long index1x, index1y, index1;
-    long index2x, index2y, index2;
-    long index3x, index3y, index3;
-    long index4x, index4y, index4;
+    long   index1x, index1y, index1;
+    long   index2x, index2y, index2;
+    long   index3x, index3y, index3;
+    long   index4x, index4y, index4;
     double total;
-    long size2 = size * size;
+    long   size2   = size * size;
     double epsilon = 1e-10;
-    long iistart, iiend;
-    long shearpix;
+    long   iistart, iiend;
+    long   shearpix;
 
     /*  printf("Pixel scale = %f l/d per pixel\n",CORONAGRAPHS_PIXSCALE);*/
 
     trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
-    shearpix = (long)(SHEAR4_SHEAR * trad_pix);
+    shearpix = (long) (SHEAR4_SHEAR * trad_pix);
 
-    IDa1 = make_disk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
+    IDa1  = make_disk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
     total = arith_image_total("pa1");
-    IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
+    IDp1  = make_slopexy("pp1",
+                        size,
+                        size,
+                        PI * xld / trad_pix,
+                        PI * yld / trad_pix);
     create_2DCimage_ID("pc2", size, size, &IDc);
 
     ID = image_ID("corphase");
@@ -4428,8 +4989,8 @@ int coronagraph_simul_SHEAR4(double xld, double yld, const char *psfname)
         }
     }
 
-    iistart = (long)(0.5 * size - trad_pix - shearpix);
-    iiend = (long)(0.5 * size + trad_pix + shearpix);
+    iistart = (long) (0.5 * size - trad_pix - shearpix);
+    iiend   = (long) (0.5 * size + trad_pix + shearpix);
     if (iistart < 1)
     {
         iistart = 1;
@@ -4444,19 +5005,19 @@ int coronagraph_simul_SHEAR4(double xld, double yld, const char *psfname)
         {
             index1x = ii - shearpix;
             index1y = jj + shearpix;
-            index1 = index1y * size + index1x;
+            index1  = index1y * size + index1x;
 
             index2x = ii + shearpix;
             index2y = jj + shearpix;
-            index2 = index2y * size + index2x;
+            index2  = index2y * size + index2x;
 
             index3x = ii - shearpix;
             index3y = jj - shearpix;
-            index3 = index3y * size + index3x;
+            index3  = index3y * size + index3x;
 
             index4x = ii + shearpix;
             index4y = jj - shearpix;
-            index4 = index4y * size + index4x;
+            index4  = index4y * size + index4x;
 
             a1 = data.image[IDa1].array.F[index1];
             p1 = data.image[IDp1].array.F[index1];
@@ -4480,8 +5041,10 @@ int coronagraph_simul_SHEAR4(double xld, double yld, const char *psfname)
 
             if (a1 * a2 * a3 * a4 > epsilon)
             {
-                data.image[IDc].array.CF[jj * size + ii].re = 0.25 * (r1 - r2 - r3 + r4);
-                data.image[IDc].array.CF[jj * size + ii].im = 0.25 * (i1 - i2 - i3 + i4);
+                data.image[IDc].array.CF[jj * size + ii].re =
+                    0.25 * (r1 - r2 - r3 + r4);
+                data.image[IDc].array.CF[jj * size + ii].im =
+                    0.25 * (i1 - i2 - i3 + i4);
             }
         }
 
@@ -4507,33 +5070,37 @@ int coronagraph_simul_SHEAR4(double xld, double yld, const char *psfname)
 
 int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
 {
-    long size = CORONAGRAPHS_ARRAYSIZE;
-    long IDa1, IDp1, IDc;
-    long ID;
+    long   size = CORONAGRAPHS_ARRAYSIZE;
+    long   IDa1, IDp1, IDc;
+    long   ID;
     double trad_pix;
-    long ii, jj;
+    long   ii, jj;
     double total;
-    long size2 = size * size;
-    long ID_DICC1, ID_DICCX, ID_DICCY, ID_DICCX2, ID_DICCY2, ID_DICCXY;
-    long index;
+    long   size2 = size * size;
+    long   ID_DICC1, ID_DICCX, ID_DICCY, ID_DICCX2, ID_DICCY2, ID_DICCXY;
+    long   index;
     double x, y;
     double v1r, vxr, vyr, vx2r, vy2r, vxyr;
     double v1i, vxi, vyi, vx2i, vy2i, vxyi;
     double total1, totalx, totaly, totalx2, totaly2, totalxy;
     double amp, pha, re, im;
-    long iter;
-    long NBiter = 2;
+    long   iter;
+    long   NBiter = 2;
     double totalx2s, totaly2s, totalx2y2;
-    long IDaref;
+    long   IDaref;
 
     /*  printf("Pixel scale = %f l/d per pixel\n",CORONAGRAPHS_PIXSCALE);*/
 
     trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
 
     IDaref = make_disk("paref", size, size, 0.5 * size, 0.5 * size, trad_pix);
-    IDa1 = make_disk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
-    total = arith_image_total("pa1");
-    IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
+    IDa1   = make_disk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
+    total  = arith_image_total("pa1");
+    IDp1   = make_slopexy("pp1",
+                        size,
+                        size,
+                        PI * xld / trad_pix,
+                        PI * yld / trad_pix);
     create_2DCimage_ID("pc2", size, size, &IDc);
 
     ID = image_ID("corphase");
@@ -4556,14 +5123,14 @@ int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
         create_2Dimage_ID("diccx2", size, size, &ID_DICCX2);
         create_2Dimage_ID("diccy2", size, size, &ID_DICCY2);
         create_2Dimage_ID("diccxy", size, size, &ID_DICCXY);
-        total1 = 0.0;
-        totalx = 0.0;
-        totaly = 0.0;
-        totalx2 = 0.0;
-        totaly2 = 0.0;
-        totalxy = 0.0;
-        totalx2s = 0.0;
-        totaly2s = 0.0;
+        total1    = 0.0;
+        totalx    = 0.0;
+        totaly    = 0.0;
+        totalx2   = 0.0;
+        totaly2   = 0.0;
+        totalxy   = 0.0;
+        totalx2s  = 0.0;
+        totaly2s  = 0.0;
         totalx2y2 = 0.0;
 
         for (ii = 0; ii < size; ii++)
@@ -4593,12 +5160,14 @@ int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
                     totalx += x * x;
                     data.image[ID_DICCY].array.F[jj * size + ii] = y;
                     totaly += y * y;
-                    data.image[ID_DICCX2].array.F[jj * size + ii] = x * x - totalx2s;
-                    totalx2 +=
-                        data.image[ID_DICCX2].array.F[jj * size + ii] * data.image[ID_DICCX2].array.F[jj * size + ii];
-                    data.image[ID_DICCY2].array.F[jj * size + ii] = y * y - totaly2s;
-                    totaly2 +=
-                        data.image[ID_DICCY2].array.F[jj * size + ii] * data.image[ID_DICCY2].array.F[jj * size + ii];
+                    data.image[ID_DICCX2].array.F[jj * size + ii] =
+                        x * x - totalx2s;
+                    totalx2 += data.image[ID_DICCX2].array.F[jj * size + ii] *
+                               data.image[ID_DICCX2].array.F[jj * size + ii];
+                    data.image[ID_DICCY2].array.F[jj * size + ii] =
+                        y * y - totaly2s;
+                    totaly2 += data.image[ID_DICCY2].array.F[jj * size + ii] *
+                               data.image[ID_DICCY2].array.F[jj * size + ii];
                     data.image[ID_DICCXY].array.F[jj * size + ii] = x * y;
                     totalxy += x * y * x * y;
                 }
@@ -4608,12 +5177,18 @@ int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
             {
                 if (data.image[IDaref].array.F[jj * size + ii] > 0.5)
                 {
-                    data.image[ID_DICC1].array.F[jj * size + ii] /= sqrt(total1);
-                    data.image[ID_DICCX].array.F[jj * size + ii] /= sqrt(totalx);
-                    data.image[ID_DICCY].array.F[jj * size + ii] /= sqrt(totaly);
-                    data.image[ID_DICCX2].array.F[jj * size + ii] /= sqrt(totalx2);
-                    data.image[ID_DICCY2].array.F[jj * size + ii] /= sqrt(totaly2);
-                    data.image[ID_DICCXY].array.F[jj * size + ii] /= sqrt(totalxy);
+                    data.image[ID_DICC1].array.F[jj * size + ii] /=
+                        sqrt(total1);
+                    data.image[ID_DICCX].array.F[jj * size + ii] /=
+                        sqrt(totalx);
+                    data.image[ID_DICCY].array.F[jj * size + ii] /=
+                        sqrt(totaly);
+                    data.image[ID_DICCX2].array.F[jj * size + ii] /=
+                        sqrt(totalx2);
+                    data.image[ID_DICCY2].array.F[jj * size + ii] /=
+                        sqrt(totaly2);
+                    data.image[ID_DICCXY].array.F[jj * size + ii] /=
+                        sqrt(totalxy);
                 }
             }
 
@@ -4623,8 +5198,8 @@ int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
             {
                 if (data.image[IDaref].array.F[jj * size + ii] > 0.5)
                 {
-                    totalx2y2 +=
-                        data.image[ID_DICCX2].array.F[jj * size + ii] * data.image[ID_DICCY2].array.F[jj * size + ii];
+                    totalx2y2 += data.image[ID_DICCX2].array.F[jj * size + ii] *
+                                 data.image[ID_DICCY2].array.F[jj * size + ii];
                 }
             }
         totaly2 = 0.0;
@@ -4634,9 +5209,10 @@ int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
                 if (data.image[IDaref].array.F[jj * size + ii] > 0.5)
                 {
                     data.image[ID_DICCY2].array.F[jj * size + ii] -=
-                        totalx2y2 * data.image[ID_DICCX2].array.F[jj * size + ii];
-                    totaly2 +=
-                        data.image[ID_DICCY2].array.F[jj * size + ii] * data.image[ID_DICCY2].array.F[jj * size + ii];
+                        totalx2y2 *
+                        data.image[ID_DICCX2].array.F[jj * size + ii];
+                    totaly2 += data.image[ID_DICCY2].array.F[jj * size + ii] *
+                               data.image[ID_DICCY2].array.F[jj * size + ii];
                 }
             }
 
@@ -4645,7 +5221,8 @@ int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
             {
                 if (data.image[IDaref].array.F[jj * size + ii] > 0.5)
                 {
-                    data.image[ID_DICCY2].array.F[jj * size + ii] /= sqrt(totaly2);
+                    data.image[ID_DICCY2].array.F[jj * size + ii] /=
+                        sqrt(totaly2);
                 }
             }
 
@@ -4658,23 +5235,23 @@ int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
         printf(" done\n");
         fflush(stdout);
     }
-    ID_DICCX = image_ID("diccx");
-    ID_DICCY = image_ID("diccy");
+    ID_DICCX  = image_ID("diccx");
+    ID_DICCY  = image_ID("diccy");
     ID_DICCX2 = image_ID("diccx2");
     ID_DICCY2 = image_ID("diccy2");
     ID_DICCXY = image_ID("diccxy");
 
     for (iter = 0; iter < NBiter; iter++)
     {
-        v1r = 0.0;
-        vxr = 0.0;
-        vyr = 0.0;
+        v1r  = 0.0;
+        vxr  = 0.0;
+        vyr  = 0.0;
         vx2r = 0.0;
         vy2r = 0.0;
         vxyr = 0.0;
-        v1i = 0.0;
-        vxi = 0.0;
-        vyi = 0.0;
+        v1i  = 0.0;
+        vxi  = 0.0;
+        vyi  = 0.0;
         vx2i = 0.0;
         vy2i = 0.0;
         vxyi = 0.0;
@@ -4687,8 +5264,8 @@ int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
                 {
                     amp = data.image[IDa1].array.F[index];
                     pha = data.image[IDp1].array.F[index];
-                    re = amp * cos(pha);
-                    im = amp * sin(pha);
+                    re  = amp * cos(pha);
+                    im  = amp * sin(pha);
                     v1r += re * data.image[ID_DICC1].array.F[index];
                     v1i += im * data.image[ID_DICC1].array.F[index];
                     vxr += re * data.image[ID_DICCX].array.F[index];
@@ -4714,8 +5291,8 @@ int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
                 {
                     amp = data.image[IDa1].array.F[index];
                     pha = data.image[IDp1].array.F[index];
-                    re = amp * cos(pha);
-                    im = amp * sin(pha);
+                    re  = amp * cos(pha);
+                    im  = amp * sin(pha);
                     re -= v1r * data.image[ID_DICC1].array.F[index];
                     im -= v1i * data.image[ID_DICC1].array.F[index];
                     re -= vxr * data.image[ID_DICCX].array.F[index];
@@ -4736,10 +5313,10 @@ int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
     delete_image_ID("paref", DELETE_IMAGE_ERRMODE_WARNING);
     for (index = 0; index < size2; index++)
     {
-        amp = data.image[IDa1].array.F[index];
-        pha = data.image[IDp1].array.F[index];
-        re = amp * cos(pha);
-        im = amp * sin(pha);
+        amp                                = data.image[IDa1].array.F[index];
+        pha                                = data.image[IDp1].array.F[index];
+        re                                 = amp * cos(pha);
+        im                                 = amp * sin(pha);
         data.image[IDc].array.CF[index].re = re;
         data.image[IDc].array.CF[index].im = im;
     }
@@ -4766,25 +5343,29 @@ int coronagraph_simul_DICC(double xld, double yld, const char *psfname)
 
 int coronagraph_simul_AIC(double xld, double yld, const char *psfname)
 {
-    long size = CORONAGRAPHS_ARRAYSIZE;
-    long IDa1, IDp1, IDc;
-    long ID;
+    long   size = CORONAGRAPHS_ARRAYSIZE;
+    long   IDa1, IDp1, IDc;
+    long   ID;
     double trad_pix;
-    long ii, jj;
+    long   ii, jj;
     double a11, a12, p11, p12, r11, r12, i11, i12;
     double total;
-    long size2 = size * size;
-    long index1, index2, index1a, index2a;
+    long   size2 = size * size;
+    long   index1, index2, index1a, index2a;
     double epsilon = 1e-10;
-    long iistart, iiend;
+    long   iistart, iiend;
 
     /*  printf("Pixel scale = %f l/d per pixel\n",CORONAGRAPHS_PIXSCALE);*/
 
     trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
 
-    IDa1 = make_disk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
+    IDa1  = make_disk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
     total = arith_image_total("pa1");
-    IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
+    IDp1  = make_slopexy("pp1",
+                        size,
+                        size,
+                        PI * xld / trad_pix,
+                        PI * yld / trad_pix);
     create_2DCimage_ID("pc2", size, size, &IDc);
 
     ID = image_ID("corphase");
@@ -4796,8 +5377,8 @@ int coronagraph_simul_AIC(double xld, double yld, const char *psfname)
         }
     }
 
-    iistart = (long)(0.5 * size - trad_pix - 2.0);
-    iiend = (long)(0.5 * size + trad_pix + 2.0);
+    iistart = (long) (0.5 * size - trad_pix - 2.0);
+    iiend   = (long) (0.5 * size + trad_pix + 2.0);
     if (iistart < 1)
     {
         iistart = 1;
@@ -4815,7 +5396,7 @@ int coronagraph_simul_AIC(double xld, double yld, const char *psfname)
         {
             index1 = index1a + ii;
             index2 = index2a - ii;
-            a11 = data.image[IDa1].array.F[index1];
+            a11    = data.image[IDa1].array.F[index1];
             if (a11 > epsilon)
             {
                 p11 = data.image[IDp1].array.F[index1];
@@ -4852,17 +5433,17 @@ int coronagraph_simul_AIC(double xld, double yld, const char *psfname)
 
 int coronagraph_simul_4QPM(double xld, double yld, const char *psfname)
 {
-    long size = CORONAGRAPHS_ARRAYSIZE;
-    long IDa1, IDp1;
-    long ID;
+    long   size = CORONAGRAPHS_ARRAYSIZE;
+    long   IDa1, IDp1;
+    long   ID;
     double trad_pix;
-    long ii, jj;
+    long   ii, jj;
     double total;
-    long size2 = size * size;
-    long IDrefr, IDrefi;
+    long   size2 = size * size;
+    long   IDrefr, IDrefi;
     double x, y;
-    int init4q = 0;
-    char fname1[200];
+    int    init4q = 0;
+    char   fname1[200];
 
     x = xld;
     y = yld;
@@ -4904,7 +5485,8 @@ int coronagraph_simul_4QPM(double xld, double yld, const char *psfname)
     trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
     IDa1 = make_subpixdisk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
     total = arith_image_total("pa1");
-    IDp1 = make_slopexy("pp1", size, size, PI * x / trad_pix, PI * y / trad_pix);
+    IDp1 =
+        make_slopexy("pp1", size, size, PI * x / trad_pix, PI * y / trad_pix);
 
     ID = image_ID("corphase");
     if (ID != -1)
@@ -5002,21 +5584,21 @@ int coronagraph_simul_4QPM(double xld, double yld, const char *psfname)
 int coronagraph_simul_ODC(double xld, double yld, const char *psfname)
 {
     uint32_t size = CORONAGRAPHS_ARRAYSIZE;
-    imageID ID;
-    double trad_pix;
-    double total;
+    imageID  ID;
+    double   trad_pix;
+    double   total;
     uint64_t size2 = size * size;
-    imageID IDrefm;
-    char refname[200];
-    char refname1[200];
-    int initodc = 0;
-    char fname[200];
-    char fname1[200];
-    char fnamer[200];
-    char fnamei[200];
-    char fname1r[200];
-    char fname1i[200];
-    imageID IDrefr, IDrefi;
+    imageID  IDrefm;
+    char     refname[200];
+    char     refname1[200];
+    int      initodc = 0;
+    char     fname[200];
+    char     fname1[200];
+    char     fnamer[200];
+    char     fnamei[200];
+    char     fname1r[200];
+    char     fname1i[200];
+    imageID  IDrefr, IDrefi;
 
     //double x = xld;
     //double y = yld;
@@ -5080,9 +5662,13 @@ int coronagraph_simul_ODC(double xld, double yld, const char *psfname)
     trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
     //IDa1 =
     make_subpixdisk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
-    total = arith_image_total("pa1");
-    imageID IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
-    ID = image_ID("corphase");
+    total        = arith_image_total("pa1");
+    imageID IDp1 = make_slopexy("pp1",
+                                size,
+                                size,
+                                PI * xld / trad_pix,
+                                PI * yld / trad_pix);
+    ID           = image_ID("corphase");
     if (ID != -1)
     {
         for (uint64_t ii = 0; ii < size2; ii++)
@@ -5112,7 +5698,7 @@ int coronagraph_simul_ODC(double xld, double yld, const char *psfname)
         {
             double tmp1 = 1.0 * ii - size / 2;
             double tmp2 = 1.0 * jj - size / 2;
-            double r = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
+            double r    = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
             if (r > ODCMASK_eps)
             {
                 data.image[ID].array.CF[jj * size + ii].re = 0.0;
@@ -5178,22 +5764,22 @@ int coronagraph_simul_ODC(double xld, double yld, const char *psfname)
 int coronagraph_simul_BL8(double xld, double yld, const char *psfname)
 {
     uint32_t size = CORONAGRAPHS_ARRAYSIZE;
-    imageID IDp1;
-    imageID ID;
-    double trad_pix;
-    double total;
+    imageID  IDp1;
+    imageID  ID;
+    double   trad_pix;
+    double   total;
     uint64_t size2 = size * size;
-    imageID IDrefm;
-    char refname[200];
-    char refname1[200];
-    int initbl8 = 0;
-    char fname[200];
-    char fname1[200];
-    char fnamer[200];
-    char fnamei[200];
-    char fname1r[200];
-    char fname1i[200];
-    imageID IDrefr, IDrefi;
+    imageID  IDrefm;
+    char     refname[200];
+    char     refname1[200];
+    int      initbl8 = 0;
+    char     fname[200];
+    char     fname1[200];
+    char     fnamer[200];
+    char     fnamei[200];
+    char     fname1r[200];
+    char     fname1i[200];
+    imageID  IDrefr, IDrefi;
 
     //double x = xld;
     //double y = yld;
@@ -5281,8 +5867,12 @@ int coronagraph_simul_BL8(double xld, double yld, const char *psfname)
     //IDa1 =
     make_subpixdisk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
     total = arith_image_total("pa1");
-    IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
-    ID = image_ID("corphase");
+    IDp1  = make_slopexy("pp1",
+                        size,
+                        size,
+                        PI * xld / trad_pix,
+                        PI * yld / trad_pix);
+    ID    = image_ID("corphase");
     if (ID != -1)
     {
         for (uint64_t ii = 0; ii < size2; ii++)
@@ -5305,8 +5895,8 @@ int coronagraph_simul_BL8(double xld, double yld, const char *psfname)
     permut("fc2");
     do2dfft("fc2", "pc3");
     permut("pc3");
-    ID = image_ID("pc3");
-    long iioffset = (long)(BL8MASK_eps * trad_pix);
+    ID            = image_ID("pc3");
+    long iioffset = (long) (BL8MASK_eps * trad_pix);
     if (BL8MODE == 0)
     {
         for (uint32_t ii = 0; ii < size; ii++)
@@ -5314,7 +5904,7 @@ int coronagraph_simul_BL8(double xld, double yld, const char *psfname)
             {
                 double tmp1 = 1.0 * ii - size / 2;
                 double tmp2 = 1.0 * jj - size / 2;
-                double r = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
+                double r    = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
                 if (r > 1.0 - BL8MASK_eps)
                 {
                     data.image[ID].array.CF[jj * size + ii].re = 0.0;
@@ -5327,11 +5917,11 @@ int coronagraph_simul_BL8(double xld, double yld, const char *psfname)
         for (uint32_t ii = 0; ii < size; ii++)
             for (uint32_t jj = 0; jj < size; jj++)
             {
-                double tmp1 = (1.0 * ii - size / 2) - iioffset;
+                double tmp1  = (1.0 * ii - size / 2) - iioffset;
                 double tmp1b = (1.0 * ii - size / 2) + iioffset;
-                double tmp2 = 1.0 * jj - size / 2;
-                double r1 = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
-                double r2 = sqrt(tmp1b * tmp1b + tmp2 * tmp2) / trad_pix;
+                double tmp2  = 1.0 * jj - size / 2;
+                double r1    = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
+                double r2    = sqrt(tmp1b * tmp1b + tmp2 * tmp2) / trad_pix;
                 if ((r1 > 1.0) || (r2 > 1.0))
                 {
                     data.image[ID].array.CF[jj * size + ii].re = 0.0;
@@ -5408,22 +5998,22 @@ int coronagraph_simul_BL8(double xld, double yld, const char *psfname)
 int coronagraph_simul_BL4(double xld, double yld, const char *psfname)
 {
     uint32_t size = CORONAGRAPHS_ARRAYSIZE;
-    imageID IDp1;
-    imageID ID;
-    double trad_pix;
-    double total;
+    imageID  IDp1;
+    imageID  ID;
+    double   trad_pix;
+    double   total;
     uint64_t size2 = size * size;
-    imageID IDrefm;
-    char refname[200];
-    char refname1[200];
-    int initbl4 = 0;
-    char fname[200];
-    char fname1[200];
-    char fnamer[200];
-    char fnamei[200];
-    char fname1r[200];
-    char fname1i[200];
-    imageID IDrefr, IDrefi;
+    imageID  IDrefm;
+    char     refname[200];
+    char     refname1[200];
+    int      initbl4 = 0;
+    char     fname[200];
+    char     fname1[200];
+    char     fnamer[200];
+    char     fnamei[200];
+    char     fname1r[200];
+    char     fname1i[200];
+    imageID  IDrefr, IDrefi;
 
     //double x = xld;
     //double y = yld;
@@ -5489,8 +6079,12 @@ int coronagraph_simul_BL4(double xld, double yld, const char *psfname)
     //IDa1 =
     make_subpixdisk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
     total = arith_image_total("pa1");
-    IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
-    ID = image_ID("corphase");
+    IDp1  = make_slopexy("pp1",
+                        size,
+                        size,
+                        PI * xld / trad_pix,
+                        PI * yld / trad_pix);
+    ID    = image_ID("corphase");
     if (ID != -1)
     {
         for (uint64_t ii = 0; ii < size2; ii++)
@@ -5513,18 +6107,18 @@ int coronagraph_simul_BL4(double xld, double yld, const char *psfname)
     permut("fc2");
     do2dfft("fc2", "pc3");
     permut("pc3");
-    ID = image_ID("pc3");
-    long iioffset = (long)(BL4MASK_eps * trad_pix + 0.2);
+    ID            = image_ID("pc3");
+    long iioffset = (long) (BL4MASK_eps * trad_pix + 0.2);
     iioffset += 1;
 
     for (uint32_t ii = 0; ii < size; ii++)
         for (uint32_t jj = 0; jj < size; jj++)
         {
-            double tmp1 = (1.0 * ii - size / 2) - iioffset;
+            double tmp1  = (1.0 * ii - size / 2) - iioffset;
             double tmp1b = (1.0 * ii - size / 2) + iioffset;
-            double tmp2 = 1.0 * jj - size / 2;
-            double r1 = (sqrt(tmp1 * tmp1 + tmp2 * tmp2) + 1.0) / trad_pix;
-            double r2 = (sqrt(tmp1b * tmp1b + tmp2 * tmp2) + 1.0) / trad_pix;
+            double tmp2  = 1.0 * jj - size / 2;
+            double r1    = (sqrt(tmp1 * tmp1 + tmp2 * tmp2) + 1.0) / trad_pix;
+            double r2    = (sqrt(tmp1b * tmp1b + tmp2 * tmp2) + 1.0) / trad_pix;
             if ((r1 > 1.0) || (r2 > 1.0))
             {
                 data.image[ID].array.CF[jj * size + ii].re = 0.0;
@@ -5590,18 +6184,18 @@ int coronagraph_simul_BL4(double xld, double yld, const char *psfname)
 int coronagraph_simul_RRPM(double xld, double yld, const char *psfname)
 {
     uint32_t size = CORONAGRAPHS_ARRAYSIZE;
-    imageID IDa1, IDp1, IDa2, IDp2;
-    imageID ID;
-    double trad_pix;
-    double total;
+    imageID  IDa1, IDp1, IDa2, IDp2;
+    imageID  ID;
+    double   trad_pix;
+    double   total;
     uint64_t size2 = size * size;
-    long IDref_fm, IDref_pm;
-    char refname[200];
-    char refname1[200];
-    imageID IDrefr, IDrefi;
-    int initrrpm = 0;
-    char fname1[200];
-    double v1, v2, factor;
+    long     IDref_fm, IDref_pm;
+    char     refname[200];
+    char     refname1[200];
+    imageID  IDrefr, IDrefi;
+    int      initrrpm = 0;
+    char     fname1[200];
+    double   v1, v2, factor;
 
     sprintf(PIAAAPO_FNAME, "rrpmref_pm.ref.%ul.prof", size);
     sprintf(PIAAAPODIZE_2DAPOFNAME, "rrpmref_pm.ref.%ul", size);
@@ -5678,7 +6272,8 @@ int coronagraph_simul_RRPM(double xld, double yld, const char *psfname)
     trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
     IDa1 = make_subpixdisk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
     total = arith_image_total("pa1");
-    IDp1 = make_slopexy("pp1", size, size, PI * x / trad_pix, PI * y / trad_pix);
+    IDp1 =
+        make_slopexy("pp1", size, size, PI * x / trad_pix, PI * y / trad_pix);
     ID = image_ID("corphase");
     if (ID != -1)
     {
@@ -5691,7 +6286,8 @@ int coronagraph_simul_RRPM(double xld, double yld, const char *psfname)
     create_2Dimage_ID("pa2", size, size, &IDa2);
     for (uint64_t ii = 0; ii < size2; ii++)
     {
-        data.image[IDa2].array.F[ii] = data.image[IDa1].array.F[ii] * data.image[IDref_pm].array.F[ii];
+        data.image[IDa2].array.F[ii] =
+            data.image[IDa1].array.F[ii] * data.image[IDref_pm].array.F[ii];
     }
 
     if (RRPM_PIAA == 0)
@@ -5699,7 +6295,8 @@ int coronagraph_simul_RRPM(double xld, double yld, const char *psfname)
         create_2Dimage_ID("pa2", size, size, &IDa2);
         for (uint64_t ii = 0; ii < size2; ii++)
         {
-            data.image[IDa2].array.F[ii] = data.image[IDa1].array.F[ii] * data.image[IDref_pm].array.F[ii];
+            data.image[IDa2].array.F[ii] =
+                data.image[IDa1].array.F[ii] * data.image[IDref_pm].array.F[ii];
         }
         factor = 1.0;
     }
@@ -5737,7 +6334,8 @@ int coronagraph_simul_RRPM(double xld, double yld, const char *psfname)
 
         for (uint64_t ii = 0; ii < size2; ii++)
         {
-            data.image[IDa2].array.F[ii] = data.image[IDa1].array.F[ii] * data.image[IDref_pm].array.F[ii];
+            data.image[IDa2].array.F[ii] =
+                data.image[IDa1].array.F[ii] * data.image[IDref_pm].array.F[ii];
         }
         delete_image_ID("pp2", DELETE_IMAGE_ERRMODE_WARNING);
     }
@@ -5827,24 +6425,28 @@ int coronagraph_simul_RRPM(double xld, double yld, const char *psfname)
 /* optical vortex coronagraph */
 int coronagraph_simul_OVC(double xld, double yld, const char *psfname)
 {
-    long size = CORONAGRAPHS_ARRAYSIZE;
+    long    size = CORONAGRAPHS_ARRAYSIZE;
     imageID IDa1, IDp1;
     imageID ID;
-    double trad_pix;
-    long ii, jj;
-    double total;
-    long size2 = size * size;
+    double  trad_pix;
+    long    ii, jj;
+    double  total;
+    long    size2 = size * size;
     imageID IDref_fmp, IDref_fma;
-    double r, tmp1, tmp2;
-    char refname[200];
-    char refname1[200];
+    double  r, tmp1, tmp2;
+    char    refname[200];
+    char    refname1[200];
     imageID IDrefr, IDrefi;
-    double x, y;
-    int initovc = 0;
-    char fname1[200];
-    double re, im, amp, pha;
+    double  x, y;
+    int     initovc = 0;
+    char    fname1[200];
+    double  re, im, amp, pha;
 
-    sprintf(refname, "%s/ovcref_fmp%ld.ref.%ld", CORONAGRAPHSDATALOCAL, OVC_CHARGE, size);
+    sprintf(refname,
+            "%s/ovcref_fmp%ld.ref.%ld",
+            CORONAGRAPHSDATALOCAL,
+            OVC_CHARGE,
+            size);
     sprintf(refname1, "ovcreffmp");
     IDref_fmp = image_ID(refname1);
     if (IDref_fmp == -1)
@@ -5861,7 +6463,11 @@ int coronagraph_simul_OVC(double xld, double yld, const char *psfname)
     IDref_fmp = image_ID(refname1);
     //  save_fl_fits("ovcreffmp","ovcreffmp");
 
-    sprintf(refname, "%s/ovcref_fma%ld.ref.%ld", CORONAGRAPHSDATALOCAL, OVC_CHARGE, size);
+    sprintf(refname,
+            "%s/ovcref_fma%ld.ref.%ld",
+            CORONAGRAPHSDATALOCAL,
+            OVC_CHARGE,
+            size);
     sprintf(refname1, "ovcreffma");
     IDref_fma = image_ID(refname1);
     if (IDref_fma == -1)
@@ -5880,7 +6486,11 @@ int coronagraph_simul_OVC(double xld, double yld, const char *psfname)
     x = xld;
     y = yld;
 
-    sprintf(fname1, "%s/ovcre%ld.ref.%ld", CORONAGRAPHSDATALOCAL, OVC_CHARGE, size);
+    sprintf(fname1,
+            "%s/ovcre%ld.ref.%ld",
+            CORONAGRAPHSDATALOCAL,
+            OVC_CHARGE,
+            size);
     IDrefr = image_ID("refovcre");
     if (IDrefr == -1)
     {
@@ -5893,7 +6503,11 @@ int coronagraph_simul_OVC(double xld, double yld, const char *psfname)
             initovc = 1;
         }
     }
-    sprintf(fname1, "%s/ovcim%ld.ref.%ld", CORONAGRAPHSDATALOCAL, OVC_CHARGE, size);
+    sprintf(fname1,
+            "%s/ovcim%ld.ref.%ld",
+            CORONAGRAPHSDATALOCAL,
+            OVC_CHARGE,
+            size);
     IDrefi = image_ID("refovcim");
     if (IDrefi == -1)
     {
@@ -5927,7 +6541,7 @@ int coronagraph_simul_OVC(double xld, double yld, const char *psfname)
     */
 
     total = arith_image_total("pa1");
-    ID = image_ID("coramp");
+    ID    = image_ID("coramp");
     if (ID != -1)
     {
         printf("---------- USING AMPLITUDE FILE ----------\n");
@@ -5937,7 +6551,8 @@ int coronagraph_simul_OVC(double xld, double yld, const char *psfname)
         }
     }
 
-    IDp1 = make_slopexy("pp1", size, size, PI * x / trad_pix, PI * y / trad_pix);
+    IDp1 =
+        make_slopexy("pp1", size, size, PI * x / trad_pix, PI * y / trad_pix);
     ID = image_ID("corpha");
     if (ID != -1)
     {
@@ -5969,8 +6584,8 @@ int coronagraph_simul_OVC(double xld, double yld, const char *psfname)
 
     for (ii = 0; ii < size2; ii++)
     {
-        re = data.image[ID].array.CF[ii].re;
-        im = data.image[ID].array.CF[ii].im;
+        re  = data.image[ID].array.CF[ii].re;
+        im  = data.image[ID].array.CF[ii].im;
         amp = sqrt(re * re + im * im);
         pha = atan2(im, re);
         amp *= data.image[IDref_fma].array.F[ii];
@@ -6022,11 +6637,20 @@ int coronagraph_simul_OVC(double xld, double yld, const char *psfname)
             data.image[IDrefr].array.F[ii] = data.image[ID].array.CF[ii].re;
             data.image[IDrefi].array.F[ii] = data.image[ID].array.CF[ii].im;
         }
-        sprintf(fname1, "%s/ovcre%ld.ref.%ld", CORONAGRAPHSDATALOCAL, OVC_CHARGE, size);
+        sprintf(fname1,
+                "%s/ovcre%ld.ref.%ld",
+                CORONAGRAPHSDATALOCAL,
+                OVC_CHARGE,
+                size);
         save_fl_fits("refovcre", fname1);
-        sprintf(fname1, "%s/ovcim%ld.ref.%ld", CORONAGRAPHSDATALOCAL, OVC_CHARGE, size);
+        sprintf(fname1,
+                "%s/ovcim%ld.ref.%ld",
+                CORONAGRAPHSDATALOCAL,
+                OVC_CHARGE,
+                size);
         save_fl_fits("refovcim", fname1);
-        printf("OVC charge %ld initialized, please rerun program.\n", OVC_CHARGE);
+        printf("OVC charge %ld initialized, please rerun program.\n",
+               OVC_CHARGE);
         exit(0);
     }
     else
@@ -6043,7 +6667,7 @@ int coronagraph_simul_OVC(double xld, double yld, const char *psfname)
         {
             tmp1 = 1.0 * ii - size / 2;
             tmp2 = 1.0 * jj - size / 2;
-            r = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
+            r    = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
             //	if(data.image[IDa1].array.F[jj*size+ii]<0.99999)
             if (r > 0.96)
             {
@@ -6081,17 +6705,17 @@ int coronagraph_simul_OVC(double xld, double yld, const char *psfname)
 
 int coronagraph_simul_CPA(double xld, double yld, const char *psfname)
 {
-    long size = CORONAGRAPHS_ARRAYSIZE;
+    long    size = CORONAGRAPHS_ARRAYSIZE;
     imageID IDa1, IDp1, IDa2;
     imageID ID;
-    double trad_pix;
-    long ii, jj;
-    double total;
-    long size2 = size * size;
-    long IDref;
-    double r, tmp1, tmp2;
-    char refname[200];
-    char refname1[200];
+    double  trad_pix;
+    long    ii, jj;
+    double  total;
+    long    size2 = size * size;
+    long    IDref;
+    double  r, tmp1, tmp2;
+    char    refname[200];
+    char    refname1[200];
 
     sprintf(refname, "%s/cpapup.ref.%ld", CORONAGRAPHSDATALOCAL, size);
     sprintf(refname1, "cpapupref");
@@ -6112,8 +6736,12 @@ int coronagraph_simul_CPA(double xld, double yld, const char *psfname)
     trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
     IDa1 = make_subpixdisk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
     total = arith_image_total("pa1");
-    IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
-    ID = image_ID("corphase");
+    IDp1  = make_slopexy("pp1",
+                        size,
+                        size,
+                        PI * xld / trad_pix,
+                        PI * yld / trad_pix);
+    ID    = image_ID("corphase");
     if (ID != -1)
     {
         for (ii = 0; ii < size2; ii++)
@@ -6125,7 +6753,8 @@ int coronagraph_simul_CPA(double xld, double yld, const char *psfname)
     create_2Dimage_ID("pa2", size, size, &IDa2);
     for (ii = 0; ii < size2; ii++)
     {
-        data.image[IDa2].array.F[ii] = data.image[IDa1].array.F[ii] * data.image[IDref].array.F[ii];
+        data.image[IDa2].array.F[ii] =
+            data.image[IDa1].array.F[ii] * data.image[IDref].array.F[ii];
     }
 
     /*save_fl_fits("pa2","pa2");*/
@@ -6140,7 +6769,7 @@ int coronagraph_simul_CPA(double xld, double yld, const char *psfname)
         {
             tmp1 = 1.0 * ii - size / 2;
             tmp2 = 1.0 * jj - size / 2;
-            r = sqrt(tmp1 * tmp1 + tmp2 * tmp2) * CORONAGRAPHS_PIXSCALE;
+            r    = sqrt(tmp1 * tmp1 + tmp2 * tmp2) * CORONAGRAPHS_PIXSCALE;
             if (r < CPAFPMASKRAD)
             {
                 data.image[ID].array.CF[jj * size + ii].re = 0.0;
@@ -6158,7 +6787,7 @@ int coronagraph_simul_CPA(double xld, double yld, const char *psfname)
         {
             tmp1 = 1.0 * ii - size / 2;
             tmp2 = 1.0 * jj - size / 2;
-            r = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
+            r    = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
             if (data.image[IDa1].array.F[jj * size + ii] > CPAPPMASKRAD)
             {
                 data.image[ID].array.CF[jj * size + ii].re = 0.0;
@@ -6196,33 +6825,37 @@ int coronagraph_simul_CPA(double xld, double yld, const char *psfname)
 
 int coronagraph_simul_PPA(double xld, double yld, const char *psfname)
 {
-    long size = CORONAGRAPHS_ARRAYSIZE;
-    long IDa1, IDp1, IDa2;
-    long ID;
+    long   size = CORONAGRAPHS_ARRAYSIZE;
+    long   IDa1, IDp1, IDa2;
+    long   ID;
     double trad_pix;
-    long ii, jj;
+    long   ii, jj;
     double total;
-    long size2 = size * size;
+    long   size2 = size * size;
     double x;
-    double a = 2.0;
+    double a       = 2.0;
     double epsilon = 0.001;
     double re, im;
-    long IDrefa, IDrefp;
+    long   IDrefa, IDrefp;
 
     double *pha_array;
-    long *index_array;
-    long NBsample = 10000;
-    long IDcnt;
-    double phax, phay, pha;
-    long kx, ky, k;
-    long IDrefr, IDrefi;
-    long index;
+    long   *index_array;
+    long    NBsample = 10000;
+    long    IDcnt;
+    double  phax, phay, pha;
+    long    kx, ky, k;
+    long    IDrefr, IDrefi;
+    long    index;
 
     trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
     IDa1 = make_subpixdisk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
     total = arith_image_total("pa1");
-    IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
-    ID = image_ID("corphase");
+    IDp1  = make_slopexy("pp1",
+                        size,
+                        size,
+                        PI * xld / trad_pix,
+                        PI * yld / trad_pix);
+    ID    = image_ID("corphase");
     if (ID != -1)
     {
         for (ii = 0; ii < size2; ii++)
@@ -6236,13 +6869,15 @@ int coronagraph_simul_PPA(double xld, double yld, const char *psfname)
 
     if ((IDrefa == -1) || (IDrefp == -1))
     {
-        pha_array = (double *)malloc(NBsample * sizeof(double));
-        index_array = (long *)malloc(NBsample * sizeof(long));
+        pha_array   = (double *) malloc(NBsample * sizeof(double));
+        index_array = (long *) malloc(NBsample * sizeof(long));
         for (k = 0; k < NBsample; k++)
         {
             x = 2.0 * k / NBsample - 1.0;
-            pha_array[k] = a * log(((1.0 + epsilon) + x) / ((1.0 + epsilon) - x));
-            index_array[k] = (long)(x * (trad_pix - 1.0) / sqrt(2.0) + size / 2);
+            pha_array[k] =
+                a * log(((1.0 + epsilon) + x) / ((1.0 + epsilon) - x));
+            index_array[k] =
+                (long) (x * (trad_pix - 1.0) / sqrt(2.0) + size / 2);
         }
 
         create_2Dimage_ID("pparefr", size, size, &IDrefr);
@@ -6254,12 +6889,12 @@ int coronagraph_simul_PPA(double xld, double yld, const char *psfname)
         for (kx = 0; kx < NBsample; kx++)
         {
             phax = pha_array[kx];
-            ii = index_array[kx];
+            ii   = index_array[kx];
             for (ky = 0; ky < NBsample; ky++)
             {
-                phay = pha_array[ky];
-                jj = index_array[ky];
-                pha = phax + phay;
+                phay  = pha_array[ky];
+                jj    = index_array[ky];
+                pha   = phax + phay;
                 index = jj * size + ii;
                 data.image[IDrefr].array.F[index] += cos(pha);
                 data.image[IDrefi].array.F[index] += sin(pha);
@@ -6270,8 +6905,10 @@ int coronagraph_simul_PPA(double xld, double yld, const char *psfname)
         for (ii = 0; ii < size2; ii++)
             if (data.image[IDcnt].array.F[ii] > 0.5)
             {
-                re = data.image[IDrefr].array.F[ii] / data.image[IDcnt].array.F[ii];
-                im = data.image[IDrefi].array.F[ii] / data.image[IDcnt].array.F[ii];
+                re = data.image[IDrefr].array.F[ii] /
+                     data.image[IDcnt].array.F[ii];
+                im = data.image[IDrefi].array.F[ii] /
+                     data.image[IDcnt].array.F[ii];
                 data.image[IDrefa].array.F[ii] = sqrt(re * re + im * im);
                 data.image[IDrefp].array.F[ii] = atan2(im, re);
             }
@@ -6286,9 +6923,11 @@ int coronagraph_simul_PPA(double xld, double yld, const char *psfname)
     for (ii = 0; ii < size; ii++)
         for (jj = 0; jj < size; jj++)
         {
-            data.image[IDp1].array.F[jj * size + ii] += data.image[IDrefp].array.F[jj * size + ii];
+            data.image[IDp1].array.F[jj * size + ii] +=
+                data.image[IDrefp].array.F[jj * size + ii];
             data.image[IDa2].array.F[jj * size + ii] =
-                data.image[IDa1].array.F[jj * size + ii] * data.image[IDrefa].array.F[jj * size + ii];
+                data.image[IDa1].array.F[jj * size + ii] *
+                data.image[IDrefa].array.F[jj * size + ii];
         }
 
     /*save_fl_fits("pa2","pa2");
@@ -6320,17 +6959,21 @@ int coronagraph_simul_PPA(double xld, double yld, const char *psfname)
 int coronagraph_simul_NOCORO(double xld, double yld, const char *psfname)
 {
     uint32_t size = CORONAGRAPHS_ARRAYSIZE;
-    imageID IDp1;
-    imageID ID;
-    double trad_pix;
-    double total;
+    imageID  IDp1;
+    imageID  ID;
+    double   trad_pix;
+    double   total;
     uint64_t size2 = size * size;
 
     trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
     make_subpixdisk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
     total = arith_image_total("pa1");
-    IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
-    ID = image_ID("corphase");
+    IDp1  = make_slopexy("pp1",
+                        size,
+                        size,
+                        PI * xld / trad_pix,
+                        PI * yld / trad_pix);
+    ID    = image_ID("corphase");
     if (ID != -1)
     {
         for (uint64_t ii = 0; ii < size2; ii++)
@@ -6367,7 +7010,7 @@ int coronagraph_simul_NOCORO(double xld, double yld, const char *psfname)
 
 int coronagraph_simul_PIAA(double xld, double yld, const char *psfname)
 {
-    uint32_t size = CORONAGRAPHS_ARRAYSIZE;
+    uint32_t size  = CORONAGRAPHS_ARRAYSIZE;
     uint64_t size2 = size * size;
 
     if (initPIAA == 0)
@@ -6377,10 +7020,19 @@ int coronagraph_simul_PIAA(double xld, double yld, const char *psfname)
     }
 
     double trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
-    make_subpixdisk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix * PIAAOVERSIZE);
-    double total = arith_image_total("pa1") / PIAAOVERSIZE / PIAAOVERSIZE;
-    imageID IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
-    imageID ID = image_ID("corphase");
+    make_subpixdisk("pa1",
+                    size,
+                    size,
+                    0.5 * size,
+                    0.5 * size,
+                    trad_pix * PIAAOVERSIZE);
+    double  total = arith_image_total("pa1") / PIAAOVERSIZE / PIAAOVERSIZE;
+    imageID IDp1  = make_slopexy("pp1",
+                                size,
+                                size,
+                                PI * xld / trad_pix,
+                                PI * yld / trad_pix);
+    imageID ID    = image_ID("corphase");
     if (ID != -1)
     {
         for (uint64_t ii = 0; ii < size2; ii++)
@@ -6405,7 +7057,8 @@ int coronagraph_simul_PIAA(double xld, double yld, const char *psfname)
             {
                 double tmp1 = 1.0 * ii - size / 2;
                 double tmp2 = 1.0 * jj - size / 2;
-                double r = sqrt(tmp1 * tmp1 + tmp2 * tmp2) * CORONAGRAPHS_PIXSCALE;
+                double r =
+                    sqrt(tmp1 * tmp1 + tmp2 * tmp2) * CORONAGRAPHS_PIXSCALE;
                 if (r < PIAAFPMASKRAD)
                 {
                     data.image[ID].array.CF[jj * size + ii].re = 0.0;
@@ -6420,7 +7073,8 @@ int coronagraph_simul_PIAA(double xld, double yld, const char *psfname)
             {
                 double tmp1 = 1.0 * ii - size / 2;
                 double tmp2 = 1.0 * jj - size / 2;
-                double r = sqrt(tmp1 * tmp1 + tmp2 * tmp2) * CORONAGRAPHS_PIXSCALE;
+                double r =
+                    sqrt(tmp1 * tmp1 + tmp2 * tmp2) * CORONAGRAPHS_PIXSCALE;
                 if ((r > PIAAFPMASKRAD * 1.2) || (r < 1.2 * PIAAFPMASKRAD / 4))
                 {
                     data.image[ID].array.CF[jj * size + ii].re = 0.0;
@@ -6439,7 +7093,7 @@ int coronagraph_simul_PIAA(double xld, double yld, const char *psfname)
         {
             double tmp1 = 1.0 * ii - size / 2;
             double tmp2 = 1.0 * jj - size / 2;
-            double r = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
+            double r    = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
             if (r > PIAAPPMASKRAD)
             {
                 data.image[ID].array.CF[jj * size + ii].re = 0.0;
@@ -6453,25 +7107,29 @@ int coronagraph_simul_PIAA(double xld, double yld, const char *psfname)
         copy_image_ID("pc3", "pc3m", 0);
         imageID IDp = image_ID("pc3p");
         imageID IDm = image_ID("pc3m");
-        ID = image_ID("pc3");
+        ID          = image_ID("pc3");
         for (uint32_t ii = 0; ii < size; ii++)
             for (uint32_t jj = 0; jj < size; jj++)
             {
                 double tmp1 = 1.0 * ii - size / 2;
                 double tmp2 = 1.0 * jj - size / 2;
-                double r = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
+                double r    = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
                 if (r < PIAAPPMASKRAD)
                 {
-                    double re = data.image[ID].array.CF[jj * size + ii].re;
-                    double im = data.image[ID].array.CF[jj * size + ii].im;
-                    double amp = sqrt(re * re + im * im);
-                    double pha = atan2(im, re);
+                    double re   = data.image[ID].array.CF[jj * size + ii].re;
+                    double im   = data.image[ID].array.CF[jj * size + ii].im;
+                    double amp  = sqrt(re * re + im * im);
+                    double pha  = atan2(im, re);
                     double phap = pha + r * r * 6.0;
                     double pham = pha - r * r * 6.0;
-                    data.image[IDp].array.CF[jj * size + ii].re = amp * cos(phap);
-                    data.image[IDp].array.CF[jj * size + ii].im = amp * sin(phap);
-                    data.image[IDm].array.CF[jj * size + ii].re = amp * cos(pham);
-                    data.image[IDm].array.CF[jj * size + ii].im = amp * sin(pham);
+                    data.image[IDp].array.CF[jj * size + ii].re =
+                        amp * cos(phap);
+                    data.image[IDp].array.CF[jj * size + ii].im =
+                        amp * sin(phap);
+                    data.image[IDm].array.CF[jj * size + ii].re =
+                        amp * cos(pham);
+                    data.image[IDm].array.CF[jj * size + ii].im =
+                        amp * sin(pham);
                 }
             }
 
@@ -6539,10 +7197,11 @@ int coronagraph_simul_PIAA(double xld, double yld, const char *psfname)
 int coronagraph_simul_PIAAC(double xld, double yld, const char *psfname)
 {
     uint32_t size = CORONAGRAPHS_ARRAYSIZE;
-    imageID IDp1;
-    imageID ID;
+    imageID  IDp1;
+    imageID  ID;
     uint64_t size2 = size * size;
-    int CHEAT = 0; // if separation > CHEATLIM, fix up output beam phase sampling problem
+    int      CHEAT =
+        0; // if separation > CHEATLIM, fix up output beam phase sampling problem
     // if CHEAT=1, final complex amplitude from what hits the focal plane mask is subtracted to the original complex amplitude
     //  double CHEATLIM = 6.5;
     imageID ID1, ID2, ID3, ID4, IDb, IDc;
@@ -6557,10 +7216,19 @@ int coronagraph_simul_PIAAC(double xld, double yld, const char *psfname)
 
     double trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
     //IDa1 =
-    make_subpixdisk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix * PIAAOVERSIZE);
+    make_subpixdisk("pa1",
+                    size,
+                    size,
+                    0.5 * size,
+                    0.5 * size,
+                    trad_pix * PIAAOVERSIZE);
     double total = arith_image_total("pa1") / PIAAOVERSIZE / PIAAOVERSIZE;
 
-    IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
+    IDp1 = make_slopexy("pp1",
+                        size,
+                        size,
+                        PI * xld / trad_pix,
+                        PI * yld / trad_pix);
     /*  make_subpixdisk("pa12",size,size,0.55*size,0.52*size,0.2*trad_pix*PIAAOVERSIZE);
     execute_arith("pp1=pp1+pa12");
     IDp1 = image_ID("pp1");*/
@@ -6599,7 +7267,8 @@ int coronagraph_simul_PIAAC(double xld, double yld, const char *psfname)
             {
                 double tmp1 = 1.0 * ii - size / 2;
                 double tmp2 = 1.0 * jj - size / 2;
-                double r = sqrt(tmp1 * tmp1 + tmp2 * tmp2) * CORONAGRAPHS_PIXSCALE;
+                double r =
+                    sqrt(tmp1 * tmp1 + tmp2 * tmp2) * CORONAGRAPHS_PIXSCALE;
                 if (r > PIAAFPMASKRAD)
                 {
                     data.image[ID].array.CF[jj * size + ii].re = 0.0;
@@ -6614,7 +7283,8 @@ int coronagraph_simul_PIAAC(double xld, double yld, const char *psfname)
             {
                 double tmp1 = 1.0 * ii - size / 2;
                 double tmp2 = 1.0 * jj - size / 2;
-                double r = sqrt(tmp1 * tmp1 + tmp2 * tmp2) * CORONAGRAPHS_PIXSCALE;
+                double r =
+                    sqrt(tmp1 * tmp1 + tmp2 * tmp2) * CORONAGRAPHS_PIXSCALE;
                 if (r < PIAAFPMASKRAD)
                 {
                     data.image[ID].array.CF[jj * size + ii].re = 0.0;
@@ -6643,7 +7313,7 @@ int coronagraph_simul_PIAAC(double xld, double yld, const char *psfname)
         {
             double tmp1 = 1.0 * ii - size / 2;
             double tmp2 = 1.0 * jj - size / 2;
-            double r = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
+            double r    = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
             if (r > PIAAPPMASKRAD)
             {
                 data.image[ID].array.CF[jj * size + ii].re = 0.0;
@@ -6684,7 +7354,7 @@ int coronagraph_simul_PIAAC(double xld, double yld, const char *psfname)
     coronagraphs_PIAA_apodize_beam("pa3", "pp3c", "pa4c", "pp4c");
     piaaconfdirection = 0;
 
-    ID = image_ID("pp4");
+    ID  = image_ID("pp4");
     IDb = image_ID("pp4b");
     IDc = image_ID("pp4c");
     for (uint64_t ii = 0; ii < size * size; ii++)
@@ -6693,7 +7363,8 @@ int coronagraph_simul_PIAAC(double xld, double yld, const char *psfname)
         double tmp2 = data.image[IDb].array.F[ii];
         double tmp3 = data.image[IDc].array.F[ii];
 
-        if ((fabs(tmp2 - (2.0 * PI / 3.0 - PI)) < 0.3 * PI) && (fabs(tmp3 + (2.0 * PI / 3.0 - PI)) < 0.3 * PI))
+        if ((fabs(tmp2 - (2.0 * PI / 3.0 - PI)) < 0.3 * PI) &&
+            (fabs(tmp3 + (2.0 * PI / 3.0 - PI)) < 0.3 * PI))
         {
             tmp1 = PI + 0.5 * (tmp2 + tmp3);
             if (tmp1 > PI)
@@ -6722,19 +7393,23 @@ int coronagraph_simul_PIAAC(double xld, double yld, const char *psfname)
         for (uint32_t ii = 10; ii < size - 10; ii++)
             for (uint32_t jj = 10; jj < size - 10; jj++)
             {
-                long index1 = jj * size + ii;
-                long index2 = (size - jj) * size + (size - ii);
-                double re1 = data.image[ID1].array.F[index2] * cos(data.image[ID2].array.F[index2]);
-                double im1 = data.image[ID1].array.F[index2] * sin(data.image[ID2].array.F[index2]);
-                double re2 = data.image[ID3].array.F[index1] * cos(data.image[ID4].array.F[index1]);
-                double im2 = data.image[ID3].array.F[index1] * sin(data.image[ID4].array.F[index1]);
+                long   index1 = jj * size + ii;
+                long   index2 = (size - jj) * size + (size - ii);
+                double re1    = data.image[ID1].array.F[index2] *
+                             cos(data.image[ID2].array.F[index2]);
+                double im1 = data.image[ID1].array.F[index2] *
+                             sin(data.image[ID2].array.F[index2]);
+                double re2 = data.image[ID3].array.F[index1] *
+                             cos(data.image[ID4].array.F[index1]);
+                double im2 = data.image[ID3].array.F[index1] *
+                             sin(data.image[ID4].array.F[index1]);
 
                 double re = re1 * size * size - re2;
                 double im = im1 * size * size - im2;
 
                 double tmp1 = 1.0 * ii - size / 2;
                 double tmp2 = 1.0 * jj - size / 2;
-                double r = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
+                double r    = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
                 if (r > PIAAPPMASKRAD)
                 {
                     re = 0.0;
@@ -6782,18 +7457,23 @@ int coronagraph_simul_PIAAC(double xld, double yld, const char *psfname)
 
 int coronagraph_simul_STRIPC(double xld, double yld, const char *psfname)
 {
-    uint32_t size = CORONAGRAPHS_ARRAYSIZE;
+    uint32_t size  = CORONAGRAPHS_ARRAYSIZE;
     uint64_t size2 = size * size;
-    long OFFSET;
-    long totcnt;
+    long     OFFSET;
+    long     totcnt;
     /*  long IDpi;*/
 
-    double trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
-    imageID IDa1 = make_disk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
+    double  trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
+    imageID IDa1 =
+        make_disk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
     double total = arith_image_total("pa1");
 
-    imageID IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
-    imageID ID = image_ID("corphase");
+    imageID IDp1 = make_slopexy("pp1",
+                                size,
+                                size,
+                                PI * xld / trad_pix,
+                                PI * yld / trad_pix);
+    imageID ID   = image_ID("corphase");
     if (ID != -1)
     {
         for (uint64_t ii = 0; ii < size2; ii++)
@@ -6804,27 +7484,34 @@ int coronagraph_simul_STRIPC(double xld, double yld, const char *psfname)
     imageID IDc;
     create_2DCimage_ID("pc2", size, size, &IDc);
 
-    OFFSET = (long)(trad_pix * STRIPCOFFSET);
+    OFFSET = (long) (trad_pix * STRIPCOFFSET);
 
     /*  IDpi = create_2Dimage_ID("pupimstripc",size,size);*/
 
     totcnt = 0;
-    for (long ii = 0; ii < (long)trad_pix; ii++)
+    for (long ii = 0; ii < (long) trad_pix; ii++)
     {
-        for (long jj = 0; jj < (long)trad_pix; jj++)
+        for (long jj = 0; jj < (long) trad_pix; jj++)
         {
             double rad1 = sqrt(ii * ii + jj * jj);
-            double rad2 = sqrt((2.0 * OFFSET - ii) * (2.0 * OFFSET - ii) + (2.0 * OFFSET - jj) * (2.0 * OFFSET - jj));
-            double rad3 = sqrt((2.0 * OFFSET - ii) * (2.0 * OFFSET - ii) + jj * jj);
-            double rad4 = sqrt(ii * ii + (2.0 * OFFSET - jj) * (2.0 * OFFSET - jj));
-            if ((rad1 < (trad_pix)) && (rad2 < (trad_pix)) && (rad3 < (trad_pix)) && (rad4 < (trad_pix)) &&
+            double rad2 = sqrt((2.0 * OFFSET - ii) * (2.0 * OFFSET - ii) +
+                               (2.0 * OFFSET - jj) * (2.0 * OFFSET - jj));
+            double rad3 =
+                sqrt((2.0 * OFFSET - ii) * (2.0 * OFFSET - ii) + jj * jj);
+            double rad4 =
+                sqrt(ii * ii + (2.0 * OFFSET - jj) * (2.0 * OFFSET - jj));
+            if ((rad1 < (trad_pix)) && (rad2 < (trad_pix)) &&
+                (rad3 < (trad_pix)) && (rad4 < (trad_pix)) &&
                 (ii < 2.0 * OFFSET) && (jj < 2.0 * OFFSET))
             {
                 totcnt++;
                 long index1 = (size / 2 + jj) * size + (size / 2 + ii);
-                long index2 = (size / 2 - 2 * OFFSET + jj) * size + (size / 2 + ii);
-                long index3 = (size / 2 - 2 * OFFSET + jj) * size + (size / 2 - 2 * OFFSET + ii);
-                long index4 = (size / 2 + jj) * size + (size / 2 - 2 * OFFSET + ii);
+                long index2 =
+                    (size / 2 - 2 * OFFSET + jj) * size + (size / 2 + ii);
+                long index3 = (size / 2 - 2 * OFFSET + jj) * size +
+                              (size / 2 - 2 * OFFSET + ii);
+                long index4 =
+                    (size / 2 + jj) * size + (size / 2 - 2 * OFFSET + ii);
 
                 /*		data.image[IDpi].array.F[index1] += 1.0;
                 data.image[IDpi].array.F[index2] += 1.0;
@@ -6847,17 +7534,25 @@ int coronagraph_simul_STRIPC(double xld, double yld, const char *psfname)
                 double i3 = a1 * sin(p3);
                 double r4 = a2 * cos(p4);
                 double i4 = a2 * sin(p4);
-                data.image[IDc].array.CF[index1].re = 0.25 * ((r1 - r4) - (r2 - r3));
-                data.image[IDc].array.CF[index1].im = 0.25 * ((i1 - i4) - (i2 - i3));
+                data.image[IDc].array.CF[index1].re =
+                    0.25 * ((r1 - r4) - (r2 - r3));
+                data.image[IDc].array.CF[index1].im =
+                    0.25 * ((i1 - i4) - (i2 - i3));
 
-                data.image[IDc].array.CF[index2].re = 0.25 * ((r2 - r3) - (r1 - r4));
-                data.image[IDc].array.CF[index2].im = 0.25 * ((i2 - i3) - (i1 - i4));
+                data.image[IDc].array.CF[index2].re =
+                    0.25 * ((r2 - r3) - (r1 - r4));
+                data.image[IDc].array.CF[index2].im =
+                    0.25 * ((i2 - i3) - (i1 - i4));
 
-                data.image[IDc].array.CF[index3].re = 0.25 * ((r3 - r2) - (r4 - r1));
-                data.image[IDc].array.CF[index3].im = 0.25 * ((i3 - i2) - (i4 - i1));
+                data.image[IDc].array.CF[index3].re =
+                    0.25 * ((r3 - r2) - (r4 - r1));
+                data.image[IDc].array.CF[index3].im =
+                    0.25 * ((i3 - i2) - (i4 - i1));
 
-                data.image[IDc].array.CF[index4].re = 0.25 * ((r4 - r1) - (r3 - r2));
-                data.image[IDc].array.CF[index4].im = 0.25 * ((i4 - i1) - (i3 - i2));
+                data.image[IDc].array.CF[index4].re =
+                    0.25 * ((r4 - r1) - (r3 - r2));
+                data.image[IDc].array.CF[index4].im =
+                    0.25 * ((i4 - i1) - (i3 - i2));
             }
         }
     }
@@ -6896,19 +7591,23 @@ int coronagraph_simul_STRIPC(double xld, double yld, const char *psfname)
 int coronagraph_simul_SIMXY(double xld, double yld, const char *psfname)
 {
     uint32_t size = CORONAGRAPHS_ARRAYSIZE;
-    imageID IDa1, IDp1;
-    imageID ID, IDc;
-    double trad_pix;
-    double total;
+    imageID  IDa1, IDp1;
+    imageID  ID, IDc;
+    double   trad_pix;
+    double   total;
     uint64_t size2 = size * size;
-    double rad1;
+    double   rad1;
 
     trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
-    IDa1 = make_disk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
-    total = arith_image_total("pa1");
+    IDa1     = make_disk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix);
+    total    = arith_image_total("pa1");
 
-    IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
-    ID = image_ID("corphase");
+    IDp1 = make_slopexy("pp1",
+                        size,
+                        size,
+                        PI * xld / trad_pix,
+                        PI * yld / trad_pix);
+    ID   = image_ID("corphase");
     if (ID != -1)
     {
         for (uint64_t ii = 0; ii < size2; ii++)
@@ -6946,14 +7645,22 @@ int coronagraph_simul_SIMXY(double xld, double yld, const char *psfname)
                 double i3 = a1 * sin(p3);
                 double r4 = a2 * cos(p4);
                 double i4 = a2 * sin(p4);
-                data.image[IDc].array.CF[index1].re = 0.25 * ((r1 - r4) - (r2 - r3));
-                data.image[IDc].array.CF[index1].im = 0.25 * ((i1 - i4) - (i2 - i3));
-                data.image[IDc].array.CF[index2].re = 0.25 * ((r2 - r3) - (r1 - r4));
-                data.image[IDc].array.CF[index2].im = 0.25 * ((i2 - i3) - (i1 - i4));
-                data.image[IDc].array.CF[index3].re = 0.25 * ((r3 - r2) - (r4 - r1));
-                data.image[IDc].array.CF[index3].im = 0.25 * ((i3 - i2) - (i4 - i1));
-                data.image[IDc].array.CF[index4].re = 0.25 * ((r4 - r1) - (r3 - r2));
-                data.image[IDc].array.CF[index4].im = 0.25 * ((i4 - i1) - (i3 - i2));
+                data.image[IDc].array.CF[index1].re =
+                    0.25 * ((r1 - r4) - (r2 - r3));
+                data.image[IDc].array.CF[index1].im =
+                    0.25 * ((i1 - i4) - (i2 - i3));
+                data.image[IDc].array.CF[index2].re =
+                    0.25 * ((r2 - r3) - (r1 - r4));
+                data.image[IDc].array.CF[index2].im =
+                    0.25 * ((i2 - i3) - (i1 - i4));
+                data.image[IDc].array.CF[index3].re =
+                    0.25 * ((r3 - r2) - (r4 - r1));
+                data.image[IDc].array.CF[index3].im =
+                    0.25 * ((i3 - i2) - (i4 - i1));
+                data.image[IDc].array.CF[index4].re =
+                    0.25 * ((r4 - r1) - (r3 - r2));
+                data.image[IDc].array.CF[index4].im =
+                    0.25 * ((i4 - i1) - (i3 - i2));
             }
         }
     }
@@ -6987,10 +7694,10 @@ int coronagraph_simul_SIMXY(double xld, double yld, const char *psfname)
 int coronagraph_simul_AIC_PIAAC(double xld, double yld, const char *psfname)
 {
     uint32_t size = CORONAGRAPHS_ARRAYSIZE;
-    imageID ID;
+    imageID  ID;
     uint64_t size2 = size * size;
-    imageID IDaicfield, IDaicc, IDaicd;
-    imageID IDpiaac;
+    imageID  IDaicfield, IDaicc, IDaicd;
+    imageID  IDpiaac;
 
     if (initPIAA == 0)
     {
@@ -6999,11 +7706,20 @@ int coronagraph_simul_AIC_PIAAC(double xld, double yld, const char *psfname)
     }
 
     double trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
-    make_subpixdisk("pa1", size, size, 0.5 * size, 0.5 * size, trad_pix * PIAAOVERSIZE);
+    make_subpixdisk("pa1",
+                    size,
+                    size,
+                    0.5 * size,
+                    0.5 * size,
+                    trad_pix * PIAAOVERSIZE);
     double total = arith_image_total("pa1") / PIAAOVERSIZE / PIAAOVERSIZE;
 
-    imageID IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
-    ID = image_ID("corphase");
+    imageID IDp1 = make_slopexy("pp1",
+                                size,
+                                size,
+                                PI * xld / trad_pix,
+                                PI * yld / trad_pix);
+    ID           = image_ID("corphase");
     if (ID != -1)
     {
         for (uint64_t ii = 0; ii < size2; ii++)
@@ -7031,8 +7747,10 @@ int coronagraph_simul_AIC_PIAAC(double xld, double yld, const char *psfname)
 
             if (r < PIAAAIC_FIELDLIMIT)
             {
-                data.image[IDaicfield].array.CF[jj * size + ii].re = data.image[ID].array.CF[jj * size + ii].re;
-                data.image[IDaicfield].array.CF[jj * size + ii].im = data.image[ID].array.CF[jj * size + ii].im;
+                data.image[IDaicfield].array.CF[jj * size + ii].re =
+                    data.image[ID].array.CF[jj * size + ii].re;
+                data.image[IDaicfield].array.CF[jj * size + ii].im =
+                    data.image[ID].array.CF[jj * size + ii].im;
 
                 data.image[ID].array.CF[jj * size + ii].re = 0.0;
                 data.image[ID].array.CF[jj * size + ii].im = 0.0;
@@ -7051,7 +7769,7 @@ int coronagraph_simul_AIC_PIAAC(double xld, double yld, const char *psfname)
         {
             double tmp1 = 1.0 * ii - size / 2;
             double tmp2 = 1.0 * jj - size / 2;
-            double r = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
+            double r    = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
             if (r > PIAAPPMASKRAD)
             {
                 data.image[ID].array.CF[jj * size + ii].re = 0.0;
@@ -7100,11 +7818,17 @@ int coronagraph_simul_AIC_PIAAC(double xld, double yld, const char *psfname)
         for (uint32_t jj = 1; jj < size; jj++)
         {
             double r11 = data.image[IDaicfield].array.CF[jj * size + ii].re;
-            double r12 = data.image[IDaicfield].array.CF[(size - jj) * size + (size - ii)].re;
+            double r12 = data.image[IDaicfield]
+                             .array.CF[(size - jj) * size + (size - ii)]
+                             .re;
             double i11 = data.image[IDaicfield].array.CF[jj * size + ii].im;
-            double i12 = data.image[IDaicfield].array.CF[(size - jj) * size + (size - ii)].im;
-            data.image[IDaicd].array.F[jj * size + ii] = 0.25 * ((r11 - r12) * (r11 - r12) + (i11 - i12) * (i11 - i12));
-            data.image[IDaicc].array.F[jj * size + ii] = 0.25 * ((r11 + r12) * (r11 + r12) + (i11 + i12) * (i11 + i12));
+            double i12 = data.image[IDaicfield]
+                             .array.CF[(size - jj) * size + (size - ii)]
+                             .im;
+            data.image[IDaicd].array.F[jj * size + ii] =
+                0.25 * ((r11 - r12) * (r11 - r12) + (i11 - i12) * (i11 - i12));
+            data.image[IDaicc].array.F[jj * size + ii] =
+                0.25 * ((r11 + r12) * (r11 + r12) + (i11 + i12) * (i11 + i12));
             data.image[IDaicd].array.F[jj * size + ii] /= total * size2;
             data.image[IDaicc].array.F[jj * size + ii] /= total * size2;
         }
@@ -7118,21 +7842,24 @@ int coronagraph_simul_AIC_PIAAC(double xld, double yld, const char *psfname)
     for (uint32_t ii = 0; ii < size; ii++)
         for (uint32_t jj = 0; jj < size / 2; jj++)
         {
-            data.image[ID].array.F[jj * size + ii] = data.image[IDpiaac].array.F[(jj + size / 4) * size + ii];
+            data.image[ID].array.F[jj * size + ii] =
+                data.image[IDpiaac].array.F[(jj + size / 4) * size + ii];
         }
 
     for (uint32_t ii = 0; ii < size / 2; ii++)
         for (uint32_t jj = size / 2; jj < size; jj++)
         {
             data.image[ID].array.F[jj * size + ii] =
-                data.image[IDaicd].array.F[(jj - size / 4) * size + (ii + size / 4)];
+                data.image[IDaicd]
+                    .array.F[(jj - size / 4) * size + (ii + size / 4)];
         }
 
     for (uint32_t ii = size / 2; ii < size; ii++)
         for (uint32_t jj = size / 2; jj < size; jj++)
         {
             data.image[ID].array.F[jj * size + ii] =
-                data.image[IDaicc].array.F[(jj - size / 4) * size + (ii - size / 4)];
+                data.image[IDaicc]
+                    .array.F[(jj - size / 4) * size + (ii - size / 4)];
         }
 
     delete_image_ID("psfPIAAC", DELETE_IMAGE_ERRMODE_WARNING);
@@ -7145,14 +7872,16 @@ int coronagraph_simul_AIC_PIAAC(double xld, double yld, const char *psfname)
 int coronagraph_RRPM_optimize()
 {
     double best_RRPM_RADIUS = RRPM_RADIUS;
-    double best_RRPM_P2 = RRPM_P2;
-    double best_RRPM_P3 = RRPM_P3;
-    double best_RRPM_P4 = RRPM_P4;
-    double best_RRPM_P5 = RRPM_P5;
+    double best_RRPM_P2     = RRPM_P2;
+    double best_RRPM_P3     = RRPM_P3;
+    double best_RRPM_P4     = RRPM_P4;
+    double best_RRPM_P5     = RRPM_P5;
     double best_value;
     double value;
 
-    EXECUTE_SYSTEM_COMMAND("rm %s/rrpmref_fm.ref %s/rrpmref_pm.ref", CORONAGRAPHSDATALOCAL, CORONAGRAPHSDATALOCAL);
+    EXECUTE_SYSTEM_COMMAND("rm %s/rrpmref_fm.ref %s/rrpmref_pm.ref",
+                           CORONAGRAPHSDATALOCAL,
+                           CORONAGRAPHSDATALOCAL);
     delete_image_ID("rrpmref_fm.ref", DELETE_IMAGE_ERRMODE_WARNING);
     delete_image_ID("rrpmref_pm.ref", DELETE_IMAGE_ERRMODE_WARNING);
     coronagraph_simul_RRPM(0.0, 0.0, "psf");
@@ -7167,60 +7896,75 @@ int coronagraph_RRPM_optimize()
         RRPM_P4 += 0.0001 * pow((0.5 - ran1()), 3.0);
         RRPM_P5 += 0.0001 * pow((0.5 - ran1()), 3.0);
 
-        EXECUTE_SYSTEM_COMMAND("rm %s/rrpmref_fm.ref %s/rrpmref_pm.ref", CORONAGRAPHSDATALOCAL, CORONAGRAPHSDATALOCAL);
+        EXECUTE_SYSTEM_COMMAND("rm %s/rrpmref_fm.ref %s/rrpmref_pm.ref",
+                               CORONAGRAPHSDATALOCAL,
+                               CORONAGRAPHSDATALOCAL);
         delete_image_ID("rrpmref_fm.ref", DELETE_IMAGE_ERRMODE_WARNING);
         delete_image_ID("rrpmref_pm.ref", DELETE_IMAGE_ERRMODE_WARNING);
         coronagraph_simul_RRPM(0.0, 0.0, "psf");
         value = arith_image_total("psf");
         delete_image_ID("psf", DELETE_IMAGE_ERRMODE_WARNING);
 
-        printf("[%g %g %g %g %g] %g     [%g %g %g %g %g] %g\n", RRPM_RADIUS, RRPM_P2, RRPM_P3, RRPM_P4, RRPM_P5, value,
-               best_RRPM_RADIUS, best_RRPM_P2, best_RRPM_P3, best_RRPM_P4, best_RRPM_P5, best_value);
+        printf("[%g %g %g %g %g] %g     [%g %g %g %g %g] %g\n",
+               RRPM_RADIUS,
+               RRPM_P2,
+               RRPM_P3,
+               RRPM_P4,
+               RRPM_P5,
+               value,
+               best_RRPM_RADIUS,
+               best_RRPM_P2,
+               best_RRPM_P3,
+               best_RRPM_P4,
+               best_RRPM_P5,
+               best_value);
         if (value < best_value)
         {
             best_RRPM_RADIUS = RRPM_RADIUS;
-            best_RRPM_P2 = RRPM_P2;
-            best_RRPM_P3 = RRPM_P3;
-            best_RRPM_P4 = RRPM_P4;
-            best_RRPM_P5 = RRPM_P5;
-            best_value = value;
+            best_RRPM_P2     = RRPM_P2;
+            best_RRPM_P3     = RRPM_P3;
+            best_RRPM_P4     = RRPM_P4;
+            best_RRPM_P5     = RRPM_P5;
+            best_value       = value;
         }
         else
         {
             RRPM_RADIUS = best_RRPM_RADIUS;
-            RRPM_P2 = best_RRPM_P2;
-            RRPM_P3 = best_RRPM_P3;
-            RRPM_P4 = best_RRPM_P4;
-            RRPM_P5 = best_RRPM_P5;
+            RRPM_P2     = best_RRPM_P2;
+            RRPM_P3     = best_RRPM_P3;
+            RRPM_P4     = best_RRPM_P4;
+            RRPM_P5     = best_RRPM_P5;
         }
     }
 
     return (0);
 }
 
-int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname)
+int coronagraph_simul_MULTISTEP_APLC(double      xld,
+                                     double      yld,
+                                     const char *psfname)
 {
     uint32_t size = CORONAGRAPHS_ARRAYSIZE;
-    char fname[200];
-    char fname1[200];
-    double trad_pix;
-    imageID IDa1, IDp1, ID1;
-    imageID IDapo = -1;
-    imageID ID;
-    imageID IDfpm;
-    imageID IDpupa0;
-    double total0;
+    char     fname[200];
+    char     fname1[200];
+    double   trad_pix;
+    imageID  IDa1, IDp1, ID1;
+    imageID  IDapo = -1;
+    imageID  ID;
+    imageID  IDfpm;
+    imageID  IDpupa0;
+    double   total0;
     uint64_t size2 = size * size;
-    long iter;
-    imageID IDout;
-    imageID IDb, IDc, ID2, ID3, ID4;
-    int CHEAT = 0;
-    double tot1, tot2;
-    double v1, v2;
-    int FPMZONES;
-    double MASKCAMULT;
-    long kx, ky;
-    int WriteFiles = 1;
+    long     iter;
+    imageID  IDout;
+    imageID  IDb, IDc, ID2, ID3, ID4;
+    int      CHEAT = 0;
+    double   tot1, tot2;
+    double   v1, v2;
+    int      FPMZONES;
+    double   MASKCAMULT;
+    long     kx, ky;
+    int      WriteFiles = 1;
     //    struct stat info;
     imageID IDlm;
 
@@ -7317,8 +8061,10 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
     iisize = data.image[IDprol_init].md[0].size[0];
     jjsize = data.image[IDprol_init].md[0].size[1];
 
-    iico = (long)((APLC_CentOBS1 - APLCapo_CO_START) / APLCapo_CO_STEP + 0.1);
-    jjfpmrad = (long)((APLC_FPMASKsize - APLCapo_FPMRAD_START) / APLCapo_FPMRAD_STEP + 0.1);
+    iico = (long) ((APLC_CentOBS1 - APLCapo_CO_START) / APLCapo_CO_STEP + 0.1);
+    jjfpmrad =
+        (long) ((APLC_FPMASKsize - APLCapo_FPMRAD_START) / APLCapo_FPMRAD_STEP +
+                0.1);
 
     printf("%ld %ld\n", iico, jjfpmrad);
 
@@ -7337,23 +8083,29 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
     if (data.image[IDprol_init].array.F[jjfpmrad * iisize + iico] > 0.1)
     {
         double tmp4 = data.image[IDprol_peak].array.F[jjfpmrad * iisize + iico];
-        MASKCAMULT = -(1.0 - tmp4) / tmp4;
+        MASKCAMULT  = -(1.0 - tmp4) / tmp4;
         printf("Focal plane mask CA = %f (peak = %f)\n", MASKCAMULT, tmp4);
 
         if (fitapoINIT == 0)
         {
-            fitapoN = data.image[IDprol_fitapo_a].md[0].size[2];
-            fitapo_a = (double *)malloc(sizeof(double) * fitapoN);
-            fitapo_b = (double *)malloc(sizeof(double) * fitapoN);
-            fitapo_c = (double *)malloc(sizeof(double) * fitapoN);
-            fitapo_c1 = (double *)malloc(sizeof(double) * fitapoN);
+            fitapoN    = data.image[IDprol_fitapo_a].md[0].size[2];
+            fitapo_a   = (double *) malloc(sizeof(double) * fitapoN);
+            fitapo_b   = (double *) malloc(sizeof(double) * fitapoN);
+            fitapo_c   = (double *) malloc(sizeof(double) * fitapoN);
+            fitapo_c1  = (double *) malloc(sizeof(double) * fitapoN);
             fitapoINIT = 1;
         }
         for (n = 0; n < fitapoN; n++)
         {
-            fitapo_a[n] = data.image[IDprol_fitapo_a].array.F[n * iisize * jjsize + jjfpmrad * iisize + iico];
-            fitapo_b[n] = data.image[IDprol_fitapo_b].array.F[n * iisize * jjsize + jjfpmrad * iisize + iico];
-            fitapo_c[n] = data.image[IDprol_fitapo_c].array.F[n * iisize * jjsize + jjfpmrad * iisize + iico];
+            fitapo_a[n] =
+                data.image[IDprol_fitapo_a]
+                    .array.F[n * iisize * jjsize + jjfpmrad * iisize + iico];
+            fitapo_b[n] =
+                data.image[IDprol_fitapo_b]
+                    .array.F[n * iisize * jjsize + jjfpmrad * iisize + iico];
+            fitapo_c[n] =
+                data.image[IDprol_fitapo_c]
+                    .array.F[n * iisize * jjsize + jjfpmrad * iisize + iico];
             fitapo_c1[n] = fitapo_c[n];
             if (fitapo_c1[n] < fitapo_minc)
             {
@@ -7361,10 +8113,16 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
             }
         }
         n = 0;
-        printf("f(x) = %15.10f * exp(%15.10f * x**%15.10f)", fitapo_a[n], fitapo_b[n], fitapo_c1[n]);
+        printf("f(x) = %15.10f * exp(%15.10f * x**%15.10f)",
+               fitapo_a[n],
+               fitapo_b[n],
+               fitapo_c1[n]);
         for (n = 1; n < fitapoN; n++)
         {
-            printf("+ %15.10f * exp(%15.10f * x**%15.10f)", fitapo_a[n], fitapo_b[n], fitapo_c1[n]);
+            printf("+ %15.10f * exp(%15.10f * x**%15.10f)",
+                   fitapo_a[n],
+                   fitapo_b[n],
+                   fitapo_c1[n]);
         }
         printf("\n");
     }
@@ -7474,14 +8232,21 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
             //  IDfpm = load_fits(fname, fname1);
             // else
             // {
-            printf("MASK RADIUS = %f pix\n", DFTZFACTOR * APLC_FPMASKsize / CORONAGRAPHS_PIXSCALE);
-            IDfpm = make_subpixdisk(fname1, size, size, size / 2, size / 2,
-                                    DFTZFACTOR * APLC_FPMASKsize / CORONAGRAPHS_PIXSCALE);
+            printf("MASK RADIUS = %f pix\n",
+                   DFTZFACTOR * APLC_FPMASKsize / CORONAGRAPHS_PIXSCALE);
+            IDfpm = make_subpixdisk(fname1,
+                                    size,
+                                    size,
+                                    size / 2,
+                                    size / 2,
+                                    DFTZFACTOR * APLC_FPMASKsize /
+                                        CORONAGRAPHS_PIXSCALE);
 
             for (uint64_t ii = 0; ii < size2; ii++)
             {
                 data.image[IDfpm].array.F[ii] =
-                    1.0 - (1.0 - MASKCAMULT * (1.0 + FPMASK_transm_error)) * data.image[IDfpm].array.F[ii];
+                    1.0 - (1.0 - MASKCAMULT * (1.0 + FPMASK_transm_error)) *
+                              data.image[IDfpm].array.F[ii];
             }
 
             save_fl_fits(fname1, "FPmask.fits");
@@ -7496,13 +8261,23 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
         if (IDfpm == -1)
         {
             FPMZONES = 1;
-            printf("-------------- FPMASKSIZE_ERROR = 1, FPMASK_FACTOR = %f, FPMZONES = %d ----------- (%f %f)\n",
-                   FPMASK_FACTOR, FPMZONES, FPMASK_transm_error, FPMASK_size_error);
+            printf(
+                "-------------- FPMASKSIZE_ERROR = 1, FPMASK_FACTOR = %f, "
+                "FPMZONES = %d ----------- (%f %f)\n",
+                FPMASK_FACTOR,
+                FPMZONES,
+                FPMASK_transm_error,
+                FPMASK_size_error);
             if (FPMZONES == 1) // if focal plane mask is a single zone
             {
-                IDfpm = make_subpixdisk("aplcfpm", size, size, size / 2, size / 2,
-                                        DFTZFACTOR * APLC_FPMASKsize * FPMASK_FACTOR / CORONAGRAPHS_PIXSCALE *
-                                            (1.0 + FPMASK_size_error));
+                IDfpm = make_subpixdisk(
+                    "aplcfpm",
+                    size,
+                    size,
+                    size / 2,
+                    size / 2,
+                    DFTZFACTOR * APLC_FPMASKsize * FPMASK_FACTOR /
+                        CORONAGRAPHS_PIXSCALE * (1.0 + FPMASK_size_error));
                 //    for(ii=0;ii<size2;ii++)
                 //data.image[IDfpm].array.F[ii] = 1.0-(1.0-MASKCAMULT*(1.0+FPMASK_transm_error))*data.image[IDfpm].array.F[ii];
 
@@ -7515,15 +8290,29 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
             {
                 // here, FPMASK_FACTOR1 < FPMASK_FACTOR2
                 printf("--------------- 2 zones mask  -------------\n");
-                IDfpm = make_subpixdisk("aplcfpm", size, size, size / 2, size / 2,
-                                        DFTZFACTOR * APLC_FPMASKsize * FPMASK_FACTOR1 / CORONAGRAPHS_PIXSCALE);
-                ID2 = make_subpixdisk("aplcfpm2", size, size, size / 2, size / 2,
-                                      DFTZFACTOR * APLC_FPMASKsize * FPMASK_FACTOR2 / CORONAGRAPHS_PIXSCALE);
+                IDfpm =
+                    make_subpixdisk("aplcfpm",
+                                    size,
+                                    size,
+                                    size / 2,
+                                    size / 2,
+                                    DFTZFACTOR * APLC_FPMASKsize *
+                                        FPMASK_FACTOR1 / CORONAGRAPHS_PIXSCALE);
+                ID2 =
+                    make_subpixdisk("aplcfpm2",
+                                    size,
+                                    size,
+                                    size / 2,
+                                    size / 2,
+                                    DFTZFACTOR * APLC_FPMASKsize *
+                                        FPMASK_FACTOR2 / CORONAGRAPHS_PIXSCALE);
                 for (uint64_t ii = 0; ii < size2; ii++)
                 {
                     v1 = data.image[IDfpm].array.F[ii];
                     v2 = data.image[ID2].array.F[ii];
-                    data.image[IDfpm].array.F[ii] = 1.0 - v1 * (1.0 - FPM_TRANSM1) - (v2 - v1) * (1.0 - FPM_TRANSM2);
+                    data.image[IDfpm].array.F[ii] =
+                        1.0 - v1 * (1.0 - FPM_TRANSM1) -
+                        (v2 - v1) * (1.0 - FPM_TRANSM2);
                 }
                 delete_image_ID("aplcfpm2", DELETE_IMAGE_ERRMODE_WARNING);
                 save_fl_fits("aplcfpm", "aplcfpm");
@@ -7542,7 +8331,11 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
 
     //  total0 = arith_image_total("pa1");
 
-    IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
+    IDp1 = make_slopexy("pp1",
+                        size,
+                        size,
+                        PI * xld / trad_pix,
+                        PI * yld / trad_pix);
 
     ID = image_ID("corpha");
     if (ID != -1)
@@ -7586,7 +8379,8 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
             if (IDapo != -1)
                 for (uint64_t ii = 0; ii < size2; ii++)
                 {
-                    data.image[IDa1].array.F[ii] *= data.image[IDapo].array.F[ii];
+                    data.image[IDa1].array.F[ii] *=
+                        data.image[IDapo].array.F[ii];
                 }
         }
 
@@ -7602,9 +8396,10 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
                 for (long jj = 3; jj < size - 3; jj++)
                 {
                     int ok1 = 1;
-                    kx = 0;
-                    ky = 0;
-                    if (data.image[ID].array.F[(jj + ky) * size + ii + kx] < 0.001)
+                    kx      = 0;
+                    ky      = 0;
+                    if (data.image[ID].array.F[(jj + ky) * size + ii + kx] <
+                        0.001)
                     {
                         ok1 = 0;
                     }
@@ -7617,7 +8412,8 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
     }
     else
     {
-        PIAAAPO_NBPOINTS = (long)(CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0);
+        PIAAAPO_NBPOINTS =
+            (long) (CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0);
         if (initPIAA == 0)
         {
             // initialize PIAA using PIAAAPO_FNAME apodization profile
@@ -7665,7 +8461,7 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
         delete_image_ID("pp1", DELETE_IMAGE_ERRMODE_WARNING);
 
         ID1 = image_ID("pa1a");
-        ID = image_ID("postPIAAmask");
+        ID  = image_ID("postPIAAmask");
         if (ID != -1)
         {
             printf("Applying postPIAA amplitude mask\n");
@@ -7707,7 +8503,7 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
             do2dfft("pc1", "fc1");
             delete_image_ID("pc1", DELETE_IMAGE_ERRMODE_WARNING);
             permut("fc1");
-            ID = image_ID("fc1");
+            ID   = image_ID("fc1");
             tot1 = 0.0;
             tot2 = 0.0;
             for (uint64_t ii = 0; ii < size2; ii++)
@@ -7756,7 +8552,8 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
             for (uint32_t ii = 0; ii < size; ii++)
                 for (uint32_t jj = 0; jj < size; jj++)
                 {
-                    if ((ii < 5) || (jj < 5) || (ii > size - 5) || (jj > size - 5))
+                    if ((ii < 5) || (jj < 5) || (ii > size - 5) ||
+                        (jj > size - 5))
                     {
                         data.image[ID].array.CF[jj * size + ii].re = 0.0;
                         data.image[ID].array.CF[jj * size + ii].im = 0.0;
@@ -7764,9 +8561,13 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
                     else
                     {
                         data.image[ID].array.CF[jj * size + ii].re *=
-                            data.image[IDlm].array.F[(size - jj) * size + (size - ii)] / size2;
+                            data.image[IDlm]
+                                .array.F[(size - jj) * size + (size - ii)] /
+                            size2;
                         data.image[ID].array.CF[jj * size + ii].im *=
-                            data.image[IDlm].array.F[(size - jj) * size + (size - ii)] / size2;
+                            data.image[IDlm]
+                                .array.F[(size - jj) * size + (size - ii)] /
+                            size2;
                         //			data.image[ID].array.CF[jj*size+ii].re /= size2;
                         //			data.image[ID].array.CF[jj*size+ii].im /= size2;
                     }
@@ -7805,13 +8606,17 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
             IDfpm_p = image_ID("aplcfpm_p");
             if ((IDfpm_a != -1) && (IDfpm_p != -1))
             {
-                printf("============= USING CUSTOM COMPLEX FOCAL PLANE MASK ============\n");
+                printf(
+                    "============= USING CUSTOM COMPLEX FOCAL PLANE MASK "
+                    "============\n");
                 mk_complex_from_amph("aplcfpm_a", "aplcfpm_p", "aplcfpm_c", 0);
                 ID = image_ID("aplcfpm_c");
                 for (uint64_t ii = 0; ii < size2; ii++)
                 {
-                    data.image[ID].array.CF[ii].re = 1.0 - data.image[ID].array.CF[ii].re;
-                    data.image[ID].array.CF[ii].im = -data.image[ID].array.CF[ii].im;
+                    data.image[ID].array.CF[ii].re =
+                        1.0 - data.image[ID].array.CF[ii].re;
+                    data.image[ID].array.CF[ii].im =
+                        -data.image[ID].array.CF[ii].im;
                 }
                 fft_DFTinsertFPM("pc1", "aplcfpm_c", DFTZFACTOR, "pc2", NULL);
                 delete_image_ID("aplcfpm_c", DELETE_IMAGE_ERRMODE_WARNING);
@@ -7909,7 +8714,10 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
         if (0) // testing
         {
             execute_arith("zeroim=0*postPIAAmask");
-            coronagraphs_PIAA_apodize_beam("postPIAAmask", "postPIAAmask", "prePIAAmask1", "prePIAAmask");
+            coronagraphs_PIAA_apodize_beam("postPIAAmask",
+                                           "postPIAAmask",
+                                           "prePIAAmask1",
+                                           "prePIAAmask");
             save_fl_fits("postPIAAmask", "test_postPIAAmask.fits");
             save_fl_fits("prePIAAmask", "test_prePIAAmask.fits");
         }
@@ -7919,7 +8727,7 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
         coronagraphs_PIAA_apodize_beam("pa3", "pp3c", "pa4c", "pp4c");
         piaaconfdirection = 0;
 
-        ID = image_ID("pp4");
+        ID  = image_ID("pp4");
         IDb = image_ID("pp4b");
         IDc = image_ID("pp4c");
         for (uint64_t ii = 0; ii < size * size; ii++)
@@ -7928,7 +8736,8 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
             double tmp2 = data.image[IDb].array.F[ii];
             double tmp3 = data.image[IDc].array.F[ii];
 
-            if ((fabs(tmp2 - (2.0 * PI / 3.0 - PI)) < 0.3 * PI) && (fabs(tmp3 + (2.0 * PI / 3.0 - PI)) < 0.3 * PI))
+            if ((fabs(tmp2 - (2.0 * PI / 3.0 - PI)) < 0.3 * PI) &&
+                (fabs(tmp3 + (2.0 * PI / 3.0 - PI)) < 0.3 * PI))
             {
                 tmp1 = PI + 0.5 * (tmp2 + tmp3);
                 if (tmp1 > PI)
@@ -7946,7 +8755,9 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
         delete_image_ID("pa4c", DELETE_IMAGE_ERRMODE_WARNING);
         delete_image_ID("pp4c", DELETE_IMAGE_ERRMODE_WARNING);
 
-        printf(" CENT OBS 0 = %f x %f -------------------\n", APLC_CentOBS0, trad_pix);
+        printf(" CENT OBS 0 = %f x %f -------------------\n",
+               APLC_CentOBS0,
+               trad_pix);
 
         if (CHEAT == 1)
         {
@@ -7959,19 +8770,23 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
             for (long ii = 10; ii < size - 10; ii++)
                 for (long jj = 10; jj < size - 10; jj++)
                 {
-                    long index1 = jj * size + ii;
-                    long index2 = (size - jj) * size + (size - ii);
-                    double re1 = data.image[ID1].array.F[index2] * cos(data.image[ID2].array.F[index2]);
-                    double im1 = data.image[ID1].array.F[index2] * sin(data.image[ID2].array.F[index2]);
-                    double re2 = data.image[ID3].array.F[index1] * cos(data.image[ID4].array.F[index1]);
-                    double im2 = data.image[ID3].array.F[index1] * sin(data.image[ID4].array.F[index1]);
+                    long   index1 = jj * size + ii;
+                    long   index2 = (size - jj) * size + (size - ii);
+                    double re1    = data.image[ID1].array.F[index2] *
+                                 cos(data.image[ID2].array.F[index2]);
+                    double im1 = data.image[ID1].array.F[index2] *
+                                 sin(data.image[ID2].array.F[index2]);
+                    double re2 = data.image[ID3].array.F[index1] *
+                                 cos(data.image[ID4].array.F[index1]);
+                    double im2 = data.image[ID3].array.F[index1] *
+                                 sin(data.image[ID4].array.F[index1]);
 
                     double re = re1 * size * size - re2;
                     double im = im1 * size * size - im2;
 
                     double tmp1 = 1.0 * ii - size / 2;
                     double tmp2 = 1.0 * jj - size / 2;
-                    double r = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
+                    double r    = sqrt(tmp1 * tmp1 + tmp2 * tmp2) / trad_pix;
                     if ((r > PIAAPPMASKRAD) || (r < APLC_CentOBS0))
                     {
                         re = 0.0;
@@ -7989,14 +8804,17 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
             for (uint32_t ii = 0; ii < size; ii++)
                 for (uint32_t jj = 0; jj < size; jj++)
                 {
-                    long index1 = jj * size + ii;
-                    double re = data.image[ID3].array.F[index1] * cos(data.image[ID4].array.F[index1]);
-                    double im = data.image[ID3].array.F[index1] * sin(data.image[ID4].array.F[index1]);
+                    long   index1 = jj * size + ii;
+                    double re     = data.image[ID3].array.F[index1] *
+                                cos(data.image[ID4].array.F[index1]);
+                    double im = data.image[ID3].array.F[index1] *
+                                sin(data.image[ID4].array.F[index1]);
                     double tmp1 = 1.0 * ii - size / 2;
                     double tmp2 = 1.0 * jj - size / 2;
-                    double r = sqrt(tmp1 * tmp1 + tmp2 * tmp2);
+                    double r    = sqrt(tmp1 * tmp1 + tmp2 * tmp2);
                     if ((r > PIAAPPMASKRAD * trad_pix) ||
-                        (r < APLC_CentOBS0 * trad_pix + 3.0)) // 3 pixel buffer to avoid edge effects
+                        (r < APLC_CentOBS0 * trad_pix +
+                                 3.0)) // 3 pixel buffer to avoid edge effects
                     {
                         re = 0.0;
                         im = 0.0;
@@ -8027,14 +8845,14 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
                 {
                     uint32_t ii1 = ii;
                     uint32_t jj1 = jj;
-                    long ii2 = size - ii;
-                    long jj2 = size - jj;
-                    double re1 = data.image[ID].array.CF[jj1 * size + ii1].re;
-                    double im1 = data.image[ID].array.CF[jj1 * size + ii1].im;
-                    double re2 = data.image[ID].array.CF[jj2 * size + ii2].re;
-                    double im2 = data.image[ID].array.CF[jj2 * size + ii2].im;
-                    double re = 0.5 * (re1 + re2);
-                    double im = 0.5 * (im1 + im2);
+                    long     ii2 = size - ii;
+                    long     jj2 = size - jj;
+                    double   re1 = data.image[ID].array.CF[jj1 * size + ii1].re;
+                    double   im1 = data.image[ID].array.CF[jj1 * size + ii1].im;
+                    double   re2 = data.image[ID].array.CF[jj2 * size + ii2].re;
+                    double   im2 = data.image[ID].array.CF[jj2 * size + ii2].im;
+                    double   re  = 0.5 * (re1 + re2);
+                    double   im  = 0.5 * (im1 + im2);
                     data.image[ID].array.CF[jj1 * size + ii1].re = re;
                     data.image[ID].array.CF[jj1 * size + ii1].im = im;
                     data.image[ID].array.CF[jj2 * size + ii2].re = re;
@@ -8077,14 +8895,14 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
                 {
                     uint32_t ii1 = ii;
                     uint32_t jj1 = jj;
-                    long ii2 = size - ii;
-                    long jj2 = size - jj;
-                    double re1 = data.image[ID].array.CF[jj1 * size + ii1].re;
-                    double im1 = data.image[ID].array.CF[jj1 * size + ii1].im;
-                    double re2 = data.image[ID].array.CF[jj2 * size + ii2].re;
-                    double im2 = data.image[ID].array.CF[jj2 * size + ii2].im;
-                    double re = 0.5 * (re1 + re2);
-                    double im = 0.5 * (im1 + im2);
+                    long     ii2 = size - ii;
+                    long     jj2 = size - jj;
+                    double   re1 = data.image[ID].array.CF[jj1 * size + ii1].re;
+                    double   im1 = data.image[ID].array.CF[jj1 * size + ii1].im;
+                    double   re2 = data.image[ID].array.CF[jj2 * size + ii2].re;
+                    double   im2 = data.image[ID].array.CF[jj2 * size + ii2].im;
+                    double   re  = 0.5 * (re1 + re2);
+                    double   im  = 0.5 * (im1 + im2);
                     data.image[ID].array.CF[jj1 * size + ii1].re = re;
                     data.image[ID].array.CF[jj1 * size + ii1].im = im;
                     data.image[ID].array.CF[jj2 * size + ii2].re = re;
@@ -8099,7 +8917,8 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
         create_2Dimage_ID(psfname, size, size, &IDout);
         for (uint64_t ii = 0; ii < size2; ii++)
         {
-            data.image[IDout].array.F[ii] = data.image[ID].array.F[ii] / size2 / total0 * data.image[ID].array.F[ii];
+            data.image[IDout].array.F[ii] = data.image[ID].array.F[ii] / size2 /
+                                            total0 * data.image[ID].array.F[ii];
         }
 
         delete_image_ID("fc2", DELETE_IMAGE_ERRMODE_WARNING);
@@ -8112,21 +8931,29 @@ int coronagraph_simul_MULTISTEP_APLC(double xld, double yld, const char *psfname
     return (0);
 }
 
-int coronagraph_init_EXTERNAL_OCCULTER(double D, double l, double lambda, long FACTOR)
+int coronagraph_init_EXTERNAL_OCCULTER(double D,
+                                       double l,
+                                       double lambda,
+                                       long   FACTOR)
 {
-    uint32_t size = CORONAGRAPHS_ARRAYSIZE;
-    double PARAM_a = 12.5;
-    double PARAM_b = 12.5;
-    long PARAM_n = 6;
-    double pixscale;
-    double trad_pix;
-    imageID ID;
+    uint32_t size    = CORONAGRAPHS_ARRAYSIZE;
+    double   PARAM_a = 12.5;
+    double   PARAM_b = 12.5;
+    long     PARAM_n = 6;
+    double   pixscale;
+    double   trad_pix;
+    imageID  ID;
 
     trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
     pixscale = D / 2.0 / trad_pix;
-    make_offsetHyperGaussian(size * FACTOR, trad_pix / (D / 2.0) * PARAM_a, trad_pix / (D / 2.0) * PARAM_b, PARAM_n,
+    make_offsetHyperGaussian(size * FACTOR,
+                             trad_pix / (D / 2.0) * PARAM_a,
+                             trad_pix / (D / 2.0) * PARAM_b,
+                             PARAM_n,
                              "extocc");
-    printf("pix:  %g  %g\n", trad_pix / (D / 2.0) * PARAM_a, trad_pix / (D / 2.0) * PARAM_b);
+    printf("pix:  %g  %g\n",
+           trad_pix / (D / 2.0) * PARAM_a,
+           trad_pix / (D / 2.0) * PARAM_b);
     save_fl_fits("extocc", "extocc");
     create_2Dimage_ID("zero", size * FACTOR, size * FACTOR, NULL);
     mk_complex_from_amph("extocc", "zero", "extocc_c", 0);
@@ -8141,25 +8968,27 @@ int coronagraph_init_EXTERNAL_OCCULTER(double D, double l, double lambda, long F
     return (ID);
 }
 
-int coronagraph_simul_EXTERNAL_OCCULTER(double xld, double yld, const char *psfname)
+int coronagraph_simul_EXTERNAL_OCCULTER(double      xld,
+                                        double      yld,
+                                        const char *psfname)
 {
-    long size = CORONAGRAPHS_ARRAYSIZE;
-    long size2 = size * size;
-    double D = 6.5;            /* in m */
-    double l = 50000000.0;     /* in m */
-    double lambda = 0.0000005; /* in m */
-    long IDocc, IDocca, IDoccp;
+    long   size   = CORONAGRAPHS_ARRAYSIZE;
+    long   size2  = size * size;
+    double D      = 6.5;        /* in m */
+    double l      = 50000000.0; /* in m */
+    double lambda = 0.0000005;  /* in m */
+    long   IDocc, IDocca, IDoccp;
     double shadow_pixscale; /* rad/pixel */
     double pixscale;
     double trad_pix;
     double xrad, yrad;
-    long IDa1, IDp1;
-    long ii, jj, ii1, jj1;
-    long xtransl, ytransl;
+    long   IDa1, IDp1;
+    long   ii, jj, ii1, jj1;
+    long   xtransl, ytransl;
     double r;
-    long ID, IDout;
+    long   ID, IDout;
     double total0;
-    long FACTOR = 2;
+    long   FACTOR = 2;
 
     IDocc = image_ID("extoccp");
     if (IDocc == -1)
@@ -8172,22 +9001,26 @@ int coronagraph_simul_EXTERNAL_OCCULTER(double xld, double yld, const char *psfn
     IDoccp = image_ID("extp");
     //  save_fl_fits("exta","exta");
 
-    trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
-    pixscale = D / 2.0 / trad_pix;  /* m/pixel */
-    shadow_pixscale = pixscale / l; /* rad/pixel */
+    trad_pix        = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
+    pixscale        = D / 2.0 / trad_pix; /* m/pixel */
+    shadow_pixscale = pixscale / l;       /* rad/pixel */
 
     xrad = xld * lambda / D;
     yrad = yld * lambda / D;
 
     printf("rad = %g %g   [%g]\n", xrad, yrad, shadow_pixscale);
 
-    xtransl = (long)(xrad / shadow_pixscale);
-    ytransl = (long)(yrad / shadow_pixscale);
+    xtransl = (long) (xrad / shadow_pixscale);
+    ytransl = (long) (yrad / shadow_pixscale);
 
     printf("transl = %ld %ld\n", xtransl, ytransl);
 
     create_2Dimage_ID("pa1", size, size, &IDa1);
-    IDp1 = make_slopexy("pp1", size, size, PI * xld / trad_pix, PI * yld / trad_pix);
+    IDp1 = make_slopexy("pp1",
+                        size,
+                        size,
+                        PI * xld / trad_pix,
+                        PI * yld / trad_pix);
 
     total0 = 0.0;
     for (ii = 0; ii < size; ii++)
@@ -8195,16 +9028,20 @@ int coronagraph_simul_EXTERNAL_OCCULTER(double xld, double yld, const char *psfn
         {
             ii1 = (ii - size / 2) + size * FACTOR / 2 - xtransl;
             jj1 = (jj - size / 2) + size * FACTOR / 2 - ytransl;
-            if ((ii1 > 0) && (ii1 < size * FACTOR) && (jj1 > 0) && (jj1 < size * FACTOR))
+            if ((ii1 > 0) && (ii1 < size * FACTOR) && (jj1 > 0) &&
+                (jj1 < size * FACTOR))
             {
-                data.image[IDa1].array.F[jj * size + ii] = data.image[IDocca].array.F[jj1 * size * FACTOR + ii1];
-                data.image[IDp1].array.F[jj * size + ii] += data.image[IDoccp].array.F[jj1 * size * FACTOR + ii1];
+                data.image[IDa1].array.F[jj * size + ii] =
+                    data.image[IDocca].array.F[jj1 * size * FACTOR + ii1];
+                data.image[IDp1].array.F[jj * size + ii] +=
+                    data.image[IDoccp].array.F[jj1 * size * FACTOR + ii1];
             }
             else
             {
                 data.image[IDa1].array.F[jj * size + ii] = 1.0;
             }
-            r = sqrt((ii - size / 2) * (ii - size / 2) + (jj - size / 2) * (jj - size / 2));
+            r = sqrt((ii - size / 2) * (ii - size / 2) +
+                     (jj - size / 2) * (jj - size / 2));
             if (r > trad_pix)
             {
                 data.image[IDa1].array.F[jj * size + ii] = 0.0;
@@ -8226,7 +9063,8 @@ int coronagraph_simul_EXTERNAL_OCCULTER(double xld, double yld, const char *psfn
     create_2Dimage_ID(psfname, size, size, &IDout);
     for (ii = 0; ii < size2; ii++)
     {
-        data.image[IDout].array.F[ii] = data.image[ID].array.F[ii] / size2 / total0 * data.image[ID].array.F[ii];
+        data.image[IDout].array.F[ii] = data.image[ID].array.F[ii] / size2 /
+                                        total0 * data.image[ID].array.F[ii];
     }
 
     delete_image_ID("exta", DELETE_IMAGE_ERRMODE_WARNING);
@@ -8240,13 +9078,17 @@ int coronagraph_simul_EXTERNAL_OCCULTER(double xld, double yld, const char *psfn
     return (0);
 }
 
-int coronagraph_simulPSF(double xld, double yld, const char *psfname, long coronagraph_type, const char *options)
+int coronagraph_simulPSF(double      xld,
+                         double      yld,
+                         const char *psfname,
+                         long        coronagraph_type,
+                         const char *options)
 {
-    FILE *fp;
-    int str_pos, i;
-    char input[200];
-    char str1[200];
-    int ok1;
+    FILE  *fp;
+    int    str_pos, i;
+    char   input[200];
+    char   str1[200];
+    int    ok1;
     double tmpf0, tmpf1;
 
     printf("SCALE : %f l/D per pix\n", CORONAGRAPHS_PIXSCALE);
@@ -8280,14 +9122,15 @@ int coronagraph_simulPSF(double xld, double yld, const char *psfname, long coron
     {
         str_pos = strstr(options, "-FPMSERR ") - options;
         str_pos = str_pos + strlen("-FPMSERR ");
-        i = 0;
-        while ((options[i + str_pos] != ' ') && (options[i + str_pos] != '\n') && (options[i + str_pos] != '\0'))
+        i       = 0;
+        while ((options[i + str_pos] != ' ') &&
+               (options[i + str_pos] != '\n') && (options[i + str_pos] != '\0'))
         {
             input[i] = options[i + str_pos];
             i++;
         }
-        input[i] = '\0';
-        FPMASKSIZE_ERROR = 1;
+        input[i]          = '\0';
+        FPMASKSIZE_ERROR  = 1;
         FPMASK_size_error = atof(input);
         printf("-------------- MASK size error = %f\n", FPMASK_size_error);
     }
@@ -8342,37 +9185,37 @@ int coronagraph_simulPSF(double xld, double yld, const char *psfname, long coron
         break;
 
     case 10:
-        NB_APLC_STEP = 1;
+        NB_APLC_STEP    = 1;
         APLC_FPMASKsize = 1.8; // 1.8 is the best mask size for 1e10 contrast
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 11:
-        NB_APLC_STEP = 2;
+        NB_APLC_STEP    = 2;
         APLC_FPMASKsize = 1.4; // 1.4 is the best mask size for 1e10 contrast
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 12:
-        NB_APLC_STEP = 3;
+        NB_APLC_STEP    = 3;
         APLC_FPMASKsize = 1.2; // 1.2 is the best mask size for 1e10 contrast
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 13:
-        NB_APLC_STEP = 4;
+        NB_APLC_STEP    = 4;
         APLC_FPMASKsize = 1.0; // 1.0 is the best mask size for 1e10 contrast
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 14:
-        NB_APLC_STEP = 5;
+        NB_APLC_STEP    = 5;
         APLC_FPMASKsize = 1.0; // 1.0 is the best mask size for 1e10 contrast
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 15:
-        NB_APLC_STEP = 0;
+        NB_APLC_STEP    = 0;
         APLC_FPMASKsize = 4.2; // this is the best mask size for 1e10 contrast
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
@@ -8449,29 +9292,29 @@ int coronagraph_simulPSF(double xld, double yld, const char *psfname, long coron
         break;
 
     case 31:
-        APLC_PIAA = 1;
-        NB_APLC_STEP = 2;
+        APLC_PIAA       = 1;
+        NB_APLC_STEP    = 2;
         APLC_FPMASKsize = 1.6; // for 1e10 contrast with IWA = 1.2 l/D
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 32:
-        APLC_PIAA = 1;
-        NB_APLC_STEP = 3;
+        APLC_PIAA       = 1;
+        NB_APLC_STEP    = 3;
         APLC_FPMASKsize = 1.3; // for 1e10 contrast
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 33:
-        APLC_PIAA = 1;
-        NB_APLC_STEP = 4;
+        APLC_PIAA       = 1;
+        NB_APLC_STEP    = 4;
         APLC_FPMASKsize = 1.2; // for 1e10 contrast
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 34:
-        APLC_PIAA = 1;
-        NB_APLC_STEP = 2;
+        APLC_PIAA       = 1;
+        NB_APLC_STEP    = 2;
         APLC_FPMASKsize = 2.0; // for 1e10 contrast
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
@@ -8479,7 +9322,7 @@ int coronagraph_simulPSF(double xld, double yld, const char *psfname, long coron
     case 35:
         APLC_PIAA = 1;
         //      APLC_FLIP = 1;
-        NB_APLC_STEP = 1;
+        NB_APLC_STEP    = 1;
         APLC_FPMASKsize = 2.4; // for 1e10 contrast
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
@@ -8487,43 +9330,43 @@ int coronagraph_simulPSF(double xld, double yld, const char *psfname, long coron
         /* coronagraphs for 1e6 contrast - ground-based */
 
     case 36: /* optimal for 1e6 contrast */
-        APLC_PIAA = 0;
-        NB_APLC_STEP = 0;
+        APLC_PIAA       = 0;
+        NB_APLC_STEP    = 0;
         APLC_FPMASKsize = 2.6;
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 37: /* optimal for 1e6 contrast */
-        APLC_PIAA = 0;
-        NB_APLC_STEP = 1;
+        APLC_PIAA       = 0;
+        NB_APLC_STEP    = 1;
         APLC_FPMASKsize = 1.4;
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 38: /* optimal for 1e6 contrast */
-        APLC_PIAA = 0;
-        NB_APLC_STEP = 2;
+        APLC_PIAA       = 0;
+        NB_APLC_STEP    = 2;
         APLC_FPMASKsize = 1.0;
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 39: /* optimal for 1e6 contrast */
-        APLC_PIAA = 1;
-        NB_APLC_STEP = 0;
+        APLC_PIAA       = 1;
+        NB_APLC_STEP    = 0;
         APLC_FPMASKsize = 2.6;
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 40: // optimal for 1e6 contrast baselined for SMEX - but needs to check chromaticity
-        APLC_PIAA = 1;
-        NB_APLC_STEP = 1;
+        APLC_PIAA       = 1;
+        NB_APLC_STEP    = 1;
         APLC_FPMASKsize = 1.4;
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 41: /* optimal for 1e6 contrast */
-        APLC_PIAA = 1;
-        NB_APLC_STEP = 2;
+        APLC_PIAA       = 1;
+        NB_APLC_STEP    = 2;
         APLC_FPMASKsize = 1.0;
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
@@ -8531,43 +9374,43 @@ int coronagraph_simulPSF(double xld, double yld, const char *psfname, long coron
         /* with central obscuration = 0.275 */
 
     case 42: /* optimal for 1e6 contrast */
-        PIAACENTOBS = 0.275;
-        APLC_PIAA = 1;
-        NB_APLC_STEP = 0;
+        PIAACENTOBS     = 0.275;
+        APLC_PIAA       = 1;
+        NB_APLC_STEP    = 0;
         APLC_FPMASKsize = 2.6;
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 43: /* optimal for 1e6 contrast */
-        PIAACENTOBS = 0.275;
-        APLC_PIAA = 1;
-        NB_APLC_STEP = 1;
+        PIAACENTOBS     = 0.275;
+        APLC_PIAA       = 1;
+        NB_APLC_STEP    = 1;
         APLC_FPMASKsize = 1.4;
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 44: /* optimal for 1e6 contrast */
-        PIAACENTOBS = 0.275;
-        APLC_PIAA = 1;
-        NB_APLC_STEP = 2;
+        PIAACENTOBS     = 0.275;
+        APLC_PIAA       = 1;
+        NB_APLC_STEP    = 2;
         APLC_FPMASKsize = 1.0;
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
-    case 45:           // optimal for 1e6 contrast - BASELINE FOR EXCEDE
-        APLC_PIAA = 2; // PIAA -> APLC -> inverse PIAA
-        NB_APLC_STEP = 1;
+    case 45:                 // optimal for 1e6 contrast - BASELINE FOR EXCEDE
+        APLC_PIAA       = 2; // PIAA -> APLC -> inverse PIAA
+        NB_APLC_STEP    = 1;
         APLC_FPMASKsize = 2.0;
         fprintf(stderr, "MASK SIZE ERROR = %f\n", FPMASK_size_error);
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
         break;
 
     case 50: // generalized PIAA APLC, read parameters from file
-        APLC_PIAA = 1;
-        APLC_PMASK = 1; // if NB_APLC_STEP = 1, put phase on focal plane mask
+        APLC_PIAA     = 1;
+        APLC_PMASK    = 1; // if NB_APLC_STEP = 1, put phase on focal plane mask
         APLC_CentOBS0 = 0;
         APLC_CentOBS1 = 0;
-        fp = fopen("APLCPIAA.conf", "r");
+        fp            = fopen("APLCPIAA.conf", "r");
         if (fp == NULL)
         {
             PRINT_ERROR("Cannot read configuration file \"APLCPIAA.conf\"\n");
@@ -8578,7 +9421,12 @@ int coronagraph_simulPSF(double xld, double yld, const char *psfname, long coron
         {
             int fscanfcnt;
 
-            fscanfcnt = fscanf(fp, "%ld %s %d %d\n", &NB_APLC_STEP, str1, &APLC_PIAA, &APLC_PMASK);
+            fscanfcnt = fscanf(fp,
+                               "%ld %s %d %d\n",
+                               &NB_APLC_STEP,
+                               str1,
+                               &APLC_PIAA,
+                               &APLC_PMASK);
             if (fscanfcnt == EOF)
             {
                 if (ferror(fp))
@@ -8587,13 +9435,17 @@ int coronagraph_simulPSF(double xld, double yld, const char *psfname, long coron
                 }
                 else
                 {
-                    fprintf(stderr, "Error: fscanf reached end of file, no matching characters, no matching failure\n");
+                    fprintf(stderr,
+                            "Error: fscanf reached end of file, no matching "
+                            "characters, no matching failure\n");
                 }
                 return RETURN_FAILURE;
             }
             else if (fscanfcnt != 4)
             {
-                fprintf(stderr, "Error: fscanf successfully matched and assigned %i input items, 4 expected\n",
+                fprintf(stderr,
+                        "Error: fscanf successfully matched and assigned %i "
+                        "input items, 4 expected\n",
                         fscanfcnt);
                 return RETURN_FAILURE;
             }
@@ -8601,10 +9453,10 @@ int coronagraph_simulPSF(double xld, double yld, const char *psfname, long coron
 
         //      printf("str1 = \"%s\"\n", str1);
         ok1 = 0;
-        for (long i = 0; i < (long)strlen(str1); i++)
+        for (long i = 0; i < (long) strlen(str1); i++)
             if (str1[i] == '-')
             {
-                ok1 = 1;
+                ok1     = 1;
                 str1[i] = ' ';
             }
         if (ok1 == 1)
@@ -8621,23 +9473,34 @@ int coronagraph_simulPSF(double xld, double yld, const char *psfname, long coron
 
         //printf("str1 = \"%s\"\n", str1);
 
-        fprintf(stderr, "NB_APLC_STEP = %ld\n",
+        fprintf(stderr,
+                "NB_APLC_STEP = %ld\n",
                 NB_APLC_STEP); // number of APLC steps (1 for PIAACMC)
-        fprintf(stderr, "APLC_FPMASKsize = %f\n",
+        fprintf(stderr,
+                "APLC_FPMASKsize = %f\n",
                 APLC_FPMASKsize); // focal plane mask size (l/D)
-        fprintf(stderr, "APLC_CentOBS0 = %f\n",
+        fprintf(stderr,
+                "APLC_CentOBS0 = %f\n",
                 APLC_CentOBS0); // central obstruction in input
-        fprintf(stderr, "APLC_CentOBS1 = %f\n",
-                APLC_CentOBS1);                           // central obstruction in output
-        fprintf(stderr, "APLC_PIAA = %d\n", APLC_PIAA);   // 2: PIAA->APLC->invPIAA
-        fprintf(stderr, "APLC_PMASK = %d\n", APLC_PMASK); // 1 if fpmask has phase
+        fprintf(stderr,
+                "APLC_CentOBS1 = %f\n",
+                APLC_CentOBS1); // central obstruction in output
+        fprintf(stderr,
+                "APLC_PIAA = %d\n",
+                APLC_PIAA); // 2: PIAA->APLC->invPIAA
+        fprintf(stderr,
+                "APLC_PMASK = %d\n",
+                APLC_PMASK); // 1 if fpmask has phase
 
         if ((fp = fopen("MASKerr.conf", "r")) != NULL)
         {
             {
                 int fscanfcnt;
 
-                fscanfcnt = fscanf(fp, "%lf %lf\n", &FPMASK_transm_error, &FPMASK_size_error);
+                fscanfcnt = fscanf(fp,
+                                   "%lf %lf\n",
+                                   &FPMASK_transm_error,
+                                   &FPMASK_size_error);
                 if (fscanfcnt == EOF)
                 {
                     if (ferror(fp))
@@ -8647,13 +9510,16 @@ int coronagraph_simulPSF(double xld, double yld, const char *psfname, long coron
                     else
                     {
                         fprintf(stderr,
-                                "Error: fscanf reached end of file, no matching characters, no matching failure\n");
+                                "Error: fscanf reached end of file, no "
+                                "matching characters, no matching failure\n");
                     }
                     return RETURN_FAILURE;
                 }
                 else if (fscanfcnt != 2)
                 {
-                    fprintf(stderr, "Error: fscanf successfully matched and assigned %i input items, 2 expected\n",
+                    fprintf(stderr,
+                            "Error: fscanf successfully matched and assigned "
+                            "%i input items, 2 expected\n",
                             fscanfcnt);
                     return RETURN_FAILURE;
                 }
@@ -8664,9 +9530,11 @@ int coronagraph_simulPSF(double xld, double yld, const char *psfname, long coron
         }
         else
         {
-            printf("No focal plane mask error file - using perfect focal plane mask\n");
+            printf(
+                "No focal plane mask error file - using perfect focal plane "
+                "mask\n");
             FPMASK_transm_error = 0.0;
-            FPMASK_size_error = 0.0;
+            FPMASK_size_error   = 0.0;
         }
 
         coronagraph_simul_MULTISTEP_APLC(xld, yld, psfname);
@@ -8681,50 +9549,55 @@ int coronagraph_simulPSF(double xld, double yld, const char *psfname, long coron
     return (0);
 }
 
-int coronagraph_transm(const char *fname, long coronagraph_type, double logcontrast, const char *options)
+int coronagraph_transm(const char *fname,
+                       long        coronagraph_type,
+                       double      logcontrast,
+                       const char *options)
 {
-    FILE *fp;
-    double sepstep = 0.05; // 0.05;
-    double sepmax = 6.0;   //8.0;
-    double sep;
-    double total, total1, total2, total3, total4;
-    long i, j, ii, jj, kk;
-    double x, y, r;
-    long size = CORONAGRAPHS_ARRAYSIZE;
-    long size2 = size * size;
-    long ID, ID0;
-    double flux0, flux;
-    double TTerror = 0.001;  /* in l/d */
-    double FOCerror = 0.001; /* in l/d */
-    double Zerror = 0.0;
-    long Zindex = 0;
-    int Zerror_included = 0;
-    int TTerror_included = 0;
-    int FOCerror_included = 0;
-    char input[50];
-    int str_pos;
-    int nbTTpts = 20;
-    int nbFOCpts = 10;
-    long cnt;
-    long ID1;
-    double trad_pix;
-    double tmp;
-    double epsilon = 1.0e-10;
-    double peak;
+    FILE   *fp;
+    double  sepstep = 0.05; // 0.05;
+    double  sepmax  = 6.0;  //8.0;
+    double  sep;
+    double  total, total1, total2, total3, total4;
+    long    i, j, ii, jj, kk;
+    double  x, y, r;
+    long    size  = CORONAGRAPHS_ARRAYSIZE;
+    long    size2 = size * size;
+    long    ID, ID0;
+    double  flux0, flux;
+    double  TTerror           = 0.001; /* in l/d */
+    double  FOCerror          = 0.001; /* in l/d */
+    double  Zerror            = 0.0;
+    long    Zindex            = 0;
+    int     Zerror_included   = 0;
+    int     TTerror_included  = 0;
+    int     FOCerror_included = 0;
+    char    input[50];
+    int     str_pos;
+    int     nbTTpts  = 20;
+    int     nbFOCpts = 10;
+    long    cnt;
+    long    ID1;
+    double  trad_pix;
+    double  tmp;
+    double  epsilon = 1.0e-10;
+    double  peak;
     double *arrayS;
     double *arrayS1;
     double *arrayS2;
-    int RADAVER = 0;
-    double angle;
-    long anglestep;
-    long NBanglestep = 16;
-    double MaxAngle = 0.5 * PI;
-    double maxtransm;
-    double iwa, sepold, total2old;
-    int iwaOK;
+    int     RADAVER = 0;
+    double  angle;
+    long    anglestep;
+    long    NBanglestep = 16;
+    double  MaxAngle    = 0.5 * PI;
+    double  maxtransm;
+    double  iwa, sepold, total2old;
+    int     iwaOK;
 
     y = 0.0;
-    printf("CORONAGRAPH TYPE %ld    OPTION : \"%s\"\n", coronagraph_type, options);
+    printf("CORONAGRAPH TYPE %ld    OPTION : \"%s\"\n",
+           coronagraph_type,
+           options);
     printf("LOGCONTRAST = %f\n", logcontrast);
     trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
 
@@ -8738,14 +9611,15 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
     {
         str_pos = strstr(options, "-TT ") - options;
         str_pos = str_pos + strlen("-TT ");
-        i = 0;
-        while ((options[i + str_pos] != ' ') && (options[i + str_pos] != '\n') && (options[i + str_pos] != '\0'))
+        i       = 0;
+        while ((options[i + str_pos] != ' ') &&
+               (options[i + str_pos] != '\n') && (options[i + str_pos] != '\0'))
         {
             input[i] = options[i + str_pos];
             i++;
         }
         input[i] = '\0';
-        TTerror = atof(input);
+        TTerror  = atof(input);
         if (TTerror > epsilon)
         {
             TTerror_included = 1;
@@ -8761,24 +9635,28 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
     {
         str_pos = strstr(options, "-FPMSERR ") - options;
         str_pos = str_pos + strlen("-FPMSERR ");
-        i = 0;
-        while ((options[i + str_pos] != ' ') && (options[i + str_pos] != '\n') && (options[i + str_pos] != '\0'))
+        i       = 0;
+        while ((options[i + str_pos] != ' ') &&
+               (options[i + str_pos] != '\n') && (options[i + str_pos] != '\0'))
         {
             input[i] = options[i + str_pos];
             i++;
         }
-        input[i] = '\0';
+        input[i]         = '\0';
         FPMASKSIZE_ERROR = 1;
-        FPMASK_FACTOR = atof(input);
-        printf("--------------- FPMASK_FACTOR = %f ----------------------------\n", FPMASK_FACTOR);
+        FPMASK_FACTOR    = atof(input);
+        printf(
+            "--------------- FPMASK_FACTOR = %f ----------------------------\n",
+            FPMASK_FACTOR);
     }
 
     if (strstr(options, "-FOC ") != NULL)
     {
         str_pos = strstr(options, "-FOC ") - options;
         str_pos = str_pos + strlen("-FOC ");
-        i = 0;
-        while ((options[i + str_pos] != ' ') && (options[i + str_pos] != '\n') && (options[i + str_pos] != '\0'))
+        i       = 0;
+        while ((options[i + str_pos] != ' ') &&
+               (options[i + str_pos] != '\n') && (options[i + str_pos] != '\0'))
         {
             input[i] = options[i + str_pos];
             i++;
@@ -8796,14 +9674,15 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
     {
         str_pos = strstr(options, "-Znb ") - options;
         str_pos = str_pos + strlen("-Znb ");
-        i = 0;
-        while ((options[i + str_pos] != ' ') && (options[i + str_pos] != '\n') && (options[i + str_pos] != '\0'))
+        i       = 0;
+        while ((options[i + str_pos] != ' ') &&
+               (options[i + str_pos] != '\n') && (options[i + str_pos] != '\0'))
         {
             input[i] = options[i + str_pos];
             i++;
         }
-        input[i] = '\0';
-        Zindex = atol(input);
+        input[i]        = '\0';
+        Zindex          = atol(input);
         Zerror_included = 1;
         printf("Z index is %ld\n", Zindex);
     }
@@ -8812,14 +9691,15 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
     {
         str_pos = strstr(options, "-Zerr ") - options;
         str_pos = str_pos + strlen("-Zerr ");
-        i = 0;
-        while ((options[i + str_pos] != ' ') && (options[i + str_pos] != '\n') && (options[i + str_pos] != '\0'))
+        i       = 0;
+        while ((options[i + str_pos] != ' ') &&
+               (options[i + str_pos] != '\n') && (options[i + str_pos] != '\0'))
         {
             input[i] = options[i + str_pos];
             i++;
         }
         input[i] = '\0';
-        Zerror = atof(input);
+        Zerror   = atof(input);
         if (Zerror > epsilon)
         {
             Zerror_included = 1;
@@ -8849,9 +9729,11 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
                             ID1 = image_ID("psf1");
                             for (ii = 0; ii < size2; ii++)
                             {
-                                data.image[ID0].array.F[ii] += data.image[ID1].array.F[ii];
+                                data.image[ID0].array.F[ii] +=
+                                    data.image[ID1].array.F[ii];
                             }
-                            delete_image_ID("psf1", DELETE_IMAGE_ERRMODE_WARNING);
+                            delete_image_ID("psf1",
+                                            DELETE_IMAGE_ERRMODE_WARNING);
                             printf(".");
                             fflush(stdout);
                             cnt++;
@@ -8870,13 +9752,15 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
                         {
                             x = 1.0 * (ii - size / 2) / trad_pix;
                             y = 1.0 * (jj - size / 2) / trad_pix;
-                            data.image[ID].array.F[jj * size + ii] = (x * x + y * y) * tmp * 2.0 * PI;
+                            data.image[ID].array.F[jj * size + ii] =
+                                (x * x + y * y) * tmp * 2.0 * PI;
                         }
                     coronagraph_simulPSF(0.0, 0.0, "psf1", 4, "");
                     ID1 = image_ID("psf1");
                     for (ii = 0; ii < size2; ii++)
                     {
-                        data.image[ID0].array.F[ii] += data.image[ID1].array.F[ii];
+                        data.image[ID0].array.F[ii] +=
+                            data.image[ID1].array.F[ii];
                     }
                     delete_image_ID("psf1", DELETE_IMAGE_ERRMODE_WARNING);
                     printf(".");
@@ -8897,14 +9781,19 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
             ID0 = image_ID("psf0");
         }
         peak = data.image[ID0].array.F[(size / 2) * size + size / 2];
-        ii = 0;
-        printf("%g %g\n", data.image[ID0].array.F[(size / 2) * size + ii], peak);
-        while (data.image[ID0].array.F[(size / 2) * size + ii] < 2.0 * peak / pow(10.0, logcontrast))
+        ii   = 0;
+        printf("%g %g\n",
+               data.image[ID0].array.F[(size / 2) * size + ii],
+               peak);
+        while (data.image[ID0].array.F[(size / 2) * size + ii] <
+               2.0 * peak / pow(10.0, logcontrast))
         {
             ii++;
         }
         PIAAFPMASKRAD = CORONAGRAPHS_PIXSCALE * (size / 2 - (ii - 1));
-        printf("PIAAC:  MASK RADIUS = %f lambda/d  (ii = %ld)\n", PIAAFPMASKRAD, ii);
+        printf("PIAAC:  MASK RADIUS = %f lambda/d  (ii = %ld)\n",
+               PIAAFPMASKRAD,
+               ii);
         delete_image_ID("psf0", DELETE_IMAGE_ERRMODE_WARNING);
     }
 
@@ -8923,11 +9812,16 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
                     r = sqrt(x * x + y * y);
                     if (r < TTerror)
                     {
-                        coronagraph_simulPSF(x, y, "psf1", coronagraph_type, "");
+                        coronagraph_simulPSF(x,
+                                             y,
+                                             "psf1",
+                                             coronagraph_type,
+                                             "");
                         ID1 = image_ID("psf1");
                         for (ii = 0; ii < size2; ii++)
                         {
-                            data.image[ID0].array.F[ii] += data.image[ID1].array.F[ii];
+                            data.image[ID0].array.F[ii] +=
+                                data.image[ID1].array.F[ii];
                         }
                         delete_image_ID("psf1", DELETE_IMAGE_ERRMODE_WARNING);
                         printf(".");
@@ -8948,7 +9842,8 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
                     {
                         x = 1.0 * (ii - size / 2) / trad_pix;
                         y = 1.0 * (jj - size / 2) / trad_pix;
-                        data.image[ID].array.F[jj * size + ii] = (x * x + y * y) * tmp * 2.0 * PI;
+                        data.image[ID].array.F[jj * size + ii] =
+                            (x * x + y * y) * tmp * 2.0 * PI;
                     }
                 coronagraph_simulPSF(0.0, 0.0, "psf1", coronagraph_type, "");
                 ID1 = image_ID("psf1");
@@ -8994,9 +9889,9 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
     save_fl_fits("psf0", "psf0");
     //    exit(0);
 
-    arrayS = (double *)malloc(sizeof(double) * size * size);
-    arrayS1 = (double *)malloc(sizeof(double) * size * size);
-    arrayS2 = (double *)malloc(sizeof(double) * size * size);
+    arrayS  = (double *) malloc(sizeof(double) * size * size);
+    arrayS1 = (double *) malloc(sizeof(double) * size * size);
+    arrayS2 = (double *) malloc(sizeof(double) * size * size);
 
     if ((fp = fopen(fname, "w")) == NULL)
     {
@@ -9008,29 +9903,38 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
 
     if (coronagraph_type == 30)
     {
-        MaxAngle = 2.0 * PI;
+        MaxAngle    = 2.0 * PI;
         NBanglestep = 64;
     }
-    COROTMP1 = 0.0;
+    COROTMP1  = 0.0;
     total2old = 0.0;
     if (RADAVER == 0)
     {
-        iwaOK = 0;
-        sepold = 0.0;
+        iwaOK     = 0;
+        sepold    = 0.0;
         total2old = 0.0;
         while (sep < sepmax)
         {
-            if ((coronagraph_type == 3) || (coronagraph_type == 17) || (coronagraph_type == 19) ||
-                (coronagraph_type == 20) || (coronagraph_type == 22) || (coronagraph_type == 23) ||
+            if ((coronagraph_type == 3) || (coronagraph_type == 17) ||
+                (coronagraph_type == 19) || (coronagraph_type == 20) ||
+                (coronagraph_type == 22) || (coronagraph_type == 23) ||
                 (coronagraph_type == 30))
             {
                 if (coronagraph_type == 30)
                 {
-                    coronagraph_simulPSF(-sep / sqrt(2.0), -sep / sqrt(2.0), "psf", coronagraph_type, "");
+                    coronagraph_simulPSF(-sep / sqrt(2.0),
+                                         -sep / sqrt(2.0),
+                                         "psf",
+                                         coronagraph_type,
+                                         "");
                 }
                 else
                 {
-                    coronagraph_simulPSF(sep / sqrt(2.0), sep / sqrt(2.0), "psf", coronagraph_type, "");
+                    coronagraph_simulPSF(sep / sqrt(2.0),
+                                         sep / sqrt(2.0),
+                                         "psf",
+                                         coronagraph_type,
+                                         "");
                 }
             }
             else
@@ -9041,11 +9945,12 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
             ID = image_ID("psf");
 
             total = 0.0;
-            peak = 0.0;
+            peak  = 0.0;
             for (ii = 0; ii < size; ii++)
                 for (jj = 0; jj < size; jj++)
                 {
-                    flux0 = data.image[ID0].array.F[jj * size + ii] * pow(10.0, logcontrast);
+                    flux0 = data.image[ID0].array.F[jj * size + ii] *
+                            pow(10.0, logcontrast);
                     flux = data.image[ID].array.F[jj * size + ii];
                     if (flux > peak)
                     {
@@ -9063,16 +9968,17 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
                     flux = data.image[ID].array.F[jj * size + ii];
                     if (flux > 0.000001 * peak)
                     {
-                        arrayS1[kk] = data.image[ID0].array.F[jj * size + ii] * pow(10.0, logcontrast);
+                        arrayS1[kk] = data.image[ID0].array.F[jj * size + ii] *
+                                      pow(10.0, logcontrast);
                         arrayS2[kk] = data.image[ID].array.F[jj * size + ii];
-                        arrayS[kk] = arrayS1[kk] / arrayS2[kk];
+                        arrayS[kk]  = arrayS1[kk] / arrayS2[kk];
                         kk++;
                     }
                 }
             quick_sort3(arrayS, arrayS1, arrayS2, kk);
             total1 = 0.0;
             total2 = 0.0;
-            ii = 0;
+            ii     = 0;
             total1 += arrayS1[ii];
             total2 += arrayS2[ii];
             ii++;
@@ -9097,16 +10003,22 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
             //IWA measurement
             if ((total2 > 0.5) && (iwaOK == 0))
             {
-                iwa = sep - (sep - sepold) * (total2 - 0.5) / (total2 - total2old);
+                iwa = sep -
+                      (sep - sepold) * (total2 - 0.5) / (total2 - total2old);
                 iwaOK = 1;
-                fp = fopen(fname, "a");
-                fprintf(fp, "#IWA50 %f %f %f %f\n", TTerror, logcontrast, APLC_FPMASKsize, iwa);
+                fp    = fopen(fname, "a");
+                fprintf(fp,
+                        "#IWA50 %f %f %f %f\n",
+                        TTerror,
+                        logcontrast,
+                        APLC_FPMASKsize,
+                        iwa);
                 fclose(fp);
                 //	      sep += 100.0;
             }
 
             total2old = total2;
-            sepold = sep;
+            sepold    = sep;
 
             sep += sepstep;
             sep *= 1.00;
@@ -9131,15 +10043,20 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
             for (anglestep = 0; anglestep < NBanglestep; anglestep++)
             {
                 angle = MaxAngle * anglestep / NBanglestep;
-                coronagraph_simulPSF(sep * cos(angle), sep * sin(angle), "psf", coronagraph_type, "");
+                coronagraph_simulPSF(sep * cos(angle),
+                                     sep * sin(angle),
+                                     "psf",
+                                     coronagraph_type,
+                                     "");
                 ID = image_ID("psf");
 
                 total = 0.0;
-                peak = 0.0;
+                peak  = 0.0;
                 for (ii = 0; ii < size; ii++)
                     for (jj = 0; jj < size; jj++)
                     {
-                        flux0 = data.image[ID0].array.F[jj * size + ii] * pow(10.0, logcontrast);
+                        flux0 = data.image[ID0].array.F[jj * size + ii] *
+                                pow(10.0, logcontrast);
                         flux = data.image[ID].array.F[jj * size + ii];
                         if (flux > peak)
                         {
@@ -9157,8 +10074,11 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
                         flux = data.image[ID].array.F[jj * size + ii];
                         if (flux > 0.000001 * peak)
                         {
-                            arrayS1[kk] = data.image[ID0].array.F[jj * size + ii] * pow(10.0, logcontrast);
-                            arrayS2[kk] = data.image[ID].array.F[jj * size + ii];
+                            arrayS1[kk] =
+                                data.image[ID0].array.F[jj * size + ii] *
+                                pow(10.0, logcontrast);
+                            arrayS2[kk] =
+                                data.image[ID].array.F[jj * size + ii];
                             arrayS[kk] = arrayS1[kk] / arrayS2[kk];
                             kk++;
                         }
@@ -9166,7 +10086,7 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
                 quick_sort3(arrayS, arrayS1, arrayS2, kk);
                 total1 = 0.0;
                 total2 = 0.0;
-                ii = 0;
+                ii     = 0;
                 total1 += arrayS1[ii];
                 total2 += arrayS2[ii];
                 ii++;
@@ -9179,7 +10099,12 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
                 total3 += total2;
                 total4 += total;
                 /*      fprintf(fp,"%g %g %g\n",sep,total2,total);*/
-                printf("%g (%ld/%ld) %g %g\n", sep, anglestep, NBanglestep, total2, total);
+                printf("%g (%ld/%ld) %g %g\n",
+                       sep,
+                       anglestep,
+                       NBanglestep,
+                       total2,
+                       total);
                 delete_image_ID("psf", DELETE_IMAGE_ERRMODE_WARNING);
                 if (total2 > maxtransm)
                 {
@@ -9191,9 +10116,17 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
                 printf("ERROR: cannot create file \"%s\"\n", fname);
                 exit(0);
             }
-            fprintf(fp, "%g %g %g %g\n", sep, total3 / NBanglestep, total4 / NBanglestep, maxtransm);
+            fprintf(fp,
+                    "%g %g %g %g\n",
+                    sep,
+                    total3 / NBanglestep,
+                    total4 / NBanglestep,
+                    maxtransm);
             fclose(fp);
-            printf("%g %g %g\n", sep, total3 / NBanglestep, total4 / NBanglestep);
+            printf("%g %g %g\n",
+                   sep,
+                   total3 / NBanglestep,
+                   total4 / NBanglestep);
             sep += sepstep;
             sep *= 1.00;
 
@@ -9213,28 +10146,28 @@ int coronagraph_transm(const char *fname, long coronagraph_type, double logcontr
 
 int coronagraph_userfunc()
 {
-    FILE *fp;
-    long size = CORONAGRAPHS_ARRAYSIZE;
-    double v1, x;
-    long ii, jj;
-    double trad_pix;
+    FILE   *fp;
+    long    size = CORONAGRAPHS_ARRAYSIZE;
+    double  v1, x;
+    long    ii, jj;
+    double  trad_pix;
     imageID ID;
 
     double *zarray;
-    long *zindex;
-    long NBzern = 1;
-    double ratio = 10.0;
+    long   *zindex;
+    long    NBzern = 1;
+    double  ratio  = 10.0;
 
     fprintf(stderr, "CORONAGRAPH USER FUNCTION\n");
 
-    zarray = (double *)malloc(sizeof(double) * NBzern);
+    zarray = (double *) malloc(sizeof(double) * NBzern);
     if (zarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    zindex = (long *)malloc(sizeof(long) * NBzern);
+    zindex = (long *) malloc(sizeof(long) * NBzern);
     if (zindex == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
@@ -9249,7 +10182,8 @@ int coronagraph_userfunc()
     exit(0);
 
     trad_pix = CORONAGRAPHS_TDIAM / CORONAGRAPHS_PSCALE / 2.0;
-    ID = make_subpixdisk("coramp", size, size, 0.5 * size, 0.5 * size, trad_pix);
+    ID =
+        make_subpixdisk("coramp", size, size, 0.5 * size, 0.5 * size, trad_pix);
     for (ii = 0; ii < size; ii++)
         for (jj = 0; jj < size; jj++)
         {
@@ -9260,7 +10194,8 @@ int coronagraph_userfunc()
         }
     save_fl_fits("coramp", "coramp");
 
-    ID = make_subpixdisk("corpha", size, size, 0.5 * size, 0.5 * size, trad_pix);
+    ID =
+        make_subpixdisk("corpha", size, size, 0.5 * size, 0.5 * size, trad_pix);
     for (ii = 0; ii < size; ii++)
         for (jj = 0; jj < size; jj++)
         {
@@ -9285,8 +10220,8 @@ int coronagraph_userfunc()
     while (0)
     {
         fprintf(stderr, "TESTING NEW CONFIGURATION\n");
-        FPM_TRANSM1 = 0.0;
-        FPM_TRANSM2 = 1.0; //ran1();
+        FPM_TRANSM1    = 0.0;
+        FPM_TRANSM2    = 1.0; //ran1();
         FPMASK_FACTOR1 = 1.0 + 0.01 * (0.5 - ran1());
         FPMASK_FACTOR2 = 1.0 + 0.1 * ran1();
 
@@ -9303,70 +10238,70 @@ int coronagraph_userfunc()
 
 int coronagraph_compute_limitcoeff()
 {
-    FILE *fp;
-    long Csize = 200;
-    long i, k;
-    double fact;
-    double x, y, r;
-    long ii, jj;
-    long cnt;
-    long NBcoeff = 50;
+    FILE   *fp;
+    long    Csize = 200;
+    long    i, k;
+    double  fact;
+    double  x, y, r;
+    long    ii, jj;
+    long    cnt;
+    long    NBcoeff = 50;
     double *coeffmax;
     double *coeff;
     double *bestcoeff;
     double *xpow;
     double *xval;
     double *pval;
-    double value;
-    long NBpts = 100;  /* number of evaluation points */
-    double xmax = 5.0; /* maximum separation in l/d */
-    double maxpval;
-    int OK;
+    double  value;
+    long    NBpts = 100; /* number of evaluation points */
+    double  xmax  = 5.0; /* maximum separation in l/d */
+    double  maxpval;
+    int     OK;
     double *pvalmax;
-    long i0;
-    double amp;
-    double xeval = 0.5;
-    double tmp;
+    long    i0;
+    double  amp;
+    double  xeval = 0.5;
+    double  tmp;
 
-    coeffmax = (double *)malloc(sizeof(double) * NBcoeff);
+    coeffmax = (double *) malloc(sizeof(double) * NBcoeff);
     if (coeffmax == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
-    coeff = (double *)malloc(sizeof(double) * NBcoeff);
+    coeff = (double *) malloc(sizeof(double) * NBcoeff);
     if (coeff == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
-    bestcoeff = (double *)malloc(sizeof(double) * NBcoeff);
+    bestcoeff = (double *) malloc(sizeof(double) * NBcoeff);
     if (bestcoeff == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    xval = (double *)malloc(sizeof(double) * NBpts);
+    xval = (double *) malloc(sizeof(double) * NBpts);
     if (xval == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
-    pval = (double *)malloc(sizeof(double) * NBpts);
+    pval = (double *) malloc(sizeof(double) * NBpts);
     if (pval == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
-    xpow = (double *)malloc(sizeof(double) * NBcoeff * NBpts);
+    xpow = (double *) malloc(sizeof(double) * NBcoeff * NBpts);
     if (xpow == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    pvalmax = (double *)malloc(sizeof(double) * NBpts);
+    pvalmax = (double *) malloc(sizeof(double) * NBpts);
     if (pvalmax == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
@@ -9383,7 +10318,7 @@ int coronagraph_compute_limitcoeff()
             fact *= k;
         }
         value = 0.0;
-        cnt = 0;
+        cnt   = 0;
         for (ii = 0; ii < Csize; ii++)
             for (jj = 0; jj < Csize; jj++)
             {
@@ -9403,7 +10338,7 @@ int coronagraph_compute_limitcoeff()
 
     for (i = 0; i < NBpts; i++)
     {
-        xval[i] = 1.0 * i * xmax / NBpts;
+        xval[i]    = 1.0 * i * xmax / NBpts;
         pvalmax[i] = 0.0;
     }
 
@@ -9481,7 +10416,7 @@ int coronagraph_compute_limitcoeff()
             }
             }*/
 
-        i0 = (long)(xeval / xmax * NBpts);
+        i0 = (long) (xeval / xmax * NBpts);
         if (pval[i0] > pvalmax[i0])
         {
             for (i = 0; i < NBpts; i++)
@@ -9543,10 +10478,10 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
     double obs1;      // central obstruction in input and output
     double fpmaskrad; // focal plane mask radius
 
-    long kmax = 18;
+    long    kmax = 18;
     double *separray;
     double *transmarray;
-    long k;
+    long    k;
 
     char fname[500];
     char fname1[500];
@@ -9559,112 +10494,113 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
 
     struct stat buffer;
 
-    long size = 256;
-    long ii, jj;
+    long   size = 256;
+    long   ii, jj;
     double x, y, r;
-    int CentralObstructionFlag = 0;
+    int    CentralObstructionFlag = 0;
 
     double pixscale = 10.25; // pix per l/D
     double peak;
 
-    double starprof_step = 0.1;    // l/D
-    double starprof_maxrad = 10.0; // l/D
-    long starprofNBstep;
+    double  starprof_step   = 0.1;  // l/D
+    double  starprof_maxrad = 10.0; // l/D
+    long    starprofNBstep;
     double *starprofrad;
     double *starprofarray;
     double *starprofarraycnt;
-    long i;
+    long    i;
 
     double star_radius = 0.01; // l/D
-    long ID;
+    long   ID;
 
     int COMPUTEDATA = 1;
 
-    float *obs1array = NULL;
-    long obs1arraysize = 1;
-    long obs1_index = 0;
-    float obs1min = 0.0;
-    float obs1max = 0.4;
-    float obs1step = 0.01;
+    float *obs1array     = NULL;
+    long   obs1arraysize = 1;
+    long   obs1_index    = 0;
+    float  obs1min       = 0.0;
+    float  obs1max       = 0.4;
+    float  obs1step      = 0.01;
 
-    float *fpmaskradarray = NULL;
-    long fpmaskradarraysize = 1;
-    long fpmaskrad_index = 0;
-    float fpmaskradmin = 0.8;
-    float fpmaskradmax = 3.0;
-    float fpmaskradstep = 0.1;
+    float *fpmaskradarray     = NULL;
+    long   fpmaskradarraysize = 1;
+    long   fpmaskrad_index    = 0;
+    float  fpmaskradmin       = 0.8;
+    float  fpmaskradmax       = 3.0;
+    float  fpmaskradstep      = 0.1;
 
     float tmpf0, tmpf1, tmpf2, tmpf3;
-    long IDtransm, IDiwa, IDcontrastmax, IDfpmasktransm;
+    long  IDtransm, IDiwa, IDcontrastmax, IDfpmasktransm;
     float alpha, iwa;
     float tmax = 1.0;
 
     double eval_contrast_start = 2.5;
-    double eval_contrast_end = 2.8;
+    double eval_contrast_end   = 2.8;
     double maxval;
     double fpmasktransm;
 
     long OBS1INDEXSTART = 0;
 
-    int psfsok = 1;
+    int psfsok      = 1;
     int skipPSFcomp = 0;
 
-    printf("RUNNING PIAACMC DESIGN SCAN FOR CENTRAL OBSTRUCTION %f\n", obs0input);
+    printf("RUNNING PIAACMC DESIGN SCAN FOR CENTRAL OBSTRUCTION %f\n",
+           obs0input);
     fflush(stdout);
 
     if (1) // FAST MODE, 10x faster
     {
-        obs1step = 0.05;
+        obs1step      = 0.05;
         fpmaskradstep = 0.1;
     }
 
-    starprofNBstep = (long)(starprof_maxrad / starprof_step);
+    starprofNBstep = (long) (starprof_maxrad / starprof_step);
 
-    starprofrad = (double *)malloc(sizeof(double) * starprofNBstep);
+    starprofrad = (double *) malloc(sizeof(double) * starprofNBstep);
     if (starprofrad == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    starprofarray = (double *)malloc(sizeof(double) * starprofNBstep);
+    starprofarray = (double *) malloc(sizeof(double) * starprofNBstep);
     if (starprofarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    starprofarraycnt = (double *)malloc(sizeof(double) * starprofNBstep);
+    starprofarraycnt = (double *) malloc(sizeof(double) * starprofNBstep);
     if (starprofarraycnt == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    transmarray = (double *)malloc(sizeof(double) * kmax);
+    transmarray = (double *) malloc(sizeof(double) * kmax);
     if (transmarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    separray = (double *)malloc(sizeof(double) * kmax);
+    separray = (double *) malloc(sizeof(double) * kmax);
     if (separray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    separray[0] = 0.0;
-    separray[1] = 0.005;
-    separray[2] = 0.01;
-    separray[3] = 0.02;
-    separray[4] = 0.1;
-    separray[5] = 0.2;
-    separray[6] = 0.5;
-    separray[7] = 1.0;
-    separray[8] = 1.5;
-    separray[9] = 2.0;
+    separray[0]  = 0.0;
+    separray[1]  = 0.005;
+    separray[2]  = 0.01;
+    separray[3]  = 0.02;
+    separray[4]  = 0.1;
+    separray[5]  = 0.2;
+    separray[6]  = 0.5;
+    separray[7]  = 1.0;
+    separray[8]  = 1.5;
+    separray[9]  = 2.0;
     separray[10] = 2.5;
     separray[11] = 3.0;
     separray[12] = 3.5;
@@ -9675,8 +10611,8 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
     separray[17] = 8.0;
 
     // precompute arrays size
-    obs1arraysize = (long)((obs1max - obs1min) / obs1step);
-    obs1array = (float *)malloc(sizeof(float) * obs1arraysize);
+    obs1arraysize = (long) ((obs1max - obs1min) / obs1step);
+    obs1array     = (float *) malloc(sizeof(float) * obs1arraysize);
     if (obs1array == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
@@ -9689,8 +10625,8 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
         obs1array[obs1_index] = obs1min + obs1step * obs1_index;
     }
 
-    fpmaskradarraysize = (long)((fpmaskradmax - fpmaskradmin) / fpmaskradstep);
-    fpmaskradarray = (float *)malloc(sizeof(float) * fpmaskradarraysize);
+    fpmaskradarraysize = (long) ((fpmaskradmax - fpmaskradmin) / fpmaskradstep);
+    fpmaskradarray     = (float *) malloc(sizeof(float) * fpmaskradarraysize);
     if (fpmaskradarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
@@ -9698,9 +10634,11 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
     }
 
     fpmaskrad_index = 0;
-    for (fpmaskrad_index = 0; fpmaskrad_index < fpmaskradarraysize; fpmaskrad_index++)
+    for (fpmaskrad_index = 0; fpmaskrad_index < fpmaskradarraysize;
+         fpmaskrad_index++)
     {
-        fpmaskradarray[fpmaskrad_index] = fpmaskradmin + fpmaskradstep * fpmaskrad_index;
+        fpmaskradarray[fpmaskrad_index] =
+            fpmaskradmin + fpmaskradstep * fpmaskrad_index;
     }
 
     if ((fp = fopen("obs1indexstart.txt", "r")) != NULL)
@@ -9718,7 +10656,9 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                 }
                 else
                 {
-                    fprintf(stderr, "Error: fscanf reached end of file, no matching characters, no matching failure\n");
+                    fprintf(stderr,
+                            "Error: fscanf reached end of file, no matching "
+                            "characters, no matching failure\n");
                 }
                 free(transmarray);
                 free(obs1array);
@@ -9731,7 +10671,9 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
             }
             else if (fscanfcnt != 1)
             {
-                fprintf(stderr, "Error: fscanf successfully matched and assigned %i input items, 1 expected\n",
+                fprintf(stderr,
+                        "Error: fscanf successfully matched and assigned %i "
+                        "input items, 1 expected\n",
                         fscanfcnt);
                 free(transmarray);
                 free(obs1array);
@@ -9749,7 +10691,7 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
     if (obs0input < 0.0)
     {
         COMPUTEDATA = 1;
-        obs0 = -obs0input;
+        obs0        = -obs0input;
     }
     else
     {
@@ -9758,26 +10700,53 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
 
     if (0) // rename
     {
-        for (fpmaskrad_index = 0; fpmaskrad_index < fpmaskradarraysize; fpmaskrad_index++)
-            for (obs1_index = OBS1INDEXSTART; obs1_index < obs1arraysize; obs1_index++)
+        for (fpmaskrad_index = 0; fpmaskrad_index < fpmaskradarraysize;
+             fpmaskrad_index++)
+            for (obs1_index = OBS1INDEXSTART; obs1_index < obs1arraysize;
+                 obs1_index++)
             {
-                obs1 = obs1array[obs1_index];
+                obs1      = obs1array[obs1_index];
                 fpmaskrad = fpmaskradarray[fpmaskrad_index];
 
                 for (k = 0; k < kmax; k++)
                 {
-                    printf("=============================================================================\n");
+                    printf(
+                        "======================================================"
+                        "=======================\n");
                     EXECUTE_SYSTEM_COMMAND(
-                        "mv ./PSF/PSF_%4.2f_%5.3f_%5.3f_%5.3f.fits  ./PSF/PSF_%5.3f_%5.3f_%5.3f_%5.3f.fits\n",
-                        fpmaskrad, obs0, obs1, separray[k], fpmaskrad, obs0, obs1, separray[k]);
+                        "mv ./PSF/PSF_%4.2f_%5.3f_%5.3f_%5.3f.fits  "
+                        "./PSF/PSF_%5.3f_%5.3f_%5.3f_%5.3f.fits\n",
+                        fpmaskrad,
+                        obs0,
+                        obs1,
+                        separray[k],
+                        fpmaskrad,
+                        obs0,
+                        obs1,
+                        separray[k]);
 
                     EXECUTE_SYSTEM_COMMAND(
-                        "mv ./PSF/PSFc_%4.2f_%5.3f_%5.3f_%5.3f.fits  ./PSF/PSFc_%5.3f_%5.3f_%5.3f_%5.3f.fits\n",
-                        fpmaskrad, obs0, obs1, separray[k], fpmaskrad, obs0, obs1, separray[k]);
+                        "mv ./PSF/PSFc_%4.2f_%5.3f_%5.3f_%5.3f.fits  "
+                        "./PSF/PSFc_%5.3f_%5.3f_%5.3f_%5.3f.fits\n",
+                        fpmaskrad,
+                        obs0,
+                        obs1,
+                        separray[k],
+                        fpmaskrad,
+                        obs0,
+                        obs1,
+                        separray[k]);
                 }
 
-                EXECUTE_SYSTEM_COMMAND("mv ./PROF/star_%4.2f_%5.3f_%5.3f.prof ./PROF/star_%5.3f_%5.3f_%5.3f.prof\n",
-                                       fpmaskrad, obs0, obs1, fpmaskrad, obs0, obs1);
+                EXECUTE_SYSTEM_COMMAND(
+                    "mv ./PROF/star_%4.2f_%5.3f_%5.3f.prof "
+                    "./PROF/star_%5.3f_%5.3f_%5.3f.prof\n",
+                    fpmaskrad,
+                    obs0,
+                    obs1,
+                    fpmaskrad,
+                    obs0,
+                    obs1);
 
                 //	    EXECUTE_SYSTEM_COMMAND("mv ./TRANSM/transm_%4.2f_%5.3f_%5.3f.prof ./TRANSM/transm_%5.3f_%5.3f_%5.3f.prof\n",  fpmaskrad, obs0, obs1, fpmaskrad, obs0, obs1);
             }
@@ -9787,11 +10756,13 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
 
     if (COMPUTEDATA == 1)
     {
-        for (fpmaskrad_index = 0; fpmaskrad_index < fpmaskradarraysize; fpmaskrad_index++)
+        for (fpmaskrad_index = 0; fpmaskrad_index < fpmaskradarraysize;
+             fpmaskrad_index++)
         {
             //      for(fpmaskrad_index=fpmaskradarraysize-1; fpmaskrad_index>0; fpmaskrad_index--)
 
-            for (obs1_index = OBS1INDEXSTART; obs1_index < obs1arraysize; obs1_index++)
+            for (obs1_index = OBS1INDEXSTART; obs1_index < obs1arraysize;
+                 obs1_index++)
             {
                 obs1 = obs1array[obs1_index];
                 if (obs1 > 0.001)
@@ -9806,25 +10777,39 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                 {
                     // write configuration file
                     fpconf = fopen("APLCPIAA.conf", "w");
-                    fprintf(fpconf, "1 %5.3f-%5.3f-%5.3f 2 1\n", fpmaskrad, obs0, obs1);
+                    fprintf(fpconf,
+                            "1 %5.3f-%5.3f-%5.3f 2 1\n",
+                            fpmaskrad,
+                            obs0,
+                            obs1);
                     printf("1 %5.3f-%5.3f-%5.3f 2 1\n", fpmaskrad, obs0, obs1);
                     fclose(fpconf);
 
                     if (CentralObstructionFlag == 0)
                     {
-                        sprintf(fnameprol, "%s/APLCapo/raw/APLCapo_%5.3f.4096.ref.gz", CORONAGRAPHSDATALOCAL,
+                        sprintf(fnameprol,
+                                "%s/APLCapo/raw/APLCapo_%5.3f.4096.ref.gz",
+                                CORONAGRAPHSDATALOCAL,
                                 fpmaskrad);
                     }
                     else
                     {
-                        sprintf(fnameprol, "%s/APLCapo/raw/APLCapo_%5.3f.%5.3f.4096.ref.gz", CORONAGRAPHSDATALOCAL,
-                                fpmaskrad, obs1);
+                        sprintf(
+                            fnameprol,
+                            "%s/APLCapo/raw/APLCapo_%5.3f.%5.3f.4096.ref.gz",
+                            CORONAGRAPHSDATALOCAL,
+                            fpmaskrad,
+                            obs1);
                     }
 
-                    sprintf(fnamenew, "%s/APLCapo/APLCapo_%5.3f.%5.3f.4096.ref.new1", CORONAGRAPHSDATALOCAL, fpmaskrad,
+                    sprintf(fnamenew,
+                            "%s/APLCapo/APLCapo_%5.3f.%5.3f.4096.ref.new1",
+                            CORONAGRAPHSDATALOCAL,
+                            fpmaskrad,
                             obs1);
 
-                    if (stat(fnameprol, &buffer) == 0) // if the prolate file exists
+                    if (stat(fnameprol, &buffer) ==
+                        0) // if the prolate file exists
                     {
                         printf("FILE %s EXISTS... MOVING AHEAD\n", fnameprol);
                         psfsok = 1;
@@ -9835,12 +10820,21 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                                 EXECUTE_SYSTEM_COMMAND("rm STOP");
                                 exit(0);
                             }
-                            sprintf(fname, "./PSF/PSF_%5.3f_%5.3f_%5.3f_%5.3f.fits", fpmaskrad, obs0, obs1,
+                            sprintf(fname,
+                                    "./PSF/PSF_%5.3f_%5.3f_%5.3f_%5.3f.fits",
+                                    fpmaskrad,
+                                    obs0,
+                                    obs1,
                                     separray[k]);
-                            sprintf(fnamec, "./PSF/PSFc_%5.3f_%5.3f_%5.3f_%5.3f.fits", fpmaskrad, obs0, obs1,
+                            sprintf(fnamec,
+                                    "./PSF/PSFc_%5.3f_%5.3f_%5.3f_%5.3f.fits",
+                                    fpmaskrad,
+                                    obs0,
+                                    obs1,
                                     separray[k]);
 
-                            if (stat(fname, &buffer) != 0) // if PSF file does not exist, create it
+                            if (stat(fname, &buffer) !=
+                                0) // if PSF file does not exist, create it
                             {
                                 if (skipPSFcomp == 1)
                                 {
@@ -9848,14 +10842,27 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                                 }
                                 else
                                 {
-                                    printf("============= CREATING %s ===========\n", fname);
+                                    printf(
+                                        "============= CREATING %s "
+                                        "===========\n",
+                                        fname);
                                     fpconf = fopen("APLCPIAA.conf", "w");
-                                    fprintf(fpconf, "1 %5.3f-%5.3f-%5.3f 2 1\n", fpmaskrad, obs0, obs1);
-                                    printf("1 %5.3f-%5.3f-%5.3f 2 1\n", fpmaskrad, obs0, obs1);
+                                    fprintf(fpconf,
+                                            "1 %5.3f-%5.3f-%5.3f 2 1\n",
+                                            fpmaskrad,
+                                            obs0,
+                                            obs1);
+                                    printf("1 %5.3f-%5.3f-%5.3f 2 1\n",
+                                           fpmaskrad,
+                                           obs0,
+                                           obs1);
                                     fclose(fpconf);
 
-                                    EXECUTE_SYSTEM_COMMAND("./mkpsf %f %f", separray[k], 0.0);
-                                    EXECUTE_SYSTEM_COMMAND("mv psf.fits %s", fname);
+                                    EXECUTE_SYSTEM_COMMAND("./mkpsf %f %f",
+                                                           separray[k],
+                                                           0.0);
+                                    EXECUTE_SYSTEM_COMMAND("mv psf.fits %s",
+                                                           fname);
                                 }
                             }
 
@@ -9871,7 +10878,7 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                             for (i = 0; i < starprofNBstep; i++)
                             {
                                 starprofarraycnt[i] = 0.0;
-                                starprofarray[i] = 0.0;
+                                starprofarray[i]    = 0.0;
                             }
 
                             k = 2; // 0.01 l/D
@@ -9885,37 +10892,56 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                                     x /= pixscale;
                                     y /= pixscale;
                                     r = sqrt(x * x + y * y);
-                                    i = (long)(r / starprof_step + 0.5);
+                                    i = (long) (r / starprof_step + 0.5);
                                     if (i < starprofNBstep)
                                     {
-                                        starprofarray[i] += data.image[ID].array.F[jj * size + ii];
+                                        starprofarray[i] +=
+                                            data.image[ID]
+                                                .array.F[jj * size + ii];
                                         starprofarraycnt[i] += 1.0;
                                     }
                                 }
 
-                            sprintf(fname1, "psf%02d", (int)(kmax - 1));
+                            sprintf(fname1, "psf%02d", (int) (kmax - 1));
                             peak = arith_image_max(fname1);
                             printf("PEAK = %f\n", peak);
 
-                            sprintf(profname, "./PROF/star_%5.3f_%5.3f_%5.3f.prof", fpmaskrad, obs0, obs1);
+                            sprintf(profname,
+                                    "./PROF/star_%5.3f_%5.3f_%5.3f.prof",
+                                    fpmaskrad,
+                                    obs0,
+                                    obs1);
                             fp = fopen(profname, "w");
                             for (i = 0; i < starprofNBstep; i++)
                             {
-                                starprofarray[i] /= (starprofarraycnt[i] + 0.000001);
-                                starprofarray[i] *= 0.5 * pow((star_radius / separray[k]), 2.0) / peak;
-                                fprintf(fp, "%5.3f %g\n", starprof_step * i, starprofarray[i]);
+                                starprofarray[i] /=
+                                    (starprofarraycnt[i] + 0.000001);
+                                starprofarray[i] *=
+                                    0.5 *
+                                    pow((star_radius / separray[k]), 2.0) /
+                                    peak;
+                                fprintf(fp,
+                                        "%5.3f %g\n",
+                                        starprof_step * i,
+                                        starprofarray[i]);
                             }
                             fclose(fp);
 
                             // compute transmission curve if it does not exist
-                            sprintf(transmname, "./TRANSM/transm_%5.3f_%5.3f_%5.3f.prof", fpmaskrad, obs0, obs1);
-                            if (stat(transmname, &buffer) != 0) // if does not exist
+                            sprintf(transmname,
+                                    "./TRANSM/transm_%5.3f_%5.3f_%5.3f.prof",
+                                    fpmaskrad,
+                                    obs0,
+                                    obs1);
+                            if (stat(transmname, &buffer) !=
+                                0) // if does not exist
                             {
                                 tmax = 0.0;
                                 for (k = 0; k < kmax; k++)
                                 {
                                     sprintf(fname1, "psf%02ld", k);
-                                    transmarray[k] = arith_image_total(fname1) / (1.0 - obs0 * obs0);
+                                    transmarray[k] = arith_image_total(fname1) /
+                                                     (1.0 - obs0 * obs0);
                                     if (transmarray[k] > tmax)
                                     {
                                         tmax = transmarray[k];
@@ -9931,20 +10957,26 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                                 for (k = 0; k < kmax; k++)
                                 {
                                     sprintf(fname1, "psf%02ld", k);
-                                    fprintf(fp, "%5.3f %15.13f\n", separray[k], transmarray[k]);
+                                    fprintf(fp,
+                                            "%5.3f %15.13f\n",
+                                            separray[k],
+                                            transmarray[k]);
                                 }
                                 fclose(fp);
                             }
                             for (k = 0; k < kmax; k++)
                             {
                                 sprintf(fname1, "psf%02ld", k);
-                                delete_image_ID(fname1, DELETE_IMAGE_ERRMODE_WARNING);
+                                delete_image_ID(fname1,
+                                                DELETE_IMAGE_ERRMODE_WARNING);
                             }
                         }
                     }
                     else
                     {
-                        printf("--------- FILE %s MISSING -> NO PROCESSING ----\n", fnameprol);
+                        printf(
+                            "--------- FILE %s MISSING -> NO PROCESSING ----\n",
+                            fnameprol);
                     }
                 }
             }
@@ -9957,13 +10989,23 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
     // create transmission cube and IWA image
     //
     fpresult = fopen("result.log", "w");
-    create_3Dimage_ID("PIAACMCtransm", obs1arraysize, fpmaskradarraysize, kmax, &IDtransm);
+    create_3Dimage_ID("PIAACMCtransm",
+                      obs1arraysize,
+                      fpmaskradarraysize,
+                      kmax,
+                      &IDtransm);
 
     create_2Dimage_ID("PIAACMCiwa", obs1arraysize, fpmaskradarraysize, &IDiwa);
 
-    create_2Dimage_ID("PIAACMCcontrastmax", obs1arraysize, fpmaskradarraysize, &IDcontrastmax);
+    create_2Dimage_ID("PIAACMCcontrastmax",
+                      obs1arraysize,
+                      fpmaskradarraysize,
+                      &IDcontrastmax);
 
-    create_2Dimage_ID("PIAACMCfpmasktransm", obs1arraysize, fpmaskradarraysize, &IDfpmasktransm);
+    create_2Dimage_ID("PIAACMCfpmasktransm",
+                      obs1arraysize,
+                      fpmaskradarraysize,
+                      &IDfpmasktransm);
 
     for (obs1_index = 0; obs1_index < obs1arraysize; obs1_index++)
     {
@@ -9973,7 +11015,8 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
             CentralObstructionFlag = 1;
             printf("Central obstruction = %f\n", obs1);
         }
-        for (fpmaskrad_index = 0; fpmaskrad_index < fpmaskradarraysize; fpmaskrad_index++)
+        for (fpmaskrad_index = 0; fpmaskrad_index < fpmaskradarraysize;
+             fpmaskrad_index++)
         {
             //for(fpmaskrad_index=fpmaskradarraysize-1; fpmaskrad_index>0; fpmaskrad_index--)
 
@@ -9982,11 +11025,17 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
             // load info file for apodization
             if (CentralObstructionFlag == 0)
             {
-                sprintf(fnameprolinfo, "%s/APLCapo/APLCapo_%5.3f.4096.ref.info", CORONAGRAPHSDATALOCAL, fpmaskrad);
+                sprintf(fnameprolinfo,
+                        "%s/APLCapo/APLCapo_%5.3f.4096.ref.info",
+                        CORONAGRAPHSDATALOCAL,
+                        fpmaskrad);
             }
             else
             {
-                sprintf(fnameprolinfo, "%s/APLCapo/APLCapo_%5.3f.%5.3f.4096.ref.info", CORONAGRAPHSDATALOCAL, fpmaskrad,
+                sprintf(fnameprolinfo,
+                        "%s/APLCapo/APLCapo_%5.3f.%5.3f.4096.ref.info",
+                        CORONAGRAPHSDATALOCAL,
+                        fpmaskrad,
                         obs1);
             }
             if (stat(fnameprolinfo, &buffer) == 0) // if file exists
@@ -9996,7 +11045,12 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                 {
                     int fscanfcnt;
 
-                    fscanfcnt = fscanf(fp, "%f %f %f %f\n", &tmpf0, &tmpf1, &tmpf2, &tmpf3);
+                    fscanfcnt = fscanf(fp,
+                                       "%f %f %f %f\n",
+                                       &tmpf0,
+                                       &tmpf1,
+                                       &tmpf2,
+                                       &tmpf3);
                     if (fscanfcnt == EOF)
                     {
                         if (ferror(fp))
@@ -10005,8 +11059,10 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                         }
                         else
                         {
-                            fprintf(stderr,
-                                    "Error: fscanf reached end of file, no matching characters, no matching failure\n");
+                            fprintf(
+                                stderr,
+                                "Error: fscanf reached end of file, no "
+                                "matching characters, no matching failure\n");
                         }
                         free(transmarray);
                         free(obs1array);
@@ -10020,7 +11076,9 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                     }
                     else if (fscanfcnt != 4)
                     {
-                        fprintf(stderr, "Error: fscanf successfully matched and assigned %i input items, 4 expected\n",
+                        fprintf(stderr,
+                                "Error: fscanf successfully matched and "
+                                "assigned %i input items, 4 expected\n",
                                 fscanfcnt);
                         free(transmarray);
                         free(obs1array);
@@ -10035,12 +11093,18 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                 }
                 fclose(fp);
                 fpmasktransm = -(1.0 - tmpf3) / tmpf3;
-                data.image[IDfpmasktransm].array.F[fpmaskrad_index * obs1arraysize + obs1_index] = fpmasktransm;
+                data.image[IDfpmasktransm]
+                    .array.F[fpmaskrad_index * obs1arraysize + obs1_index] =
+                    fpmasktransm;
             }
 
             // load and read radial profile for star
             maxval = 0.0;
-            sprintf(profname, "./PROF/star_%5.3f_%5.3f_%5.3f.prof", fpmaskrad, obs0, obs1);
+            sprintf(profname,
+                    "./PROF/star_%5.3f_%5.3f_%5.3f.prof",
+                    fpmaskrad,
+                    obs0,
+                    obs1);
             if (stat(profname, &buffer) == 0) // if file exists
             {
                 printf("Reading file %s\n", profname);
@@ -10060,9 +11124,10 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                             }
                             else
                             {
-                                fprintf(
-                                    stderr,
-                                    "Error: fscanf reached end of file, no matching characters, no matching failure\n");
+                                fprintf(stderr,
+                                        "Error: fscanf reached end of file, no "
+                                        "matching characters, no matching "
+                                        "failure\n");
                             }
                             free(transmarray);
                             free(obs1array);
@@ -10077,7 +11142,8 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                         else if (fscanfcnt != 2)
                         {
                             fprintf(stderr,
-                                    "Error: fscanf successfully matched and assigned %i input items, 2 expected\n",
+                                    "Error: fscanf successfully matched and "
+                                    "assigned %i input items, 2 expected\n",
                                     fscanfcnt);
                             free(transmarray);
                             free(obs1array);
@@ -10091,7 +11157,8 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                         }
                     }
                     //		  printf(" -- %5.3f %g\n", tmpf0, tmpf1 );
-                    if ((tmpf0 > eval_contrast_start) && (tmpf0 < eval_contrast_end))
+                    if ((tmpf0 > eval_contrast_start) &&
+                        (tmpf0 < eval_contrast_end))
                         if (tmpf1 > maxval)
                         {
                             maxval = tmpf1;
@@ -10103,15 +11170,26 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
             {
             }
 
-            printf("== %s ==   %f  %f  %f          %e   [%ld %ld]\n", profname, fpmaskrad, obs0, obs1, maxval,
-                   fpmaskrad_index, obs1_index);
+            printf("== %s ==   %f  %f  %f          %e   [%ld %ld]\n",
+                   profname,
+                   fpmaskrad,
+                   obs0,
+                   obs1,
+                   maxval,
+                   fpmaskrad_index,
+                   obs1_index);
             //if(obs1>0.181)
             //exit(0);
 
-            data.image[IDcontrastmax].array.F[fpmaskrad_index * obs1arraysize + obs1_index] = maxval;
+            data.image[IDcontrastmax]
+                .array.F[fpmaskrad_index * obs1arraysize + obs1_index] = maxval;
 
             // load and read transmission
-            sprintf(transmname, "./TRANSM/transm_%5.3f_%5.3f_%5.3f.prof", fpmaskrad, obs0, obs1);
+            sprintf(transmname,
+                    "./TRANSM/transm_%5.3f_%5.3f_%5.3f.prof",
+                    fpmaskrad,
+                    obs0,
+                    obs1);
             if (stat(transmname, &buffer) == 0) // if file exists
             {
                 printf("Reading file %s\n", transmname);
@@ -10131,9 +11209,10 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                             }
                             else
                             {
-                                fprintf(
-                                    stderr,
-                                    "Error: fscanf reached end of file, no matching characters, no matching failure\n");
+                                fprintf(stderr,
+                                        "Error: fscanf reached end of file, no "
+                                        "matching characters, no matching "
+                                        "failure\n");
                             }
                             free(transmarray);
                             free(obs1array);
@@ -10148,7 +11227,8 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                         else if (fscanfcnt != 2)
                         {
                             fprintf(stderr,
-                                    "Error: fscanf successfully matched and assigned %i input items, 2 expected\n",
+                                    "Error: fscanf successfully matched and "
+                                    "assigned %i input items, 2 expected\n",
                                     fscanfcnt);
                             free(transmarray);
                             free(obs1array);
@@ -10161,13 +11241,15 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                             return RETURN_FAILURE;
                         }
                     }
-                    data.image[IDtransm].array.F[k * fpmaskradarraysize * obs1arraysize +
-                                                 fpmaskrad_index * obs1arraysize + obs1_index] = tmpf1;
+                    data.image[IDtransm]
+                        .array.F[k * fpmaskradarraysize * obs1arraysize +
+                                 fpmaskrad_index * obs1arraysize + obs1_index] =
+                        tmpf1;
                     transmarray[k] = tmpf1;
                 }
                 fclose(fp);
 
-                k = 1;
+                k     = 1;
                 tmpf0 = transmarray[k - 1];
                 tmpf1 = transmarray[k];
                 while ((tmpf1 < 0.5) && (k < kmax - 1))
@@ -10177,11 +11259,23 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
                     k++;
                 }
                 k--;
-                alpha = (0.5 - transmarray[k - 1]) / (transmarray[k] - transmarray[k - 1]);
+                alpha = (0.5 - transmarray[k - 1]) /
+                        (transmarray[k] - transmarray[k - 1]);
                 iwa = separray[k - 1] + alpha * (separray[k] - separray[k - 1]);
-                data.image[IDiwa].array.F[fpmaskrad_index * obs1arraysize + obs1_index] = iwa;
-                printf("%ld %f %f   %ld %f %f  -> [%f %f] %f %f\n", k - 1, separray[k - 1], tmpf0, k, separray[k],
-                       tmpf1, (0.5 - transmarray[k - 1]), (transmarray[k] - transmarray[k - 1]), alpha, iwa);
+                data.image[IDiwa]
+                    .array.F[fpmaskrad_index * obs1arraysize + obs1_index] =
+                    iwa;
+                printf("%ld %f %f   %ld %f %f  -> [%f %f] %f %f\n",
+                       k - 1,
+                       separray[k - 1],
+                       tmpf0,
+                       k,
+                       separray[k],
+                       tmpf1,
+                       (0.5 - transmarray[k - 1]),
+                       (transmarray[k] - transmarray[k - 1]),
+                       alpha,
+                       iwa);
             }
             else
             {
@@ -10191,7 +11285,13 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
 
             if (iwa > 0.5) // point is good
             {
-                fprintf(fpresult, "%5.3f %5.3f %g %g %g\n", obs1, fpmaskrad, iwa, maxval, fpmasktransm);
+                fprintf(fpresult,
+                        "%5.3f %5.3f %g %g %g\n",
+                        obs1,
+                        fpmaskrad,
+                        iwa,
+                        maxval,
+                        fpmasktransm);
             }
         }
     }

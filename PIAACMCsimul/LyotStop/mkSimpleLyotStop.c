@@ -24,27 +24,35 @@
  *
  * @return errno_t
  */
-errno_t mkSimpleLyotStop(const char *__restrict__ ID_name, float rin, float rout, imageID *outID)
+errno_t mkSimpleLyotStop(const char *__restrict__ ID_name,
+                         float    rin,
+                         float    rout,
+                         imageID *outID)
 {
     DEBUG_TRACE_FSTART();
     DEBUG_TRACEPOINT("FARG %s %f %f", ID_name, rin, rout);
 
     uint32_t size;
     uint64_t size2;
-    imageID ID, IDr;
+    imageID  ID, IDr;
 
-    size = piaacmcopticaldesign.size;
+    size  = piaacmcopticaldesign.size;
     size2 = size;
     size2 *= size;
 
     IDr = image_ID("rcoord");
 
-    FUNC_CHECK_RETURN(create_3Dimage_ID(ID_name, size, size, piaacmcopticaldesign.nblambda, &ID));
+    FUNC_CHECK_RETURN(create_3Dimage_ID(ID_name,
+                                        size,
+                                        size,
+                                        piaacmcopticaldesign.nblambda,
+                                        &ID));
 
     for (long k = 0; k < piaacmcopticaldesign.nblambda; k++)
         for (uint64_t ii = 0; ii < size2; ii++)
         {
-            if ((data.image[IDr].array.F[ii] < rout) && (data.image[IDr].array.F[ii] > rin))
+            if ((data.image[IDr].array.F[ii] < rout) &&
+                (data.image[IDr].array.F[ii] > rin))
             {
                 data.image[ID].array.F[k * size2 + ii] = 1.0;
             }

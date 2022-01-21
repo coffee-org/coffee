@@ -26,16 +26,27 @@
  *
  */
 
-errno_t PIAACMCsimul_CA2propCubeInt(const char *__restrict IDamp_name, const char *__restrict IDpha_name, float zmin,
-                                    float zmax, long NBz, const char *__restrict IDout_name, imageID *outID)
+errno_t PIAACMCsimul_CA2propCubeInt(const char *__restrict IDamp_name,
+                                    const char *__restrict IDpha_name,
+                                    float zmin,
+                                    float zmax,
+                                    long  NBz,
+                                    const char *__restrict IDout_name,
+                                    imageID *outID)
 {
     DEBUG_TRACE_FSTART();
-    DEBUG_TRACEPOINT("FARG %s %s %f %f %ld %s", IDamp_name, IDpha_name, zmin, zmax, NBz, IDout_name);
+    DEBUG_TRACEPOINT("FARG %s %s %f %f %ld %s",
+                     IDamp_name,
+                     IDpha_name,
+                     zmin,
+                     zmax,
+                     NBz,
+                     IDout_name);
 
     imageID IDout;
-    long nblambda;
-    float *zarray;
-    float zprop;
+    long    nblambda;
+    float  *zarray;
+    float   zprop;
 
     uint32_t xsize;
     uint32_t ysize;
@@ -43,9 +54,9 @@ errno_t PIAACMCsimul_CA2propCubeInt(const char *__restrict IDamp_name, const cha
 
     {
         imageID IDa = image_ID(IDamp_name);
-        xsize = data.image[IDa].md[0].size[0];
-        ysize = data.image[IDa].md[0].size[1];
-        xysize = xsize;
+        xsize       = data.image[IDa].md[0].size[0];
+        ysize       = data.image[IDa].md[0].size[1];
+        xysize      = xsize;
         xysize *= ysize;
 
         create_2Dimage_ID("retmpim", xsize, ysize, NULL);
@@ -65,7 +76,7 @@ errno_t PIAACMCsimul_CA2propCubeInt(const char *__restrict IDamp_name, const cha
     FUNC_CHECK_RETURN(create_2Dimage_ID("tmpintg", xsize, ysize, NULL));
 
     // initialize zarray
-    zarray = (float *)malloc(sizeof(float) * NBz);
+    zarray = (float *) malloc(sizeof(float) * NBz);
     if (zarray == NULL)
     {
         FUNC_RETURN_FAILURE("malloc returns NULL pointer");
@@ -81,8 +92,14 @@ errno_t PIAACMCsimul_CA2propCubeInt(const char *__restrict IDamp_name, const cha
         DEBUG_TRACEPOINT("l = %ld/%ld", l, NBz);
 
         zprop = zarray[l];
-        FUNC_CHECK_RETURN(OptSystProp_propagateCube(&piaacmcopticalsystem, 0, IDamp_name, IDpha_name, "_tmppropamp",
-                                                    "_tmpproppha", zprop, 0));
+        FUNC_CHECK_RETURN(OptSystProp_propagateCube(&piaacmcopticalsystem,
+                                                    0,
+                                                    IDamp_name,
+                                                    IDpha_name,
+                                                    "_tmppropamp",
+                                                    "_tmpproppha",
+                                                    zprop,
+                                                    0));
 
         imageID IDa = image_ID("_tmppropamp");
         // imageID IDp = image_ID("_tmpproppha");
@@ -92,12 +109,15 @@ errno_t PIAACMCsimul_CA2propCubeInt(const char *__restrict IDamp_name, const cha
             for (long ii = 0; ii < xsize * ysize; ii++)
             {
                 data.image[IDout].array.F[l * xysize + ii] +=
-                    data.image[IDa].array.F[k * xysize + ii] * data.image[IDa].array.F[k * xysize + ii];
+                    data.image[IDa].array.F[k * xysize + ii] *
+                    data.image[IDa].array.F[k * xysize + ii];
             }
 
-        FUNC_CHECK_RETURN(delete_image_ID("_tmppropamp", DELETE_IMAGE_ERRMODE_WARNING));
+        FUNC_CHECK_RETURN(
+            delete_image_ID("_tmppropamp", DELETE_IMAGE_ERRMODE_WARNING));
 
-        FUNC_CHECK_RETURN(delete_image_ID("_tmpproppha", DELETE_IMAGE_ERRMODE_WARNING));
+        FUNC_CHECK_RETURN(
+            delete_image_ID("_tmpproppha", DELETE_IMAGE_ERRMODE_WARNING));
     }
 
     free(zarray);

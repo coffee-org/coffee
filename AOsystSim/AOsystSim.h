@@ -163,8 +163,17 @@ errno_t AOsystSim_extremeAO_contrast_sim();
  *
  *
  */
-long AOsystSim_mkTelPupDM(const char *ID_name, long msize, double xc, double xy, double rin, double rout, double pupPA,
-                          double spiderPA, double spideroffset, double spiderthick, double stretchx);
+long AOsystSim_mkTelPupDM(const char *ID_name,
+                          long        msize,
+                          double      xc,
+                          double      xy,
+                          double      rin,
+                          double      rout,
+                          double      pupPA,
+                          double      spiderPA,
+                          double      spideroffset,
+                          double      spiderthick,
+                          double      stretchx);
 
 /** @brief Fit measured DM response to telescope pupil
  *
@@ -198,7 +207,10 @@ int AOsystSim_mkWF(const char *CONF_FNAME);
 /* =============================================================================================== */
 /* =============================================================================================== */
 
-int AOsystSim_WFSsim_Pyramid(const char *inWFc_name, const char *outWFSim_name, double modampl, long modnbpts);
+int AOsystSim_WFSsim_Pyramid(const char *inWFc_name,
+                             const char *outWFSim_name,
+                             double      modampl,
+                             long        modnbpts);
 
 int AOsystSim_runWFS(long index, const char *IDout_name);
 
@@ -217,7 +229,9 @@ int AOsystSim_PyrWFS(const char *CONF_FNAME);
 /* =============================================================================================== */
 /* =============================================================================================== */
 
-int AOsystSim_DMshape(const char *IDdmctrl_name, const char *IDdmifc_name, const char *IDdm_name);
+int AOsystSim_DMshape(const char *IDdmctrl_name,
+                      const char *IDdmifc_name,
+                      const char *IDdm_name);
 
 int AOsystSim_DM_mkCONF(const char *fname);
 
@@ -247,13 +261,30 @@ int AOsystSim_coroLOWFS(const char *CONF_FNAME);
 /* =============================================================================================== */
 /* =============================================================================================== */
 
-long AOsystSim_FPWFS_imsimul(double probeamp, double sepx, double sepy, double contrast, double wferramp,
-                             double totFlux, double DMgainErr, double RON, double CnoiseFloor);
+long AOsystSim_FPWFS_imsimul(double probeamp,
+                             double sepx,
+                             double sepy,
+                             double contrast,
+                             double wferramp,
+                             double totFlux,
+                             double DMgainErr,
+                             double RON,
+                             double CnoiseFloor);
 
-int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name, const char *IDprobeB_name, long dmxsize, long dmysize,
-                             double CPAmax, double CPArmin, double CPArmax, double RMSampl, long modegeom);
+int AOsystSim_FPWFS_mkprobes(const char *IDprobeA_name,
+                             const char *IDprobeB_name,
+                             long        dmxsize,
+                             long        dmysize,
+                             double      CPAmax,
+                             double      CPArmin,
+                             double      CPArmax,
+                             double      RMSampl,
+                             long        modegeom);
 
-int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode, int mode, int optmode, int NBprobes);
+int AOsystSim_FPWFS_sensitivityAnalysis(int mapmode,
+                                        int mode,
+                                        int optmode,
+                                        int NBprobes);
 
 ///@}
 

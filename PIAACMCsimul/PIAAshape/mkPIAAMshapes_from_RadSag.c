@@ -49,12 +49,24 @@
  *
  * @return errno_t
  */
-errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname, double PIAAsep, double beamrad,
-                                  double r0limfact, double r1limfact, uint32_t size, double beamradpix, long NBradpts,
-                                  const char *__restrict__ ID_PIAAM0_name, const char *__restrict__ ID_PIAAM1_name)
+errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname,
+                                  double   PIAAsep,
+                                  double   beamrad,
+                                  double   r0limfact,
+                                  double   r1limfact,
+                                  uint32_t size,
+                                  double   beamradpix,
+                                  long     NBradpts,
+                                  const char *__restrict__ ID_PIAAM0_name,
+                                  const char *__restrict__ ID_PIAAM1_name)
 {
     DEBUG_TRACE_FSTART();
-    DEBUG_TRACEPOINT("FARG %s %u %f %ld %s %s", piaa1Dsagfname, size, beamradpix, NBradpts, ID_PIAAM0_name,
+    DEBUG_TRACEPOINT("FARG %s %u %f %ld %s %s",
+                     piaa1Dsagfname,
+                     size,
+                     beamradpix,
+                     NBradpts,
+                     ID_PIAAM0_name,
                      ID_PIAAM1_name);
 
     imageID ID_PIAAM0, ID_PIAAM1;
@@ -64,28 +76,28 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname, doubl
     double *r1array;
     double *z1array;
 
-    r0array = (double *)malloc(sizeof(double) * NBradpts);
+    r0array = (double *) malloc(sizeof(double) * NBradpts);
     if (r0array == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    z0array = (double *)malloc(sizeof(double) * NBradpts);
+    z0array = (double *) malloc(sizeof(double) * NBradpts);
     if (z0array == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    r1array = (double *)malloc(sizeof(double) * NBradpts);
+    r1array = (double *) malloc(sizeof(double) * NBradpts);
     if (r1array == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
-    z1array = (double *)malloc(sizeof(double) * NBradpts);
+    z1array = (double *) malloc(sizeof(double) * NBradpts);
     if (z1array == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
@@ -101,8 +113,13 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname, doubl
         {
             for (long k = 0; k < NBradpts; k++)
             {
-                int ret = fscanf(fp, "%lf %lf %lf %lf\n", &r0array[k], &z0array[k], &r1array[k], &z1array[k]);
-                (void)ret;
+                int ret = fscanf(fp,
+                                 "%lf %lf %lf %lf\n",
+                                 &r0array[k],
+                                 &z0array[k],
+                                 &r1array[k],
+                                 &z1array[k]);
+                (void) ret;
             }
             fclose(fp);
         }
@@ -120,9 +137,11 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname, doubl
         z1array[k] -= PIAAsep;
     }
 
-    FUNC_CHECK_RETURN(create_2Dimage_ID(ID_PIAAM0_name, size, size, &ID_PIAAM0));
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID(ID_PIAAM0_name, size, size, &ID_PIAAM0));
 
-    FUNC_CHECK_RETURN(create_2Dimage_ID(ID_PIAAM1_name, size, size, &ID_PIAAM1));
+    FUNC_CHECK_RETURN(
+        create_2Dimage_ID(ID_PIAAM1_name, size, size, &ID_PIAAM1));
 
     printf("\n\n");
 
@@ -152,14 +171,15 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname, doubl
                     {
                         k++;
                     }
-                    double r00 = r0array[k - 1];
-                    double r01 = r0array[k];
+                    double r00   = r0array[k - 1];
+                    double r01   = r0array[k];
                     double alpha = (r - r00) / (r01 - r00);
                     if (alpha > 1.0)
                     {
                         alpha = 1.0;
                     }
-                    double val = (1.0 - alpha) * z0array[k - 1] + alpha * z0array[k];
+                    double val =
+                        (1.0 - alpha) * z0array[k - 1] + alpha * z0array[k];
                     data.image[ID_PIAAM0].array.F[jj * size + ii] = val;
                 }
                 else
@@ -174,15 +194,17 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname, doubl
                     {
                         k++;
                     }
-                    double r00 = r1array[k - 1];
-                    double r01 = r1array[k];
+                    double r00   = r1array[k - 1];
+                    double r01   = r1array[k];
                     double alpha = (r - r00) / (r01 - r00);
                     if (alpha > 1.0)
                     {
                         alpha = 1.0;
                     }
-                    double val = (1.0 - alpha) * z1array[k - 1] + alpha * z1array[k];
-                    data.image[ID_PIAAM1].array.F[jj * size + ii] = -val; //-piaacmc[0].PIAAsep);
+                    double val =
+                        (1.0 - alpha) * z1array[k - 1] + alpha * z1array[k];
+                    data.image[ID_PIAAM1].array.F[jj * size + ii] =
+                        -val; //-piaacmc[0].PIAAsep);
                 }
                 else
                 {

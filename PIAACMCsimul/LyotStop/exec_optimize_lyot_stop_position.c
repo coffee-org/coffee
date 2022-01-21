@@ -46,9 +46,9 @@ errno_t exec_optimize_lyot_stop_position()
     DEBUG_TRACE_FSTART();
 
     imageID IDv;
-    double fpmradld = 0.95; // default
-    double centobs0 = 0.3;
-    double centobs1 = 0.2;
+    double  fpmradld = 0.95; // default
+    double  centobs0 = 0.3;
+    double  centobs1 = 0.2;
 
     long NBiter = 1000;
 
@@ -57,7 +57,9 @@ errno_t exec_optimize_lyot_stop_position()
 
     char fnamelog[STRINGMAXLEN_FULLFILENAME];
 
-    printf("=================================== mode 001 ===================================\n");
+    printf(
+        "=================================== mode 001 "
+        "===================================\n");
     // load some more cli variables
     if ((IDv = variable_ID("PIAACMC_centobs0")) != -1)
     {
@@ -77,7 +79,11 @@ errno_t exec_optimize_lyot_stop_position()
     {
         uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
         initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
-        FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld, centobs0, centobs1, initflag, NULL));
+        FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld,
+                                                    centobs0,
+                                                    centobs1,
+                                                    initflag,
+                                                    NULL));
     }
 
     FUNC_CHECK_RETURN(makePIAAshapes());
@@ -112,7 +118,9 @@ errno_t exec_optimize_lyot_stop_position()
     NBiter = 4; // number of iterations
 
     // start up a log
-    WRITE_FULLFILENAME(fnamelog, "%s/result_LMpos.log", piaacmcparams.piaacmcconfdir);
+    WRITE_FULLFILENAME(fnamelog,
+                       "%s/result_LMpos.log",
+                       piaacmcparams.piaacmcconfdir);
     {
         FILE *fp = fopen(fnamelog, "w");
         fclose(fp);
@@ -135,47 +143,65 @@ errno_t exec_optimize_lyot_stop_position()
             double valbest = 1.0;
 
             // march to the other other end of range
-            while (piaacmcopticaldesign.LyotStop_zpos[ls] < paramref[ls] + range)
+            while (piaacmcopticaldesign.LyotStop_zpos[ls] <
+                   paramref[ls] + range)
             {
-                long elem;
+                long   elem;
                 double val;
 
-                long elem0 = 6; // elem0 is the starting point of the PSF propagation.  This is a staring default
+                long elem0 =
+                    6; // elem0 is the starting point of the PSF propagation.  This is a staring default
 
                 // look for the element called "Lyot mask 0" as the actual starting point
                 elem0 = -1;
-                printf("Number of elements = %ld\n", piaacmcopticalsystem.NBelem);
+                printf("Number of elements = %ld\n",
+                       piaacmcopticalsystem.NBelem);
                 assert(piaacmcopticalsystem.NBelem > 0);
 
                 for (elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
                 {
-                    printf("elem %ld :  %s\n", elem, piaacmcopticalsystem.name[elem]);
-                    if (strcmp("Lyot mask 0", piaacmcopticalsystem.name[elem]) == 0)
+                    printf("elem %ld :  %s\n",
+                           elem,
+                           piaacmcopticalsystem.name[elem]);
+                    if (strcmp("Lyot mask 0",
+                               piaacmcopticalsystem.name[elem]) == 0)
                     {
                         elem0 = elem;
                     }
                 }
                 assert(elem0 != -1); // throw a message if this was not found
 
-                piaacmcopticalsystem.keepMem[elem0] = 1; // save this element and reuse
+                piaacmcopticalsystem.keepMem[elem0] =
+                    1; // save this element and reuse
 
                 // compute the PSF for this Lyot stop position, returning contrast in the evaluation zone
                 FUNC_CHECK_RETURN(
-                    PIAACMCsimul_computePSF(0.0, 0.0, elem0, piaacmcopticalsystem.NBelem, 0, 0, 0, 0, &val));
+                    PIAACMCsimul_computePSF(0.0,
+                                            0.0,
+                                            elem0,
+                                            piaacmcopticalsystem.NBelem,
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            &val));
 
                 // if this is the best contrast for this stop, save it for it and the position of this stop
                 if (val < valbest)
                 {
                     parambest[ls] = piaacmcopticaldesign.LyotStop_zpos[ls];
-                    valbest = val;
+                    valbest       = val;
                 }
 
                 // say what's happening
                 {
                     FILE *fp = fopen(fnamelog, "a");
-                    for (long ls1 = 0; ls1 < piaacmcopticaldesign.NBLyotStop; ls1++)
+                    for (long ls1 = 0; ls1 < piaacmcopticaldesign.NBLyotStop;
+                         ls1++)
                     {
-                        fprintf(fp, " %lf", piaacmcopticaldesign.LyotStop_zpos[ls1]);
+                        fprintf(fp,
+                                " %lf",
+                                piaacmcopticaldesign.LyotStop_zpos[ls1]);
                     }
                     fprintf(fp, " %g\n", val);
                     fclose(fp);
@@ -185,8 +211,9 @@ errno_t exec_optimize_lyot_stop_position()
                 piaacmcopticaldesign.LyotStop_zpos[ls] += stepsize;
             }
             printf("BEST SOLUTION :  ");
-            paramref[ls] = parambest[ls];                          // update best position for this stop
-            piaacmcopticaldesign.LyotStop_zpos[ls] = paramref[ls]; // store in case this is last iteration
+            paramref[ls] = parambest[ls]; // update best position for this stop
+            piaacmcopticaldesign.LyotStop_zpos[ls] =
+                paramref[ls]; // store in case this is last iteration
             printf(" %lf", parambest[ls]);
             printf(" %g\n", valbest);
         }

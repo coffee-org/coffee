@@ -23,23 +23,29 @@ errno_t f_evalmask(const gsl_vector *v, void *params, double *outval)
 {
     DEBUG_TRACE_FSTART();
 
-    double *p = (double *)params;
-    double value;
-    long k;
+    double *p = (double *) params;
+    double  value;
+    long    k;
 
-    (void)p;
+    (void) p;
 
     for (k = 0; k < data.image[piaacmcopticaldesign.zonezID].md[0].size[0]; k++)
     {
         piaacmcparams.zonez_array[k] = gsl_vector_get(v, k);
     }
 
-    FUNC_CHECK_RETURN(PIAACMCsimul_achromFPMsol_eval(piaacmcparams.fpmresp_array, piaacmcparams.zonez_array,
-                                                     piaacmcparams.dphadz_array, piaacmcparams.outtmp_array,
-                                                     piaacmcparams.vsize,
-                                                     data.image[piaacmcopticaldesign.zonezID].md[0].size[0],
-                                                     piaacmcopticaldesign.nblambda, &value););
-    value /= piaacmcparams.CnormFactor * piaacmcparams.SCORINGTOTAL * piaacmcopticaldesign.nblambda;
+    FUNC_CHECK_RETURN(
+        PIAACMCsimul_achromFPMsol_eval(
+            piaacmcparams.fpmresp_array,
+            piaacmcparams.zonez_array,
+            piaacmcparams.dphadz_array,
+            piaacmcparams.outtmp_array,
+            piaacmcparams.vsize,
+            data.image[piaacmcopticaldesign.zonezID].md[0].size[0],
+            piaacmcopticaldesign.nblambda,
+            &value););
+    value /= piaacmcparams.CnormFactor * piaacmcparams.SCORINGTOTAL *
+             piaacmcopticaldesign.nblambda;
 
     piaacmcparams.LOOPCNT++;
 
