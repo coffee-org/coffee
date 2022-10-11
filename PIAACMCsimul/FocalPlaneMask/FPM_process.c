@@ -20,37 +20,48 @@ static char *zonescoordname;
 static long *NBexpval;
 static char *FPMsagoutimname;
 
-static CLICMDARGDEF farg[] = {{CLIARG_IMG,
-                               ".FPMsag",
-                               "input FPM sag",
-                               "inFPMsag",
-                               CLIARG_VISIBLE_DEFAULT,
-                               (void **) &FPMsagimname,
-                               NULL},
-                              {CLIARG_STR,
-                               ".zcoordname",
-                               "sectors ASCII file",
-                               "coord.txt",
-                               CLIARG_VISIBLE_DEFAULT,
-                               (void **) &zonescoordname,
-                               NULL},
-                              {CLIARG_LONG,
-                               ".NBexp",
-                               "number of exposures",
-                               "4",
-                               CLIARG_VISIBLE_DEFAULT,
-                               (void **) &NBexpval,
-                               NULL},
-                              {CLIARG_STR,
-                               ".outFPMsag",
-                               "output FPM sags",
-                               "outFPMsag",
-                               CLIARG_VISIBLE_DEFAULT,
-                               (void **) &FPMsagoutimname,
-                               NULL}};
+static CLICMDARGDEF farg[] = {{
+        CLIARG_IMG,
+        ".FPMsag",
+        "input FPM sag",
+        "inFPMsag",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &FPMsagimname,
+        NULL
+    },
+    {
+        CLIARG_STR,
+        ".zcoordname",
+        "sectors ASCII file",
+        "coord.txt",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &zonescoordname,
+        NULL
+    },
+    {
+        CLIARG_LONG,
+        ".NBexp",
+        "number of exposures",
+        "4",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &NBexpval,
+        NULL
+    },
+    {
+        CLIARG_STR,
+        ".outFPMsag",
+        "output FPM sags",
+        "outFPMsag",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &FPMsagoutimname,
+        NULL
+    }
+};
 
-static CLICMDDATA CLIcmddata = {
-    "fpmprocess", "Quantize FPM", CLICMD_FIELDS_DEFAULTS};
+static CLICMDDATA CLIcmddata =
+{
+    "fpmprocess", "Quantize FPM", CLICMD_FIELDS_DEFAULTS
+};
 
 // detailed help
 static errno_t help_function()
@@ -84,27 +95,27 @@ errno_t PIAACMC_FPM_process(const char *__restrict__ FPMsag_name,
     NBzones = data.image[IDin].md[0].size[0];
     atype   = data.image[IDin].md[0].datatype;
 
-    switch (atype)
+    switch(atype)
     {
-    case _DATATYPE_DOUBLE:
-        printf("atype = _DATATYPE_DOUBLE\n");
-        break;
-    case _DATATYPE_FLOAT:
-        printf("atype = _DATATYPE_FLOAT\n");
-        break;
-    default:
-        printf("ERROR: atype not supported\n");
-        exit(0);
-        break;
+        case _DATATYPE_DOUBLE:
+            printf("atype = _DATATYPE_DOUBLE\n");
+            break;
+        case _DATATYPE_FLOAT:
+            printf("atype = _DATATYPE_FLOAT\n");
+            break;
+        default:
+            printf("ERROR: atype not supported\n");
+            exit(0);
+            break;
     }
 
     printf("%ld zones\n", NBzones);
     sagarray_in  = (double *) malloc(sizeof(double) * NBzones);
     sagarray_out = (double *) malloc(sizeof(double) * NBzones);
 
-    for (long zone = 0; zone < NBzones; zone++)
+    for(long zone = 0; zone < NBzones; zone++)
     {
-        if (atype == _DATATYPE_FLOAT)
+        if(atype == _DATATYPE_FLOAT)
         {
             sagarray_in[zone] = (double) data.image[IDin].array.F[zone];
         }
@@ -116,13 +127,13 @@ errno_t PIAACMC_FPM_process(const char *__restrict__ FPMsag_name,
 
     sagmin = sagarray_in[0];
     sagmax = sagarray_in[0];
-    for (long zone = 1; zone < NBzones; zone++)
+    for(long zone = 1; zone < NBzones; zone++)
     {
-        if (sagarray_in[zone] < sagmin)
+        if(sagarray_in[zone] < sagmin)
         {
             sagmin = sagarray_in[zone];
         }
-        if (sagarray_in[zone] > sagmax)
+        if(sagarray_in[zone] > sagmax)
         {
             sagmax = sagarray_in[zone];
         }
@@ -132,7 +143,7 @@ errno_t PIAACMC_FPM_process(const char *__restrict__ FPMsag_name,
            sagmin * 1.0e6,
            sagmax * 1.0e6);
     NBsagsteps = 2;
-    for (long k = 1; k < NBexp; k++)
+    for(long k = 1; k < NBexp; k++)
     {
         NBsagsteps *= 2;
     }
@@ -141,7 +152,7 @@ errno_t PIAACMC_FPM_process(const char *__restrict__ FPMsag_name,
     fp = fopen("saglevels.dat", "w");
 
     sagstepval = (double *) malloc(sizeof(double) * NBsagsteps);
-    for (long k = 0; k < NBsagsteps; k++)
+    for(long k = 0; k < NBsagsteps; k++)
     {
         sagstepval[k] = sagmin + (sagmax - sagmin) * k / NBsagsteps +
                         0.5 * (sagmax - sagmin) / NBsagsteps;
@@ -153,11 +164,11 @@ errno_t PIAACMC_FPM_process(const char *__restrict__ FPMsag_name,
     fpout = fopen(outname, "w");
 
     //for(zone=0; zone<NBzones; zone++)
-    for (long zone = 0; zone < NBzones; zone++)
+    for(long zone = 0; zone < NBzones; zone++)
     {
-        long k = (long) ((sagarray_in[zone] - sagmin) /
-                         ((sagmax - sagmin) / NBsagsteps));
-        if (sagarray_in[zone] > sagstepval[NBsagsteps - 1])
+        long k = (long)((sagarray_in[zone] - sagmin) /
+                        ((sagmax - sagmin) / NBsagsteps));
+        if(sagarray_in[zone] > sagstepval[NBsagsteps - 1])
         {
             k = NBsagsteps - 1;
         }
@@ -198,9 +209,9 @@ static errno_t compute_function()
 
 INSERT_STD_FPSCLIfunctions
 
-    // Register function in CLI
-    errno_t
-    CLIADDCMD_PIAACMCsimul__FPM_process()
+// Register function in CLI
+errno_t
+CLIADDCMD_PIAACMCsimul__FPM_process()
 {
     INSERT_STD_CLIREGISTERFUNC
     return RETURN_SUCCESS;

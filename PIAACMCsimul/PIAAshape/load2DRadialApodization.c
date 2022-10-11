@@ -48,10 +48,11 @@ errno_t load2DRadialApodization(const char *__restrict__ IDapo_name,
     float eps   = 1.0e-4;
     int   debug = 1;
 
-    uint32_t sizem = (long) (beamradpix * 2);
+    uint32_t sizem = (long)(beamradpix * 2);
 
-    { // Create 2D radial cos modes
-        if (image_ID("APOmodesCos") == -1)
+    {
+        // Create 2D radial cos modes
+        if(image_ID("APOmodesCos") == -1)
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
             FUNC_CHECK_RETURN(
@@ -69,7 +70,8 @@ errno_t load2DRadialApodization(const char *__restrict__ IDapo_name,
         }
     }
 
-    { // CREATE MASK AND CROP INPUT
+    {
+        // CREATE MASK AND CROP INPUT
         imageID IDmask;
         FUNC_CHECK_RETURN(
             create_2Dimage_ID("fitmaskapo", sizem, sizem, &IDmask));
@@ -81,21 +83,22 @@ errno_t load2DRadialApodization(const char *__restrict__ IDapo_name,
         FUNC_CHECK_RETURN(create_2Dimage_ID("_apoincrop", sizem, sizem, &ID));
 
         long offset = (sizein - sizem) / 2;
-        for (uint32_t ii = 0; ii < sizem; ii++)
-            for (uint32_t jj = 0; jj < sizem; jj++)
+        for(uint32_t ii = 0; ii < sizem; ii++)
+            for(uint32_t jj = 0; jj < sizem; jj++)
             {
                 data.image[ID].array.F[jj * sizem + ii] =
                     data.image[IDin]
-                        .array.F[(jj + offset) * sizein + (ii + offset)];
-                if ((data.image[ID].array.F[jj * sizem + ii] > eps) &&
-                    (ii % 1 == 0) && (jj % 1 == 0))
+                    .array.F[(jj + offset) * sizein + (ii + offset)];
+                if((data.image[ID].array.F[jj * sizem + ii] > eps) &&
+                        (ii % 1 == 0) && (jj % 1 == 0))
                 {
                     data.image[IDmask].array.F[jj * sizem + ii] = 1.0;
                 }
             }
     }
 
-    { // for debugging, write files to filesystem
+    {
+        // for debugging, write files to filesystem
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname,
                            "%s/_apoincrop.fits",
@@ -110,25 +113,25 @@ errno_t load2DRadialApodization(const char *__restrict__ IDapo_name,
 
     // Perform linear fit
     FUNC_CHECK_RETURN(linopt_imtools_image_fitModes("_apoincrop",
-                                                    "APOmodesCos",
-                                                    "fitmaskapo",
-                                                    1.0e-8,
-                                                    IDapofit_name,
-                                                    0,
-                                                    NULL));
+                      "APOmodesCos",
+                      "fitmaskapo",
+                      1.0e-8,
+                      IDapofit_name,
+                      0,
+                      NULL));
 
     EXECUTE_SYSTEM_COMMAND("mv %s/eigenv.dat %s/eigenv_APOmodesCos.dat",
                            piaacmcparams.piaacmcconfdir,
                            piaacmcparams.piaacmcconfdir);
 
-    if (debug == 1) // test fit quality
+    if(debug == 1)  // test fit quality
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
 
         FUNC_CHECK_RETURN(linopt_imtools_image_construct("APOmodesCos",
-                                                         IDapofit_name,
-                                                         "testapofitsol",
-                                                         NULL));
+                          IDapofit_name,
+                          "testapofitsol",
+                          NULL));
 
         WRITE_FULLFILENAME(fname,
                            "%s/testapofitsol.fits",

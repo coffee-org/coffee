@@ -29,7 +29,7 @@ errno_t f_evalmask(const gsl_vector *v, void *params, double *outval)
 
     (void) p;
 
-    for (k = 0; k < data.image[piaacmcopticaldesign.zonezID].md[0].size[0]; k++)
+    for(k = 0; k < data.image[piaacmcopticaldesign.zonezID].md[0].size[0]; k++)
     {
         piaacmcparams.zonez_array[k] = gsl_vector_get(v, k);
     }
@@ -49,7 +49,7 @@ errno_t f_evalmask(const gsl_vector *v, void *params, double *outval)
 
     piaacmcparams.LOOPCNT++;
 
-    if (outval != NULL)
+    if(outval != NULL)
     {
         *outval = value;
     }

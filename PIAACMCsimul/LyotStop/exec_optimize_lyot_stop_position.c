@@ -61,15 +61,15 @@ errno_t exec_optimize_lyot_stop_position()
         "=================================== mode 001 "
         "===================================\n");
     // load some more cli variables
-    if ((IDv = variable_ID("PIAACMC_centobs0")) != -1)
+    if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
     {
         centobs0 = data.variable[IDv].value.f;
     }
-    if ((IDv = variable_ID("PIAACMC_centobs1")) != -1)
+    if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
     {
         centobs1 = data.variable[IDv].value.f;
     }
-    if ((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
+    if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
         fpmradld = data.variable[IDv].value.f;
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
@@ -80,10 +80,10 @@ errno_t exec_optimize_lyot_stop_position()
         uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
         initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
         FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld,
-                                                    centobs0,
-                                                    centobs1,
-                                                    initflag,
-                                                    NULL));
+                          centobs0,
+                          centobs1,
+                          initflag,
+                          NULL));
     }
 
     FUNC_CHECK_RETURN(makePIAAshapes());
@@ -98,7 +98,7 @@ errno_t exec_optimize_lyot_stop_position()
     double range, stepsize;
     {
         variableID IDv;
-        if ((IDv = variable_ID("PIAACMC_lsoptrange")) != -1)
+        if((IDv = variable_ID("PIAACMC_lsoptrange")) != -1)
         {
             range = data.variable[IDv].value.f; // from cli
         }
@@ -111,7 +111,7 @@ errno_t exec_optimize_lyot_stop_position()
 
     // store initial Lyot stop positions
     // NBLyotStop = length(LyotStop_zpos)
-    for (long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
+    for(long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
     {
         paramref[ls] = piaacmcopticaldesign.LyotStop_zpos[ls];
     }
@@ -129,10 +129,10 @@ errno_t exec_optimize_lyot_stop_position()
     // pick another initial march stepsize
     stepsize = range / 5.0;
     // start the iterative refined march
-    for (long iter = 0; iter < NBiter; iter++)
+    for(long iter = 0; iter < NBiter; iter++)
     {
         // for each Lyot stop, find its best position
-        for (long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
+        for(long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
         {
             // start position for march.  paramref is current best value
             piaacmcopticaldesign.LyotStop_zpos[ls] = paramref[ls] - range;
@@ -143,8 +143,8 @@ errno_t exec_optimize_lyot_stop_position()
             double valbest = 1.0;
 
             // march to the other other end of range
-            while (piaacmcopticaldesign.LyotStop_zpos[ls] <
-                   paramref[ls] + range)
+            while(piaacmcopticaldesign.LyotStop_zpos[ls] <
+                    paramref[ls] + range)
             {
                 long   elem;
                 double val;
@@ -158,13 +158,13 @@ errno_t exec_optimize_lyot_stop_position()
                        piaacmcopticalsystem.NBelem);
                 assert(piaacmcopticalsystem.NBelem > 0);
 
-                for (elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
+                for(elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
                 {
                     printf("elem %ld :  %s\n",
                            elem,
                            piaacmcopticalsystem.name[elem]);
-                    if (strcmp("Lyot mask 0",
-                               piaacmcopticalsystem.name[elem]) == 0)
+                    if(strcmp("Lyot mask 0",
+                              piaacmcopticalsystem.name[elem]) == 0)
                     {
                         elem0 = elem;
                     }
@@ -187,7 +187,7 @@ errno_t exec_optimize_lyot_stop_position()
                                             &val));
 
                 // if this is the best contrast for this stop, save it for it and the position of this stop
-                if (val < valbest)
+                if(val < valbest)
                 {
                     parambest[ls] = piaacmcopticaldesign.LyotStop_zpos[ls];
                     valbest       = val;
@@ -196,8 +196,8 @@ errno_t exec_optimize_lyot_stop_position()
                 // say what's happening
                 {
                     FILE *fp = fopen(fnamelog, "a");
-                    for (long ls1 = 0; ls1 < piaacmcopticaldesign.NBLyotStop;
-                         ls1++)
+                    for(long ls1 = 0; ls1 < piaacmcopticaldesign.NBLyotStop;
+                            ls1++)
                     {
                         fprintf(fp,
                                 " %lf",
@@ -229,7 +229,7 @@ errno_t exec_optimize_lyot_stop_position()
         stepsize = range / 3.0;
     }
     // store all best positions  Done!!
-    for (long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
+    for(long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
     {
         piaacmcopticaldesign.LyotStop_zpos[ls] = parambest[ls];
     }

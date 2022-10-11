@@ -24,13 +24,13 @@
 ///
 errno_t PIAACMCsimul_achromFPMsol_eval(
     double
-        *restrict fpmresp_array, /// @param[in] fpmresp_array   Mask zones responses, double array
+    *restrict fpmresp_array, /// @param[in] fpmresp_array   Mask zones responses, double array
     double
-        *restrict zonez_array, /// @param[in] zonez_array     Zone thicknesses, double array
+    *restrict zonez_array, /// @param[in] zonez_array     Zone thicknesses, double array
     double
-        *restrict dphadz_array, /// @param[in] dphadz_array    For each lambda, pha = thickness x dphadt_array[lambdaindex]
+    *restrict dphadz_array, /// @param[in] dphadz_array    For each lambda, pha = thickness x dphadt_array[lambdaindex]
     double
-        *restrict outtmp_array, /// @param[out] outtmp_array   Output temp array
+    *restrict outtmp_array, /// @param[out] outtmp_array   Output temp array
     long    vsize,
     long    nbz,
     long    nbl,
@@ -55,37 +55,37 @@ errno_t PIAACMCsimul_achromFPMsol_eval(
                                  "");
 #endif
 
-    for (long evalk = 0; evalk < nbl; evalk++) // wavelength index
+    for(long evalk = 0; evalk < nbl; evalk++)  // wavelength index
     {
         long evalki;
         evalki = evalk * (nbz + 1) * vsize;
 
-        if (piaacmcopticalsystem.FOCMASKarray[0].mode ==
-            1) // include outer zone
+        if(piaacmcopticalsystem.FOCMASKarray[0].mode ==
+                1) // include outer zone
         {
             // outer zone
-            for (long evalii = 0; evalii < vsize / 2; evalii++)
+            for(long evalii = 0; evalii < vsize / 2; evalii++)
             {
                 outtmp_array[evalk * vsize + 2 * evalii] = fpmresp_array
-                    [evalk * (nbz + 1) * vsize +
-                     2 * evalii]; // mz=0 -> mz*vsize not included in index
+                        [evalk * (nbz + 1) * vsize +
+                               2 * evalii]; // mz=0 -> mz*vsize not included in index
                 outtmp_array[evalk * vsize + 2 * evalii + 1] =
                     fpmresp_array[evalk * (nbz + 1) * vsize + 2 * evalii + 1];
             }
 
             // mask zones
-            for (long evalmz = 0; evalmz < nbz; evalmz++)
+            for(long evalmz = 0; evalmz < nbz; evalmz++)
             {
                 double evalpha =
                     zonez_array[evalmz] *
                     dphadz_array
-                        [evalk]; // CHANGED sign to + on 2017-12-23 to adopt new sign convention
+                    [evalk]; // CHANGED sign to + on 2017-12-23 to adopt new sign convention
                 double evalcosp = cos(evalpha);
                 double evalsinp = sin(evalpha);
                 long   evalki1  = evalki + (evalmz + 1) * vsize;
                 long   evalkv   = evalk * vsize;
 
-                for (long evalii = 0; evalii < vsize / 2; evalii++)
+                for(long evalii = 0; evalii < vsize / 2; evalii++)
                 {
                     long   evalii1 = 2 * evalii;
                     long   evalii2 = 2 * evalii + 1;
@@ -110,7 +110,7 @@ errno_t PIAACMCsimul_achromFPMsol_eval(
             evalki1  = evalki + (evalmz + 1) * vsize;
             evalkv   = evalk * vsize;
 
-            for (long evalii = 0; evalii < vsize / 2; evalii++)
+            for(long evalii = 0; evalii < vsize / 2; evalii++)
             {
                 long   evalii1 = 2 * evalii;
                 long   evalii2 = 2 * evalii + 1;
@@ -128,7 +128,7 @@ errno_t PIAACMCsimul_achromFPMsol_eval(
     //	outtmp_array[nbl*vsize + evalmz] = piaacmcparams.PIAACMC_MASKregcoeff*zonez_array[evalmz]*sqrt(vsize*nbl/nbz);
 
     double evalval = 0.0;
-    for (long evalii = 0; evalii < vsize * nbl; evalii++)
+    for(long evalii = 0; evalii < vsize * nbl; evalii++)
     {
         double evalv1 = outtmp_array[evalii];
         evalval += evalv1 * evalv1;
@@ -136,7 +136,7 @@ errno_t PIAACMCsimul_achromFPMsol_eval(
     //  evalval /= vsize*nbl;
 
     // note that evalval is prop to bumber of spectral channels x number of evaluation pixels
-    if (outval != NULL)
+    if(outval != NULL)
     {
         *outval = evalval;
     }

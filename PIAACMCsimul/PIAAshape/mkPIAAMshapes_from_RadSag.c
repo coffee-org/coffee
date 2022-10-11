@@ -77,28 +77,28 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname,
     double *z1array;
 
     r0array = (double *) malloc(sizeof(double) * NBradpts);
-    if (r0array == NULL)
+    if(r0array == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
     z0array = (double *) malloc(sizeof(double) * NBradpts);
-    if (z0array == NULL)
+    if(z0array == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
     r1array = (double *) malloc(sizeof(double) * NBradpts);
-    if (r1array == NULL)
+    if(r1array == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
     z1array = (double *) malloc(sizeof(double) * NBradpts);
-    if (z1array == NULL)
+    if(z1array == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
@@ -109,9 +109,9 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname,
         DEBUG_TRACEPOINT_LOG("read sag radial profile %s", piaa1Dsagfname);
 
         FILE *fp = fopen(piaa1Dsagfname, "r");
-        if (fp != NULL)
+        if(fp != NULL)
         {
-            for (long k = 0; k < NBradpts; k++)
+            for(long k = 0; k < NBradpts; k++)
             {
                 int ret = fscanf(fp,
                                  "%lf %lf %lf %lf\n",
@@ -132,7 +132,7 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname,
     //  for(k=0;k<nbpt;k++)
     //  printf("%ld %.8lf %.8lf %.8lf %.8lf\n", k, r0array[k], z0array[k], r1array[k], z1array[k]);
 
-    for (long k = 0; k < NBradpts; k++)
+    for(long k = 0; k < NBradpts; k++)
     {
         z1array[k] -= PIAAsep;
     }
@@ -146,35 +146,35 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname,
     printf("\n\n");
 
 #ifdef _OPENMP
-#pragma omp parallel
+    #pragma omp parallel
     {
 #endif
 
 #ifdef _OPENMP
-#pragma omp for
+        #pragma omp for
 #endif
-        for (long ii = 0; ii < size; ii++)
+        for(long ii = 0; ii < size; ii++)
         {
             //      printf("\r %ld / %ld     ", ii, size);
             //fflush(stdout);
 
-            for (long jj = 0; jj < size; jj++)
+            for(long jj = 0; jj < size; jj++)
             {
                 double x = (1.0 * ii - 0.5 * size) / beamradpix;
                 double y = (1.0 * jj - 0.5 * size) / beamradpix;
                 double r = sqrt(x * x + y * y) * beamrad;
 
-                if (r < r0limfact * beamrad)
+                if(r < r0limfact * beamrad)
                 {
                     long k = 1;
-                    while ((k < NBradpts - 2) && (r0array[k] < r))
+                    while((k < NBradpts - 2) && (r0array[k] < r))
                     {
                         k++;
                     }
                     double r00   = r0array[k - 1];
                     double r01   = r0array[k];
                     double alpha = (r - r00) / (r01 - r00);
-                    if (alpha > 1.0)
+                    if(alpha > 1.0)
                     {
                         alpha = 1.0;
                     }
@@ -187,17 +187,17 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname,
                     data.image[ID_PIAAM0].array.F[jj * size + ii] = 0.0;
                 }
 
-                if (r < r1limfact * beamrad)
+                if(r < r1limfact * beamrad)
                 {
                     long k = 1;
-                    while ((k < NBradpts - 2) && (r1array[k] < r))
+                    while((k < NBradpts - 2) && (r1array[k] < r))
                     {
                         k++;
                     }
                     double r00   = r1array[k - 1];
                     double r01   = r1array[k];
                     double alpha = (r - r00) / (r01 - r00);
-                    if (alpha > 1.0)
+                    if(alpha > 1.0)
                     {
                         alpha = 1.0;
                     }
@@ -216,7 +216,8 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname,
     }
 #endif
 
-    { //TEST
+    {
+        //TEST
         char fnametest[STRINGMAXLEN_FILENAME];
         WRITE_FILENAME(fnametest, "test_piaam0z.fits");
         FUNC_CHECK_RETURN(save_fl_fits(ID_PIAAM0_name, fnametest));

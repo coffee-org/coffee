@@ -41,7 +41,7 @@ errno_t OptSystProp_propagateCube(OPTSYST    *optsyst,
     FUNC_CHECK_RETURN(create_2DCimage_ID("tmppropCin", size, size, &IDc_in));
 
     uint32_t *imsizearray = (uint32_t *) malloc(sizeof(uint32_t) * 3);
-    if (imsizearray == NULL)
+    if(imsizearray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
@@ -51,7 +51,7 @@ errno_t OptSystProp_propagateCube(OPTSYST    *optsyst,
     imsizearray[2] = optsyst[index].nblambda;
 
     imageID IDout_amp = image_ID(IDout_amp_name);
-    if (IDout_amp == -1)
+    if(IDout_amp == -1)
     {
         FUNC_CHECK_RETURN(create_image_ID(IDout_amp_name,
                                           3,
@@ -64,7 +64,7 @@ errno_t OptSystProp_propagateCube(OPTSYST    *optsyst,
     }
 
     imageID IDout_pha = image_ID(IDout_pha_name);
-    if (IDout_pha == -1)
+    if(IDout_pha == -1)
     {
         FUNC_CHECK_RETURN(create_image_ID(IDout_pha_name,
                                           3,
@@ -80,7 +80,7 @@ errno_t OptSystProp_propagateCube(OPTSYST    *optsyst,
     data.image[IDout_amp].md[0].write = 1;
     data.image[IDout_pha].md[0].write = 1;
 
-    for (int kl = 0; kl < optsyst[index].nblambda; kl++)
+    for(int kl = 0; kl < optsyst[index].nblambda; kl++)
     {
         long IDc_out;
 
@@ -89,7 +89,7 @@ errno_t OptSystProp_propagateCube(OPTSYST    *optsyst,
                          optsyst[index].nblambda,
                          optsyst[index].lambdaarray[kl]);
         // convert from amp/phase to Re/Im
-        for (uint64_t ii = 0; ii < size2; ii++)
+        for(uint64_t ii = 0; ii < size2; ii++)
         {
             double amp = data.image[IDin_amp].array.F[kl * size2 + ii];
             double pha = data.image[IDin_pha].array.F[kl * size2 + ii];
@@ -106,7 +106,7 @@ errno_t OptSystProp_propagateCube(OPTSYST    *optsyst,
 
         IDc_out = image_ID("tmppropCout");
         // convert back from Re/Im to amp/phase
-        for (uint64_t ii = 0; ii < size2; ii++)
+        for(uint64_t ii = 0; ii < size2; ii++)
         {
             double re  = data.image[IDc_out].array.CF[ii].re;
             double im  = data.image[IDc_out].array.CF[ii].im;

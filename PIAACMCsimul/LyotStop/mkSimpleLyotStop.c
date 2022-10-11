@@ -48,11 +48,11 @@ errno_t mkSimpleLyotStop(const char *__restrict__ ID_name,
                                         piaacmcopticaldesign.nblambda,
                                         &ID));
 
-    for (long k = 0; k < piaacmcopticaldesign.nblambda; k++)
-        for (uint64_t ii = 0; ii < size2; ii++)
+    for(long k = 0; k < piaacmcopticaldesign.nblambda; k++)
+        for(uint64_t ii = 0; ii < size2; ii++)
         {
-            if ((data.image[IDr].array.F[ii] < rout) &&
-                (data.image[IDr].array.F[ii] > rin))
+            if((data.image[IDr].array.F[ii] < rout) &&
+                    (data.image[IDr].array.F[ii] > rin))
             {
                 data.image[ID].array.F[k * size2 + ii] = 1.0;
             }
@@ -62,7 +62,7 @@ errno_t mkSimpleLyotStop(const char *__restrict__ ID_name,
             }
         }
 
-    if (outID != NULL)
+    if(outID != NULL)
     {
         *outID = ID;
     }

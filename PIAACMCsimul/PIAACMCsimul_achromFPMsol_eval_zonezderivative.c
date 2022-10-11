@@ -13,13 +13,13 @@
 #include "CommandLineInterface/CLIcore.h"
 
 errno_t PIAACMCsimul_achromFPMsol_eval_zonezderivative(long    zone,
-                                                       double *fpmresp_array,
-                                                       double *zonez_array,
-                                                       double *dphadz_array,
-                                                       double *outtmp_array,
-                                                       long    vsize,
-                                                       long    nbz,
-                                                       long    nbl)
+        double *fpmresp_array,
+        double *zonez_array,
+        double *dphadz_array,
+        double *outtmp_array,
+        long    vsize,
+        long    nbz,
+        long    nbl)
 {
     DEBUG_TRACE_FSTART();
 
@@ -36,7 +36,7 @@ errno_t PIAACMCsimul_achromFPMsol_eval_zonezderivative(long    zone,
                                  "");
 #endif
 
-    for (long evalk = 0; evalk < nbl; evalk++) // lambda loop
+    for(long evalk = 0; evalk < nbl; evalk++)  // lambda loop
     {
         long evalki = evalk * (nbz + 1) * vsize;
 
@@ -64,22 +64,22 @@ errno_t PIAACMCsimul_achromFPMsol_eval_zonezderivative(long    zone,
         double evalpha =
             zonez_array[evalmz] *
             dphadz_array
-                [evalk]; // CHANGED sign to + on 2017-12-23 to adopt new sign convention
+            [evalk]; // CHANGED sign to + on 2017-12-23 to adopt new sign convention
         // !!! note that cos is sin and sin is cos !!!
         // this implements a 90 degree pre-rotation so that this is a
         // derivative
         double evalcosp =
             -sin(evalpha) *
             dphadz_array
-                [evalk]; // z-derivative of cos(evalpha);   // CHANGED sign to - on 2017-12-23 to adopt new sign convention
+            [evalk]; // z-derivative of cos(evalpha);   // CHANGED sign to - on 2017-12-23 to adopt new sign convention
         double evalsinp =
             cos(evalpha) *
             dphadz_array
-                [evalk]; // z-derivative of sin(evalpha);  // CHANGED sign to + on 2017-12-23 to adopt new sign convention
+            [evalk]; // z-derivative of sin(evalpha);  // CHANGED sign to + on 2017-12-23 to adopt new sign convention
         long evalki1 = evalki + (evalmz + 1) * vsize;
         long evalkv  = evalk * vsize;
 
-        for (long evalii = 0; evalii < vsize / 2; evalii++)
+        for(long evalii = 0; evalii < vsize / 2; evalii++)
         {
             long   evalii1 = 2 * evalii;
             long   evalii2 = 2 * evalii + 1;

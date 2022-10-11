@@ -77,12 +77,12 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
     FUNC_CHECK_RETURN(
         create_3Dimage_ID("fpmzone", size, size, nblambda, &IDzone));
 
-    if (piaacmcopticaldesign.NBrings > 2)
+    if(piaacmcopticaldesign.NBrings > 2)
     {
         CentCone  = 1;
         OuterCone = 1;
     }
-    if (fabs(piaacmcopticaldesign.fpmOuterConeZ) < 1.0e-12)
+    if(fabs(piaacmcopticaldesign.fpmOuterConeZ) < 1.0e-12)
     {
         OuterCone = 0;
     }
@@ -97,11 +97,11 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
         CentCone,
         OuterCone);
 
-    if (mode == -1)
+    if(mode == -1)
     {
         FPMmode = 1;
     }
-    if (mode > piaacmcopticaldesign.focmNBzone)
+    if(mode > piaacmcopticaldesign.focmNBzone)
     {
         FPMmode = 1;
     }
@@ -122,7 +122,7 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
     fflush(stdout);
     tarray = (double *) malloc(sizeof(double) *
                                piaacmcopticaldesign.focmNBzone * nblambda);
-    if (tarray == NULL)
+    if(tarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort();
@@ -130,7 +130,7 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
 
     aarray = (double *) malloc(sizeof(double) *
                                piaacmcopticaldesign.focmNBzone * nblambda);
-    if (aarray == NULL)
+    if(aarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort();
@@ -138,7 +138,7 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
 
     phaarray = (double *) malloc(sizeof(double) *
                                  piaacmcopticaldesign.focmNBzone * nblambda);
-    if (phaarray == NULL)
+    if(phaarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort();
@@ -146,7 +146,7 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
 
     cosphaarray = (double *) malloc(sizeof(double) *
                                     piaacmcopticaldesign.focmNBzone * nblambda);
-    if (cosphaarray == NULL)
+    if(cosphaarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort();
@@ -154,7 +154,7 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
 
     sinphaarray = (double *) malloc(sizeof(double) *
                                     piaacmcopticaldesign.focmNBzone * nblambda);
-    if (sinphaarray == NULL)
+    if(sinphaarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort();
@@ -166,8 +166,8 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
            nblambda);
     fflush(stdout);
 
-    for (int k = 0; k < nblambda; k++)
-        for (long zi = 0; zi < piaacmcopticaldesign.focmNBzone; zi++)
+    for(int k = 0; k < nblambda; k++)
+        for(long zi = 0; zi < piaacmcopticaldesign.focmNBzone; zi++)
         {
             //printf("lamdba %3ld  zone %4ld   ", k, zi);
             //fflush(stdout);
@@ -206,35 +206,35 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                 sinf(phaarray[piaacmcopticaldesign.focmNBzone * k + zi]);
         }
 
-        //printf("Entering parallel loop\n");
-        //fflush(stdout);
+    //printf("Entering parallel loop\n");
+    //fflush(stdout);
 
 #ifdef HAVE_LIBGOMP
-#pragma omp parallel default(shared) private(ii,                               \
-                                             jj,                               \
-                                             x,                                \
-                                             y,                                \
-                                             r,                                \
-                                             retmp,                            \
-                                             imtmp,                            \
-                                             iii,                              \
-                                             jjj,                              \
-                                             ii1,                              \
-                                             jj1,                              \
-                                             zi,                               \
-                                             t,                                \
-                                             a,                                \
-                                             fpscale,                          \
-                                             amp,                              \
-                                             pha,                              \
-                                             cospha,                           \
-                                             sinpha,                           \
-                                             ttmp,                             \
-                                             zonetmp)
+    #pragma omp parallel default(shared) private(ii,                               \
+    jj,                               \
+    x,                                \
+    y,                                \
+    r,                                \
+    retmp,                            \
+    imtmp,                            \
+    iii,                              \
+    jjj,                              \
+    ii1,                              \
+    jj1,                              \
+    zi,                               \
+    t,                                \
+    a,                                \
+    fpscale,                          \
+    amp,                              \
+    pha,                              \
+    cospha,                           \
+    sinpha,                           \
+    ttmp,                             \
+    zonetmp)
     {
-#pragma omp for
+        #pragma omp for
 #endif
-        for (int k = 0; k < nblambda; k++)
+        for(int k = 0; k < nblambda; k++)
         {
             fpscale = (2.0 * piaacmcopticaldesign.beamrad /
                        piaacmcopticaldesign.pixscale) /
@@ -265,8 +265,8 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                    OuterCone,
                    piaacmcopticaldesign.fpmOuterConeRad);
 
-            for (uint32_t ii = 0; ii < size; ii++)
-                for (uint32_t jj = 0; jj < size; jj++)
+            for(uint32_t ii = 0; ii < size; ii++)
+                for(uint32_t jj = 0; jj < size; jj++)
                 {
                     //printf("[ %4ld %4ld ] ", ii, jj);
 
@@ -282,11 +282,11 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                     float  sinpha = 0.0;
                     double amp    = 1.0;
 
-                    if (OuterCone == 1)
+                    if(OuterCone == 1)
                     {
-                        if ((r > 0.9 * piaacmcopticaldesign.fpmRad) &&
-                            (r < piaacmcopticaldesign
-                                     .fpmOuterConeRad)) // outer cone
+                        if((r > 0.9 * piaacmcopticaldesign.fpmRad) &&
+                                (r < piaacmcopticaldesign
+                                 .fpmOuterConeRad)) // outer cone
                         {
                             double t =
                                 piaacmcopticaldesign.fpmOuterConeZ *
@@ -294,9 +294,9 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                                 (piaacmcopticaldesign.fpmOuterConeRad -
                                  piaacmcopticaldesign.fpmRad);
                             double pha = OpticsMaterials_pha_lambda(
-                                piaacmcopticaldesign.fpmmaterial_code,
-                                t,
-                                piaacmcopticalsystem.lambdaarray[k]);
+                                             piaacmcopticaldesign.fpmmaterial_code,
+                                             t,
+                                             piaacmcopticalsystem.lambdaarray[k]);
                             cospha = cosf(pha);
                             sinpha = sinf(pha);
                             a      = 1.0;
@@ -306,8 +306,8 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
 
                     data.image[IDzone].array.F[k * size2 + jj * size + ii] = 0;
 
-                    if (r <
-                        1.1 * piaacmcopticaldesign.fpmRad) //     fine sampling
+                    if(r <
+                            1.1 * piaacmcopticaldesign.fpmRad) //     fine sampling
                     {
                         //       printf("pix outercone ...");
                         //      fflush(stdout);
@@ -316,9 +316,9 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                         double imtmp   = 0.0;
                         double ttmp    = 0.0;
                         double zonetmp = 0.0;
-                        for (long iii = 0; iii < NBsubPix; iii++)
+                        for(long iii = 0; iii < NBsubPix; iii++)
                         {
-                            for (long jjj = 0; jjj < NBsubPix; jjj++)
+                            for(long jjj = 0; jjj < NBsubPix; jjj++)
                             {
                                 // physical coordinates on mask
                                 // x and y in [m]
@@ -337,84 +337,84 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                                 sinpha  = 0.0;
                                 amp     = 1.0;
 
-                                if (OuterCone == 1)
-                                    if ((r >
-                                         0.9 * piaacmcopticaldesign.fpmRad) &&
-                                        (r <
-                                         piaacmcopticaldesign
+                                if(OuterCone == 1)
+                                    if((r >
+                                            0.9 * piaacmcopticaldesign.fpmRad) &&
+                                            (r <
+                                             piaacmcopticaldesign
                                              .fpmOuterConeRad)) // outer cone
                                     {
                                         t = piaacmcopticaldesign.fpmOuterConeZ *
                                             (piaacmcopticaldesign
-                                                 .fpmOuterConeRad -
+                                             .fpmOuterConeRad -
                                              r) /
                                             (piaacmcopticaldesign
-                                                 .fpmOuterConeRad -
+                                             .fpmOuterConeRad -
                                              piaacmcopticaldesign.fpmRad);
                                         a = 1.0;
                                         cospha =
                                             cosphaarray[piaacmcopticaldesign
-                                                                .focmNBzone *
-                                                            k +
+                                                        .focmNBzone *
+                                                        k +
                                                         zi - 1];
                                         sinpha =
                                             sinphaarray[piaacmcopticaldesign
-                                                                .focmNBzone *
-                                                            k +
+                                                        .focmNBzone *
+                                                        k +
                                                         zi - 1];
                                         amp = a;
                                     }
 
                                 long ii1 =
-                                    (long) ((0.5 +
-                                             0.5 * x /
-                                                 piaacmcopticaldesign.fpmRad *
-                                                 piaacmcparams.FPMSCALEFACTOR) *
-                                                piaacmcopticaldesign
-                                                    .fpmarraysize +
-                                            0.5);
+                                    (long)((0.5 +
+                                            0.5 * x /
+                                            piaacmcopticaldesign.fpmRad *
+                                            piaacmcparams.FPMSCALEFACTOR) *
+                                           piaacmcopticaldesign
+                                           .fpmarraysize +
+                                           0.5);
                                 long jj1 =
-                                    (long) ((0.5 +
-                                             0.5 * y /
-                                                 piaacmcopticaldesign.fpmRad *
-                                                 piaacmcparams.FPMSCALEFACTOR) *
-                                                piaacmcopticaldesign
-                                                    .fpmarraysize +
-                                            0.5);
+                                    (long)((0.5 +
+                                            0.5 * y /
+                                            piaacmcopticaldesign.fpmRad *
+                                            piaacmcparams.FPMSCALEFACTOR) *
+                                           piaacmcopticaldesign
+                                           .fpmarraysize +
+                                           0.5);
 
-                                if ((ii1 > -1) &&
-                                    (ii1 < piaacmcopticaldesign.fpmarraysize) &&
-                                    (jj1 > -1) &&
-                                    (jj1 < piaacmcopticaldesign.fpmarraysize))
+                                if((ii1 > -1) &&
+                                        (ii1 < piaacmcopticaldesign.fpmarraysize) &&
+                                        (jj1 > -1) &&
+                                        (jj1 < piaacmcopticaldesign.fpmarraysize))
                                 {
-                                    if (CentCone == 1)
+                                    if(CentCone == 1)
                                     {
                                         // central cone
-                                        if ((r <
-                                             0.99 *
-                                                 piaacmcopticaldesign.fpmRad) &&
-                                            (r < piaacmcopticaldesign
-                                                     .fpmCentConeRad))
+                                        if((r <
+                                                0.99 *
+                                                piaacmcopticaldesign.fpmRad) &&
+                                                (r < piaacmcopticaldesign
+                                                 .fpmCentConeRad))
                                         {
                                             t = piaacmcopticaldesign
-                                                    .fpmCentConeZ +
+                                                .fpmCentConeZ +
                                                 (r / piaacmcopticaldesign
-                                                         .fpmCentConeRad) *
-                                                    (0.5 * (piaacmcopticaldesign
-                                                                .fpmminsag +
-                                                            piaacmcopticaldesign
-                                                                .fpmmaxsag) -
-                                                     piaacmcopticaldesign
-                                                         .fpmCentConeZ);
+                                                 .fpmCentConeRad) *
+                                                (0.5 * (piaacmcopticaldesign
+                                                        .fpmminsag +
+                                                        piaacmcopticaldesign
+                                                        .fpmmaxsag) -
+                                                 piaacmcopticaldesign
+                                                 .fpmCentConeZ);
                                             // piaacmcopticaldesign.fpmCentConeZ*(piaacmcopticaldesign.fpmCentConeRad-r)/(piaacmcopticaldesign.fpmCentConeRad); //piaacmcopticaldesign.fpmCentConeZ
                                             a = 1.0;
                                             double pha =
                                                 OpticsMaterials_pha_lambda(
                                                     piaacmcopticaldesign
-                                                        .fpmmaterial_code,
+                                                    .fpmmaterial_code,
                                                     t,
                                                     piaacmcopticalsystem
-                                                        .lambdaarray[k]);
+                                                    .lambdaarray[k]);
                                             cospha = cosf(pha);
                                             sinpha = sinf(pha);
                                             amp    = a;
@@ -422,14 +422,14 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                                     }
 
                                     // Zone number
-                                    zi = (long) (data.image[IDz].array.UI16
-                                                     [jj1 * piaacmcopticaldesign
-                                                                .fpmarraysize +
-                                                      ii1]);
-                                    if (zi - 1 >
-                                        data.image[piaacmcopticaldesign.zonezID]
-                                                .md[0]
-                                                .size[0] -
+                                    zi = (long)(data.image[IDz].array.UI16
+                                                [jj1 * piaacmcopticaldesign
+                                                     .fpmarraysize +
+                                                     ii1]);
+                                    if(zi - 1 >
+                                            data.image[piaacmcopticaldesign.zonezID]
+                                            .md[0]
+                                            .size[0] -
                                             1)
                                     {
                                         printf(
@@ -439,49 +439,49 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                                             "%ld   %ld\n",
                                             (int) zi,
                                             data.image[piaacmcopticaldesign
-                                                           .zonezID]
-                                                .md[0]
-                                                .name,
+                                                       .zonezID]
+                                            .md[0]
+                                            .name,
                                             (long) data
-                                                .image[piaacmcopticaldesign
-                                                           .zonezID]
-                                                .md[0]
-                                                .size[0],
+                                            .image[piaacmcopticaldesign
+                                                   .zonezID]
+                                            .md[0]
+                                            .size[0],
                                             (long) data
-                                                .image[piaacmcopticaldesign
-                                                           .zonezID]
-                                                .md[0]
-                                                .size[1],
+                                            .image[piaacmcopticaldesign
+                                                   .zonezID]
+                                            .md[0]
+                                            .size[1],
                                             (long) jj1,
                                             (long) jj1,
                                             piaacmcopticaldesign.fpmarraysize);
                                         exit(0);
                                     }
-                                    if (zi > 0)
+                                    if(zi > 0)
                                     {
                                         t = data.image[piaacmcopticaldesign
-                                                           .zonezID]
-                                                .array.D[zi - 1]; // thickness
+                                                       .zonezID]
+                                            .array.D[zi - 1]; // thickness
                                         a = data.image[piaacmcopticaldesign
-                                                           .zoneaID]
-                                                .array
-                                                .D[zi -
-                                                   1]; // amplitude transmission
+                                                       .zoneaID]
+                                            .array
+                                            .D[zi -
+                                                  1]; // amplitude transmission
                                         cospha =
                                             cosphaarray[piaacmcopticaldesign
-                                                                .focmNBzone *
-                                                            k +
+                                                        .focmNBzone *
+                                                        k +
                                                         zi - 1];
                                         sinpha =
                                             sinphaarray[piaacmcopticaldesign
-                                                                .focmNBzone *
-                                                            k +
+                                                        .focmNBzone *
+                                                        k +
                                                         zi - 1];
                                         amp = a;
                                     }
                                 }
 
-                                if (FPMmode == 1) // make 1-fpm
+                                if(FPMmode == 1)  // make 1-fpm
                                 {
                                     /*                                    amp = a;
                                                                         pha = OpticsMaterials_pha_lambda(piaacmcopticaldesign.fpmmaterial_code, t, piaacmcopticalsystem.lambdaarray[k]);
@@ -496,7 +496,7 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                                 }
                                 else // impulse response from single zone
                                 {
-                                    if (mode == zi)
+                                    if(mode == zi)
                                     {
                                         amp = 1.0;
                                         //                                      pha = OPTICSMATERIALS_pha_lambda(piaacmcopticaldesign.fpmmaterial_code, t, piaacmcopticalsystem.lambdaarray[k]);
@@ -524,23 +524,23 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                     }
                     else // coarse sampling, outside zones
                     {
-                        if (FPMmode == 1) // make 1-fpm
+                        if(FPMmode == 1)  // make 1-fpm
                         {
                             data.image[ID]
-                                .array.CF[k * size2 + jj * size + ii]
-                                .re = 1.0 - amp * cospha;
+                            .array.CF[k * size2 + jj * size + ii]
+                            .re = 1.0 - amp * cospha;
                             data.image[ID]
-                                .array.CF[k * size2 + jj * size + ii]
-                                .im = -amp * sinpha;
+                            .array.CF[k * size2 + jj * size + ii]
+                            .im = -amp * sinpha;
                         }
                         else // single zone
                         {
                             data.image[ID]
-                                .array.CF[k * size2 + jj * size + ii]
-                                .re = 0.0;
+                            .array.CF[k * size2 + jj * size + ii]
+                            .re = 0.0;
                             data.image[ID]
-                                .array.CF[k * size2 + jj * size + ii]
-                                .im = 0.0;
+                            .array.CF[k * size2 + jj * size + ii]
+                            .im = 0.0;
                         }
 
                         data.image[IDsag].array.F[k * size2 + jj * size + ii] =
@@ -557,12 +557,12 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
     printf("===================== focal plane mask  : Done\n");
     fflush(stdout);
 
-    if (saveMask == 1)
-    {
-        /* save mask sag */
-        //save_fits("fpmsag", "tmp_fpmsag.fits");
+    if(saveMask == 1)
+{
+    /* save mask sag */
+    //save_fits("fpmsag", "tmp_fpmsag.fits");
 
-        PIAACMCsimul_update_fnamedescr();
+    PIAACMCsimul_update_fnamedescr();
 
         char fname[STRINGMAXLEN_FULLFILENAME];
 
@@ -584,9 +584,9 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
         FUNC_CHECK_RETURN(
             create_3DCimage_ID("fpmCA", size, size, nblambda, &IDm));
 
-        for (int k = 0; k < nblambda; k++)
-            for (uint32_t ii = 0; ii < size; ii++)
-                for (uint32_t jj = 0; jj < size; jj++)
+        for(int k = 0; k < nblambda; k++)
+            for(uint32_t ii = 0; ii < size; ii++)
+                for(uint32_t jj = 0; jj < size; jj++)
                 {
                     data.image[IDm].array.CF[k * size2 + jj * size + ii].re =
                         1.0 -
@@ -626,11 +626,11 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
     free(cosphaarray);
     free(sinphaarray);
 
-    if (outID != NULL)
-    {
-        *outID = ID;
-    }
+    if(outID != NULL)
+{
+    *outID = ID;
+}
 
-    DEBUG_TRACE_FEXIT();
-    return RETURN_SUCCESS;
+DEBUG_TRACE_FEXIT();
+return RETURN_SUCCESS;
 }

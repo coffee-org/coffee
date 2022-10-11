@@ -35,23 +35,30 @@ errno_t PIAACMCsimul_run(const char *confindex, long mode);
 static char     *confindex;
 static uint32_t *mode;
 
-static CLICMDARGDEF farg[] = {{CLIARG_STR,
-                               ".confindex",
-                               "configuration index",
-                               "000",
-                               CLIARG_VISIBLE_DEFAULT,
-                               (void **) &confindex,
-                               NULL},
-                              {CLIARG_LONG,
-                               ".mode",
-                               "mode",
-                               "0",
-                               CLIARG_VISIBLE_DEFAULT,
-                               (void **) &mode,
-                               NULL}};
+static CLICMDARGDEF farg[] = {{
+        CLIARG_STR,
+        ".confindex",
+        "configuration index",
+        "000",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &confindex,
+        NULL
+    },
+    {
+        CLIARG_LONG,
+        ".mode",
+        "mode",
+        "0",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &mode,
+        NULL
+    }
+};
 
-static CLICMDDATA CLIcmddata = {
-    "run", "Simulate PIAACMC", CLICMD_FIELDS_DEFAULTS};
+static CLICMDDATA CLIcmddata =
+{
+    "run", "Simulate PIAACMC", CLICMD_FIELDS_DEFAULTS
+};
 
 // detailed help
 static errno_t help_function()
@@ -75,9 +82,9 @@ static errno_t compute_function()
 
 INSERT_STD_FPSCLIfunctions
 
-    // Register function in CLI
-    errno_t
-    CLIADDCMD_PIAACMCsimul__run()
+// Register function in CLI
+errno_t
+CLIADDCMD_PIAACMCsimul__run()
 {
     INSERT_STD_CLIREGISTERFUNC
     return RETURN_SUCCESS;
@@ -91,42 +98,42 @@ static errno_t PIAACMCsimul_setparam_variables(const char *confindex, long mode)
     variableID IDv = -1;
 
     // PIAACMC design mask radius in l/D
-    if ((IDv = variable_ID("PIAACMC_MASKRADLD")) != -1)
+    if((IDv = variable_ID("PIAACMC_MASKRADLD")) != -1)
     {
         piaacmcparams.PIAACMC_MASKRADLD = data.variable[IDv].value.f;
     }
 
     // sectors
-    if ((IDv = variable_ID("PIAACMC_FPMsectors")) != -1)
+    if((IDv = variable_ID("PIAACMC_FPMsectors")) != -1)
     {
         piaacmcparams.PIAACMC_FPMsectors =
             (long) data.variable[IDv].value.f + 0.01;
     }
     printf("PIAACMC_FPMsectors = %d\n", piaacmcparams.PIAACMC_FPMsectors);
 
-    if ((IDv = variable_ID("SCORINGMASKTYPE")) != -1)
+    if((IDv = variable_ID("SCORINGMASKTYPE")) != -1)
     {
         piaacmcparams.SCORINGMASKTYPE =
             (long) data.variable[IDv].value.f + 0.01;
     }
     printf("SCORINGMASKTYPE = %d\n", piaacmcparams.SCORINGMASKTYPE);
 
-    if ((IDv = variable_ID("PIAACMC_save")) != -1)
+    if((IDv = variable_ID("PIAACMC_save")) != -1)
     {
         piaacmcparams.PIAACMC_save = (long) data.variable[IDv].value.f + 0.01;
     }
     printf("PIAACMC_save = %d\n", piaacmcparams.PIAACMC_save);
 
-    if ((IDv = variable_ID("PIAACMC_resolved")) != -1)
+    if((IDv = variable_ID("PIAACMC_resolved")) != -1)
     {
         piaacmcparams.computePSF_ResolvedTarget =
-            (long) (data.variable[IDv].value.f + 0.01);
+            (long)(data.variable[IDv].value.f + 0.01);
     }
 
-    if ((IDv = variable_ID("PIAACMC_extmode")) != -1)
+    if((IDv = variable_ID("PIAACMC_extmode")) != -1)
     {
         piaacmcparams.computePSF_ResolvedTarget_mode =
-            (long) (data.variable[IDv].value.f + 0.01);
+            (long)(data.variable[IDv].value.f + 0.01);
     }
 
     printf("mode = %ld\n", mode);
@@ -140,25 +147,25 @@ static errno_t PIAACMCsimul_setparam_variables(const char *confindex, long mode)
     WRITE_DIRNAME(piaacmcparams.piaacmcconfdir, "%s", confindex);
 
     // load some more cli variables
-    if ((IDv = variable_ID("PIAACMC_centobs0")) != -1)
+    if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
     {
         centobs0 = data.variable[IDv].value.f;
     }
-    if ((IDv = variable_ID("PIAACMC_centobs1")) != -1)
+    if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
     {
         centobs1 = data.variable[IDv].value.f;
     }
-    if ((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
+    if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
         fpmradld = data.variable[IDv].value.f;
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
     piaacmcparams.PIAACMC_fpmtype = 0; // idealized (default)
-    if ((IDv = variable_ID("PIAACMC_fpmtype")) != -1)
+    if((IDv = variable_ID("PIAACMC_fpmtype")) != -1)
     {
         piaacmcparams.PIAACMC_fpmtype =
-            (int) (data.variable[IDv].value.f + 0.1);
+            (int)(data.variable[IDv].value.f + 0.1);
     }
 
     {
@@ -167,16 +174,16 @@ static errno_t PIAACMCsimul_setparam_variables(const char *confindex, long mode)
         initflags |= INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
         initflags |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
 
-        if (piaacmcparams.PIAACMC_fpmtype == 1)
+        if(piaacmcparams.PIAACMC_fpmtype == 1)
         {
             initflags |= INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
         }
 
         FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld,
-                                                    centobs0,
-                                                    centobs1,
-                                                    initflags,
-                                                    NULL));
+                          centobs0,
+                          centobs1,
+                          initflags,
+                          NULL));
     }
 
     DEBUG_TRACE_FEXIT();
@@ -191,7 +198,7 @@ static double read_searchtime()
 
     WRITE_FILENAME(fname, "searchtime.txt");
     fp = fopen(fname, "r");
-    if (fp != NULL)
+    if(fp != NULL)
     {
         int r = fscanf(fp, "%lf\n", &searchtime);
         (void) r;
@@ -209,7 +216,7 @@ static double read_searchtime()
 */
 errno_t PIAACMCsimul_run(
     const char  *
-        confindex, /// @param[in] confindex	configuration index (sets name of directory for results)
+    confindex, /// @param[in] confindex	configuration index (sets name of directory for results)
     long mode       /// @param[in] mode			operation to be executed
 )
 {
@@ -230,7 +237,7 @@ errno_t PIAACMCsimul_run(
 
     // mode 13: optimize focal plane mask zones only, setting the sag values for each mask zone
     // This outer loop is to choose more different starting points for the exec loop
-    if (mode == 13) // loop to keep looking for optimal solution
+    if(mode == 13)  // loop to keep looking for optimal solution
     {
         double bestval = 1.0;
         int    loopin  = 0;
@@ -238,7 +245,7 @@ errno_t PIAACMCsimul_run(
         double searchtime = read_searchtime();
 
         int loopOK;
-        if (searchtime < 0.1)
+        if(searchtime < 0.1)
         {
             loopOK = 0;
         }
@@ -267,7 +274,7 @@ errno_t PIAACMCsimul_run(
 
         // while not exceed searchtime or no stop file
         // EXECUTE_SYSTEM_COMMAND("touch start.loop.ttxt");
-        while ((loopOK == 1) && (loopiter < 1000000))
+        while((loopOK == 1) && (loopiter < 1000000))
         {
             printf("LOOP start\n");
             fflush(stdout);
@@ -280,7 +287,7 @@ errno_t PIAACMCsimul_run(
             //EXECUTE_SYSTEM_COMMAND("touch step00.iter%05ld.ttxt", i);
 
             loopin = 1; // loop has been initialized
-            if ((loopiter < 1))
+            if((loopiter < 1))
             {
                 piaacmcparams.MODampl = 0.0; // MODampl is a global
             }
@@ -307,19 +314,19 @@ errno_t PIAACMCsimul_run(
             long cnt00  = 0;
             long cnt0   = 0;
             int  zeroST = 0; // default
-            if ((loopiter > 1) && (ran1() > 0.5))
+            if((loopiter > 1) && (ran1() > 0.5))
             {
-                if ((ran1() > 0.5) && (IDbestsol != -1))
+                if((ran1() > 0.5) && (IDbestsol != -1))
                 {
                     zeroST = 2; // starting point = optimal solution
                     printf("[%d] Adopting best solution as starting point\n",
                            __LINE__);
                     fflush(stdout);
                     // copy the best solution to the current zoneID of array of sags
-                    for (uint32_t k = 0;
-                         k <
-                         data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
-                         k++)
+                    for(uint32_t k = 0;
+                            k <
+                            data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+                            k++)
                     {
                         data.image[piaacmcopticaldesign.zonezID].array.D[k] =
                             data.image[IDbestsol].array.D[k];
@@ -333,10 +340,10 @@ errno_t PIAACMCsimul_run(
                            piaacmcopticaldesign.zonezID);
                     fflush(stdout);
                     // zero out the current zoneID of array of sags
-                    for (uint32_t k = 0;
-                         k <
-                         data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
-                         k++)
+                    for(uint32_t k = 0;
+                            k <
+                            data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+                            k++)
                     {
                         data.image[piaacmcopticaldesign.zonezID].array.D[k] =
                             0.0;
@@ -348,19 +355,19 @@ errno_t PIAACMCsimul_run(
 
             // zeroST = 3 => starting point is best solution found so far.  Same as zeroST=2
             // this flags that it's this value 'cause it's third iteration
-            if (loopiter == 3)
+            if(loopiter == 3)
             {
-                if (IDbestsol != -1)
+                if(IDbestsol != -1)
                 {
                     printf("[%d] Adopting best solution as starting point\n",
                            __LINE__);
                     fflush(stdout);
 
                     zeroST = 3;
-                    for (uint32_t k = 0;
-                         k <
-                         data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
-                         k++)
+                    for(uint32_t k = 0;
+                            k <
+                            data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+                            k++)
                     {
                         data.image[piaacmcopticaldesign.zonezID].array.D[k] =
                             data.image[IDbestsol].array.D[k];
@@ -375,10 +382,10 @@ errno_t PIAACMCsimul_run(
                            piaacmcopticaldesign.zonezID);
                     fflush(stdout);
                     // zero out the current zoneID of array of sags
-                    for (uint32_t k = 0;
-                         k <
-                         data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
-                         k++)
+                    for(uint32_t k = 0;
+                            k <
+                            data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+                            k++)
                     {
                         data.image[piaacmcopticaldesign.zonezID].array.D[k] =
                             0.0;
@@ -386,42 +393,42 @@ errno_t PIAACMCsimul_run(
                 }
             }
 
-            if (loopiter > 0)
+            if(loopiter > 0)
             {
                 EXECUTE_SYSTEM_COMMAND(
                     "echo \"%g  %ld\" > sag0.txt",
                     sag0,
                     (long) data.image[piaacmcopticaldesign.zonezID]
-                        .md[0]
-                        .size[0]);
+                    .md[0]
+                    .size[0]);
 
                 // randomly select regions that are abs()>sag0/2 and push them back toward zero
                 // probability that each zone is pushed back toward zero
                 double prob1 = pow(ran1(), 8.0);
 
-                for (uint32_t k = 0;
-                     k < data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
-                     k++)
+                for(uint32_t k = 0;
+                        k < data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+                        k++)
                 {
-                    if (data.image[piaacmcopticaldesign.zonezID].array.D[k] >
-                        sag0 / 2.0)
+                    if(data.image[piaacmcopticaldesign.zonezID].array.D[k] >
+                            sag0 / 2.0)
                     {
                         cnt00++;
-                        if (ran1() < prob1)
+                        if(ran1() < prob1)
                         {
                             data.image[piaacmcopticaldesign.zonezID]
-                                .array.D[k] -= sag0;
+                            .array.D[k] -= sag0;
                             cnt0++;
                         }
                     }
-                    if (data.image[piaacmcopticaldesign.zonezID].array.D[k] <
-                        -sag0 / 2.0)
+                    if(data.image[piaacmcopticaldesign.zonezID].array.D[k] <
+                            -sag0 / 2.0)
                     {
                         cnt00++;
-                        if (ran1() < prob1)
+                        if(ran1() < prob1)
                         {
                             data.image[piaacmcopticaldesign.zonezID]
-                                .array.D[k] += sag0;
+                            .array.D[k] += sag0;
                             cnt0++;
                         }
                     }
@@ -440,19 +447,19 @@ errno_t PIAACMCsimul_run(
                             cnt0,
                             cnt00,
                             (long) data.image[piaacmcopticaldesign.zonezID]
-                                .md[0]
-                                .size[0]);
-                    for (uint32_t k = 0;
-                         k <
-                         data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
-                         k++)
+                            .md[0]
+                            .size[0]);
+                    for(uint32_t k = 0;
+                            k <
+                            data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+                            k++)
                     {
                         fprintf(fp,
                                 "%5ld %9.6f\n",
                                 (long) k,
                                 data.image[piaacmcopticaldesign.zonezID]
-                                        .array.D[k] *
-                                    1.0e6);
+                                .array.D[k] *
+                                1.0e6);
                     }
                     fclose(fp);
                 }
@@ -488,7 +495,7 @@ errno_t PIAACMCsimul_run(
                        (double) piaacmcopticaldesign.lambda));
 
             // if there is no best _solution_, load the current solution
-            if (IDbestsol == -1)
+            if(IDbestsol == -1)
             {
                 char fnamebestsol[STRINGMAXLEN_FILENAME];
 
@@ -519,19 +526,19 @@ errno_t PIAACMCsimul_run(
                            piaacmcparams.fnamedescr);
 
             // on first iteration load the best _value_ if it exists
-            if (loopiter == 0)
+            if(loopiter == 0)
             {
                 FILE *fp;
                 printf("READING FILE \"%s\"\n", fnamebestval);
                 fflush(stdout);
 
                 fp = fopen(fnamebestval, "r");
-                if (fp != NULL)
+                if(fp != NULL)
                 {
                     int r = fscanf(
-                        fp,
-                        "%lf",
-                        &bestval); // this loads only the first value on the line
+                                fp,
+                                "%lf",
+                                &bestval); // this loads only the first value on the line
                     (void) r;
                     fclose(fp);
                 }
@@ -548,7 +555,7 @@ errno_t PIAACMCsimul_run(
             // piaacmcparams.PIAACMCSIMUL_VAL was set in PIAACMCsimul_exec()
             int bOK =
                 0; // initialize have better value flag for printing "best" in a nice place
-            if (piaacmcparams.PIAACMCSIMUL_VAL < bestval)
+            if(piaacmcparams.PIAACMCSIMUL_VAL < bestval)
             {
                 //EXECUTE_SYSTEM_COMMAND("touch step05.iter%05ld.ttxt", i);
 
@@ -570,7 +577,7 @@ errno_t PIAACMCsimul_run(
 
                     // if a previous best solution has not been identified with an index, set its index
                     // by loading the current best solution.  This probably never happens
-                    if (IDbestsol == -1)
+                    if(IDbestsol == -1)
                     {
                         load_fits(fnamebestsol,
                                   "fpmbestsol",
@@ -585,9 +592,9 @@ errno_t PIAACMCsimul_run(
                                   LOADFITS_ERRMODE_IGNORE,
                                   &IDbestsoltmp);
 
-                        for (uint32_t k = 0;
-                             k < data.image[IDbestsol].md[0].size[0];
-                             k++)
+                        for(uint32_t k = 0;
+                                k < data.image[IDbestsol].md[0].size[0];
+                                k++)
                         {
                             data.image[IDbestsol].array.D[k] =
                                 data.image[IDbestsoltmp].array.D[k];
@@ -651,8 +658,8 @@ errno_t PIAACMCsimul_run(
                             "%07.3f\n",
                             bestval,
                             piaacmcparams.PIAACMC_FPMsectors,
-                            (long) (1.0e9 * piaacmcopticaldesign.lambda + 0.1),
-                            (long) (1.0 * piaacmcopticaldesign.lambdaB + 0.1),
+                            (long)(1.0e9 * piaacmcopticaldesign.lambda + 0.1),
+                            (long)(1.0 * piaacmcopticaldesign.lambdaB + 0.1),
                             piaacmcopticaldesign.NBrings,
                             piaacmcparams.PIAACMC_MASKRADLD,
                             piaacmcparams.computePSF_ResolvedTarget,
@@ -671,7 +678,7 @@ errno_t PIAACMCsimul_run(
             }
 
             // Add current solution (possibly not best) to the mode13...opt.txt file
-            if (1)
+            if(1)
             {
                 FILE *fp;
 
@@ -706,7 +713,7 @@ errno_t PIAACMCsimul_run(
                         piaacmcopticalsystem.flux[0],
                         piaacmcparams.SCORINGTOTAL,
                         piaacmcparams.PIAACMCSIMUL_VAL0);
-                if (bOK == 1) // mark it as best if it is
+                if(bOK == 1)  // mark it as best if it is
                 {
                     fprintf(fp, " BEST\n");
                 }
@@ -720,7 +727,7 @@ errno_t PIAACMCsimul_run(
             loopiter++; // increment iteration counter
 
             // stop iterations if stopfile exists
-            if (file_exists(stopfile) == 1)
+            if(file_exists(stopfile) == 1)
             {
                 printf("FILE \"%s\" found -> stopping\n", stopfile);
                 loopOK = 0;
@@ -734,7 +741,7 @@ errno_t PIAACMCsimul_run(
 
             // update timing : write used time in timeused.txt
             // and check to see if time has run out
-            if (1)
+            if(1)
             {
                 //EXECUTE_SYSTEM_COMMAND("touch step08.iter%05ld.ttxt", i);
                 long secs_used, micros_used;
@@ -770,8 +777,8 @@ errno_t PIAACMCsimul_run(
                 //EXECUTE_SYSTEM_COMMAND("touch step09.iter%05ld.ttxt", i);
 
                 // check to see if time has run out
-                if (micros_used >
-                    1000000.0 * searchtime) // searchtime is in seconds
+                if(micros_used >
+                        1000000.0 * searchtime) // searchtime is in seconds
                 {
                     loopOK = 0; // stop loop flag
                     EXECUTE_SYSTEM_COMMAND("touch stop.time_elapsed.ttxt");
@@ -783,7 +790,7 @@ errno_t PIAACMCsimul_run(
         }
 
         // initialize loop.  loopin is always set to 1 above.
-        if (loopin == 1)
+        if(loopin == 1)
         {
             printf("piaacmcconfdir              : %s\n",
                    piaacmcparams.piaacmcconfdir);
@@ -794,7 +801,7 @@ errno_t PIAACMCsimul_run(
             printf("PIAACMC_FPMsectors   : %d\n",
                    piaacmcparams.PIAACMC_FPMsectors);
             printf("(long) (10.0*PIAACMC_MASKRADLD+0.1)   : %ld\n",
-                   (long) (10.0 * piaacmcparams.PIAACMC_MASKRADLD + 0.1));
+                   (long)(10.0 * piaacmcparams.PIAACMC_MASKRADLD + 0.1));
             printf("piaacmcopticaldesign.NBrings   : %ld\n",
                    piaacmcopticaldesign.NBrings);
             printf("piaacmcopticaldesign.nblambda   : %d\n",

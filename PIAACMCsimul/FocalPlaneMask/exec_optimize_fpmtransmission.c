@@ -61,15 +61,15 @@ errno_t exec_optimize_fpmtransmission()
         "===================================\n");
 
     // load some more cli variables
-    if ((IDv = variable_ID("PIAACMC_centobs0")) != -1)
+    if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
     {
         centobs0 = data.variable[IDv].value.f;
     }
-    if ((IDv = variable_ID("PIAACMC_centobs1")) != -1)
+    if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
     {
         centobs1 = data.variable[IDv].value.f;
     }
-    if ((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
+    if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
         fpmradld = data.variable[IDv].value.f;
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
@@ -81,10 +81,10 @@ errno_t exec_optimize_fpmtransmission()
         initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
         initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
         FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld,
-                                                    centobs0,
-                                                    centobs1,
-                                                    initflag,
-                                                    NULL));
+                          centobs0,
+                          centobs1,
+                          initflag,
+                          NULL));
     }
     DEBUG_TRACEPOINT("piaacmcopticaldesign.fpmaskamptransm %lf",
                      piaacmcopticaldesign.fpmaskamptransm);
@@ -108,7 +108,7 @@ errno_t exec_optimize_fpmtransmission()
                        piaacmcparams.piaacmcconfdir);
     {
         FILE *fp = fopen(fnamelog, "w");
-        if (fp == NULL)
+        if(fp == NULL)
         {
             FUNC_RETURN_FAILURE("Cannot create file %s", fnamelog);
             abort();
@@ -116,7 +116,7 @@ errno_t exec_optimize_fpmtransmission()
         fclose(fp);
     }
 
-    for (long iter = 0; iter < NBiter; iter++)
+    for(long iter = 0; iter < NBiter; iter++)
     {
         DEBUG_TRACEPOINT("iter %ld/%ld %lf %lf",
                          iter,
@@ -136,7 +136,7 @@ errno_t exec_optimize_fpmtransmission()
         double valbest = 1.0;
 
         /// While within the search loop :
-        while (loopOK == 1)
+        while(loopOK == 1)
         {
             double val;
 
@@ -151,11 +151,11 @@ errno_t exec_optimize_fpmtransmission()
 
             /// - Call PIAACMCsimul_initpiaacmcconf()
             FUNC_CHECK_RETURN(init_piaacmcopticaldesign(
-                fpmradld,
-                centobs0,
-                centobs1,
-                INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT,
-                NULL));
+                                  fpmradld,
+                                  centobs0,
+                                  centobs1,
+                                  INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT,
+                                  NULL));
 
             // compute on-axis PSF of all optical elements returning contrast in evaluation zone
             // ************************* need to do all piaacmcopticalsystem.NBelem?
@@ -175,7 +175,7 @@ errno_t exec_optimize_fpmtransmission()
                                         0,
                                         &val));
 
-            if (val < valbest)
+            if(val < valbest)
             {
                 // we have a better contrast!  Store it
                 parambest[0] = piaacmcopticaldesign.fpmaskamptransm;
@@ -206,8 +206,8 @@ errno_t exec_optimize_fpmtransmission()
             // if we've reached the end of the range stop the loop
             DEBUG_TRACEPOINT("piaacmcopticaldesign.fpmaskamptransm = %lf",
                              piaacmcopticaldesign.fpmaskamptransm);
-            if (piaacmcopticaldesign.fpmaskamptransm >
-                paramref[0] + range + 0.001 * stepsize)
+            if(piaacmcopticaldesign.fpmaskamptransm >
+                    paramref[0] + range + 0.001 * stepsize)
             {
                 loopOK = 0;
             }

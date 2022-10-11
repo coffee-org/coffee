@@ -81,11 +81,11 @@ errno_t mkLyotMask(const char *__restrict__ IDincoh_name,
     // normalize both images to 1.0
     {
         double val = 0.0;
-        for (uint64_t ii = 0; ii < xysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
             val += data.image[IDmc].array.F[ii];
         }
-        for (uint64_t ii = 0; ii < xysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
             data.image[IDmc].array.F[ii] /= val;
         }
@@ -93,11 +93,11 @@ errno_t mkLyotMask(const char *__restrict__ IDincoh_name,
 
     {
         double val = 0.0;
-        for (uint64_t ii = 0; ii < xysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
             val += data.image[IDincoh].array.F[ii];
         }
-        for (uint64_t ii = 0; ii < xysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
             data.image[IDincoh].array.F[ii] /= val;
         }
@@ -105,17 +105,17 @@ errno_t mkLyotMask(const char *__restrict__ IDincoh_name,
 
     // estimate iteratively rsl0, the threshold in offaxis/onaxis starlight that will achieve the goal throughput
     double rsl = 1.0;
-    for (iter = 0; iter < NBiter; iter++)
+    for(iter = 0; iter < NBiter; iter++)
     {
         double val  = 0.0;
         double val1 = 0.0;
 
-        for (uint64_t ii = 0; ii < xysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
-            if ((data.image[IDzone].array.F[ii] > -1) &&
-                (data.image[IDincoh].array.F[ii] /
+            if((data.image[IDzone].array.F[ii] > -1) &&
+                    (data.image[IDincoh].array.F[ii] /
                      data.image[IDmc].array.F[ii] >
-                 rsl))
+                     rsl))
             {
                 val += data.image[IDincoh].array.F[ii];
                 val1 += data.image[IDmc].array.F[ii];
@@ -127,7 +127,7 @@ errno_t mkLyotMask(const char *__restrict__ IDincoh_name,
             }
         }
         printf("rsl = %f  ->  %f %f   (%f)\n", rsl, val, val1, throughput);
-        if (val > throughput) // too much light came through
+        if(val > throughput)  // too much light came through
         {
             rsl *= 1.1;
         }
@@ -146,28 +146,28 @@ errno_t mkLyotMask(const char *__restrict__ IDincoh_name,
     double rsl_best = 0.0;
     double v_best   = 0.0;
 
-    for (rsl = 0.0 * rsl0; rsl < 2.0 * rsl0; rsl += 0.02 * rsl0)
-        for (double v = 0.00000001 * v0; v < 50.0 * v0; v *= 1.2)
+    for(rsl = 0.0 * rsl0; rsl < 2.0 * rsl0; rsl += 0.02 * rsl0)
+        for(double v = 0.00000001 * v0; v < 50.0 * v0; v *= 1.2)
         {
             double val  = 0.0;
             double val1 = 0.0;
 
-            for (uint64_t ii = 0; ii < xysize; ii++)
+            for(uint64_t ii = 0; ii < xysize; ii++)
             {
-                if ((data.image[IDzone].array.F[ii] > -1) &&
-                    (data.image[IDincoh].array.F[ii] /
+                if((data.image[IDzone].array.F[ii] > -1) &&
+                        (data.image[IDincoh].array.F[ii] /
                          data.image[IDmc].array.F[ii] >
-                     rsl) &&
-                    (data.image[IDmc].array.F[ii] < v))
+                         rsl) &&
+                        (data.image[IDmc].array.F[ii] < v))
                 {
                     val += data.image[IDincoh].array.F[ii];
                     val1 += data.image[IDmc].array.F[ii];
                 }
             }
 
-            if (val > throughput)
+            if(val > throughput)
             {
-                if (val1 < bestval)
+                if(val1 < bestval)
                 {
                     bestval  = val1;
                     rsl_best = rsl;
@@ -185,12 +185,12 @@ errno_t mkLyotMask(const char *__restrict__ IDincoh_name,
             }
         }
 
-    for (uint64_t ii = 0; ii < xysize; ii++)
+    for(uint64_t ii = 0; ii < xysize; ii++)
     {
-        if ((data.image[IDzone].array.F[ii] > -1) &&
-            (data.image[IDincoh].array.F[ii] / data.image[IDmc].array.F[ii] >
-             rsl_best) &&
-            (data.image[IDmc].array.F[ii] < v_best))
+        if((data.image[IDzone].array.F[ii] > -1) &&
+                (data.image[IDincoh].array.F[ii] / data.image[IDmc].array.F[ii] >
+                 rsl_best) &&
+                (data.image[IDmc].array.F[ii] < v_best))
         {
             data.image[IDout].array.F[ii] = 1.0;
         }
@@ -200,10 +200,10 @@ errno_t mkLyotMask(const char *__restrict__ IDincoh_name,
         }
     }
 
-    if (0)
+    if(0)
     {
         FUNC_CHECK_RETURN(create_2Dimage_ID("postLMim", xsize, ysize, &ID1));
-        for (uint64_t ii = 0; ii < xysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
             data.image[ID1].array.F[ii] =
                 data.image[IDmc].array.F[ii] * data.image[IDout].array.F[ii];
@@ -214,7 +214,7 @@ errno_t mkLyotMask(const char *__restrict__ IDincoh_name,
             delete_image_ID("postLMim", DELETE_IMAGE_ERRMODE_WARNING));
     }
 
-    if (outID != NULL)
+    if(outID != NULL)
     {
         *outID = IDout;
     }

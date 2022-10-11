@@ -55,16 +55,17 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
     printf("LAMBDAEND = %g\n", piaacmcparams.LAMBDAEND);
 
     // sets up the wavelengths over specifed bandwidth
-    for (int k = 0; k < piaacmcopticalsystem.nblambda; k++)
+    for(int k = 0; k < piaacmcopticalsystem.nblambda; k++)
     {
         piaacmcopticalsystem.lambdaarray[k] =
             piaacmcparams.LAMBDASTART +
             (0.5 + k) * (piaacmcparams.LAMBDAEND - piaacmcparams.LAMBDASTART) /
-                piaacmcopticalsystem.nblambda;
+            piaacmcopticalsystem.nblambda;
     }
 
-    if (piaacmcparams.PIAACMC_save == 1)
-    { // write wavelength list
+    if(piaacmcparams.PIAACMC_save == 1)
+    {
+        // write wavelength list
         char  fname[STRINGMAXLEN_FULLFILENAME];
         FILE *fp;
 
@@ -73,13 +74,13 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
                            piaacmcparams.piaacmcconfdir);
 
         fp = fopen(fname, "w");
-        if (fp == NULL)
+        if(fp == NULL)
         {
             PRINT_ERROR("Cannot create file %s", fname);
             abort();
         }
 
-        for (int k = 0; k < piaacmcopticalsystem.nblambda; k++)
+        for(int k = 0; k < piaacmcopticalsystem.nblambda; k++)
         {
             fprintf(fp, "%02d %20g\n", k, piaacmcopticalsystem.lambdaarray[k]);
         }
@@ -128,10 +129,10 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
     // allows subsampling to speed up the DFT computation
     {
         variableID IDv;
-        if ((IDv = variable_ID("PIAACMC_dftgrid")) != -1)
+        if((IDv = variable_ID("PIAACMC_dftgrid")) != -1)
         {
             piaacmcopticalsystem.DFTgridpad =
-                (long) (data.variable[IDv].value.f + 0.001);
+                (long)(data.variable[IDv].value.f + 0.001);
         }
     }
 
@@ -157,14 +158,14 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
                        piaacmcparams.piaacmcconfdir,
                        size);
 
-    if (file_exists(fname_pupa0) == 1)
+    if(file_exists(fname_pupa0) == 1)
     {
         load_fits(fname_pupa0, "pupa0", LOADFITS_ERRMODE_ERROR, NULL);
     }
 
     imageID IDa = image_ID("pupa0");
-    if (IDa ==
-        -1) // if pupil does not exist, use circular one (this occurs in initial design steps)
+    if(IDa ==
+            -1) // if pupil does not exist, use circular one (this occurs in initial design steps)
     {
         printf("CREATING INPUT PUPIL\n");
         create_3Dimage_ID("pupa0", size, size, nblambda, &IDa);
@@ -172,20 +173,20 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
         imageID IDr = image_ID("rcoord");
 
         imageID ID = image_ID("telpup");
-        if (ID == -1)
-            if (file_exists("telpup.fits") == 1)
+        if(ID == -1)
+            if(file_exists("telpup.fits") == 1)
             {
                 load_fits("telpup.fits", "telpup", 1, &ID);
             }
 
-        if (ID == -1)
+        if(ID == -1)
         {
-            for (long k = 0; k < nblambda; k++)
-                for (uint64_t ii = 0; ii < size2; ii++)
+            for(long k = 0; k < nblambda; k++)
+                for(uint64_t ii = 0; ii < size2; ii++)
                 {
-                    if ((data.image[IDr].array.F[ii] >
-                         piaacmcopticaldesign.centObs0) &&
-                        (data.image[IDr].array.F[ii] < 1.0))
+                    if((data.image[IDr].array.F[ii] >
+                            piaacmcopticaldesign.centObs0) &&
+                            (data.image[IDr].array.F[ii] < 1.0))
                     {
                         data.image[IDa].array.F[k * size2 + ii] = 1.0;
                     }
@@ -196,10 +197,10 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
                 }
         }
         else
-            for (long k = 0; k < nblambda; k++)
-                for (uint64_t ii = 0; ii < size2; ii++)
+            for(long k = 0; k < nblambda; k++)
+                for(uint64_t ii = 0; ii < size2; ii++)
                 {
-                    if (data.image[ID].array.F[ii] > 0.5)
+                    if(data.image[ID].array.F[ii] > 0.5)
                     {
                         data.image[IDa].array.F[k * size2 + ii] = 1.0;
                     }
@@ -227,8 +228,8 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
         imageID ID;
         FUNC_CHECK_RETURN(create_2Dimage_ID("TTm", size, size, &ID));
 
-        for (uint32_t ii = 0; ii < size; ii++)
-            for (uint32_t jj = 0; jj < size; jj++)
+        for(uint32_t ii = 0; ii < size; ii++)
+            for(uint32_t jj = 0; jj < size; jj++)
             {
 
                 // position of pixel (ii,jj) in pupil radius units
@@ -244,10 +245,10 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
 
         // add OPD error on TTM if it exists
         imageID IDopderr = image_ID("opderr");
-        if (IDopderr != -1)
+        if(IDopderr != -1)
         {
-            for (uint32_t ii = 0; ii < size; ii++)
-                for (uint32_t jj = 0; jj < size; jj++)
+            for(uint32_t ii = 0; ii < size; ii++)
+                for(uint32_t jj = 0; jj < size; jj++)
                 {
                     // add the error shape to the mirror shape
                     data.image[ID].array.F[jj * size + ii] +=
@@ -280,7 +281,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
 
     // set up the deformable mirrors
     // tyically design[index].nbDM = 0 so we will skip this
-    for (int iDM = 0; iDM < piaacmcopticaldesign.nbDM; iDM++)
+    for(int iDM = 0; iDM < piaacmcopticaldesign.nbDM; iDM++)
     {
         // ----------------- DM (s) -----------------------------------------------
         snprintf(piaacmcopticalsystem.name[elem],
@@ -291,8 +292,8 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
         piaacmcopticalsystem.elemarrayindex[elem] = 3 + iDM; // index
 
         piaacmcopticalsystem
-            .ASPHSURFMarray[piaacmcopticalsystem.elemarrayindex[elem]]
-            .surfID = piaacmcopticaldesign.ID_DM[iDM];
+        .ASPHSURFMarray[piaacmcopticalsystem.elemarrayindex[elem]]
+        .surfID = piaacmcopticaldesign.ID_DM[iDM];
 
         piaacmcopticalsystem.elemZpos[elem] = piaacmcopticaldesign.DMpos[iDM];
         //          fprintf(fp,"%02ld  %f    DM %ld\n", elem, piaacmcopticalsystem.elemZpos[elem], iDM);
@@ -303,14 +304,14 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
     // typically not present for PIAACMC
     {
         imageID ID = image_ID("prePIAA0mask");
-        if (ID == -1)
+        if(ID == -1)
         {
             FUNC_CHECK_RETURN(load_fits("prePIAA0mask.fits",
                                         "prePIAA0mask",
                                         LOADFITS_ERRMODE_WARNING,
                                         &ID));
         }
-        if (ID != -1)
+        if(ID != -1)
         {
             // tell the design that this element exists (was found on disk)
             piaacmcopticaldesign.prePIAA0mask = 1;
@@ -331,7 +332,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
 
     // PIAAmode = 1 => this is a PIAA system
     // PIAAmode = 0 => this is not a PIAA system
-    if (piaacmcopticaldesign.PIAAmode == 1)
+    if(piaacmcopticaldesign.PIAAmode == 1)
     {
         // shape/sag for the first aspheric mirror
         imageID IDpiaam0z =
@@ -348,20 +349,20 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
             1; // index = 1 implied aspheric
         piaacmcopticalsystem.elemZpos[elem] =
             piaacmcopticaldesign
-                .PIAA0pos; // location of this element relative to pupil
+            .PIAA0pos; // location of this element relative to pupil
 
         printf("============ (2) PIAA0pos = %f ==================\n",
                piaacmcopticalsystem.elemZpos[elem]);
 
         // set up the element properties
-        if (piaacmcopticaldesign.PIAAmaterial_code == 0) // mirror
+        if(piaacmcopticaldesign.PIAAmaterial_code == 0)  // mirror
             // specify the sag array, put in data global by routine named something like createPIAA_mirror_shapes
         {
             DEBUG_TRACEPOINT("Element %ld is mirror", elem);
             piaacmcopticalsystem
-                .ASPHSURFMarray[piaacmcopticalsystem.elemarrayindex[elem]]
-                .surfID = IDpiaam0z;
-            if (piaacmcopticalsystem
+            .ASPHSURFMarray[piaacmcopticalsystem.elemarrayindex[elem]]
+            .surfID = IDpiaam0z;
+            if(piaacmcopticalsystem
                     .ASPHSURFMarray[piaacmcopticalsystem.elemarrayindex[elem]]
                     .surfID == -1)
             {
@@ -374,10 +375,10 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
 
             DEBUG_TRACEPOINT("Element %ld is lens", elem);
             piaacmcopticalsystem
-                .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
-                .surfID = image_ID("piaar0zsag");
+            .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
+            .surfID = image_ID("piaar0zsag");
 
-            if (piaacmcopticalsystem
+            if(piaacmcopticalsystem
                     .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
                     .surfID == -1)
             {
@@ -386,11 +387,11 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
 
             // material, vacuum
             piaacmcopticalsystem
-                .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
-                .mat0 = 100;
+            .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
+            .mat0 = 100;
             piaacmcopticalsystem
-                .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
-                .mat1 = piaacmcopticaldesign.PIAAmaterial_code;
+            .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
+            .mat1 = piaacmcopticaldesign.PIAAmaterial_code;
         }
 
         elem++;
@@ -405,7 +406,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
                   "postPIAA0mask",
                   LOADFITS_ERRMODE_IGNORE,
                   &ID);
-        if (ID != -1)
+        if(ID != -1)
         {
             // tell the design that this element exists (was found on disk)
             piaacmcopticaldesign.postPIAA0mask = 1;
@@ -416,7 +417,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
             piaacmcopticalsystem.elemarrayindex[elem] = ID;
             piaacmcopticalsystem.elemZpos[elem] =
                 piaacmcopticaldesign
-                    .postPIAA0maskpos; // get position from design input
+                .postPIAA0maskpos; // get position from design input
             elem++;
         }
         else
@@ -426,7 +427,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
     }
 
     // if we're a PIAA
-    if (piaacmcopticaldesign.PIAAmode == 1)
+    if(piaacmcopticaldesign.PIAAmode == 1)
     {
         // shape/sag for the second aspheric mirror
         imageID IDpiaam1z = image_ID("piaam1z");
@@ -441,13 +442,13 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
         piaacmcopticalsystem.elemZpos[elem] =
             piaacmcopticaldesign.PIAA0pos + piaacmcopticaldesign.PIAAsep;
 
-        if (piaacmcopticaldesign.PIAAmaterial_code == 0) // mirror
+        if(piaacmcopticaldesign.PIAAmaterial_code == 0)  // mirror
         {
             DEBUG_TRACEPOINT("Element %ld is mirror", elem);
             piaacmcopticalsystem
-                .ASPHSURFMarray[piaacmcopticalsystem.elemarrayindex[elem]]
-                .surfID = IDpiaam1z;
-            if (piaacmcopticalsystem
+            .ASPHSURFMarray[piaacmcopticalsystem.elemarrayindex[elem]]
+            .surfID = IDpiaam1z;
+            if(piaacmcopticalsystem
                     .ASPHSURFMarray[piaacmcopticalsystem.elemarrayindex[elem]]
                     .surfID == -1)
             {
@@ -460,10 +461,10 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
 
             DEBUG_TRACEPOINT("Element %ld is lens", elem);
             piaacmcopticalsystem
-                .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
-                .surfID = image_ID("piaar1zsag");
+            .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
+            .surfID = image_ID("piaar1zsag");
 
-            if (piaacmcopticalsystem
+            if(piaacmcopticalsystem
                     .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
                     .surfID == -1)
             {
@@ -471,11 +472,11 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
             }
 
             piaacmcopticalsystem
-                .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
-                .mat0 = 100;
+            .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
+            .mat0 = 100;
             piaacmcopticalsystem
-                .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
-                .mat1 = piaacmcopticaldesign.PIAAmaterial_code;
+            .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
+            .mat1 = piaacmcopticaldesign.PIAAmaterial_code;
         }
         //       fprintf(fp,"%02ld  %f    PIAAM1\n", elem, piaacmcopticalsystem.elemZpos[elem]);
         elem++;
@@ -491,7 +492,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
                       "piaa1mask",
                       LOADFITS_ERRMODE_IGNORE,
                       &ID);
-            if (ID == -1)
+            if(ID == -1)
             {
                 ID = make_disk("piaa1mask",
                                size,
@@ -509,7 +510,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
     }
 
     // --------------------  elem 5: focal plane mask ------------------------
-    if ((variable_ID("PIAACMC_NOFPM")) == -1)
+    if((variable_ID("PIAACMC_NOFPM")) == -1)
     {
         snprintf(piaacmcopticalsystem.name[elem],
                  STRINGMAXLEN_OPTSYST_ELEMNAME,
@@ -522,9 +523,9 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
 
         {
             variableID IDv;
-            if ((IDv = variable_ID("PIAACMC_SAVE_fpm")) != -1)
+            if((IDv = variable_ID("PIAACMC_SAVE_fpm")) != -1)
             {
-                savefpm = (int) (data.variable[IDv].value.f + 0.001);
+                savefpm = (int)(data.variable[IDv].value.f + 0.001);
             }
         }
 
@@ -563,26 +564,26 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
         // For this element, this defines the conjugation of the pupil from which we are computing the DFT
         piaacmcopticalsystem.elemZpos[elem] =
             piaacmcopticalsystem
-                .elemZpos[elem - 1]; // plane from which FT is done
+            .elemZpos[elem - 1]; // plane from which FT is done
         //      fprintf(fp,"%02ld  %f    post-focal plane mask pupil\n", elem, piaacmcopticalsystem.elemZpos[elem]);
         printf("=========== FOCAL PLANE MASK : DONE ===========\n");
         elem++;
     }
 
     // if we're a PIAA
-    if (piaacmcopticaldesign.PIAAmode == 1)
+    if(piaacmcopticaldesign.PIAAmode == 1)
     {
         // if the the inverse PIAA is prior to the Lyot stop
         // (invPIAAmode = 0 has no inverse PIAA, = 1 has Lyot stop prior to inverse PIAA)
         // there is no inverse PIAA in the WFIRST design
-        if (piaacmcopticaldesign.invPIAAmode == 2) // inv PIAA -> Lyot stops
+        if(piaacmcopticaldesign.invPIAAmode == 2)  // inv PIAA -> Lyot stops
         {
             // --------------------  elem 8: inv PIAA1 ------------------------
             snprintf(piaacmcopticalsystem.name[elem],
                      STRINGMAXLEN_OPTSYST_ELEMNAME,
                      "invPIAA optics 1");
 
-            if (piaacmcopticaldesign.PIAAmaterial_code == 0) // mirror
+            if(piaacmcopticaldesign.PIAAmaterial_code == 0)  // mirror
             {
                 piaacmcopticalsystem.elemtype[elem] =
                     3; // reflective PIAA M/L 1
@@ -604,7 +605,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
                      STRINGMAXLEN_OPTSYST_ELEMNAME,
                      "invPIAA optics 0");
 
-            if (piaacmcopticaldesign.PIAAmaterial_code == 0) //  mirror
+            if(piaacmcopticaldesign.PIAAmaterial_code == 0)  //  mirror
             {
                 piaacmcopticalsystem.elemtype[elem] =
                     3; // reflective PIAA M/L 0
@@ -625,7 +626,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
 
     // --------------------  Lyot masks  ------------------------
     // add Lyot masks as specified in the design
-    for (long i = 0; i < piaacmcopticaldesign.NBLyotStop; i++)
+    for(long i = 0; i < piaacmcopticaldesign.NBLyotStop; i++)
     {
         snprintf(piaacmcopticalsystem.name[elem],
                  STRINGMAXLEN_OPTSYST_ELEMNAME,
@@ -645,17 +646,17 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
     }
 
     // if we're a PIAA
-    if (piaacmcopticaldesign.PIAAmode == 1)
+    if(piaacmcopticaldesign.PIAAmode == 1)
     {
         // add stops for the inverse PIAA
         // not in WFIRST design, skipping...
-        if (piaacmcopticaldesign.invPIAAmode == 1) // Lyot masks -> inv PIAA
+        if(piaacmcopticaldesign.invPIAAmode == 1)  // Lyot masks -> inv PIAA
         {
             // --------------------  elem 8: inv PIAA1 ------------------------
             snprintf(piaacmcopticalsystem.name[elem],
                      STRINGMAXLEN_OPTSYST_ELEMNAME,
                      "invPIAA optics 1");
-            if (piaacmcopticaldesign.PIAAmaterial_code == 0) // mirror
+            if(piaacmcopticaldesign.PIAAmaterial_code == 0)  // mirror
             {
                 piaacmcopticalsystem.elemtype[elem] =
                     3; // reflective PIAA M/L 1
@@ -674,7 +675,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
             snprintf(piaacmcopticalsystem.name[elem],
                      STRINGMAXLEN_OPTSYST_ELEMNAME,
                      "invPIAA optics 0");
-            if (piaacmcopticaldesign.PIAAmaterial_code == 0) //  mirror
+            if(piaacmcopticaldesign.PIAAmaterial_code == 0)  //  mirror
             {
                 piaacmcopticalsystem.elemtype[elem] =
                     3; // reflective PIAA M/L 0
@@ -692,7 +693,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
     }
 
     // if we're a PIAA
-    if (piaacmcopticaldesign.PIAAmode == 1)
+    if(piaacmcopticaldesign.PIAAmode == 1)
     {
         // --------------------  elem 9: back end mask  ------------------------
         // not in WFIRST design, skipping, but it looks very straightforward
@@ -706,13 +707,13 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
         {
             imageID ID;
             ID                                        = make_disk("pupoutmask",
-                           size,
-                           size,
-                           0.5 * size,
-                           0.5 * size,
-                           piaacmcopticaldesign.pupoutmaskrad *
-                               piaacmcopticaldesign.beamrad /
-                               piaacmcopticaldesign.pixscale);
+                    size,
+                    size,
+                    0.5 * size,
+                    0.5 * size,
+                    piaacmcopticaldesign.pupoutmaskrad *
+                    piaacmcopticaldesign.beamrad /
+                    piaacmcopticaldesign.pixscale);
             piaacmcopticalsystem.elemarrayindex[elem] = ID;
         }
         piaacmcopticalsystem.elemZpos[elem] =
@@ -724,7 +725,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
     piaacmcopticalsystem.NBelem  = elem;
     piaacmcopticalsystem.endmode = 0;
 
-    if (piaacmcparams.PIAACMC_save == 1)
+    if(piaacmcparams.PIAACMC_save == 1)
     {
         char  fname[STRINGMAXLEN_FULLFILENAME];
         FILE *fp;
@@ -733,13 +734,13 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
                            "%s/conjugations.txt",
                            piaacmcparams.piaacmcconfdir);
         fp = fopen(fname, "w");
-        if (fp == NULL)
+        if(fp == NULL)
         {
             PRINT_ERROR("Cannot create %s", fname);
             abort();
         }
 
-        for (elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
+        for(elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
         {
             fprintf(fp,
                     "%02ld  %f    %s\n",

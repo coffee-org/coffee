@@ -21,37 +21,48 @@ static char *FPMrespoutimname;
 static long *NBlambdaval;
 static long *PTstepval;
 
-static CLICMDARGDEF farg[] = {{CLIARG_IMG,
-                               ".FPMrespin",
-                               "input FPM response image",
-                               "FPMresp",
-                               CLIARG_VISIBLE_DEFAULT,
-                               (void **) &FPMrespinimname,
-                               NULL},
-                              {CLIARG_IMG,
-                               ".FPMrespout",
-                               "output FPM response image",
-                               "FPMrespout",
-                               CLIARG_VISIBLE_DEFAULT,
-                               (void **) &FPMrespoutimname,
-                               NULL},
-                              {CLIARG_LONG,
-                               ".NBlambda",
-                               "",
-                               "10",
-                               CLIARG_VISIBLE_DEFAULT,
-                               (void **) &NBlambdaval,
-                               NULL},
-                              {CLIARG_LONG,
-                               ".PTstep",
-                               "EvalPts step",
-                               "2",
-                               CLIARG_VISIBLE_DEFAULT,
-                               (void **) &PTstepval,
-                               NULL}};
+static CLICMDARGDEF farg[] = {{
+        CLIARG_IMG,
+        ".FPMrespin",
+        "input FPM response image",
+        "FPMresp",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &FPMrespinimname,
+        NULL
+    },
+    {
+        CLIARG_IMG,
+        ".FPMrespout",
+        "output FPM response image",
+        "FPMrespout",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &FPMrespoutimname,
+        NULL
+    },
+    {
+        CLIARG_LONG,
+        ".NBlambda",
+        "",
+        "10",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &NBlambdaval,
+        NULL
+    },
+    {
+        CLIARG_LONG,
+        ".PTstep",
+        "EvalPts step",
+        "2",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &PTstepval,
+        NULL
+    }
+};
 
-static CLICMDDATA CLIcmddata = {
-    "fpmresprs", "resample FPM resp matrix", CLICMD_FIELDS_DEFAULTS};
+static CLICMDDATA CLIcmddata =
+{
+    "fpmresprs", "resample FPM resp matrix", CLICMD_FIELDS_DEFAULTS
+};
 
 // detailed help
 static errno_t help_function()
@@ -76,26 +87,26 @@ errno_t PIAACMC_FPMresp_resample(const char *__restrict__ FPMresp_in_name,
     uint32_t ysize = data.image[ID].md[0].size[1];
     uint32_t zsize = data.image[ID].md[0].size[2];
 
-    long xsize1 = (long) (xsize / PTstep);
+    long xsize1 = (long)(xsize / PTstep);
     long zsize1 = NBlambda;
 
     FUNC_CHECK_RETURN(create_3Dimage_ID_double(FPMresp_out_name,
-                                               xsize1,
-                                               ysize,
-                                               zsize1,
-                                               &IDout));
+                      xsize1,
+                      ysize,
+                      zsize1,
+                      &IDout));
     /*	for(kk1=0;kk1<zsize1;kk1++)
     		for(ii=0;ii<xsize;ii++)
     			data.image[IDout].array.D[kk1*xsize1*ysize + ii] = 1;
     	*/
 
-    for (long kk1 = 0; kk1 < zsize1; kk1++)
+    for(long kk1 = 0; kk1 < zsize1; kk1++)
     {
         double kk1x  = 1.0 * kk1 / (zsize1 - 1);
-        long   kk1xi = (long) (kk1x * (zsize - 1));
+        long   kk1xi = (long)(kk1x * (zsize - 1));
         double alpha = kk1x * (zsize - 1) - kk1xi;
 
-        if (kk1xi == zsize - 1)
+        if(kk1xi == zsize - 1)
         {
             kk1xi = zsize - 2;
             alpha = 1.0;
@@ -109,21 +120,21 @@ errno_t PIAACMC_FPMresp_resample(const char *__restrict__ FPMresp_in_name,
                (kk1xi + alpha) / (zsize - 1));
         long ii1 = 0;
 
-        for (uint32_t ii = 0; ii < xsize; ii += 2 * PTstep)
+        for(uint32_t ii = 0; ii < xsize; ii += 2 * PTstep)
         {
 
-            for (uint32_t jj = 0; jj < ysize; jj++)
+            for(uint32_t jj = 0; jj < ysize; jj++)
             {
                 double re0 =
                     data.image[ID]
-                        .array.D[kk1xi * xsize * ysize + jj * xsize + ii];
+                    .array.D[kk1xi * xsize * ysize + jj * xsize + ii];
                 double im0 =
                     data.image[ID]
-                        .array.D[kk1xi * xsize * ysize + jj * xsize + ii + 1];
+                    .array.D[kk1xi * xsize * ysize + jj * xsize + ii + 1];
 
                 double re1 =
                     data.image[ID]
-                        .array.D[(kk1xi + 1) * xsize * ysize + jj * xsize + ii];
+                    .array.D[(kk1xi + 1) * xsize * ysize + jj * xsize + ii];
                 double im1 =
                     data.image[ID].array.D[(kk1xi + 1) * xsize * ysize +
                                            jj * xsize + ii + 1];
@@ -132,10 +143,10 @@ errno_t PIAACMC_FPMresp_resample(const char *__restrict__ FPMresp_in_name,
                 double im = (1.0 - alpha) * im0 + alpha * im1;
 
                 data.image[IDout]
-                    .array.D[kk1 * xsize1 * ysize + jj * xsize1 + ii1] =
+                .array.D[kk1 * xsize1 * ysize + jj * xsize1 + ii1] =
                     re; //*sqrt(PTstep);
                 data.image[IDout]
-                    .array.D[kk1 * xsize1 * ysize + jj * xsize1 + ii1 + 1] =
+                .array.D[kk1 * xsize1 * ysize + jj * xsize1 + ii1 + 1] =
                     im; //*sqrt(PTstep);
             }
 
@@ -152,7 +163,7 @@ errno_t PIAACMC_FPMresp_resample(const char *__restrict__ FPMresp_in_name,
     			}
     */
 
-    if (outID != NULL)
+    if(outID != NULL)
     {
         *outID = IDout;
     }
@@ -181,9 +192,9 @@ static errno_t compute_function()
 
 INSERT_STD_FPSCLIfunctions
 
-    // Register function in CLI
-    errno_t
-    CLIADDCMD_PIAACMCsimul__FPMresp_resample()
+// Register function in CLI
+errno_t
+CLIADDCMD_PIAACMCsimul__FPMresp_resample()
 {
     INSERT_STD_CLIREGISTERFUNC
     return RETURN_SUCCESS;

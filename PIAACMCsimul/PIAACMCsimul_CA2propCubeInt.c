@@ -62,7 +62,7 @@ errno_t PIAACMCsimul_CA2propCubeInt(const char *__restrict IDamp_name,
         create_2Dimage_ID("retmpim", xsize, ysize, NULL);
         create_2Dimage_ID("imtmpim", xsize, ysize, NULL);
 
-        if (data.image[IDa].md[0].naxis == 3)
+        if(data.image[IDa].md[0].naxis == 3)
         {
             nblambda = data.image[IDa].md[0].size[2];
         }
@@ -77,36 +77,36 @@ errno_t PIAACMCsimul_CA2propCubeInt(const char *__restrict IDamp_name,
 
     // initialize zarray
     zarray = (float *) malloc(sizeof(float) * NBz);
-    if (zarray == NULL)
+    if(zarray == NULL)
     {
         FUNC_RETURN_FAILURE("malloc returns NULL pointer");
     }
 
-    for (long l = 0; l < NBz; l++)
+    for(long l = 0; l < NBz; l++)
     {
         zarray[l] = zmin + (zmax - zmin) * l / (NBz - 1);
     }
 
-    for (long l = 0; l < NBz; l++)
+    for(long l = 0; l < NBz; l++)
     {
         DEBUG_TRACEPOINT("l = %ld/%ld", l, NBz);
 
         zprop = zarray[l];
         FUNC_CHECK_RETURN(OptSystProp_propagateCube(&piaacmcopticalsystem,
-                                                    0,
-                                                    IDamp_name,
-                                                    IDpha_name,
-                                                    "_tmppropamp",
-                                                    "_tmpproppha",
-                                                    zprop,
-                                                    0));
+                          0,
+                          IDamp_name,
+                          IDpha_name,
+                          "_tmppropamp",
+                          "_tmpproppha",
+                          zprop,
+                          0));
 
         imageID IDa = image_ID("_tmppropamp");
         // imageID IDp = image_ID("_tmpproppha");
 
         // write intensity
-        for (long k = 0; k < nblambda; k++)
-            for (long ii = 0; ii < xsize * ysize; ii++)
+        for(long k = 0; k < nblambda; k++)
+            for(long ii = 0; ii < xsize * ysize; ii++)
             {
                 data.image[IDout].array.F[l * xysize + ii] +=
                     data.image[IDa].array.F[k * xysize + ii] *
@@ -125,7 +125,7 @@ errno_t PIAACMCsimul_CA2propCubeInt(const char *__restrict IDamp_name,
 
     FUNC_CHECK_RETURN(delete_image_ID("imtmpim", DELETE_IMAGE_ERRMODE_WARNING));
 
-    if (outID != NULL)
+    if(outID != NULL)
     {
         *outID = IDout;
     }

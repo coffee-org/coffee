@@ -20,31 +20,39 @@ static char *FPMrespinimname;
 static char *FPMrespoutimname;
 static long *NBzrmval;
 
-static CLICMDARGDEF farg[] = {{CLIARG_IMG,
-                               ".FPMrespin",
-                               "input FPM response image",
-                               "FPMresp",
-                               CLIARG_VISIBLE_DEFAULT,
-                               (void **) &FPMrespinimname,
-                               NULL},
-                              {CLIARG_IMG,
-                               ".FPMrespout",
-                               "output FPM response image",
-                               "FPMrespout",
-                               CLIARG_VISIBLE_DEFAULT,
-                               (void **) &FPMrespoutimname,
-                               NULL},
-                              {CLIARG_LONG,
-                               ".NBzrm",
-                               "NBzone removed",
-                               "125",
-                               CLIARG_VISIBLE_DEFAULT,
-                               (void **) &NBzrmval,
-                               NULL}};
+static CLICMDARGDEF farg[] = {{
+        CLIARG_IMG,
+        ".FPMrespin",
+        "input FPM response image",
+        "FPMresp",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &FPMrespinimname,
+        NULL
+    },
+    {
+        CLIARG_IMG,
+        ".FPMrespout",
+        "output FPM response image",
+        "FPMrespout",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &FPMrespoutimname,
+        NULL
+    },
+    {
+        CLIARG_LONG,
+        ".NBzrm",
+        "NBzone removed",
+        "125",
+        CLIARG_VISIBLE_DEFAULT,
+        (void **) &NBzrmval,
+        NULL
+    }
+};
 
 static CLICMDDATA CLIcmddata = {"fpmresprm",
                                 "remove outer zones in FPM resp matrix",
-                                CLICMD_FIELDS_DEFAULTS};
+                                CLICMD_FIELDS_DEFAULTS
+                               };
 
 // detailed help
 static errno_t help_function()
@@ -70,26 +78,26 @@ errno_t FPMresp_rmzones(const char *__restrict__ FPMresp_in_name,
     long ysize1 = data.image[ID].md[0].size[1] - NBzones;
 
     FUNC_CHECK_RETURN(create_3Dimage_ID_double(FPMresp_out_name,
-                                               xsize,
-                                               ysize1,
-                                               zsize,
-                                               &IDout));
+                      xsize,
+                      ysize1,
+                      zsize,
+                      &IDout));
 
-    for (uint32_t ii = 0; ii < xsize; ii++)
-        for (uint32_t kk = 0; kk < zsize; kk++)
+    for(uint32_t ii = 0; ii < xsize; ii++)
+        for(uint32_t kk = 0; kk < zsize; kk++)
         {
-            for (long jj = 0; jj < ysize1; jj++)
+            for(long jj = 0; jj < ysize1; jj++)
                 data.image[IDout]
-                    .array.D[kk * xsize * ysize1 + jj * xsize + ii] =
+                .array.D[kk * xsize * ysize1 + jj * xsize + ii] =
                     data.image[ID]
-                        .array.D[kk * xsize * ysize + jj * xsize + ii];
-            for (long jj = ysize1; jj < ysize; jj++)
+                    .array.D[kk * xsize * ysize + jj * xsize + ii];
+            for(long jj = ysize1; jj < ysize; jj++)
                 data.image[IDout].array.D[kk * xsize * ysize1 + ii] +=
                     data.image[ID]
-                        .array.D[kk * xsize * ysize + jj * xsize + ii];
+                    .array.D[kk * xsize * ysize + jj * xsize + ii];
         }
 
-    if (outID != NULL)
+    if(outID != NULL)
     {
         *outID = IDout;
     }
@@ -114,9 +122,9 @@ static errno_t compute_function()
 
 INSERT_STD_FPSCLIfunctions
 
-    // Register function in CLI
-    errno_t
-    CLIADDCMD_PIAACMCsimul__FPMresp_rmzones()
+// Register function in CLI
+errno_t
+CLIADDCMD_PIAACMCsimul__FPMresp_rmzones()
 {
     INSERT_STD_CLIREGISTERFUNC
     return RETURN_SUCCESS;

@@ -75,15 +75,15 @@ errno_t exec_optimize_fpm_zones()
 
     // get cli variables
 
-    if ((IDv = variable_ID("PIAACMC_centobs0")) != -1)
+    if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
     {
         centobs0 = data.variable[IDv].value.f;
     }
-    if ((IDv = variable_ID("PIAACMC_centobs1")) != -1)
+    if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
     {
         centobs1 = data.variable[IDv].value.f;
     }
-    if ((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
+    if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
         fpmradld = data.variable[IDv].value.f;
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
@@ -91,7 +91,7 @@ errno_t exec_optimize_fpm_zones()
 
     // FPM sag regularization control flag, do if == 1
     piaacmcparams.linopt_REGFPMSAG = 1; // default
-    if ((IDv = variable_ID("REGFPMSAG")) != -1)
+    if((IDv = variable_ID("REGFPMSAG")) != -1)
     {
         piaacmcparams.linopt_REGFPMSAG =
             (long) data.variable[IDv].value.f + 0.01;
@@ -108,10 +108,10 @@ errno_t exec_optimize_fpm_zones()
         initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
 
         FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld,
-                                                    centobs0,
-                                                    centobs1,
-                                                    initflag,
-                                                    NULL));
+                          centobs0,
+                          centobs1,
+                          initflag,
+                          NULL));
     }
 
     FUNC_CHECK_RETURN(makePIAAshapes());
@@ -124,16 +124,16 @@ errno_t exec_optimize_fpm_zones()
     // tracking diagnostic, giving the total flux in each plane
     WRITE_FULLFILENAME(fname, "%s/tmp_flux.txt", piaacmcparams.piaacmcconfdir);
     fp = fopen(fname, "r");
-    for (long elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
+    for(long elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
     {
         //ret = fscanf(fp, "%lf %lf  %d\n", &tmplf1, &tmplf2, &tmpd1);
 
         int    fscanfcnt;
         double tmplf1, tmplf2;
         fscanfcnt = fscanf(fp, "%lf %lf  %d\n", &tmplf1, &tmplf2, &tmpd1);
-        if (fscanfcnt == EOF)
+        if(fscanfcnt == EOF)
         {
-            if (ferror(fp))
+            if(ferror(fp))
             {
                 perror("fscanf");
             }
@@ -145,7 +145,7 @@ errno_t exec_optimize_fpm_zones()
             }
             FUNC_RETURN_FAILURE("Call to fscanf failed");
         }
-        else if (fscanfcnt != 3)
+        else if(fscanfcnt != 3)
         {
             fprintf(stderr,
                     "Error: fscanf successfully matched and assigned %i input "
@@ -204,7 +204,7 @@ errno_t exec_optimize_fpm_zones()
     piaacmcparams.dphadz_array =
         (double *) malloc(sizeof(double) * piaacmcopticaldesign.nblambda);
     // compute this derivative
-    for (long k = 0; k < piaacmcopticaldesign.nblambda; k++)
+    for(long k = 0; k < piaacmcopticaldesign.nblambda; k++)
     {
         // OPTICSMATERIALS_pha_lambda computes change in phase per unit thickness at specified wavelength
         // second arg is thickness, so 1.0 meters determines result per meter thickness
@@ -218,9 +218,9 @@ errno_t exec_optimize_fpm_zones()
                piaacmcparams.dphadz_array[k]);
     }
     piaacmcparams.outtmp_array = (double *) malloc(
-        sizeof(double) *
-        (piaacmcparams.vsize * piaacmcopticaldesign.nblambda +
-         data.image[piaacmcopticaldesign.zonezID].md[0].size[0]));
+                                     sizeof(double) *
+                                     (piaacmcparams.vsize * piaacmcopticaldesign.nblambda +
+                                      data.image[piaacmcopticaldesign.zonezID].md[0].size[0]));
 
     // do the fast optimization using the results of mode 11
     piaacmcparams.computePSF_FAST_FPMresp = 1;
@@ -237,9 +237,9 @@ errno_t exec_optimize_fpm_zones()
         int fscanfcnt;
 
         fscanfcnt = fscanf(fp, "%lf", &piaacmcparams.CnormFactor);
-        if (fscanfcnt == EOF)
+        if(fscanfcnt == EOF)
         {
-            if (ferror(fp))
+            if(ferror(fp))
             {
                 perror("fscanf");
             }
@@ -251,7 +251,7 @@ errno_t exec_optimize_fpm_zones()
             }
             FUNC_RETURN_FAILURE("Call to fscanf failed");
         }
-        else if (fscanfcnt != 1)
+        else if(fscanfcnt != 1)
         {
             fprintf(stderr,
                     "Error: fscanf successfully matched and assigned %i input "
@@ -265,8 +265,8 @@ errno_t exec_optimize_fpm_zones()
     // for each zone, add a random offset in range +- MODampl
     // this randomizes the starting point for each zone
     // data.image[piaacmcopticaldesign.zonezID].array.D[k] is set in PIAACMCsimul_run()
-    for (long k = 0; k < data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
-         k++)
+    for(long k = 0; k < data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+            k++)
     {
         data.image[piaacmcopticaldesign.zonezID].array.D[k] +=
             piaacmcparams.MODampl * (1.0 - 2.0 * ran1());
@@ -275,9 +275,9 @@ errno_t exec_optimize_fpm_zones()
     // set up optimization parameters for each zone
     // uses abstract specification of optimization parameters called paramval, ...
     piaacmcparams.linopt_number_param = 0;
-    for (long mz = 0;
-         mz < data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
-         mz++)
+    for(long mz = 0;
+            mz < data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+            mz++)
     {
         // parameter type
         piaacmcparams.linopt_paramtype[piaacmcparams.linopt_number_param] =

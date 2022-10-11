@@ -47,25 +47,25 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
         "===================================\n");
     //		piaacmcparams.FORCE_CREATE_fpmza = 1;
 
-    if ((IDv = variable_ID("PIAACMC_centobs0")) != -1)
+    if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
     {
         centobs0 = data.variable[IDv].value.f;
     }
-    if ((IDv = variable_ID("PIAACMC_centobs1")) != -1)
+    if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
     {
         centobs1 = data.variable[IDv].value.f;
     }
-    if ((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
+    if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
         fpmradld = data.variable[IDv].value.f;
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
     piaacmcparams.PIAACMC_fpmtype = 0; // idealized (default)
-    if ((IDv = variable_ID("PIAACMC_fpmtype")) != -1)
+    if((IDv = variable_ID("PIAACMC_fpmtype")) != -1)
     {
         piaacmcparams.PIAACMC_fpmtype =
-            (int) (data.variable[IDv].value.f + 0.1);
+            (int)(data.variable[IDv].value.f + 0.1);
     }
     printf("PIAACMC_fpmtype = %d\n", piaacmcparams.PIAACMC_fpmtype);
 
@@ -75,15 +75,15 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
         initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
         initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
 
-        if (piaacmcparams.PIAACMC_fpmtype == 1)
+        if(piaacmcparams.PIAACMC_fpmtype == 1)
         {
             initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
         }
         FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld,
-                                                    centobs0,
-                                                    centobs1,
-                                                    initflag,
-                                                    NULL));
+                          centobs0,
+                          centobs1,
+                          initflag,
+                          NULL));
     }
     //       printf("data.image[piaacmcopticaldesign.zoneaID].array.D[0] = %lf\n", data.image[piaacmcopticaldesign.zoneaID].array.D[0]);
     //        sleep(10);
@@ -91,19 +91,19 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
     FUNC_CHECK_RETURN(makePIAAshapes());
     piaacmcopticalsystem.FOCMASKarray[0].mode = 1; // use 1-fpm
 
-    if (0) // TEST
+    if(0)  // TEST
     {
         double valref = 0.0;
 
         FUNC_CHECK_RETURN(PIAACMCsimul_computePSF(0.0,
-                                                  0.0,
-                                                  0,
-                                                  piaacmcopticalsystem.NBelem,
-                                                  1,
-                                                  0,
-                                                  0,
-                                                  1,
-                                                  &valref));
+                          0.0,
+                          0,
+                          piaacmcopticalsystem.NBelem,
+                          1,
+                          0,
+                          0,
+                          1,
+                          &valref));
         printf("valref = %g\n", valref);
         printf("EXEC CASE 40 COMPLETED\n");
     }
@@ -111,7 +111,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
     {
         piaacmcparams.LINOPT = 1; // perform linear optimization
 
-        if ((IDv = variable_ID("PIAACMC_nbiter")) != -1)
+        if((IDv = variable_ID("PIAACMC_nbiter")) != -1)
         {
             piaacmcparams.linopt_NBiter =
                 (long) data.variable[IDv].value.f + 0.01;
@@ -123,12 +123,12 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
 
         long kmaxC =
             data.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
-        if ((IDv = variable_ID("PIAACMC_maxoptCterm")) != -1)
+        if((IDv = variable_ID("PIAACMC_maxoptCterm")) != -1)
         {
             kmaxC = (long) data.variable[IDv].value.f + 0.01;
         }
-        if (kmaxC >
-            data.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0])
+        if(kmaxC >
+                data.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0])
         {
             kmaxC =
                 data.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
@@ -136,12 +136,12 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
 
         long kmaxF =
             data.image[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0];
-        if ((IDv = variable_ID("PIAACMC_maxoptFterm")) != -1)
+        if((IDv = variable_ID("PIAACMC_maxoptFterm")) != -1)
         {
             kmaxF = (long) data.variable[IDv].value.f + 0.01;
         }
-        if (kmaxF >
-            data.image[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0])
+        if(kmaxF >
+                data.image[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0])
         {
             kmaxF =
                 data.image[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0];
@@ -150,7 +150,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
         // PIAA shapes regularization
 
         piaacmcparams.linopt_REGPIAASHAPES = 0; // default
-        if ((IDv = variable_ID("REGPIAASHAPES")) != -1)
+        if((IDv = variable_ID("REGPIAASHAPES")) != -1)
         {
             piaacmcparams.linopt_REGPIAASHAPES =
                 (long) data.variable[IDv].value.f + 0.01;
@@ -158,7 +158,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
 
         piaacmcparams.linopt_piaa0C_regcoeff = 0.0e-7; // regularization coeff
         piaacmcparams.linopt_piaa1C_regcoeff = 0.0e-7; // regularization coeff
-        if ((IDv = variable_ID("REGPIAA_C_COEFF")) != -1)
+        if((IDv = variable_ID("REGPIAA_C_COEFF")) != -1)
         {
             piaacmcparams.linopt_piaa0C_regcoeff = data.variable[IDv].value.f;
             piaacmcparams.linopt_piaa1C_regcoeff = data.variable[IDv].value.f;
@@ -168,7 +168,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
             1.0; // regularization coeff power
         piaacmcparams.linopt_piaa1C_regcoeff_alpha =
             1.0; // regularization coeff power
-        if ((IDv = variable_ID("REGPIAA_C_ALPHA")) != -1)
+        if((IDv = variable_ID("REGPIAA_C_ALPHA")) != -1)
         {
             piaacmcparams.linopt_piaa0C_regcoeff_alpha =
                 data.variable[IDv].value.f;
@@ -178,7 +178,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
 
         piaacmcparams.linopt_piaa0F_regcoeff = 0.0e-7; // regularization coeff
         piaacmcparams.linopt_piaa1F_regcoeff = 0.0e-7; // regularization coeff
-        if ((IDv = variable_ID("REGPIAA_F_COEFF")) != -1)
+        if((IDv = variable_ID("REGPIAA_F_COEFF")) != -1)
         {
             piaacmcparams.linopt_piaa0F_regcoeff = data.variable[IDv].value.f;
             piaacmcparams.linopt_piaa1F_regcoeff = data.variable[IDv].value.f;
@@ -188,7 +188,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
             1.0; // regularization coeff power
         piaacmcparams.linopt_piaa1F_regcoeff_alpha =
             1.0; // regularization coeff power
-        if ((IDv = variable_ID("REGPIAA_F_ALPHA")) != -1)
+        if((IDv = variable_ID("REGPIAA_F_ALPHA")) != -1)
         {
             piaacmcparams.linopt_piaa0F_regcoeff_alpha =
                 data.variable[IDv].value.f;
@@ -196,12 +196,12 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
                 data.variable[IDv].value.f;
         }
 
-        if (piaacmcparams.linopt_REGPIAASHAPES == 1)
+        if(piaacmcparams.linopt_REGPIAASHAPES == 1)
         {
             printf("loading CPA modes frequ\n");
             fflush(stdout);
             ID_CPAfreq = image_ID("cpamodesfreq");
-            if (ID_CPAfreq == -1)
+            if(ID_CPAfreq == -1)
             {
                 load_fits("cpamodesfreq.fits",
                           "cpamodesfreq",
@@ -213,7 +213,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
         // FPM SAG regularization
 
         piaacmcparams.linopt_REGFPMSAG = 1; // default
-        if ((IDv = variable_ID("REGFPMSAG")) != -1)
+        if((IDv = variable_ID("REGFPMSAG")) != -1)
         {
             piaacmcparams.linopt_REGFPMSAG =
                 (long) data.variable[IDv].value.f + 0.01;
@@ -221,7 +221,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
 
         piaacmcparams.linopt_number_param = 0;
 
-        if (piaacmcparams.PIAACMC_fpmtype == 0) // ideal mask
+        if(piaacmcparams.PIAACMC_fpmtype == 0)  // ideal mask
         {
             piaacmcparams.linopt_paramtype[piaacmcparams.linopt_number_param] =
                 _DATATYPE_DOUBLE;
@@ -230,7 +230,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
             piaacmcparams.linopt_paramdelta[piaacmcparams.linopt_number_param] =
                 1.0e-3;
             piaacmcparams
-                .linopt_parammaxstep[piaacmcparams.linopt_number_param] =
+            .linopt_parammaxstep[piaacmcparams.linopt_number_param] =
                 2.0e-1;
             piaacmcparams.linopt_parammin[piaacmcparams.linopt_number_param] =
                 -1.0;
@@ -240,36 +240,36 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
         }
         else // real physical mask
         {
-            if (variable_ID("PIAACMC_mzOPT") != -1) // optimize zones
+            if(variable_ID("PIAACMC_mzOPT") != -1)  // optimize zones
             {
-                for (uint32_t mz = 0;
-                     mz <
-                     data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
-                     mz++)
+                for(uint32_t mz = 0;
+                        mz <
+                        data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+                        mz++)
                 {
                     piaacmcparams
-                        .linopt_paramtype[piaacmcparams.linopt_number_param] =
+                    .linopt_paramtype[piaacmcparams.linopt_number_param] =
                         _DATATYPE_DOUBLE;
                     piaacmcparams
-                        .linopt_paramval[piaacmcparams.linopt_number_param] =
+                    .linopt_paramval[piaacmcparams.linopt_number_param] =
                         &data.image[piaacmcopticaldesign.zonezID].array.D[mz];
                     piaacmcparams
-                        .linopt_paramdelta[piaacmcparams.linopt_number_param] =
+                    .linopt_paramdelta[piaacmcparams.linopt_number_param] =
                         1.0e-9;
                     piaacmcparams.linopt_parammaxstep
-                        [piaacmcparams.linopt_number_param] = 5.0e-8;
+                    [piaacmcparams.linopt_number_param] = 5.0e-8;
                     piaacmcparams
-                        .linopt_parammin[piaacmcparams.linopt_number_param] =
+                    .linopt_parammin[piaacmcparams.linopt_number_param] =
                         -2.0e-6;
                     piaacmcparams
-                        .linopt_parammax[piaacmcparams.linopt_number_param] =
+                    .linopt_parammax[piaacmcparams.linopt_number_param] =
                         2.0e-6;
                     piaacmcparams.linopt_number_param++;
                 }
             }
         }
 
-        for (long k = 0; k < kmaxC; k++)
+        for(long k = 0; k < kmaxC; k++)
         {
             piaacmcparams.linopt_paramtype[piaacmcparams.linopt_number_param] =
                 _DATATYPE_FLOAT;
@@ -278,7 +278,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
             piaacmcparams.linopt_paramdelta[piaacmcparams.linopt_number_param] =
                 1.0e-10;
             piaacmcparams
-                .linopt_parammaxstep[piaacmcparams.linopt_number_param] =
+            .linopt_parammaxstep[piaacmcparams.linopt_number_param] =
                 1.0e-7;
             piaacmcparams.linopt_parammin[piaacmcparams.linopt_number_param] =
                 -1.0e-3;
@@ -287,7 +287,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
             piaacmcparams.linopt_number_param++;
         }
 
-        for (long k = 0; k < kmaxC; k++)
+        for(long k = 0; k < kmaxC; k++)
         {
             piaacmcparams.linopt_paramtype[piaacmcparams.linopt_number_param] =
                 _DATATYPE_FLOAT;
@@ -296,7 +296,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
             piaacmcparams.linopt_paramdelta[piaacmcparams.linopt_number_param] =
                 1.0e-10;
             piaacmcparams
-                .linopt_parammaxstep[piaacmcparams.linopt_number_param] =
+            .linopt_parammaxstep[piaacmcparams.linopt_number_param] =
                 1.0e-7;
             piaacmcparams.linopt_parammin[piaacmcparams.linopt_number_param] =
                 -1.0e-3;
@@ -305,7 +305,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
             piaacmcparams.linopt_number_param++;
         }
 
-        for (long k = 0; k < kmaxF; k++)
+        for(long k = 0; k < kmaxF; k++)
         {
             piaacmcparams.linopt_paramtype[piaacmcparams.linopt_number_param] =
                 _DATATYPE_FLOAT;
@@ -314,7 +314,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
             piaacmcparams.linopt_paramdelta[piaacmcparams.linopt_number_param] =
                 1.0e-10;
             piaacmcparams
-                .linopt_parammaxstep[piaacmcparams.linopt_number_param] =
+            .linopt_parammaxstep[piaacmcparams.linopt_number_param] =
                 1.0e-7;
             piaacmcparams.linopt_parammin[piaacmcparams.linopt_number_param] =
                 -1.0e-3;
@@ -323,7 +323,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
             piaacmcparams.linopt_number_param++;
         }
 
-        for (long k = 0; k < kmaxF; k++)
+        for(long k = 0; k < kmaxF; k++)
         {
             piaacmcparams.linopt_paramtype[piaacmcparams.linopt_number_param] =
                 _DATATYPE_FLOAT;
@@ -332,7 +332,7 @@ errno_t exec_optimize_PIAA_shapes_fpmtransm()
             piaacmcparams.linopt_paramdelta[piaacmcparams.linopt_number_param] =
                 1.0e-10;
             piaacmcparams
-                .linopt_parammaxstep[piaacmcparams.linopt_number_param] =
+            .linopt_parammaxstep[piaacmcparams.linopt_number_param] =
                 1.0e-7;
             piaacmcparams.linopt_parammin[piaacmcparams.linopt_number_param] =
                 -1.0e-3;

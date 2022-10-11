@@ -73,35 +73,35 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
     double  alpha = 1.01; // norm alpha used to identify best plane
 
     float *zarray = (float *) malloc(sizeof(float) * NBz);
-    if (zarray == NULL)
+    if(zarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
     float *rinarray = (float *) malloc(sizeof(float) * NBmasks);
-    if (rinarray == NULL)
+    if(rinarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
     float *routarray = (float *) malloc(sizeof(float) * NBmasks);
-    if (routarray == NULL)
+    if(routarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
     double *totarray = (double *) malloc(sizeof(double) * NBmasks * NBz);
-    if (totarray == NULL)
+    if(totarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
     }
 
     double *tot2array = (double *) malloc(sizeof(double) * NBmasks * NBz);
-    if (tot2array == NULL)
+    if(tot2array == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
@@ -109,7 +109,7 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
 
     routarray[0] = 1.0;
     rinarray[0]  = 1.0 - 1.0 / NBmasks;
-    for (long m = 1; m < NBmasks; m++)
+    for(long m = 1; m < NBmasks; m++)
     {
         routarray[m] = rinarray[m - 1];
         rinarray[m] =
@@ -117,7 +117,7 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
     }
     rinarray[NBmasks - 1] = 0.0;
 
-    for (long m = 0; m < NBmasks; m++)
+    for(long m = 0; m < NBmasks; m++)
     {
         DEBUG_TRACEPOINT("annulus %ld : %f - %f\n",
                          m,
@@ -132,7 +132,7 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
     xysize *= ysize;
 
     float *rarray = (float *) malloc(sizeof(float) * xsize * ysize);
-    if (rarray == NULL)
+    if(rarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
         abort(); // or handle error in other ways
@@ -140,7 +140,7 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
 
     IDincohc = image_ID(IDincohc_name);
 
-    if (data.image[IDa].md[0].naxis == 3)
+    if(data.image[IDa].md[0].naxis == 3)
     {
         nblambda = data.image[IDa].md[0].size[2];
     }
@@ -152,8 +152,8 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
     imageID IDzone;
     FUNC_CHECK_RETURN(create_2Dimage_ID("LMzonemap", xsize, ysize, &IDzone));
 
-    for (uint32_t ii = 0; ii < xsize; ii++)
-        for (uint32_t jj = 0; jj < ysize; jj++)
+    for(uint32_t ii = 0; ii < xsize; ii++)
+        for(uint32_t jj = 0; jj < ysize; jj++)
         {
             data.image[IDzone].array.F[jj * xsize + ii] = -2;
             double x =
@@ -164,13 +164,13 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
                 (piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale);
             double r                = sqrt(x * x + y * y);
             rarray[jj * xsize + ii] = r;
-            for (long m = 0; m < NBmasks; m++)
-                if ((r > rinarray[m] - 0.0001) && (r < routarray[m] + 0.0001))
+            for(long m = 0; m < NBmasks; m++)
+                if((r > rinarray[m] - 0.0001) && (r < routarray[m] + 0.0001))
                 {
                     data.image[IDzone].array.F[jj * xsize + ii] = m;
                 }
         }
-    if (piaacmcparams.PIAACMC_save == 1)
+    if(piaacmcparams.PIAACMC_save == 1)
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname,
@@ -179,7 +179,7 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
         FUNC_CHECK_RETURN(save_fits("LMzonemap", fname));
     }
     // initialize zarray
-    for (long l = 0; l < NBz; l++)
+    for(long l = 0; l < NBz; l++)
     {
         zarray[l] = zmin + (zmax - zmin) * l / (NBz - 1);
     }
@@ -199,9 +199,9 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
 
     float sigma =
         0.01 * piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale;
-    int filter_size = (long) (sigma * 2.0);
+    int filter_size = (long)(sigma * 2.0);
 
-    for (long l = 0; l < NBz; l++)
+    for(long l = 0; l < NBz; l++)
     {
         char nameamp[STRINGMAXLEN_IMGNAME];
         WRITE_IMAGENAME(nameamp, "LMPamp%02ld", l);
@@ -211,20 +211,20 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
 
         double zprop = zarray[l];
         FUNC_CHECK_RETURN(OptSystProp_propagateCube(&piaacmcopticalsystem,
-                                                    0,
-                                                    IDamp_name,
-                                                    IDpha_name,
-                                                    nameamp,
-                                                    namepha,
-                                                    zprop,
-                                                    0));
+                          0,
+                          IDamp_name,
+                          IDpha_name,
+                          nameamp,
+                          namepha,
+                          zprop,
+                          0));
 
         imageID IDa1 = image_ID(nameamp);
         imageID IDp1 = image_ID(namepha);
 
-        for (long k = 0; k < nblambda; k++)
+        for(long k = 0; k < nblambda; k++)
         {
-            for (uint64_t ii = 0; ii < xysize; ii++)
+            for(uint64_t ii = 0; ii < xysize; ii++)
             {
                 double amp = data.image[IDa1].array.F[k * xsize * ysize + ii];
                 double pha = data.image[IDp1].array.F[k * xsize * ysize + ii];
@@ -236,7 +236,7 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
             imageID IDimg =
                 gauss_filter("imtmpim", "imtmpimg", sigma, filter_size);
 
-            for (uint64_t ii = 0; ii < xysize; ii++)
+            for(uint64_t ii = 0; ii < xysize; ii++)
             {
                 double re                      = data.image[IDreg].array.F[ii];
                 double im                      = data.image[IDimg].array.F[ii];
@@ -245,7 +245,7 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
             imageID IDintgg =
                 gauss_filter("tmpintg", "tmpintgg", 2.0 * sigma, filter_size);
 
-            for (uint64_t ii = 0; ii < xysize; ii++)
+            for(uint64_t ii = 0; ii < xysize; ii++)
             {
                 data.image[ID_LMintC].array.F[l * xsize * ysize + ii] +=
                     data.image[IDintgg].array.F[ii];
@@ -292,21 +292,21 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
         FUNC_CHECK_RETURN(save_fits("LMintC", fname));
     }
 
-    for (long l = 0; l < NBz; l++)
-        for (long m = 0; m < NBmasks; m++)
+    for(long l = 0; l < NBz; l++)
+        for(long m = 0; m < NBmasks; m++)
         {
             totarray[l * NBmasks + m]  = 0.0;
             tot2array[l * NBmasks + m] = 0.0;
         }
 
-    for (long l = 0; l < NBz; l++)
+    for(long l = 0; l < NBz; l++)
     {
-        for (uint64_t ii = 0; ii < xysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
-            long m = (long) (data.image[IDzone].array.F[ii] + 0.1);
+            long m = (long)(data.image[IDzone].array.F[ii] + 0.1);
 
-            if ((m > -1) && (m < NBmasks) && (rarray[ii] < 1.0) &&
-                (rarray[ii] > 0.9 * piaacmcopticaldesign.centObs1))
+            if((m > -1) && (m < NBmasks) && (rarray[ii] < 1.0) &&
+                    (rarray[ii] > 0.9 * piaacmcopticaldesign.centObs1))
             {
                 totarray[l * NBmasks + m] +=
                     data.image[IDincohc].array.F[l * xysize + ii];
@@ -320,19 +320,19 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
 
     FUNC_CHECK_RETURN(create_2Dimage_ID("LcombOA", xsize, ysize, &IDmc1));
 
-    for (uint64_t ii = 0; ii < xysize; ii++)
+    for(uint64_t ii = 0; ii < xysize; ii++)
     {
         data.image[IDmc1].array.F[ii] = 0.0;
     }
 
     {
         IDint = image_ID("LMintC");
-        for (long m = 0; m < NBmasks; m++)
+        for(long m = 0; m < NBmasks; m++)
         {
             double valbest = 0.0;
             long   lbest   = 0;
             double zbest   = 0.0;
-            for (long l = 0; l < NBz; l++)
+            for(long l = 0; l < NBz; l++)
             {
                 double val = tot2array[l * NBmasks + m] /
                              pow(totarray[l * NBmasks + m], alpha);
@@ -343,7 +343,7 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
                        val,
                        tot2array[l * NBmasks + m],
                        totarray[l * NBmasks + m]);
-                if (val > valbest)
+                if(val > valbest)
                 {
                     valbest = val;
                     zbest   = zarray[l];
@@ -368,8 +368,8 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
                 fclose(fp);
             }
 
-            for (uint64_t ii = 0; ii < xysize; ii++)
-                if (m == data.image[IDzone].array.F[ii])
+            for(uint64_t ii = 0; ii < xysize; ii++)
+                if(m == data.image[IDzone].array.F[ii])
                 {
                     data.image[IDmc].array.F[ii] =
                         data.image[IDint].array.F[lbest * xysize + ii];
@@ -379,7 +379,7 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
         }
     }
 
-    if (piaacmcparams.PIAACMC_save == 1)
+    if(piaacmcparams.PIAACMC_save == 1)
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
 
@@ -403,7 +403,7 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
                                  "LMask",
                                  &IDlyotmask));
 
-    if (piaacmcparams.PIAACMC_save == 1)
+    if(piaacmcparams.PIAACMC_save == 1)
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname,
@@ -417,12 +417,12 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
     imageID IDlscumul;
     FUNC_CHECK_RETURN(create_2Dimage_ID("LMcumul", xsize, ysize, &IDlscumul));
 
-    for (uint64_t ii = 0; ii < xysize; ii++)
+    for(uint64_t ii = 0; ii < xysize; ii++)
     {
         data.image[IDlscumul].array.F[ii] = 1.0;
     }
 
-    for (long m = 0; m < NBmasks; m++)
+    for(long m = 0; m < NBmasks; m++)
     {
         char name[STRINGMAXLEN_IMGNAME];
         WRITE_IMAGENAME(name, "optLM%02ld", m);
@@ -430,8 +430,8 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
         imageID IDm;
         FUNC_CHECK_RETURN(create_2Dimage_ID(name, xsize, ysize, &IDm));
 
-        for (uint32_t ii = 0; ii < xsize; ii++)
-            for (uint32_t jj = 0; jj < ysize; jj++)
+        for(uint32_t ii = 0; ii < xsize; ii++)
+            for(uint32_t jj = 0; jj < ysize; jj++)
             {
                 double x =
                     (1.0 * ii - 0.5 * xsize) / (piaacmcopticaldesign.beamrad /
@@ -441,7 +441,7 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
                                                 piaacmcopticaldesign.pixscale);
                 double r = sqrt(x * x + y * y);
 
-                if ((r > rinarray[m] - dr) && (r < routarray[m] + dr))
+                if((r > rinarray[m] - dr) && (r < routarray[m] + dr))
                 {
                     data.image[IDm].array.F[jj * xsize + ii] =
                         data.image[IDlyotmask].array.F[jj * xsize + ii];
@@ -451,9 +451,9 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
                     data.image[IDm].array.F[jj * xsize + ii] = 1.0;
                 }
             }
-        if (m == 0)
-            for (uint32_t ii = 0; ii < xsize; ii++)
-                for (uint32_t jj = 0; jj < ysize; jj++)
+        if(m == 0)
+            for(uint32_t ii = 0; ii < xsize; ii++)
+                for(uint32_t jj = 0; jj < ysize; jj++)
                 {
                     double x = (1.0 * ii - 0.5 * xsize) /
                                (piaacmcopticaldesign.beamrad /
@@ -462,13 +462,13 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
                                (piaacmcopticaldesign.beamrad /
                                 piaacmcopticaldesign.pixscale);
                     double r = sqrt(x * x + y * y);
-                    if (r > 1.0)
+                    if(r > 1.0)
                     {
                         data.image[IDm].array.F[jj * xsize + ii] = 0.0;
                     }
                 }
 
-        for (uint64_t ii = 0; ii < xysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
             data.image[IDm].array.F[ii] *= data.image[IDlscumul].array.F[ii];
             data.image[IDlscumul].array.F[ii] = data.image[IDm].array.F[ii];
@@ -496,7 +496,7 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
     FUNC_CHECK_RETURN(
         delete_image_ID("LMzonemap", DELETE_IMAGE_ERRMODE_WARNING));
 
-    if (outratioval != NULL)
+    if(outratioval != NULL)
     {
         *outratioval = ratio;
     }

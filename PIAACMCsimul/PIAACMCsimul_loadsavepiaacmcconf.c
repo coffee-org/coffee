@@ -34,7 +34,7 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname)
     WRITE_FULLFILENAME(fname, "%s/piaacmcparams.conf", dname);
     printf("%s\n", fname);
     fp = fopen(fname, "r");
-    if (fp == NULL)
+    if(fp == NULL)
     {
         printf(
             "Configuration file \"%s\" does not exist (yet), using previously "
@@ -45,14 +45,15 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname)
     else
     {
 
-        { // Get number of rad points
+        {
+            // Get number of rad points
             int  fscanfcnt;
             long tmpl;
 
             fscanfcnt = fscanf(fp, "%ld   NBradpts\n", &tmpl);
-            if (fscanfcnt == EOF)
+            if(fscanfcnt == EOF)
             {
-                if (ferror(fp))
+                if(ferror(fp))
                 {
                     perror("fscanf");
                 }
@@ -64,7 +65,7 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname)
                 }
                 abort();
             }
-            else if (fscanfcnt != 1)
+            else if(fscanfcnt != 1)
             {
                 fprintf(stderr,
                         "Error: fscanf successfully matched and assigned %i "
@@ -75,9 +76,9 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname)
             piaacmcopticaldesign.NBradpts = tmpl;
         }
 
-        for (int i = 0; i < 10; i++)
+        for(int i = 0; i < 10; i++)
         {
-            if (i < piaacmcopticaldesign.NBLyotStop)
+            if(i < piaacmcopticaldesign.NBLyotStop)
             {
                 char fname[STRINGMAXLEN_FULLFILENAME];
                 char imname[STRINGMAXLEN_IMGNAME];
@@ -98,9 +99,9 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname)
 
                     fscanfcnt =
                         fscanf(fp, "%lf   LyotStop_zpos %ld\n", &tmplf, &tmpl);
-                    if (fscanfcnt == EOF)
+                    if(fscanfcnt == EOF)
                     {
-                        if (ferror(fp))
+                        if(ferror(fp))
                         {
                             perror("fscanf");
                         }
@@ -113,7 +114,7 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname)
                         }
                         abort();
                     }
-                    else if (fscanfcnt != 2)
+                    else if(fscanfcnt != 2)
                     {
                         fprintf(stderr,
                                 "Error: fscanf successfully matched and "
@@ -132,9 +133,9 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname)
 
                 fscanfcnt =
                     fscanf(fp, "%lf   LyotStop_zpos %ld\n", &tmplf, &tmpl);
-                if (fscanfcnt == EOF)
+                if(fscanfcnt == EOF)
                 {
-                    if (ferror(fp))
+                    if(ferror(fp))
                     {
                         perror("fscanf");
                     }
@@ -146,7 +147,7 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname)
                     }
                     abort();
                 }
-                else if (fscanfcnt != 2)
+                else if(fscanfcnt != 2)
                 {
                     fprintf(stderr,
                             "Error: fscanf successfully matched and assigned "
@@ -167,7 +168,7 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname)
                                     "piaa0Cmodescoeff",
                                     1,
                                     &(piaacmcopticaldesign.piaa0CmodesID)));
-        if (piaacmcopticaldesign.piaa0CmodesID == -1)
+        if(piaacmcopticaldesign.piaa0CmodesID == -1)
         {
             WRITE_FULLFILENAME(fname, "%s/piaaref/piaa0Cmodes.fits", dname);
             FUNC_CHECK_RETURN(load_fits(fname,
@@ -181,7 +182,7 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname)
                                     "piaa0Fmodescoeff",
                                     1,
                                     &(piaacmcopticaldesign.piaa0FmodesID)));
-        if (piaacmcopticaldesign.piaa0FmodesID == -1)
+        if(piaacmcopticaldesign.piaa0FmodesID == -1)
         {
             WRITE_FULLFILENAME(fname, "%s/piaaref/piaa0Fmodes.fits", dname);
             FUNC_CHECK_RETURN(load_fits(fname,
@@ -195,7 +196,7 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname)
                                     "piaa1Cmodescoeff",
                                     1,
                                     &(piaacmcopticaldesign.piaa1CmodesID)));
-        if (piaacmcopticaldesign.piaa1CmodesID == -1)
+        if(piaacmcopticaldesign.piaa1CmodesID == -1)
         {
             WRITE_FULLFILENAME(fname, "%s/piaaref/piaa1Cmodes.fits", dname);
             FUNC_CHECK_RETURN(load_fits(fname,
@@ -209,7 +210,7 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname)
                                     "piaa1Fmodescoeff",
                                     1,
                                     &(piaacmcopticaldesign.piaa1FmodesID)));
-        if (piaacmcopticaldesign.piaa1FmodesID == -1)
+        if(piaacmcopticaldesign.piaa1FmodesID == -1)
         {
             imageID IDtmp = -1;
             WRITE_FULLFILENAME(fname, "%s/piaaref/piaa1Fmodes.fits", dname);
@@ -217,14 +218,15 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname)
             piaacmcopticaldesign.piaa1FmodesID = IDtmp;
         }
 
-        { // read focal plane mask transmission
+        {
+            // read focal plane mask transmission
             int   fscanfcnt;
             float tmpf;
 
             fscanfcnt = fscanf(fp, "%f   fpmaskamptransm\n", &tmpf);
-            if (fscanfcnt == EOF)
+            if(fscanfcnt == EOF)
             {
-                if (ferror(fp))
+                if(ferror(fp))
                 {
                     perror("fscanf");
                 }
@@ -236,7 +238,7 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname)
                 }
                 abort();
             }
-            else if (fscanfcnt != 1)
+            else if(fscanfcnt != 1)
             {
                 fprintf(stderr,
                         "Error: fscanf successfully matched and assigned %i "
@@ -267,10 +269,10 @@ errno_t PIAACMCsimul_update_fnamedescr_conf()
     WRITE_FILENAME(piaacmcparams.fnamedescr_conf,
                    "s%d_l%04ld_sr%02ld_nbr%03ld_mr%03ld_ssr%02d_ssm%d_wb%02d",
                    piaacmcparams.PIAACMC_FPMsectors,
-                   (long) (1.0e9 * piaacmcopticaldesign.lambda + 0.1),
-                   (long) (1.0 * piaacmcopticaldesign.lambdaB + 0.1),
+                   (long)(1.0e9 * piaacmcopticaldesign.lambda + 0.1),
+                   (long)(1.0 * piaacmcopticaldesign.lambdaB + 0.1),
                    piaacmcopticaldesign.NBrings,
-                   (long) (100.0 * piaacmcparams.PIAACMC_MASKRADLD + 0.1),
+                   (long)(100.0 * piaacmcparams.PIAACMC_MASKRADLD + 0.1),
                    piaacmcparams.computePSF_ResolvedTarget,
                    piaacmcparams.computePSF_ResolvedTarget_mode,
                    piaacmcopticaldesign.nblambda);
@@ -292,10 +294,10 @@ errno_t PIAACMCsimul_update_fnamedescr()
     WRITE_FILENAME(piaacmcparams.fnamedescr,
                    "%s.minsag%06ld_maxsag%06ld_fpmregc%08ld_fpmrega%06ld_%s",
                    piaacmcparams.fnamedescr_conf,
-                   (long) (1.0e9 * piaacmcopticaldesign.fpmminsag - 0.1),
-                   (long) (1.0e9 * piaacmcopticaldesign.fpmmaxsag + 0.1),
-                   (long) (1.0e9 * piaacmcopticaldesign.fpmsagreg_coeff + 0.1),
-                   (long) (1000.0 * piaacmcopticaldesign.fpmsagreg_alpha + 0.1),
+                   (long)(1.0e9 * piaacmcopticaldesign.fpmminsag - 0.1),
+                   (long)(1.0e9 * piaacmcopticaldesign.fpmmaxsag + 0.1),
+                   (long)(1.0e9 * piaacmcopticaldesign.fpmsagreg_coeff + 0.1),
+                   (long)(1000.0 * piaacmcopticaldesign.fpmsagreg_alpha + 0.1),
                    piaacmcopticaldesign.fpmmaterial_name);
 
     DEBUG_TRACE_FEXIT();
@@ -319,12 +321,12 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
         FILE *fp = fopen(fname, "w");
 
         fprintf(fp, "%10ld   NBradpts\n", piaacmcopticaldesign.NBradpts);
-        for (int i = 0; i < 10; i++)
+        for(int i = 0; i < 10; i++)
         {
-            if (i < piaacmcopticaldesign.NBLyotStop)
+            if(i < piaacmcopticaldesign.NBLyotStop)
             {
                 WRITE_FULLFILENAME(fname, "%s/LyotStop%d.fits", dname, i);
-                if (piaacmcopticaldesign.IDLyotStop[i] != -1)
+                if(piaacmcopticaldesign.IDLyotStop[i] != -1)
                 {
                     save_fits(
                         data.image[piaacmcopticaldesign.IDLyotStop[i]].name,
@@ -353,7 +355,7 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "%s/piaa0Cmodes.fits", dname);
-        if (piaacmcopticaldesign.piaa0CmodesID != -1)
+        if(piaacmcopticaldesign.piaa0CmodesID != -1)
         {
             FUNC_CHECK_RETURN(
                 save_fits(data.image[piaacmcopticaldesign.piaa0CmodesID].name,
@@ -364,7 +366,7 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "%s/piaa0Fmodes.fits", dname);
-        if (piaacmcopticaldesign.piaa0FmodesID != -1)
+        if(piaacmcopticaldesign.piaa0FmodesID != -1)
         {
             FUNC_CHECK_RETURN(
                 save_fits(data.image[piaacmcopticaldesign.piaa0FmodesID].name,
@@ -375,7 +377,7 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "%s/piaa1Cmodes.fits", dname);
-        if (piaacmcopticaldesign.piaa1CmodesID != -1)
+        if(piaacmcopticaldesign.piaa1CmodesID != -1)
         {
             FUNC_CHECK_RETURN(
                 save_fits(data.image[piaacmcopticaldesign.piaa1CmodesID].name,
@@ -386,7 +388,7 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
         WRITE_FULLFILENAME(fname, "%s/piaa1Fmodes.fits", dname);
-        if (piaacmcopticaldesign.piaa1FmodesID != -1)
+        if(piaacmcopticaldesign.piaa1FmodesID != -1)
         {
             FUNC_CHECK_RETURN(
                 save_fits(data.image[piaacmcopticaldesign.piaa1FmodesID].name,
@@ -402,7 +404,7 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
                            "%s/fpm_zonez.%s.fits",
                            piaacmcparams.piaacmcconfdir,
                            piaacmcparams.fnamedescr);
-        if (piaacmcopticaldesign.zonezID != -1)
+        if(piaacmcopticaldesign.zonezID != -1)
         {
             FUNC_CHECK_RETURN(
                 save_fits(data.image[piaacmcopticaldesign.zonezID].name,
@@ -416,7 +418,7 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
                            "%s/fpm_zonea.%s.fits",
                            piaacmcparams.piaacmcconfdir,
                            piaacmcparams.fnamedescr);
-        if (piaacmcopticaldesign.zoneaID != -1)
+        if(piaacmcopticaldesign.zoneaID != -1)
         {
             FUNC_CHECK_RETURN(
                 save_fits(data.image[piaacmcopticaldesign.zoneaID].name,
@@ -426,7 +428,7 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
 
     imageID IDfpmzmap1;
     IDfpmzmap1 = image_ID("fpmzmap1");
-    if (IDfpmzmap1 == -1)
+    if(IDfpmzmap1 == -1)
     {
         printf("Creating fpmzmap1 ...\n");
         fflush(stdout);
@@ -437,7 +439,7 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
         uint64_t xysize = xsize;
         xysize *= ysize;
 
-        for (uint64_t ii = 0; ii < xysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
             data.image[IDfpmzmap1].array.UI16[ii] -= 1;
         }

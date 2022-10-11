@@ -47,7 +47,7 @@ errno_t optimizeLyotStop_offaxis_min(const char *__restrict__ IDincohc_name)
     DEBUG_TRACEPOINT("FARG %s", IDincohc_name);
 
     imageID IDincohc = image_ID(IDincohc_name);
-    if (IDincohc == -1)
+    if(IDincohc == -1)
     {
         FUNC_RETURN_FAILURE("Image %s not found in memory", IDincohc_name);
     }
@@ -66,15 +66,15 @@ errno_t optimizeLyotStop_offaxis_min(const char *__restrict__ IDincohc_name)
     FUNC_CHECK_RETURN(create_2Dimage_ID("oals_val", xsize, ysize, &IDminflux));
 
     DEBUG_TRACEPOINT("scanning for minimum");
-    for (uint64_t ii = 0; ii < xysize; ii++)
+    for(uint64_t ii = 0; ii < xysize; ii++)
     {
         float    minv     = data.image[IDincohc].array.F[ii];
         uint32_t minindex = 0;
 
-        for (uint32_t kk = 1; kk < NBz; kk++)
+        for(uint32_t kk = 1; kk < NBz; kk++)
         {
             float tmpv = data.image[IDincohc].array.F[xysize * kk + ii];
-            if (tmpv < minv)
+            if(tmpv < minv)
             {
                 minv     = tmpv;
                 minindex = kk;
@@ -118,15 +118,15 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
         "=================================== mode 005 "
         "===================================\n");
     // load some more cli variables
-    if ((IDv = variable_ID("PIAACMC_centobs0")) != -1)
+    if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
     {
         centobs0 = data.variable[IDv].value.f;
     }
-    if ((IDv = variable_ID("PIAACMC_centobs1")) != -1)
+    if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
     {
         centobs1 = data.variable[IDv].value.f;
     }
-    if ((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
+    if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
         fpmradld = data.variable[IDv].value.f;
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
@@ -137,10 +137,10 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
         uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
         initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
         FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld,
-                                                    centobs0,
-                                                    centobs1,
-                                                    initflag,
-                                                    NULL));
+                          centobs0,
+                          centobs1,
+                          initflag,
+                          NULL));
     }
 
     FUNC_CHECK_RETURN(makePIAAshapes());
@@ -151,14 +151,14 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
 
     /// - <- **PIAACMC_nbpropstep** : # of propagation steps along the beam
     long NBpropstep = 150;
-    if ((IDv = variable_ID("PIAACMC_nbpropstep")) != -1)
+    if((IDv = variable_ID("PIAACMC_nbpropstep")) != -1)
     {
         NBpropstep = (long) data.variable[IDv].value.f + 0.01;
     }
 
     /// - <- **PIAACMC_lstransm** : desired Lyot stop transmission
     double lstransm = 0.85;
-    if ((IDv = variable_ID("PIAACMC_lstransm")) != -1)
+    if((IDv = variable_ID("PIAACMC_lstransm")) != -1)
     {
         lstransm = (double) data.variable[IDv].value.f;
     }
@@ -175,10 +175,10 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
         piaacmcopticalsystem.NBelem);
     // find the ID of the "post focal plane mask pupil" element
     long elem0 = 0;
-    for (long elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
+    for(long elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
     {
-        if (strcmp("post focal plane mask pupil",
-                   piaacmcopticalsystem.name[elem]) == 0)
+        if(strcmp("post focal plane mask pupil",
+                  piaacmcopticalsystem.name[elem]) == 0)
         {
             elem0 = elem;
             DEBUG_TRACEPOINT("post focal plane mask pupil = %ld", elem);
@@ -201,14 +201,14 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     {
         double cval = 0.0;
         FUNC_CHECK_RETURN(PIAACMCsimul_computePSF(0.0,
-                                                  0.0,
-                                                  0,
-                                                  piaacmcopticalsystem.NBelem,
-                                                  0,
-                                                  0,
-                                                  0,
-                                                  0,
-                                                  &cval));
+                          0.0,
+                          0,
+                          piaacmcopticalsystem.NBelem,
+                          0,
+                          0,
+                          0,
+                          0,
+                          &cval));
     }
 
     // filenames of the complex amplitude and phase in the post FPM pupil plane indexed by elem0
@@ -229,12 +229,12 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
                      zmax);
     // computes the diffracted light from the on-axis source
     FUNC_CHECK_RETURN(PIAACMCsimul_CA2propCubeInt(imnamea,
-                                                  imnamep,
-                                                  zmin,
-                                                  zmax,
-                                                  NBpropstep,
-                                                  "iproptmp",
-                                                  NULL));
+                      imnamep,
+                      zmin,
+                      zmax,
+                      NBpropstep,
+                      "iproptmp",
+                      NULL));
     // complex amplitude at elem0, only used to determine image size
     IDa = image_ID(imnamea);
 
@@ -259,8 +259,9 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
 
     DEBUG_TRACEPOINT("IDc = %ld", IDc);
 
-    if (IDc == -1)
-    { // OAincohc does not exist so we have to make it
+    if(IDc == -1)
+    {
+        // OAincohc does not exist so we have to make it
 
         DEBUG_TRACEPOINT("Creating off-axis light 3D volumetric cube");
         // create image to receive sum
@@ -274,13 +275,13 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
         long NBkr = 2; //5
 
         // loop over radii
-        for (long kr = 0; kr < NBkr; kr++)
+        for(long kr = 0; kr < NBkr; kr++)
         {
             // number of off-axis sources on each circle
             long NBincpt = 9; //15;
 
             // loop over points at current radius
-            for (long k1 = 0; k1 < NBincpt; k1++)
+            for(long k1 = 0; k1 < NBincpt; k1++)
             {
                 DEBUG_TRACEPOINT("OAincohc point %ld/%ld %ld/%ld",
                                  kr,
@@ -294,32 +295,34 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
                     double oaoffset = 20.0; // off axis amplitude
 
                     FUNC_CHECK_RETURN(PIAACMCsimul_computePSF(
-                        oaoffset * (1.0 + kr) / NBkr *
-                            cos(2.0 * M_PI * k1 / NBincpt),
-                        oaoffset * (1.0 + kr) / NBkr *
-                            sin(2.0 * M_PI * k1 / NBincpt),
-                        0,
-                        piaacmcopticalsystem.NBelem,
-                        0,
-                        0,
-                        0,
-                        0,
-                        &cval));
+                                          oaoffset * (1.0 + kr) / NBkr *
+                                          cos(2.0 * M_PI * k1 / NBincpt),
+                                          oaoffset * (1.0 + kr) / NBkr *
+                                          sin(2.0 * M_PI * k1 / NBincpt),
+                                          0,
+                                          piaacmcopticalsystem.NBelem,
+                                          0,
+                                          0,
+                                          0,
+                                          0,
+                                          &cval));
                 }
 
                 // propagate that elem0 from zmin to zmax with new PSF
                 imageID ID1;
                 FUNC_CHECK_RETURN(PIAACMCsimul_CA2propCubeInt(imnamea,
-                                                              imnamep,
-                                                              zmin,
-                                                              zmax,
-                                                              NBpropstep,
-                                                              "iproptmp",
-                                                              &ID1));
-                for (uint64_t ii = 0; ii < xysize; ii++)
-                { // ii is indexing x-y plane
-                    for (long k = 0; k < NBpropstep; k++)
-                    { // k is indexing z-direction. adding to IDc
+                                  imnamep,
+                                  zmin,
+                                  zmax,
+                                  NBpropstep,
+                                  "iproptmp",
+                                  &ID1));
+                for(uint64_t ii = 0; ii < xysize; ii++)
+                {
+                    // ii is indexing x-y plane
+                    for(long k = 0; k < NBpropstep; k++)
+                    {
+                        // k is indexing z-direction. adding to IDc
                         data.image[IDc].array.F[xysize * k + ii] +=
                             data.image[ID1].array.F[xysize * k + ii];
                     }
@@ -330,15 +333,16 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
             }
         }
         // scale by the number of sources to give average
-        for (uint64_t ii = 0; ii < xysize; ii++)
+        for(uint64_t ii = 0; ii < xysize; ii++)
         {
-            for (long k = 0; k < NBpropstep; k++)
+            for(long k = 0; k < NBpropstep; k++)
             {
                 data.image[IDc].array.F[k * xsize * ysize + ii] /= cnt;
             }
         }
 
-        { // save the final result
+        {
+            // save the final result
             char fname[STRINGMAXLEN_FULLFILENAME];
             WRITE_FULLFILENAME(fname,
                                "%s/OAincohc.fits",
@@ -350,24 +354,24 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     DEBUG_TRACEPOINT(
         "Compute on-axis PSF 3D intensity to define light to reject");
     FUNC_CHECK_RETURN(PIAACMCsimul_computePSF(0.0,
-                                              0.0,
-                                              0,
-                                              piaacmcopticalsystem.NBelem,
-                                              0,
-                                              0,
-                                              0,
-                                              0,
-                                              NULL));
+                      0.0,
+                      0,
+                      piaacmcopticalsystem.NBelem,
+                      0,
+                      0,
+                      0,
+                      0,
+                      NULL));
     // propagate it into the optical system, with result in image named "iprop00"
 
     DEBUG_TRACEPOINT("compute on-axis 3D intensity cube");
     FUNC_CHECK_RETURN(PIAACMCsimul_CA2propCubeInt(imnamea,
-                                                  imnamep,
-                                                  zmin,
-                                                  zmax,
-                                                  NBpropstep,
-                                                  "iprop00",
-                                                  NULL));
+                      imnamep,
+                      zmin,
+                      zmax,
+                      NBpropstep,
+                      "iprop00",
+                      NULL));
     //  save_fits("iprop00", "test_iprop00.fits");
 
     /// ### Compute image that has the min along z of OAincohc at each x,y
@@ -398,7 +402,7 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
         DEBUG_TRACEPOINT("write %s", fptestname);
 
         FILE *fptest = fopen(fptestname, "w");
-        if (fptest == NULL)
+        if(fptest == NULL)
         {
             PRINT_ERROR("cannot create file %s", fptestname);
             abort();
@@ -411,7 +415,7 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
         fprintf(fptest,
                 "# Lyot stop index   zmin   zmax    LyotStop_zpos    "
                 "elemZpos[elem0]\n");
-        for (long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
+        for(long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
         {
             fprintf(fptest,
                     "%5ld  %f  %f     %f  %f\n",
@@ -425,7 +429,7 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     }
 
     // convert Lyot stop position from relative to elem0 to absolute
-    for (long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
+    for(long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
     {
         piaacmcopticaldesign.LyotStop_zpos[ls] +=
             piaacmcopticalsystem.elemZpos[elem0];
@@ -436,7 +440,7 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
         PIAACMCsimul_savepiaacmcconf(piaacmcparams.piaacmcconfdir));
 
     // copy to the final Lyot stop file for this mode
-    for (long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
+    for(long ls = 0; ls < piaacmcopticaldesign.NBLyotStop; ls++)
     {
         EXECUTE_SYSTEM_COMMAND("cp ./%s/optLM%02ld.fits ./%s/LyotStop%ld.fits",
                                piaacmcparams.piaacmcconfdir,

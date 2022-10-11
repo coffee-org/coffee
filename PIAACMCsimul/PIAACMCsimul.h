@@ -19,7 +19,7 @@ typedef struct
 {
 
     char piaacmcconfdir
-        [STRINGMAXLEN_DIRNAME]; ///  Current configuration directory
+    [STRINGMAXLEN_DIRNAME]; ///  Current configuration directory
     int optsystinit;
 
     int FORCE_CREATE_Cmodes;
@@ -115,9 +115,9 @@ typedef struct
     long linopt_NBiter;
 
     char fnamedescr
-        [STRINGMAXLEN_FILENAME]; // File name descriptor for focal plane mask, inserted inside output file names
+    [STRINGMAXLEN_FILENAME]; // File name descriptor for focal plane mask, inserted inside output file names
     char fnamedescr_conf
-        [STRINGMAXLEN_FILENAME]; // File name descriptor for focal plane mask configuration, inserted inside output file names
+    [STRINGMAXLEN_FILENAME]; // File name descriptor for focal plane mask configuration, inserted inside output file names
 
 } PIAACMCSIMUL_PARAMS;
 
@@ -141,14 +141,14 @@ typedef struct
     double r0lim;    /**< outer radius after extrapolation, piaa mirror 0 */
     double r1lim;    /**< outer radius after extrapolation, piaa mirror 1 */
     long
-        NBradpts; /**< number of points for common r0, r1, piaa sags 1D table */
+    NBradpts; /**< number of points for common r0, r1, piaa sags 1D table */
 
     // Wavelength
     int    nblambda;
     double lambda;  // central wavelength [m]
     double lambdaB; // spectral bandwidth [%]
     double lambdaarray
-        [2000]; // [m]  lambdaarray is also defined in OptSystProp structure
+    [2000]; // [m]  lambdaarray is also defined in OptSystProp structure
 
     // ====== Overall OPTICAL Geometry ===============
 
@@ -207,7 +207,7 @@ typedef struct
     long Cmsize;   // cosine modes size
     long NBCmodes;
     long
-        piaaNBCmodesmax; // maximum number of radial cosine modes for PIAA optics
+    piaaNBCmodesmax; // maximum number of radial cosine modes for PIAA optics
 
     long  FmodesID; // Fourier 2D modes
     long  Fmsize;
@@ -225,14 +225,14 @@ typedef struct
     // ========= Focal Plane Mask ============
 
     double
-        fpmaskradld; // mask radius [l/d] for the idealized PIAACMC starting point
+    fpmaskradld; // mask radius [l/d] for the idealized PIAACMC starting point
     long   focmNBzone; // number of zones
     double Fratio;     // beam Fratio at focal plane
     long
-           zonezID; // focm zone material thickness, double precision image, named fpmzt / fpm_zonez.fits
+    zonezID; // focm zone material thickness, double precision image, named fpmzt / fpm_zonez.fits
     double fpmaskamptransm; // mask amplitude transmission (normally 1.0)
     long
-           zoneaID; // focm zone amplitude transmission, double precision image, named fpmza / fpm_zonea.fits
+    zoneaID; // focm zone amplitude transmission, double precision image, named fpmza / fpm_zonea.fits
     double fpzfactor; // focal plane mask DFT zoom factor
 
     double fpmRad; // outer radius of physical focal plane mask [m]

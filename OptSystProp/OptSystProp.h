@@ -18,7 +18,7 @@ typedef struct
     long   NBact1D;
     double pitch; // [m]
     double
-        maxstroke; // max deviation; actuator moves from -maxstroke to +maxstroke [m]
+    maxstroke; // max deviation; actuator moves from -maxstroke to +maxstroke [m]
     long dispID; // points to displacement matrix
 
     long   IF_ID;      // points to influence function map
@@ -47,7 +47,7 @@ typedef struct
     long   mat1; // material after surface
     int    init; // has refractive index been computed ?
     double ncoeff
-        [100]; // for each wavelength (max 100), multiplicative coeff between sag and induced OPD
+    [100]; // for each wavelength (max 100), multiplicative coeff between sag and induced OPD
     long surfID; // surface Z sag
 } ASPHSURFR;
 
@@ -111,12 +111,12 @@ typedef struct
     double flux[OPTSYST_ELEM_MAXNB];     // total flux AFTER element
     double elemZpos[OPTSYST_ELEM_MAXNB]; // position along beam
     int    keepMem
-        [OPTSYST_ELEM_MAXNB]; // set to 1 if memory should be kept, 0 otherwise
+    [OPTSYST_ELEM_MAXNB]; // set to 1 if memory should be kept, 0 otherwise
     // this is what is used for propagations, created from info above
     long elem_amp_ID_array
-        [OPTSYST_ELEM_MAXNB]; // amplitude map identifyer, multiplicative
+    [OPTSYST_ELEM_MAXNB]; // amplitude map identifyer, multiplicative
     long
-        elem_pha_ID_array[OPTSYST_ELEM_MAXNB]; // phase map identifyer, additive
+    elem_pha_ID_array[OPTSYST_ELEM_MAXNB]; // phase map identifyer, additive
 
     int endmode; // 0: compute PSF at the end of the sequence, 1: no PSF
 
