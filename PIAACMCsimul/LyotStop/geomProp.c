@@ -70,7 +70,7 @@ static CLICMDARGDEF farg[] = {{
         NULL
     },
     {
-        CLIARG_FLOAT,
+        CLIARG_FLOAT64,
         ".drindex",
         "delta refractive index",
         "2.0",
@@ -79,7 +79,7 @@ static CLICMDARGDEF farg[] = {{
         NULL
     },
     {
-        CLIARG_FLOAT,
+        CLIARG_FLOAT64,
         ".pscale",
         "pixel scale",
         "0.00011",
@@ -88,7 +88,7 @@ static CLICMDARGDEF farg[] = {{
         NULL
     },
     {
-        CLIARG_FLOAT,
+        CLIARG_FLOAT64,
         ".zprop",
         "propagation dist",
         "2.302606",
@@ -97,7 +97,7 @@ static CLICMDARGDEF farg[] = {{
         NULL
     },
     {
-        CLIARG_FLOAT,
+        CLIARG_FLOAT64,
         ".krad",
         "kernel radius",
         "3.0",
@@ -106,7 +106,7 @@ static CLICMDARGDEF farg[] = {{
         NULL
     },
     {
-        CLIARG_FLOAT,
+        CLIARG_FLOAT64,
         ".kstep",
         "kernel step",
         "0.5",
@@ -115,7 +115,7 @@ static CLICMDARGDEF farg[] = {{
         NULL
     },
     {
-        CLIARG_FLOAT,
+        CLIARG_FLOAT64,
         ".rlim",
         "clear aperture",
         "200.0",

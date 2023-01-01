@@ -272,10 +272,10 @@ INIT_MODULE_LIB(coronagraphs)
 
 static errno_t coronagraph_make_2Dprolate__cli()
 {
-    if(0 + CLI_checkarg(1, CLIARG_FLOAT) + CLI_checkarg(2, CLIARG_FLOAT) +
-            CLI_checkarg(3, CLIARG_FLOAT) +
+    if(0 + CLI_checkarg(1, CLIARG_FLOAT64) + CLI_checkarg(2, CLIARG_FLOAT64) +
+            CLI_checkarg(3, CLIARG_FLOAT64) +
             CLI_checkarg(4, CLIARG_STR_NOT_IMG) +
-            CLI_checkarg(5, CLIARG_LONG) ==
+            CLI_checkarg(5, CLIARG_INT64) ==
             0)
     {
         coronagraph_make_2Dprolate(data.cmdargtoken[1].val.numf,
@@ -296,10 +296,10 @@ static errno_t coronagraph_make_2Dprolate__cli()
 
 static errno_t coronagraph_make_2Dprolateld__cli()
 {
-    if(0 + CLI_checkarg(1, CLIARG_FLOAT) + CLI_checkarg(2, CLIARG_FLOAT) +
-            CLI_checkarg(3, CLIARG_FLOAT) +
+    if(0 + CLI_checkarg(1, CLIARG_FLOAT64) + CLI_checkarg(2, CLIARG_FLOAT64) +
+            CLI_checkarg(3, CLIARG_FLOAT64) +
             CLI_checkarg(4, CLIARG_STR_NOT_IMG) +
-            CLI_checkarg(5, CLIARG_LONG) ==
+            CLI_checkarg(5, CLIARG_INT64) ==
             0)
     {
         coronagraph_make_2Dprolateld(data.cmdargtoken[1].val.numf,
@@ -319,8 +319,8 @@ static errno_t coronagraph_make_2Dprolateld__cli()
 
 static errno_t coronagraph_update_2Dprolate__cli()
 {
-    if(0 + CLI_checkarg(1, CLIARG_FLOAT) + CLI_checkarg(2, CLIARG_FLOAT) +
-            CLI_checkarg(3, CLIARG_FLOAT) + CLI_checkarg(4, CLIARG_FLOAT) ==
+    if(0 + CLI_checkarg(1, CLIARG_FLOAT64) + CLI_checkarg(2, CLIARG_FLOAT64) +
+            CLI_checkarg(3, CLIARG_FLOAT64) + CLI_checkarg(4, CLIARG_FLOAT64) ==
             0)
     {
         coronagraph_update_2Dprolate(data.cmdargtoken[1].val.numf,
@@ -338,9 +338,9 @@ static errno_t coronagraph_update_2Dprolate__cli()
 
 static errno_t coronagraph_simulPSF__cli()
 {
-    if(0 + CLI_checkarg(1, CLIARG_FLOAT) + CLI_checkarg(2, CLIARG_FLOAT) +
+    if(0 + CLI_checkarg(1, CLIARG_FLOAT64) + CLI_checkarg(2, CLIARG_FLOAT64) +
             CLI_checkarg(3, CLIARG_STR_NOT_IMG) +
-            CLI_checkarg(4, CLIARG_LONG) ==
+            CLI_checkarg(4, CLIARG_INT64) ==
             0)
     {
         coronagraph_simulPSF(data.cmdargtoken[1].val.numf,
@@ -359,7 +359,7 @@ static errno_t coronagraph_simulPSF__cli()
 
 static errno_t CORONAGRAPHS_scanPIAACMC_centObs_perf__cli()
 {
-    if(0 + CLI_checkarg(1, CLIARG_FLOAT) == 0)
+    if(0 + CLI_checkarg(1, CLIARG_FLOAT64) == 0)
     {
         CORONAGRAPHS_scanPIAACMC_centObs_perf(data.cmdargtoken[1].val.numf);
 

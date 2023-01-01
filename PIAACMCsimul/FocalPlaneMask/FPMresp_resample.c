@@ -40,7 +40,7 @@ static CLICMDARGDEF farg[] = {{
         NULL
     },
     {
-        CLIARG_LONG,
+        CLIARG_INT64,
         ".NBlambda",
         "",
         "10",
@@ -49,7 +49,7 @@ static CLICMDARGDEF farg[] = {{
         NULL
     },
     {
-        CLIARG_LONG,
+        CLIARG_INT64,
         ".PTstep",
         "EvalPts step",
         "2",

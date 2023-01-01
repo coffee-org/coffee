@@ -217,8 +217,8 @@ static errno_t AOsystSim_coroLOWFS__cli()
 
 static errno_t AOsystSim_run__cli()
 {
-    if(0 + CLI_checkarg(1, CLIARG_LONG) + CLI_checkarg(2, CLIARG_LONG) +
-            CLI_checkarg(3, CLIARG_LONG) ==
+    if(0 + CLI_checkarg(1, CLIARG_INT64) + CLI_checkarg(2, CLIARG_INT64) +
+            CLI_checkarg(3, CLIARG_INT64) ==
             0)
     {
         AOsystSim_run(data.cmdargtoken[1].val.numl,
@@ -236,10 +236,10 @@ static errno_t AOsystSim_run__cli()
 static errno_t AOsystSim_FPWFS_mkprobes__cli()
 {
     if(0 + CLI_checkarg(1, CLIARG_STR_NOT_IMG) +
-            CLI_checkarg(2, CLIARG_STR_NOT_IMG) + CLI_checkarg(3, CLIARG_LONG) +
-            CLI_checkarg(4, CLIARG_LONG) + CLI_checkarg(5, CLIARG_FLOAT) +
-            CLI_checkarg(6, CLIARG_FLOAT) + CLI_checkarg(7, CLIARG_FLOAT) +
-            CLI_checkarg(8, CLIARG_FLOAT) + CLI_checkarg(9, CLIARG_LONG) ==
+            CLI_checkarg(2, CLIARG_STR_NOT_IMG) + CLI_checkarg(3, CLIARG_INT64) +
+            CLI_checkarg(4, CLIARG_INT64) + CLI_checkarg(5, CLIARG_FLOAT64) +
+            CLI_checkarg(6, CLIARG_FLOAT64) + CLI_checkarg(7, CLIARG_FLOAT64) +
+            CLI_checkarg(8, CLIARG_FLOAT64) + CLI_checkarg(9, CLIARG_INT64) ==
             0)
     {
         AOsystSim_FPWFS_mkprobes(data.cmdargtoken[1].val.string,
@@ -262,8 +262,8 @@ static errno_t AOsystSim_FPWFS_mkprobes__cli()
 
 static errno_t AOsystSim_FPWFS_sensitivityAnalysis__cli()
 {
-    if(0 + CLI_checkarg(1, CLIARG_LONG) + CLI_checkarg(2, CLIARG_LONG) +
-            CLI_checkarg(3, CLIARG_LONG) + CLI_checkarg(4, CLIARG_LONG) ==
+    if(0 + CLI_checkarg(1, CLIARG_INT64) + CLI_checkarg(2, CLIARG_INT64) +
+            CLI_checkarg(3, CLIARG_INT64) + CLI_checkarg(4, CLIARG_INT64) ==
             0)
     {
         AOsystSim_FPWFS_sensitivityAnalysis(data.cmdargtoken[1].val.numl,

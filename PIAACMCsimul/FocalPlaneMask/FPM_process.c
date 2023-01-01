@@ -39,7 +39,7 @@ static CLICMDARGDEF farg[] = {{
         NULL
     },
     {
-        CLIARG_LONG,
+        CLIARG_INT64,
         ".NBexp",
         "number of exposures",
         "4",

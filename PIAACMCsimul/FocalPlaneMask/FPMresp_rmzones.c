@@ -39,7 +39,7 @@ static CLICMDARGDEF farg[] = {{
         NULL
     },
     {
-        CLIARG_LONG,
+        CLIARG_INT64,
         ".NBzrm",
         "NBzone removed",
         "125",
