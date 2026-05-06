@@ -117,8 +117,12 @@ set(LINKLIBS
 
 project(lib_${LIBNAME}_project)
 
+find_package(GSL REQUIRED)
+list(APPEND LINKLIBS ${GSL_LIBRARIES})
+
 include_directories ("${PROJECT_SOURCE_DIR}/src")
 include_directories ("${PROJECT_SOURCE_DIR}/..")
+include_directories (${GSL_INCLUDE_DIRS})
 
 
 # Library can be compiled from multiple source files

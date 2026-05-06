@@ -41,7 +41,8 @@ PIAACMCSIMUL_PARAMS piaacmcparams;
 OPTPIAACMCDESIGN    piaacmcopticaldesign;
 OPTSYST             piaacmcopticalsystem;
 
-INIT_MODULE_LIB(coffee_PIAACMCsimul)
+MODULE_DEPS("milkinfo", "milkOpticsMaterials", "milklinoptimtools", "milkimagebasic", "milkimagefilter", "milkWFpropagate");
+INIT_MODULE_LIB_DEPS(coffee_PIAACMCsimul)
 
 /** @name MODULE INITIALIZATION
  * Registers CLI commands

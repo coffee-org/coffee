@@ -264,7 +264,8 @@ static double APLCapo_FPMRAD_STEP  = 0.001;
 // Module initialization macro in CLIcore.h
 // macro argument defines module name for bindings
 //
-INIT_MODULE_LIB(coronagraphs)
+MODULE_DEPS("milkimagegen", "milkfft", "milkimagebasic", "milkWFpropagate");
+INIT_MODULE_LIB_DEPS(coronagraphs)
 
 /* ================================================================== */
 /* ================================================================== */
