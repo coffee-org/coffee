@@ -108,6 +108,7 @@ set(LINKLIBS
     milklinoptimtools
     milkimagebasic
     milkimagefilter
+    milkWFpropagate
 )
 
 # DEFAULT SETTINGS

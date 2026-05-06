@@ -21,6 +21,7 @@ set(LINKLIBS
 	milkimagegen
 	milkfft
 	milkimagebasic
+	milkWFpropagate
 )
 
 
