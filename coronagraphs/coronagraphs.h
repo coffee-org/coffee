@@ -8,7 +8,7 @@
 void __attribute__((constructor)) libinit_coronagraphs();
 
 /** @brief Initialize command line interface. */
-int_fast8_t init_coronagraphs();
+errno_t init_coronagraphs();
 
 errno_t coronagraph_make_2Dprolate(double      masksizepix,
                                    double      beamradpix,

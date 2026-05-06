@@ -11,7 +11,8 @@
 #include <stdio.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 //   core modules
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -329,7 +330,7 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
                 if(piaacmcopticaldesign.IDLyotStop[i] != -1)
                 {
                     save_fits(
-                        data.image[piaacmcopticaldesign.IDLyotStop[i]].name,
+                        data.core.image[piaacmcopticaldesign.IDLyotStop[i]].name,
                         fname);
                 }
                 fprintf(fp,
@@ -358,7 +359,7 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
         if(piaacmcopticaldesign.piaa0CmodesID != -1)
         {
             FUNC_CHECK_RETURN(
-                save_fits(data.image[piaacmcopticaldesign.piaa0CmodesID].name,
+                save_fits(data.core.image[piaacmcopticaldesign.piaa0CmodesID].name,
                           fname));
         }
     }
@@ -369,7 +370,7 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
         if(piaacmcopticaldesign.piaa0FmodesID != -1)
         {
             FUNC_CHECK_RETURN(
-                save_fits(data.image[piaacmcopticaldesign.piaa0FmodesID].name,
+                save_fits(data.core.image[piaacmcopticaldesign.piaa0FmodesID].name,
                           fname));
         }
     }
@@ -380,7 +381,7 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
         if(piaacmcopticaldesign.piaa1CmodesID != -1)
         {
             FUNC_CHECK_RETURN(
-                save_fits(data.image[piaacmcopticaldesign.piaa1CmodesID].name,
+                save_fits(data.core.image[piaacmcopticaldesign.piaa1CmodesID].name,
                           fname));
         }
     }
@@ -391,7 +392,7 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
         if(piaacmcopticaldesign.piaa1FmodesID != -1)
         {
             FUNC_CHECK_RETURN(
-                save_fits(data.image[piaacmcopticaldesign.piaa1FmodesID].name,
+                save_fits(data.core.image[piaacmcopticaldesign.piaa1FmodesID].name,
                           fname));
         }
     }
@@ -407,7 +408,7 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
         if(piaacmcopticaldesign.zonezID != -1)
         {
             FUNC_CHECK_RETURN(
-                save_fits(data.image[piaacmcopticaldesign.zonezID].name,
+                save_fits(data.core.image[piaacmcopticaldesign.zonezID].name,
                           fname));
         }
     }
@@ -421,34 +422,34 @@ errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname)
         if(piaacmcopticaldesign.zoneaID != -1)
         {
             FUNC_CHECK_RETURN(
-                save_fits(data.image[piaacmcopticaldesign.zoneaID].name,
+                save_fits(data.core.image[piaacmcopticaldesign.zoneaID].name,
                           fname));
         }
     }
 
     imageID IDfpmzmap1;
-    IDfpmzmap1 = image_ID("fpmzmap1");
+    IDfpmzmap1 = image_ID("fpmzmap1", data.core.image, data.core.NB_MAX_IMAGE);
     if(IDfpmzmap1 == -1)
     {
         printf("Creating fpmzmap1 ...\n");
         fflush(stdout);
 
-        FUNC_CHECK_RETURN(mkFPM_zonemap("fpmzmap1", &IDfpmzmap1););
-        uint32_t xsize  = data.image[IDfpmzmap1].md[0].size[0];
-        uint32_t ysize  = data.image[IDfpmzmap1].md[0].size[1];
+        FUNC_CHECK_RETURN(mkFPM_zonemap("fpmzmap1", &IDfpmzmap1));
+        uint32_t xsize  = data.core.image[IDfpmzmap1].md[0].size[0];
+        uint32_t ysize  = data.core.image[IDfpmzmap1].md[0].size[1];
         uint64_t xysize = xsize;
         xysize *= ysize;
 
         for(uint64_t ii = 0; ii < xysize; ii++)
         {
-            data.image[IDfpmzmap1].array.UI16[ii] -= 1;
+            data.core.image[IDfpmzmap1].array.UI16[ii] -= 1;
         }
     }
     //list_image_ID();
-    //printf("data.image[piaacmcopticaldesign.zonezID].name = %s\n", data.image[piaacmcopticaldesign.zonezID].name);
+    //printf("data.core.image[piaacmcopticaldesign.zonezID].name = %s\n", data.core.image[piaacmcopticaldesign.zonezID].name);
 
     image_basic_indexmap("fpmzmap1",
-                         data.image[piaacmcopticaldesign.zonezID].name,
+                         data.core.image[piaacmcopticaldesign.zonezID].name,
                          "fpmsagmapHR");
 
     {

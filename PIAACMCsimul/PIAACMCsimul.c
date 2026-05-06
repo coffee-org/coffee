@@ -10,7 +10,8 @@
 #define MODULE_SHORTNAME_DEFAULT "coffeepiaacmcsim"
 #define MODULE_DESCRIPTION       "PIAACMC simulation"
 
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "OptSystProp/OptSystProp.h"
 #include "PIAACMCsimul.h"

@@ -11,7 +11,8 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -165,11 +166,11 @@ errno_t PIAACMCsimul_geomProp(const char *__restrict__ IDin_name,
 {
     DEBUG_TRACE_FSTART();
 
-    imageID  IDin  = image_ID(IDin_name);
-    uint32_t xsize = data.image[IDin].md[0].size[0];
-    uint32_t ysize = data.image[IDin].md[0].size[1];
+    imageID  IDin  = image_ID(IDin_name, data.core.image, data.core.NB_MAX_IMAGE);
+    uint32_t xsize = data.core.image[IDin].md[0].size[0];
+    uint32_t ysize = data.core.image[IDin].md[0].size[1];
 
-    imageID IDsag = image_ID(IDsag_name);
+    imageID IDsag = image_ID(IDsag_name, data.core.image, data.core.NB_MAX_IMAGE);
 
     imageID IDout;
     FUNC_CHECK_RETURN(create_2Dimage_ID(IDout_name, xsize, ysize, &IDout));
@@ -240,11 +241,11 @@ errno_t PIAACMCsimul_geomProp(const char *__restrict__ IDin_name,
                     }
                     float coeff = 0.5 + 0.5 * cos(dr * M_PI);
 
-                    sumv += coeff * data.image[IDsag].array.F[jj * xsize + ii];
+                    sumv += coeff * data.core.image[IDsag].array.F[jj * xsize + ii];
                     sumvx +=
-                        coeff * dx * data.image[IDsag].array.F[jj * xsize + ii];
+                        coeff * dx * data.core.image[IDsag].array.F[jj * xsize + ii];
                     sumvy +=
-                        coeff * dy * data.image[IDsag].array.F[jj * xsize + ii];
+                        coeff * dy * data.core.image[IDsag].array.F[jj * xsize + ii];
                     sumvx0 += coeff * dx;
                     sumvy0 += coeff * dy;
                     sumc += coeff;
@@ -265,18 +266,18 @@ errno_t PIAACMCsimul_geomProp(const char *__restrict__ IDin_name,
 
             if((ii1 > 0) && (ii1 < xsize) && (jj1 > 0) && (jj1 < ysize))
             {
-                data.image[IDout].array.F[jj1 * xsize + ii1] +=
-                    data.image[IDin].array.F[jj0 * xsize + ii0];
-                data.image[IDoutcnt].array.F[jj1 * xsize + ii1] += 1.0;
+                data.core.image[IDout].array.F[jj1 * xsize + ii1] +=
+                    data.core.image[IDin].array.F[jj0 * xsize + ii0];
+                data.core.image[IDoutcnt].array.F[jj1 * xsize + ii1] += 1.0;
             }
         }
 
     for(uint32_t ii1 = 0; ii1 < xsize; ii1++)
         for(uint32_t jj1 = 0; jj1 < ysize; jj1++)
         {
-            if(data.image[IDoutcnt].array.F[jj1 * xsize + ii1] > 0.1)
-                data.image[IDout].array.F[jj1 * xsize + ii1] /=
-                    data.image[IDoutcnt].array.F[jj1 * xsize + ii1];
+            if(data.core.image[IDoutcnt].array.F[jj1 * xsize + ii1] > 0.1)
+                data.core.image[IDout].array.F[jj1 * xsize + ii1] /=
+                    data.core.image[IDoutcnt].array.F[jj1 * xsize + ii1];
         }
 
     if(outID != NULL)

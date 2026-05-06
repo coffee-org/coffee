@@ -1,9 +1,7 @@
 #ifndef _OPTSYSTPROP_H
 #define _OPTSYSTPROP_H
 
-#ifndef __STDC_LIB_EXT1__
-typedef int errno_t;
-#endif
+#include "milkDebugTools.h"
 
 // ************************************************************************
 // ------------------- DEFINITION OF OPTICAL ELEMENTS ---------------------

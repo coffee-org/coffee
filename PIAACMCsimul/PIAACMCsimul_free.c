@@ -10,7 +10,7 @@
  */
 
 // System includes
-#include <malloc.h>
+#include <stdlib.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>

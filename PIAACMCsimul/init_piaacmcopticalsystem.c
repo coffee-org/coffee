@@ -11,7 +11,8 @@
 #include <stdio.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -112,9 +113,9 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
     				y = (1.0*jj-0.5*size)/beamradpix;
     				r = sqrt(x*x+y*y);
     				if(r<1.1)
-    					data.image[ID_DFTmask00].array.F[jj*size+ii] = 1.0;
+    					data.core.image[ID_DFTmask00].array.F[jj*size+ii] = 1.0;
     				else
-    					data.image[ID_DFTmask00].array.F[jj*size+ii] = 0.0;
+    					data.core.image[ID_DFTmask00].array.F[jj*size+ii] = 0.0;
     			}
     */
 
@@ -132,7 +133,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
         if((IDv = variable_ID("PIAACMC_dftgrid")) != -1)
         {
             piaacmcopticalsystem.DFTgridpad =
-                (long)(data.variable[IDv].value.f + 0.001);
+                (long)(data.core.variable[IDv].value.f + 0.001);
         }
     }
 
@@ -163,16 +164,16 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
         load_fits(fname_pupa0, "pupa0", LOADFITS_ERRMODE_ERROR, NULL);
     }
 
-    imageID IDa = image_ID("pupa0");
+    imageID IDa = image_ID("pupa0", data.core.image, data.core.NB_MAX_IMAGE);
     if(IDa ==
             -1) // if pupil does not exist, use circular one (this occurs in initial design steps)
     {
         printf("CREATING INPUT PUPIL\n");
         create_3Dimage_ID("pupa0", size, size, nblambda, &IDa);
 
-        imageID IDr = image_ID("rcoord");
+        imageID IDr = image_ID("rcoord", data.core.image, data.core.NB_MAX_IMAGE);
 
-        imageID ID = image_ID("telpup");
+        imageID ID = image_ID("telpup", data.core.image, data.core.NB_MAX_IMAGE);
         if(ID == -1)
             if(file_exists("telpup.fits") == 1)
             {
@@ -184,15 +185,15 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
             for(long k = 0; k < nblambda; k++)
                 for(uint64_t ii = 0; ii < size2; ii++)
                 {
-                    if((data.image[IDr].array.F[ii] >
+                    if((data.core.image[IDr].array.F[ii] >
                             piaacmcopticaldesign.centObs0) &&
-                            (data.image[IDr].array.F[ii] < 1.0))
+                            (data.core.image[IDr].array.F[ii] < 1.0))
                     {
-                        data.image[IDa].array.F[k * size2 + ii] = 1.0;
+                        data.core.image[IDa].array.F[k * size2 + ii] = 1.0;
                     }
                     else
                     {
-                        data.image[IDa].array.F[k * size2 + ii] = 0.0;
+                        data.core.image[IDa].array.F[k * size2 + ii] = 0.0;
                     }
                 }
         }
@@ -200,13 +201,13 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
             for(long k = 0; k < nblambda; k++)
                 for(uint64_t ii = 0; ii < size2; ii++)
                 {
-                    if(data.image[ID].array.F[ii] > 0.5)
+                    if(data.core.image[ID].array.F[ii] > 0.5)
                     {
-                        data.image[IDa].array.F[k * size2 + ii] = 1.0;
+                        data.core.image[IDa].array.F[k * size2 + ii] = 1.0;
                     }
                     else
                     {
-                        data.image[IDa].array.F[k * size2 + ii] = 0.0;
+                        data.core.image[IDa].array.F[k * size2 + ii] = 0.0;
                     }
                 }
 
@@ -237,22 +238,22 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
                 double y = (1.0 * jj - 0.5 * size) / beamradpix;
 
                 // set the mirror shape as a linear tilt of pixel position reflecting the tilt
-                data.image[ID].array.F[jj * size + ii] =
+                data.core.image[ID].array.F[jj * size + ii] =
                     0.25 * (TTxld * x + TTyld * y) *
                     (piaacmcparams.LAMBDAEND + piaacmcparams.LAMBDASTART) *
                     0.5; // xld -> half-OPD
             }
 
         // add OPD error on TTM if it exists
-        imageID IDopderr = image_ID("opderr");
+        imageID IDopderr = image_ID("opderr", data.core.image, data.core.NB_MAX_IMAGE);
         if(IDopderr != -1)
         {
             for(uint32_t ii = 0; ii < size; ii++)
                 for(uint32_t jj = 0; jj < size; jj++)
                 {
                     // add the error shape to the mirror shape
-                    data.image[ID].array.F[jj * size + ii] +=
-                        data.image[IDopderr].array.F[jj * size + ii] * 0.5;
+                    data.core.image[ID].array.F[jj * size + ii] +=
+                        data.core.image[IDopderr].array.F[jj * size + ii] * 0.5;
                 }
         }
 
@@ -303,7 +304,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
     // ------------------- [OPTIONAL] pre-apodizer  -----------------------
     // typically not present for PIAACMC
     {
-        imageID ID = image_ID("prePIAA0mask");
+        imageID ID = image_ID("prePIAA0mask", data.core.image, data.core.NB_MAX_IMAGE);
         if(ID == -1)
         {
             FUNC_CHECK_RETURN(load_fits("prePIAA0mask.fits",
@@ -336,7 +337,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
     {
         // shape/sag for the first aspheric mirror
         imageID IDpiaam0z =
-            image_ID("piaam0z"); // nominal sag (mirror equivalent)
+            image_ID("piaam0z", data.core.image, data.core.NB_MAX_IMAGE); // nominal sag (mirror equivalent)
 
         // ------------------- elem 2:  PIAA M/L 0  -----------------------
         // (M/L is "mirror or lens" )
@@ -376,7 +377,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
             DEBUG_TRACEPOINT("Element %ld is lens", elem);
             piaacmcopticalsystem
             .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
-            .surfID = image_ID("piaar0zsag");
+            .surfID = image_ID("piaar0zsag", data.core.image, data.core.NB_MAX_IMAGE);
 
             if(piaacmcopticalsystem
                     .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
@@ -430,7 +431,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
     if(piaacmcopticaldesign.PIAAmode == 1)
     {
         // shape/sag for the second aspheric mirror
-        imageID IDpiaam1z = image_ID("piaam1z");
+        imageID IDpiaam1z = image_ID("piaam1z", data.core.image, data.core.NB_MAX_IMAGE);
 
         // add one more mirror and mask
         // ------------------- elem 3: reflective PIAA M1  -----------------------
@@ -462,7 +463,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
             DEBUG_TRACEPOINT("Element %ld is lens", elem);
             piaacmcopticalsystem
             .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
-            .surfID = image_ID("piaar1zsag");
+            .surfID = image_ID("piaar1zsag", data.core.image, data.core.NB_MAX_IMAGE);
 
             if(piaacmcopticalsystem
                     .ASPHSURFRarray[piaacmcopticalsystem.elemarrayindex[elem]]
@@ -525,7 +526,7 @@ errno_t init_piaacmcopticalsystem(double TTxld, double TTyld)
             variableID IDv;
             if((IDv = variable_ID("PIAACMC_SAVE_fpm")) != -1)
             {
-                savefpm = (int)(data.variable[IDv].value.f + 0.001);
+                savefpm = (int)(data.core.variable[IDv].value.f + 0.001);
             }
         }
 

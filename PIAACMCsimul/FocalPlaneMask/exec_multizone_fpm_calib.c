@@ -12,7 +12,8 @@
 #include <string.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -57,15 +58,15 @@ errno_t exec_multizone_fpm_calib()
 
         if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
         {
-            centobs0 = data.variable[IDv].value.f;
+            centobs0 = data.core.variable[IDv].value.f;
         }
         if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
         {
-            centobs1 = data.variable[IDv].value.f;
+            centobs1 = data.core.variable[IDv].value.f;
         }
         if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
         {
-            fpmradld = data.variable[IDv].value.f;
+            fpmradld = data.core.variable[IDv].value.f;
             printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
         }
     }
@@ -138,7 +139,7 @@ errno_t exec_multizone_fpm_calib()
                     -1) // multi threaded
             {
                 piaacmcparams.PIAACMC_FPMresp_mp =
-                    (long) data.variable[IDv].value.f + 0.01;
+                    (long) data.core.variable[IDv].value.f + 0.01;
             }
         }
         printf("PIAACMC_FPMresp_mp = %ld\n", piaacmcparams.PIAACMC_FPMresp_mp);
@@ -158,7 +159,7 @@ errno_t exec_multizone_fpm_calib()
                     -1) // multi threaded
             {
                 piaacmcparams.PIAACMC_FPMresp_thread =
-                    (long) data.variable[IDv].value.f + 0.01;
+                    (long) data.core.variable[IDv].value.f + 0.01;
             }
         }
         printf("PIAACMC_FPMresp_thread = %ld\n",
@@ -327,7 +328,7 @@ errno_t exec_multizone_fpm_calib()
             // Later, we will subtract off the actual zone contributions, which will leave only
             // the light that misses the FPM.
             piaacmcparams.focmMode =
-                data.image[piaacmcopticaldesign.zonezID].md[0].size[0] +
+                data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0] +
                 10; // response for no focal plane mask
             piaacmcopticalsystem.FOCMASKarray[0].mode = 1;
             // use 1-fpm computation in optical propagation
@@ -348,7 +349,7 @@ errno_t exec_multizone_fpm_calib()
 
             imageID IDfpmresp;
             {
-                imageID IDimvect = image_ID("imvect");
+                imageID IDimvect = image_ID("imvect", data.core.image, data.core.NB_MAX_IMAGE);
                 // FPMresp geometry:
                 // first dimension (size[0]) is twice the number of evaluation points in the focal plane, giving Re and Im
                 //      of the field at that evaluation point
@@ -357,8 +358,8 @@ errno_t exec_multizone_fpm_calib()
                 // WARNING: FPMresp size[1] is nbzones+1, as first vector stored is the response for light outside the mask
                 // third dimension (size[2]) is wavelength
 
-                // axis 0: eval pts (ii) - size = data.image[ID].md[0].size[0]
-                // axis 1: zones (mz) - size = data.image[piaacmcopticaldesign.zonezID].md[0].size[0]+1
+                // axis 0: eval pts (ii) - size = data.core.image[ID].md[0].size[0]
+                // axis 1: zones (mz) - size = data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0]+1
                 // axis 3: lambda (k) - size = piaacmcopticaldesign.nblambda
 
                 // allocate the combined FPMresp 3D array
@@ -366,7 +367,7 @@ errno_t exec_multizone_fpm_calib()
                 // evaluation set as a 1D vector (0th index) per wavelength
                 FUNC_CHECK_RETURN(create_3Dimage_ID_double(
                                       "FPMresp",
-                                      data.image[IDimvect].md[0].size[0],
+                                      data.core.image[IDimvect].md[0].size[0],
                                       piaacmcopticaldesign.focmNBzone + 1,
                                       piaacmcopticaldesign.nblambda,
                                       &IDfpmresp));
@@ -376,20 +377,20 @@ errno_t exec_multizone_fpm_calib()
                         k++) // loop over wavelengths
                 {
                     for(uint32_t ii = 0;
-                            ii < data.image[IDimvect].md[0].size[0];
+                            ii < data.core.image[IDimvect].md[0].size[0];
                             ii++)
                     {
                         // loop over evaluation points
                         // set the 0th zone to be the light from the above on-axis PSF computation with a
                         // black FPM on the evaluation pixels in "imvect"
 
-                        data.image[IDfpmresp]
+                        data.core.image[IDfpmresp]
                         .array.D[k * (piaacmcopticaldesign.focmNBzone + 1) *
-                                   data.image[IDimvect].md[0].size[0] +
+                                   data.core.image[IDimvect].md[0].size[0] +
                                    ii] =
-                                     data.image[IDimvect]
+                                     data.core.image[IDimvect]
                                      .array
-                                     .F[k * data.image[IDimvect].md[0].size[0] + ii];
+                                     .F[k * data.core.image[IDimvect].md[0].size[0] + ii];
                     }
                 }
             }
@@ -403,7 +404,7 @@ errno_t exec_multizone_fpm_calib()
                     variableID IDv;
                     if((IDv = variable_ID("PID")) != -1)
                     {
-                        index = (long) data.variable[IDv].value.f + 0.01;
+                        index = (long) data.core.variable[IDv].value.f + 0.01;
                     }
                 }
                 // this file is looked for in the bash script, which waits for this
@@ -495,8 +496,8 @@ errno_t exec_multizone_fpm_calib()
                          printf("piaacmcopticaldesign.NBrings =                             %ld\n", piaacmcopticaldesign.NBrings);
                          printf("piaacmcopticaldesign.focmNBzone =                          %ld\n", piaacmcopticaldesign.focmNBzone);
                          printf("piaacmcopticaldesign.nblambda =                            %d\n", piaacmcopticaldesign.nblambda);
-                         printf("data.image[ID].md[0].size[0] =                   %ld\n", data.image[ID].md[0].size[0]);
-                         printf("data.image[piaacmcopticaldesign.zonezID].md[0].size[0] =   %ld\n", data.image[piaacmcopticaldesign.zonezID].md[0].size[0]);
+                         printf("data.core.image[ID].md[0].size[0] =                   %ld\n", data.core.image[ID].md[0].size[0]);
+                         printf("data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0] =   %ld\n", data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0]);
                          fflush(stdout);
                          sleep(100);
                     */
@@ -523,7 +524,7 @@ errno_t exec_multizone_fpm_calib()
                         {
                             // for each wavelenth
                             for(uint32_t ii = 0;
-                                    ii < data.image[ID_FPMresp].md[0].size[0];
+                                    ii < data.core.image[ID_FPMresp].md[0].size[0];
                                     ii++)
                             {
                                 // for each evaluation point
@@ -531,30 +532,30 @@ errno_t exec_multizone_fpm_calib()
                                 // tmpl1 = k*(nzones+1)*nEvaluationPoints) + zoneIndex*nEvaluationPoints + evaluationPoint
                                 long tmpl1 =
                                     k *
-                                    (data.image[piaacmcopticaldesign
+                                    (data.core.image[piaacmcopticaldesign
                                                 .zonezID]
                                      .md[0]
                                      .size[0] +
                                      1) *
-                                    data.image[ID_FPMresp].md[0].size[0] +
-                                    mz * data.image[ID_FPMresp].md[0].size[0] +
+                                    data.core.image[ID_FPMresp].md[0].size[0] +
+                                    mz * data.core.image[ID_FPMresp].md[0].size[0] +
                                     ii;
 
                                 // set the combined array value from the partial file (both are same shape and size, of course)
-                                data.image[IDfpmresp].array.D[tmpl1] =
-                                    data.image[ID1].array.D[tmpl1];
+                                data.core.image[IDfpmresp].array.D[tmpl1] =
+                                    data.core.image[ID1].array.D[tmpl1];
 
                                 // subtract the current zone value from the first zone line, which contained all light
                                 // (with no mask).  Eventually this will contain only light that misses the FPM.
-                                data.image[IDfpmresp].array.D
+                                data.core.image[IDfpmresp].array.D
                                 [k *
-                                   (data.image[piaacmcopticaldesign
+                                   (data.core.image[piaacmcopticaldesign
                                              .zonezID]
                                   .md[0]
                                   .size[0] +
                                   1) *
-                                   data.image[ID_FPMresp].md[0].size[0] +
-                                 ii] -= data.image[ID1].array.D[tmpl1];
+                                   data.core.image[ID_FPMresp].md[0].size[0] +
+                                 ii] -= data.core.image[ID1].array.D[tmpl1];
                             }
                         }
                     }
@@ -650,13 +651,13 @@ errno_t exec_multizone_fpm_calib()
                         "     %d\n",
                         piaacmcopticaldesign.nblambda);
                     printf(
-                        "data.image[ID].md[0].size[0] =                   "
+                        "data.core.image[ID].md[0].size[0] =                   "
                         "%ld\n",
-                        (long) data.image[ID_FPMresp].md[0].size[0]);
+                        (long) data.core.image[ID_FPMresp].md[0].size[0]);
                     printf(
-                        "data.image[piaacmcopticaldesign.zonezID].md[0].size[0]"
+                        "data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0]"
                         " =   %ld\n",
-                        (long) data.image[piaacmcopticaldesign.zonezID]
+                        (long) data.core.image[piaacmcopticaldesign.zonezID]
                         .md[0]
                         .size[0]);
                     fflush(stdout);
@@ -675,31 +676,31 @@ errno_t exec_multizone_fpm_calib()
 
                     // The PSF result for the evaluation points is put in array "imvect" which previously was
                     // assigned to another PSF result.
-                    // Should put another ID = image_ID("imvect") here *************************************
+                    // Should put another ID = image_ID("imvect", data.core.image, data.core.NB_MAX_IMAGE) here *************************************
 
                     // set the response of this zone from the PSF result
                     for(int k = 0; k < piaacmcopticaldesign.nblambda; k++)
                     {
                         // loop over wavelength
                         for(uint32_t ii = 0;
-                                ii < data.image[ID_FPMresp].md[0].size[0];
+                                ii < data.core.image[ID_FPMresp].md[0].size[0];
                                 ii++)
                         {
                             // loop over evaluation points
                             // see previous example for explanation of indexing
                             // save response, which is just the value of the on-axis PSF at each evaluation point
-                            data.image[IDfpmresp]
+                            data.core.image[IDfpmresp]
                             .array
                             .D[k *
-                                 (data.image[piaacmcopticaldesign.zonezID]
+                                 (data.core.image[piaacmcopticaldesign.zonezID]
                                 .md[0]
                                 .size[0] +
                                 1) *
-                                 data.image[ID_FPMresp].md[0].size[0] +
-                                 mz * data.image[ID_FPMresp].md[0].size[0] +
+                                 data.core.image[ID_FPMresp].md[0].size[0] +
+                                 mz * data.core.image[ID_FPMresp].md[0].size[0] +
                                  ii] =
-                                   data.image[ID_FPMresp].array.F
-                                   [k * data.image[ID_FPMresp].md[0].size[0] +
+                                   data.core.image[ID_FPMresp].array.F
+                                   [k * data.core.image[ID_FPMresp].md[0].size[0] +
                                       ii];
 
                             if(piaacmcparams.PIAACMC_FPMresp_mp == 1)
@@ -708,17 +709,17 @@ errno_t exec_multizone_fpm_calib()
                                 // subtract the current zone value from the first zone line, which contained all light
                                 // (with no mask).  Eventually this will contain only light that misses the FPM.
 
-                                data.image[IDfpmresp].array.D
+                                data.core.image[IDfpmresp].array.D
                                 [k *
-                                   (data.image[piaacmcopticaldesign
+                                   (data.core.image[piaacmcopticaldesign
                                              .zonezID]
                                   .md[0]
                                   .size[0] +
                                   1) *
-                                   data.image[ID_FPMresp].md[0].size[0] +
+                                   data.core.image[ID_FPMresp].md[0].size[0] +
                                    ii] -=
-                                     data.image[ID_FPMresp]
-                                     .array.F[k * data.image[ID_FPMresp]
+                                     data.core.image[ID_FPMresp]
+                                     .array.F[k * data.core.image[ID_FPMresp]
                                                 .md[0]
                                                 .size[0] +
                                                 ii];
@@ -727,7 +728,7 @@ errno_t exec_multizone_fpm_calib()
                     }
 
                     printf("Saving FPMresp (ID = %ld) as \"%s\" ...",
-                           image_ID("FPMresp"),
+                           image_ID("FPMresp", data.core.image, data.core.NB_MAX_IMAGE),
                            fname1);
                     fflush(stdout);
                     // fname1 is the .tmp name
@@ -740,7 +741,7 @@ errno_t exec_multizone_fpm_calib()
 
                 // partial file complete!  move it to the final file name so parent can see it
                 printf("Saving FPMresp (ID = %ld) as \"%s\" ...",
-                       image_ID("FPMresp"),
+                       image_ID("FPMresp", data.core.image, data.core.NB_MAX_IMAGE),
                        fname2);
                 fflush(stdout);
                 // fname2 is the final name

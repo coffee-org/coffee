@@ -12,7 +12,8 @@
 #include <string.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -63,15 +64,15 @@ errno_t exec_optimize_lyot_stop_position()
     // load some more cli variables
     if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
     {
-        centobs0 = data.variable[IDv].value.f;
+        centobs0 = data.core.variable[IDv].value.f;
     }
     if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
     {
-        centobs1 = data.variable[IDv].value.f;
+        centobs1 = data.core.variable[IDv].value.f;
     }
     if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
-        fpmradld = data.variable[IDv].value.f;
+        fpmradld = data.core.variable[IDv].value.f;
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
@@ -100,7 +101,7 @@ errno_t exec_optimize_lyot_stop_position()
         variableID IDv;
         if((IDv = variable_ID("PIAACMC_lsoptrange")) != -1)
         {
-            range = data.variable[IDv].value.f; // from cli
+            range = data.core.variable[IDv].value.f; // from cli
         }
         else
         {

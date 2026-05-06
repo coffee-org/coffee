@@ -13,7 +13,8 @@
 #include <sys/time.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -100,40 +101,40 @@ static errno_t PIAACMCsimul_setparam_variables(const char *confindex, long mode)
     // PIAACMC design mask radius in l/D
     if((IDv = variable_ID("PIAACMC_MASKRADLD")) != -1)
     {
-        piaacmcparams.PIAACMC_MASKRADLD = data.variable[IDv].value.f;
+        piaacmcparams.PIAACMC_MASKRADLD = data.core.variable[IDv].value.f;
     }
 
     // sectors
     if((IDv = variable_ID("PIAACMC_FPMsectors")) != -1)
     {
         piaacmcparams.PIAACMC_FPMsectors =
-            (long) data.variable[IDv].value.f + 0.01;
+            (long) data.core.variable[IDv].value.f + 0.01;
     }
     printf("PIAACMC_FPMsectors = %d\n", piaacmcparams.PIAACMC_FPMsectors);
 
     if((IDv = variable_ID("SCORINGMASKTYPE")) != -1)
     {
         piaacmcparams.SCORINGMASKTYPE =
-            (long) data.variable[IDv].value.f + 0.01;
+            (long) data.core.variable[IDv].value.f + 0.01;
     }
     printf("SCORINGMASKTYPE = %d\n", piaacmcparams.SCORINGMASKTYPE);
 
     if((IDv = variable_ID("PIAACMC_save")) != -1)
     {
-        piaacmcparams.PIAACMC_save = (long) data.variable[IDv].value.f + 0.01;
+        piaacmcparams.PIAACMC_save = (long) data.core.variable[IDv].value.f + 0.01;
     }
     printf("PIAACMC_save = %d\n", piaacmcparams.PIAACMC_save);
 
     if((IDv = variable_ID("PIAACMC_resolved")) != -1)
     {
         piaacmcparams.computePSF_ResolvedTarget =
-            (long)(data.variable[IDv].value.f + 0.01);
+            (long)(data.core.variable[IDv].value.f + 0.01);
     }
 
     if((IDv = variable_ID("PIAACMC_extmode")) != -1)
     {
         piaacmcparams.computePSF_ResolvedTarget_mode =
-            (long)(data.variable[IDv].value.f + 0.01);
+            (long)(data.core.variable[IDv].value.f + 0.01);
     }
 
     printf("mode = %ld\n", mode);
@@ -149,15 +150,15 @@ static errno_t PIAACMCsimul_setparam_variables(const char *confindex, long mode)
     // load some more cli variables
     if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
     {
-        centobs0 = data.variable[IDv].value.f;
+        centobs0 = data.core.variable[IDv].value.f;
     }
     if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
     {
-        centobs1 = data.variable[IDv].value.f;
+        centobs1 = data.core.variable[IDv].value.f;
     }
     if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
-        fpmradld = data.variable[IDv].value.f;
+        fpmradld = data.core.variable[IDv].value.f;
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
@@ -165,7 +166,7 @@ static errno_t PIAACMCsimul_setparam_variables(const char *confindex, long mode)
     if((IDv = variable_ID("PIAACMC_fpmtype")) != -1)
     {
         piaacmcparams.PIAACMC_fpmtype =
-            (int)(data.variable[IDv].value.f + 0.1);
+            (int)(data.core.variable[IDv].value.f + 0.1);
     }
 
     {
@@ -325,11 +326,11 @@ errno_t PIAACMCsimul_run(
                     // copy the best solution to the current zoneID of array of sags
                     for(uint32_t k = 0;
                             k <
-                            data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+                            data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0];
                             k++)
                     {
-                        data.image[piaacmcopticaldesign.zonezID].array.D[k] =
-                            data.image[IDbestsol].array.D[k];
+                        data.core.image[piaacmcopticaldesign.zonezID].array.D[k] =
+                            data.core.image[IDbestsol].array.D[k];
                     }
                 }
                 else
@@ -342,10 +343,10 @@ errno_t PIAACMCsimul_run(
                     // zero out the current zoneID of array of sags
                     for(uint32_t k = 0;
                             k <
-                            data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+                            data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0];
                             k++)
                     {
-                        data.image[piaacmcopticaldesign.zonezID].array.D[k] =
+                        data.core.image[piaacmcopticaldesign.zonezID].array.D[k] =
                             0.0;
                     }
                 }
@@ -366,11 +367,11 @@ errno_t PIAACMCsimul_run(
                     zeroST = 3;
                     for(uint32_t k = 0;
                             k <
-                            data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+                            data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0];
                             k++)
                     {
-                        data.image[piaacmcopticaldesign.zonezID].array.D[k] =
-                            data.image[IDbestsol].array.D[k];
+                        data.core.image[piaacmcopticaldesign.zonezID].array.D[k] =
+                            data.core.image[IDbestsol].array.D[k];
                     }
                     piaacmcparams.MODampl = 0.0;
                 }
@@ -384,10 +385,10 @@ errno_t PIAACMCsimul_run(
                     // zero out the current zoneID of array of sags
                     for(uint32_t k = 0;
                             k <
-                            data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+                            data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0];
                             k++)
                     {
-                        data.image[piaacmcopticaldesign.zonezID].array.D[k] =
+                        data.core.image[piaacmcopticaldesign.zonezID].array.D[k] =
                             0.0;
                     }
                 }
@@ -398,7 +399,7 @@ errno_t PIAACMCsimul_run(
                 EXECUTE_SYSTEM_COMMAND(
                     "echo \"%g  %ld\" > sag0.txt",
                     sag0,
-                    (long) data.image[piaacmcopticaldesign.zonezID]
+                    (long) data.core.image[piaacmcopticaldesign.zonezID]
                     .md[0]
                     .size[0]);
 
@@ -407,27 +408,27 @@ errno_t PIAACMCsimul_run(
                 double prob1 = pow(ran1(), 8.0);
 
                 for(uint32_t k = 0;
-                        k < data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+                        k < data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0];
                         k++)
                 {
-                    if(data.image[piaacmcopticaldesign.zonezID].array.D[k] >
+                    if(data.core.image[piaacmcopticaldesign.zonezID].array.D[k] >
                             sag0 / 2.0)
                     {
                         cnt00++;
                         if(ran1() < prob1)
                         {
-                            data.image[piaacmcopticaldesign.zonezID]
+                            data.core.image[piaacmcopticaldesign.zonezID]
                             .array.D[k] -= sag0;
                             cnt0++;
                         }
                     }
-                    if(data.image[piaacmcopticaldesign.zonezID].array.D[k] <
+                    if(data.core.image[piaacmcopticaldesign.zonezID].array.D[k] <
                             -sag0 / 2.0)
                     {
                         cnt00++;
                         if(ran1() < prob1)
                         {
-                            data.image[piaacmcopticaldesign.zonezID]
+                            data.core.image[piaacmcopticaldesign.zonezID]
                             .array.D[k] += sag0;
                             cnt0++;
                         }
@@ -446,18 +447,18 @@ errno_t PIAACMCsimul_run(
                             "#    %5ld    %5ld    %5ld\n",
                             cnt0,
                             cnt00,
-                            (long) data.image[piaacmcopticaldesign.zonezID]
+                            (long) data.core.image[piaacmcopticaldesign.zonezID]
                             .md[0]
                             .size[0]);
                     for(uint32_t k = 0;
                             k <
-                            data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+                            data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0];
                             k++)
                     {
                         fprintf(fp,
                                 "%5ld %9.6f\n",
                                 (long) k,
-                                data.image[piaacmcopticaldesign.zonezID]
+                                data.core.image[piaacmcopticaldesign.zonezID]
                                 .array.D[k] *
                                 1.0e6);
                     }
@@ -593,11 +594,11 @@ errno_t PIAACMCsimul_run(
                                   &IDbestsoltmp);
 
                         for(uint32_t k = 0;
-                                k < data.image[IDbestsol].md[0].size[0];
+                                k < data.core.image[IDbestsol].md[0].size[0];
                                 k++)
                         {
-                            data.image[IDbestsol].array.D[k] =
-                                data.image[IDbestsoltmp].array.D[k];
+                            data.core.image[IDbestsol].array.D[k] =
+                                data.core.image[IDbestsoltmp].array.D[k];
                         }
 
                         delete_image_ID("fpmbestsoltmp",

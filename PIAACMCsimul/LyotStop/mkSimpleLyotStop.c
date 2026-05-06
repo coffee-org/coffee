@@ -8,7 +8,8 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_memory/COREMOD_memory.h"
 
@@ -40,7 +41,7 @@ errno_t mkSimpleLyotStop(const char *__restrict__ ID_name,
     size2 = size;
     size2 *= size;
 
-    IDr = image_ID("rcoord");
+    IDr = image_ID("rcoord", data.core.image, data.core.NB_MAX_IMAGE);
 
     FUNC_CHECK_RETURN(create_3Dimage_ID(ID_name,
                                         size,
@@ -51,14 +52,14 @@ errno_t mkSimpleLyotStop(const char *__restrict__ ID_name,
     for(long k = 0; k < piaacmcopticaldesign.nblambda; k++)
         for(uint64_t ii = 0; ii < size2; ii++)
         {
-            if((data.image[IDr].array.F[ii] < rout) &&
-                    (data.image[IDr].array.F[ii] > rin))
+            if((data.core.image[IDr].array.F[ii] < rout) &&
+                    (data.core.image[IDr].array.F[ii] > rin))
             {
-                data.image[ID].array.F[k * size2 + ii] = 1.0;
+                data.core.image[ID].array.F[k * size2 + ii] = 1.0;
             }
             else
             {
-                data.image[ID].array.F[k * size2 + ii] = 0.0;
+                data.core.image[ID].array.F[k * size2 + ii] = 0.0;
             }
         }
 

@@ -10,7 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 errno_t PIAACMCsimul_achromFPMsol_eval_zonezderivative(long    zone,
         double *fpmresp_array,
@@ -23,11 +24,11 @@ errno_t PIAACMCsimul_achromFPMsol_eval_zonezderivative(long    zone,
 {
     DEBUG_TRACE_FSTART();
 
-    // axis 0: eval pts (ii)   size = data.image[IDfpmresp].md[0].size[0] -> vsize
-    // axis 1: zones (mz)      size = data.image[piaacmcopticaldesign.zonezID].md[0].size[0]+1 = nbz+1
+    // axis 0: eval pts (ii)   size = data.core.image[IDfpmresp].md[0].size[0] -> vsize
+    // axis 1: zones (mz)      size = data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0]+1 = nbz+1
     // axis 3: lambda (k)      size = piaacmcopticaldesign.nblambda -> nbl
     //
-    // indexing :  k*(data.image[piaacmcopticaldesign.zonezID].md[0].size[0]+1)*vsize + mz*vsize + ii
+    // indexing :  k*(data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0]+1)*vsize + mz*vsize + ii
 
 #ifdef PIAASIMUL_LOGFUNC1
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log",
