@@ -11,7 +11,8 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_memory/COREMOD_memory.h"
 
@@ -70,12 +71,12 @@ errno_t FPMresp_rmzones(const char *__restrict__ FPMresp_in_name,
 
     imageID ID, IDout;
 
-    ID             = image_ID(FPMresp_in_name);
-    uint32_t xsize = data.image[ID].md[0].size[0];
-    uint32_t ysize = data.image[ID].md[0].size[1];
-    uint32_t zsize = data.image[ID].md[0].size[2];
+    ID             = image_ID(FPMresp_in_name, data.core.image, data.core.NB_MAX_IMAGE);
+    uint32_t xsize = data.core.image[ID].md[0].size[0];
+    uint32_t ysize = data.core.image[ID].md[0].size[1];
+    uint32_t zsize = data.core.image[ID].md[0].size[2];
 
-    long ysize1 = data.image[ID].md[0].size[1] - NBzones;
+    long ysize1 = data.core.image[ID].md[0].size[1] - NBzones;
 
     FUNC_CHECK_RETURN(create_3Dimage_ID_double(FPMresp_out_name,
                       xsize,
@@ -87,13 +88,13 @@ errno_t FPMresp_rmzones(const char *__restrict__ FPMresp_in_name,
         for(uint32_t kk = 0; kk < zsize; kk++)
         {
             for(long jj = 0; jj < ysize1; jj++)
-                data.image[IDout]
+                data.core.image[IDout]
                 .array.D[kk * xsize * ysize1 + jj * xsize + ii] =
-                    data.image[ID]
+                    data.core.image[ID]
                     .array.D[kk * xsize * ysize + jj * xsize + ii];
             for(long jj = ysize1; jj < ysize; jj++)
-                data.image[IDout].array.D[kk * xsize * ysize1 + ii] +=
-                    data.image[ID]
+                data.core.image[IDout].array.D[kk * xsize * ysize1 + ii] +=
+                    data.core.image[ID]
                     .array.D[kk * xsize * ysize + jj * xsize + ii];
         }
 

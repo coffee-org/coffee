@@ -10,7 +10,8 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -77,15 +78,15 @@ errno_t exec_optimize_fpm_zones()
 
     if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
     {
-        centobs0 = data.variable[IDv].value.f;
+        centobs0 = data.core.variable[IDv].value.f;
     }
     if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
     {
-        centobs1 = data.variable[IDv].value.f;
+        centobs1 = data.core.variable[IDv].value.f;
     }
     if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
-        fpmradld = data.variable[IDv].value.f;
+        fpmradld = data.core.variable[IDv].value.f;
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
@@ -94,11 +95,11 @@ errno_t exec_optimize_fpm_zones()
     if((IDv = variable_ID("REGFPMSAG")) != -1)
     {
         piaacmcparams.linopt_REGFPMSAG =
-            (long) data.variable[IDv].value.f + 0.01;
+            (long) data.core.variable[IDv].value.f + 0.01;
     }
 
     // set current state for statistical tracking
-    //    data.image[IDstatus].array.UI16[0] = 0;
+    //    data.core.image[IDstatus].array.UI16[0] = 0;
 
     // usual initialization
     {
@@ -119,7 +120,7 @@ errno_t exec_optimize_fpm_zones()
     FUNC_CHECK_RETURN(init_piaacmcopticalsystem(0.0, 0.0));
 
     // set current state for statistical tracking
-    //data.image[IDstatus].array.UI16[0] = 1;
+    //data.core.image[IDstatus].array.UI16[0] = 1;
 
     // tracking diagnostic, giving the total flux in each plane
     WRITE_FULLFILENAME(fname, "%s/tmp_flux.txt", piaacmcparams.piaacmcconfdir);
@@ -166,7 +167,7 @@ errno_t exec_optimize_fpm_zones()
     /*
     if((IDv = variable_ID("PIAACMC_nbiter")) != -1)
     {
-        NBiter = (long) data.variable[IDv].value.f + 0.01;
+        NBiter = (long) data.core.variable[IDv].value.f + 0.01;
     }
     else
     {
@@ -174,7 +175,7 @@ errno_t exec_optimize_fpm_zones()
     }
     */
     // set current state for statistical tracking
-    //data.image[IDstatus].array.UI16[0] = 2;
+    //data.core.image[IDstatus].array.UI16[0] = 2;
 
     // get the FPMresp array computed in mode 11
     PIAACMCsimul_update_fnamedescr_conf();
@@ -187,7 +188,7 @@ errno_t exec_optimize_fpm_zones()
     FUNC_CHECK_RETURN(load_fits(fname, "FPMresp", 1, &IDfpmresp));
 
     piaacmcparams.vsize =
-        data.image[IDfpmresp].md[0].size[0]; // number of eval pts x2
+        data.core.image[IDfpmresp].md[0].size[0]; // number of eval pts x2
     // make an array that holds the resulting light for evaluation point given the FPM solution, for each wavelenth
     //ID =
     FUNC_CHECK_RETURN(create_2Dimage_ID("imvect1",
@@ -197,9 +198,9 @@ errno_t exec_optimize_fpm_zones()
 
     // allocate arrays for fast routine
     // define convenient array variables
-    piaacmcparams.fpmresp_array = data.image[IDfpmresp].array.D;
+    piaacmcparams.fpmresp_array = data.core.image[IDfpmresp].array.D;
     piaacmcparams.zonez_array =
-        data.image[piaacmcopticaldesign.zonezID].array.D;
+        data.core.image[piaacmcopticaldesign.zonezID].array.D;
     // allocate derivative of phase against thickness array
     piaacmcparams.dphadz_array =
         (double *) malloc(sizeof(double) * piaacmcopticaldesign.nblambda);
@@ -220,13 +221,13 @@ errno_t exec_optimize_fpm_zones()
     piaacmcparams.outtmp_array = (double *) malloc(
                                      sizeof(double) *
                                      (piaacmcparams.vsize * piaacmcopticaldesign.nblambda +
-                                      data.image[piaacmcopticaldesign.zonezID].md[0].size[0]));
+                                      data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0]));
 
     // do the fast optimization using the results of mode 11
     piaacmcparams.computePSF_FAST_FPMresp = 1;
 
     // set current state for statistical tracking
-    //data.image[IDstatus].array.UI16[0] = 3;
+    //data.core.image[IDstatus].array.UI16[0] = 3;
 
     // read the contrast normalization factor into CnormFactor
     WRITE_FULLFILENAME(fname,
@@ -264,11 +265,11 @@ errno_t exec_optimize_fpm_zones()
     fclose(fp);
     // for each zone, add a random offset in range +- MODampl
     // this randomizes the starting point for each zone
-    // data.image[piaacmcopticaldesign.zonezID].array.D[k] is set in PIAACMCsimul_run()
-    for(long k = 0; k < data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+    // data.core.image[piaacmcopticaldesign.zonezID].array.D[k] is set in PIAACMCsimul_run()
+    for(long k = 0; k < data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0];
             k++)
     {
-        data.image[piaacmcopticaldesign.zonezID].array.D[k] +=
+        data.core.image[piaacmcopticaldesign.zonezID].array.D[k] +=
             piaacmcparams.MODampl * (1.0 - 2.0 * ran1());
     }
 
@@ -276,7 +277,7 @@ errno_t exec_optimize_fpm_zones()
     // uses abstract specification of optimization parameters called paramval, ...
     piaacmcparams.linopt_number_param = 0;
     for(long mz = 0;
-            mz < data.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+            mz < data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0];
             mz++)
     {
         // parameter type
@@ -284,7 +285,7 @@ errno_t exec_optimize_fpm_zones()
             _DATATYPE_DOUBLE;
         // value: sag of each zone
         piaacmcparams.linopt_paramval[piaacmcparams.linopt_number_param] =
-            &data.image[piaacmcopticaldesign.zonezID].array.D[mz];
+            &data.core.image[piaacmcopticaldesign.zonezID].array.D[mz];
         // derivative step size
         piaacmcparams.linopt_paramdelta[piaacmcparams.linopt_number_param] =
             3.0e-9;
@@ -303,7 +304,7 @@ errno_t exec_optimize_fpm_zones()
         1; // for fast execution using analytic derivatives
 
     // set current state for statistical tracking
-    //data.image[IDstatus].array.UI16[0] = 4;
+    //data.core.image[IDstatus].array.UI16[0] = 4;
     // Now on to the actual optimization, after exit from the switch statement
     // I hope you have a lot of time...
 

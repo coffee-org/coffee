@@ -11,7 +11,8 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_memory/COREMOD_memory.h"
 
@@ -82,10 +83,10 @@ errno_t PIAACMC_FPMresp_resample(const char *__restrict__ FPMresp_in_name,
     imageID ID    = -1;
     imageID IDout = -1;
 
-    ID             = image_ID(FPMresp_in_name);
-    uint32_t xsize = data.image[ID].md[0].size[0];
-    uint32_t ysize = data.image[ID].md[0].size[1];
-    uint32_t zsize = data.image[ID].md[0].size[2];
+    ID             = image_ID(FPMresp_in_name, data.core.image, data.core.NB_MAX_IMAGE);
+    uint32_t xsize = data.core.image[ID].md[0].size[0];
+    uint32_t ysize = data.core.image[ID].md[0].size[1];
+    uint32_t zsize = data.core.image[ID].md[0].size[2];
 
     long xsize1 = (long)(xsize / PTstep);
     long zsize1 = NBlambda;
@@ -97,7 +98,7 @@ errno_t PIAACMC_FPMresp_resample(const char *__restrict__ FPMresp_in_name,
                       &IDout));
     /*	for(kk1=0;kk1<zsize1;kk1++)
     		for(ii=0;ii<xsize;ii++)
-    			data.image[IDout].array.D[kk1*xsize1*ysize + ii] = 1;
+    			data.core.image[IDout].array.D[kk1*xsize1*ysize + ii] = 1;
     	*/
 
     for(long kk1 = 0; kk1 < zsize1; kk1++)
@@ -126,26 +127,26 @@ errno_t PIAACMC_FPMresp_resample(const char *__restrict__ FPMresp_in_name,
             for(uint32_t jj = 0; jj < ysize; jj++)
             {
                 double re0 =
-                    data.image[ID]
+                    data.core.image[ID]
                     .array.D[kk1xi * xsize * ysize + jj * xsize + ii];
                 double im0 =
-                    data.image[ID]
+                    data.core.image[ID]
                     .array.D[kk1xi * xsize * ysize + jj * xsize + ii + 1];
 
                 double re1 =
-                    data.image[ID]
+                    data.core.image[ID]
                     .array.D[(kk1xi + 1) * xsize * ysize + jj * xsize + ii];
                 double im1 =
-                    data.image[ID].array.D[(kk1xi + 1) * xsize * ysize +
+                    data.core.image[ID].array.D[(kk1xi + 1) * xsize * ysize +
                                            jj * xsize + ii + 1];
 
                 double re = (1.0 - alpha) * re0 + alpha * re1;
                 double im = (1.0 - alpha) * im0 + alpha * im1;
 
-                data.image[IDout]
+                data.core.image[IDout]
                 .array.D[kk1 * xsize1 * ysize + jj * xsize1 + ii1] =
                     re; //*sqrt(PTstep);
-                data.image[IDout]
+                data.core.image[IDout]
                 .array.D[kk1 * xsize1 * ysize + jj * xsize1 + ii1 + 1] =
                     im; //*sqrt(PTstep);
             }
@@ -157,9 +158,9 @@ errno_t PIAACMC_FPMresp_resample(const char *__restrict__ FPMresp_in_name,
     /*		for(kk=0;kk<zsize;kk++)
     			{
     				for(jj=0;jj<ysize1;jj++)
-    					data.image[IDout].array.D[kk*xsize*ysize1 + jj*xsize + ii] = data.image[ID].array.D[kk*xsize*ysize + jj*xsize + ii];
+    					data.core.image[IDout].array.D[kk*xsize*ysize1 + jj*xsize + ii] = data.core.image[ID].array.D[kk*xsize*ysize + jj*xsize + ii];
     				for(jj=ysize1;jj<ysize;jj++)
-    					data.image[IDout].array.D[kk*xsize*ysize1 + ii] += data.image[ID].array.D[kk*xsize*ysize + jj*xsize + ii];
+    					data.core.image[IDout].array.D[kk*xsize*ysize1 + ii] += data.core.image[ID].array.D[kk*xsize*ysize + jj*xsize + ii];
     			}
     */
 

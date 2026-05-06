@@ -13,7 +13,8 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -125,9 +126,9 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
                          rinarray[m]);
     }
 
-    imageID  IDa    = image_ID(IDamp_name);
-    uint32_t xsize  = data.image[IDa].md[0].size[0];
-    uint32_t ysize  = data.image[IDa].md[0].size[1];
+    imageID  IDa    = image_ID(IDamp_name, data.core.image, data.core.NB_MAX_IMAGE);
+    uint32_t xsize  = data.core.image[IDa].md[0].size[0];
+    uint32_t ysize  = data.core.image[IDa].md[0].size[1];
     uint64_t xysize = xsize;
     xysize *= ysize;
 
@@ -138,11 +139,11 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
         abort(); // or handle error in other ways
     }
 
-    IDincohc = image_ID(IDincohc_name);
+    IDincohc = image_ID(IDincohc_name, data.core.image, data.core.NB_MAX_IMAGE);
 
-    if(data.image[IDa].md[0].naxis == 3)
+    if(data.core.image[IDa].md[0].naxis == 3)
     {
-        nblambda = data.image[IDa].md[0].size[2];
+        nblambda = data.core.image[IDa].md[0].size[2];
     }
     else
     {
@@ -155,7 +156,7 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
     for(uint32_t ii = 0; ii < xsize; ii++)
         for(uint32_t jj = 0; jj < ysize; jj++)
         {
-            data.image[IDzone].array.F[jj * xsize + ii] = -2;
+            data.core.image[IDzone].array.F[jj * xsize + ii] = -2;
             double x =
                 (1.0 * ii - 0.5 * xsize) /
                 (piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale);
@@ -167,7 +168,7 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
             for(long m = 0; m < NBmasks; m++)
                 if((r > rinarray[m] - 0.0001) && (r < routarray[m] + 0.0001))
                 {
-                    data.image[IDzone].array.F[jj * xsize + ii] = m;
+                    data.core.image[IDzone].array.F[jj * xsize + ii] = m;
                 }
         }
     if(piaacmcparams.PIAACMC_save == 1)
@@ -219,17 +220,17 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
                           zprop,
                           0));
 
-        imageID IDa1 = image_ID(nameamp);
-        imageID IDp1 = image_ID(namepha);
+        imageID IDa1 = image_ID(nameamp, data.core.image, data.core.NB_MAX_IMAGE);
+        imageID IDp1 = image_ID(namepha, data.core.image, data.core.NB_MAX_IMAGE);
 
         for(long k = 0; k < nblambda; k++)
         {
             for(uint64_t ii = 0; ii < xysize; ii++)
             {
-                double amp = data.image[IDa1].array.F[k * xsize * ysize + ii];
-                double pha = data.image[IDp1].array.F[k * xsize * ysize + ii];
-                data.image[IDre].array.F[ii] = amp * cos(pha);
-                data.image[IDim].array.F[ii] = amp * sin(pha);
+                double amp = data.core.image[IDa1].array.F[k * xsize * ysize + ii];
+                double pha = data.core.image[IDp1].array.F[k * xsize * ysize + ii];
+                data.core.image[IDre].array.F[ii] = amp * cos(pha);
+                data.core.image[IDim].array.F[ii] = amp * sin(pha);
             }
             imageID IDreg =
                 gauss_filter("retmpim", "retmpimg", sigma, filter_size);
@@ -238,19 +239,19 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
 
             for(uint64_t ii = 0; ii < xysize; ii++)
             {
-                double re                      = data.image[IDreg].array.F[ii];
-                double im                      = data.image[IDimg].array.F[ii];
-                data.image[IDintg].array.F[ii] = re * re + im * im;
+                double re                      = data.core.image[IDreg].array.F[ii];
+                double im                      = data.core.image[IDimg].array.F[ii];
+                data.core.image[IDintg].array.F[ii] = re * re + im * im;
             }
             imageID IDintgg =
                 gauss_filter("tmpintg", "tmpintgg", 2.0 * sigma, filter_size);
 
             for(uint64_t ii = 0; ii < xysize; ii++)
             {
-                data.image[ID_LMintC].array.F[l * xsize * ysize + ii] +=
-                    data.image[IDintgg].array.F[ii];
+                data.core.image[ID_LMintC].array.F[l * xsize * ysize + ii] +=
+                    data.core.image[IDintgg].array.F[ii];
             }
-            //data.image[IDa1].array.F[ii]*data.image[IDa1].array.F[ii]; //data.image[IDintgg].array.F[ii];
+            //data.core.image[IDa1].array.F[ii]*data.core.image[IDa1].array.F[ii]; //data.core.image[IDintgg].array.F[ii];
 
             FUNC_CHECK_RETURN(
                 delete_image_ID("retmpimg", DELETE_IMAGE_ERRMODE_WARNING));
@@ -264,13 +265,13 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
 
         /*    for(ii=0; ii<xsize*ysize; ii++)
             {
-                m = (long) (data.image[IDzone].array.F[ii]+0.1);
+                m = (long) (data.core.image[IDzone].array.F[ii]+0.1);
 
 
                 if((m>-1)&&(m<NBmasks)&&(rarray[ii]<1.0)&&(rarray[ii]>0.9*piaacmcopticaldesign.centObs1))
                 {
-                    totarray[l*NBmasks+m] += data.image[ID].array.F[l*xsize*ysize+ii];
-                    tot2array[l*NBmasks+m] += pow(data.image[ID].array.F[l*xsize*ysize+ii], alpha);
+                    totarray[l*NBmasks+m] += data.core.image[ID].array.F[l*xsize*ysize+ii];
+                    tot2array[l*NBmasks+m] += pow(data.core.image[ID].array.F[l*xsize*ysize+ii], alpha);
                 }
             }*/
         FUNC_CHECK_RETURN(
@@ -303,15 +304,15 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
     {
         for(uint64_t ii = 0; ii < xysize; ii++)
         {
-            long m = (long)(data.image[IDzone].array.F[ii] + 0.1);
+            long m = (long)(data.core.image[IDzone].array.F[ii] + 0.1);
 
             if((m > -1) && (m < NBmasks) && (rarray[ii] < 1.0) &&
                     (rarray[ii] > 0.9 * piaacmcopticaldesign.centObs1))
             {
                 totarray[l * NBmasks + m] +=
-                    data.image[IDincohc].array.F[l * xysize + ii];
+                    data.core.image[IDincohc].array.F[l * xysize + ii];
                 tot2array[l * NBmasks + m] +=
-                    pow(data.image[IDincohc].array.F[l * xysize + ii], alpha);
+                    pow(data.core.image[IDincohc].array.F[l * xysize + ii], alpha);
             }
         }
     }
@@ -322,11 +323,11 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
 
     for(uint64_t ii = 0; ii < xysize; ii++)
     {
-        data.image[IDmc1].array.F[ii] = 0.0;
+        data.core.image[IDmc1].array.F[ii] = 0.0;
     }
 
     {
-        IDint = image_ID("LMintC");
+        IDint = image_ID("LMintC", data.core.image, data.core.NB_MAX_IMAGE);
         for(long m = 0; m < NBmasks; m++)
         {
             double valbest = 0.0;
@@ -369,12 +370,12 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
             }
 
             for(uint64_t ii = 0; ii < xysize; ii++)
-                if(m == data.image[IDzone].array.F[ii])
+                if(m == data.core.image[IDzone].array.F[ii])
                 {
-                    data.image[IDmc].array.F[ii] =
-                        data.image[IDint].array.F[lbest * xysize + ii];
-                    data.image[IDmc1].array.F[ii] =
-                        data.image[IDincohc].array.F[lbest * xysize + ii];
+                    data.core.image[IDmc].array.F[ii] =
+                        data.core.image[IDint].array.F[lbest * xysize + ii];
+                    data.core.image[IDmc1].array.F[ii] =
+                        data.core.image[IDincohc].array.F[lbest * xysize + ii];
                 }
         }
     }
@@ -419,7 +420,7 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
 
     for(uint64_t ii = 0; ii < xysize; ii++)
     {
-        data.image[IDlscumul].array.F[ii] = 1.0;
+        data.core.image[IDlscumul].array.F[ii] = 1.0;
     }
 
     for(long m = 0; m < NBmasks; m++)
@@ -443,12 +444,12 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
 
                 if((r > rinarray[m] - dr) && (r < routarray[m] + dr))
                 {
-                    data.image[IDm].array.F[jj * xsize + ii] =
-                        data.image[IDlyotmask].array.F[jj * xsize + ii];
+                    data.core.image[IDm].array.F[jj * xsize + ii] =
+                        data.core.image[IDlyotmask].array.F[jj * xsize + ii];
                 }
                 else
                 {
-                    data.image[IDm].array.F[jj * xsize + ii] = 1.0;
+                    data.core.image[IDm].array.F[jj * xsize + ii] = 1.0;
                 }
             }
         if(m == 0)
@@ -464,14 +465,14 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
                     double r = sqrt(x * x + y * y);
                     if(r > 1.0)
                     {
-                        data.image[IDm].array.F[jj * xsize + ii] = 0.0;
+                        data.core.image[IDm].array.F[jj * xsize + ii] = 0.0;
                     }
                 }
 
         for(uint64_t ii = 0; ii < xysize; ii++)
         {
-            data.image[IDm].array.F[ii] *= data.image[IDlscumul].array.F[ii];
-            data.image[IDlscumul].array.F[ii] = data.image[IDm].array.F[ii];
+            data.core.image[IDm].array.F[ii] *= data.core.image[IDlscumul].array.F[ii];
+            data.core.image[IDlscumul].array.F[ii] = data.core.image[IDm].array.F[ii];
         }
 
         {

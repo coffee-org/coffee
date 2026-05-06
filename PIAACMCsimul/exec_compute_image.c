@@ -9,7 +9,8 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -55,15 +56,15 @@ errno_t exec_compute_image()
         variableID IDv;
         if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
         {
-            centobs0 = data.variable[IDv].value.f;
+            centobs0 = data.core.variable[IDv].value.f;
         }
         if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
         {
-            centobs1 = data.variable[IDv].value.f;
+            centobs1 = data.core.variable[IDv].value.f;
         }
         if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
         {
-            fpmradld = data.variable[IDv].value.f;
+            fpmradld = data.core.variable[IDv].value.f;
             printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
         }
 
@@ -71,14 +72,14 @@ errno_t exec_compute_image()
         if((IDv = variable_ID("PIAACMC_fpmtype")) != -1)
         {
             piaacmcparams.PIAACMC_fpmtype =
-                (int)(data.variable[IDv].value.f + 0.1);
+                (int)(data.core.variable[IDv].value.f + 0.1);
         }
         printf("PIAACMC_fpmtype = %d\n", piaacmcparams.PIAACMC_fpmtype);
 
         PIAACMC_WFCmode = 0; // number of DMs
         if((IDv = variable_ID("PIAACMC_WFCmode")) != -1)
         {
-            PIAACMC_WFCmode = (int)(data.variable[IDv].value.f + 0.1);
+            PIAACMC_WFCmode = (int)(data.core.variable[IDv].value.f + 0.1);
         }
         printf("PIAACMC_WFCmode = %d\n", PIAACMC_WFCmode);
     }
@@ -177,10 +178,10 @@ errno_t exec_compute_image()
                                             &cval));
             }
 
-            ID = image_ID("psfi0");
+            ID = image_ID("psfi0", data.core.image, data.core.NB_MAX_IMAGE);
 
             // copy results to IDpsfi0
-            data.image[IDpsfi0].md[0].write = 1;
+            data.core.image[IDpsfi0].md[0].write = 1;
 
             for(long k = 0; k < piaacmcopticaldesign.nblambda; k++)
                 for(long ii1 = 0; ii1 < sizecrop; ii1++)
@@ -190,20 +191,20 @@ errno_t exec_compute_image()
                             ii1 + (piaacmcopticaldesign.size - sizecrop) / 2;
                         long jj =
                             jj1 + (piaacmcopticaldesign.size - sizecrop) / 2;
-                        data.image[IDpsfi0].array.F[k * sizecrop * sizecrop +
+                        data.core.image[IDpsfi0].array.F[k * sizecrop * sizecrop +
                                                     jj1 * sizecrop + ii1] =
-                                                        data.image[ID]
+                                                        data.core.image[ID]
                                                         .array.F[k * piaacmcopticaldesign.size *
                                                                   piaacmcopticaldesign.size +
                                                                   jj * piaacmcopticaldesign.size + ii];
                     }
             COREMOD_MEMORY_image_set_sempost_byID(IDpsfi0, -1);
-            data.image[IDpsfi0].md[0].cnt0++;
-            data.image[IDpsfi0].md[0].write = 0;
+            data.core.image[IDpsfi0].md[0].cnt0++;
+            data.core.image[IDpsfi0].md[0].write = 0;
 
             COREMOD_MEMORY_image_set_semwait("opderr", 0);
             // drive semaphore #1 to zero
-            while(sem_trywait(data.image[IDopderrC].semptr[0]) == 0)
+            while(sem_trywait(data.core.image[IDopderrC].semptr[0]) == 0)
             {
             }
             //iter++;
@@ -236,11 +237,11 @@ errno_t exec_compute_image()
                                             NULL));
 
                 // get the image "psfi0" index, which was created in PIAACMCsimul_computePSF
-                ID = image_ID("psfi0");
+                ID = image_ID("psfi0", data.core.image, data.core.NB_MAX_IMAGE);
                 // get image size.  3rd dimension is wavelength
-                uint32_t xsize = data.image[ID].md[0].size[0];
-                uint32_t ysize = data.image[ID].md[0].size[1];
-                uint32_t zsize = data.image[ID].md[0].size[2];
+                uint32_t xsize = data.core.image[ID].md[0].size[0];
+                uint32_t ysize = data.core.image[ID].md[0].size[1];
+                uint32_t zsize = data.core.image[ID].md[0].size[2];
 
                 if(initscene == 0)
                 {
@@ -248,12 +249,12 @@ errno_t exec_compute_image()
                     // create 3D image to sum the PSFs into
                     create_3Dimage_ID("scene", xsize, ysize, zsize, &IDscene);
                 }
-                ID = image_ID("psfi0");
+                ID = image_ID("psfi0", data.core.image, data.core.NB_MAX_IMAGE);
                 // sum the current PSF into the image: summed image is IDscene, source is ID
                 for(uint64_t ii = 0; ii < xsize * ysize * zsize; ii++)
                 {
-                    data.image[IDscene].array.F[ii] +=
-                        fval * data.image[ID].array.F[ii];
+                    data.core.image[IDscene].array.F[ii] +=
+                        fval * data.core.image[ID].array.F[ii];
                 }
             }
             fclose(fpscene);

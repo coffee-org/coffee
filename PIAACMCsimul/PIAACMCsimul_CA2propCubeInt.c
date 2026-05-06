@@ -12,7 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_memory/COREMOD_memory.h"
 
@@ -53,18 +54,18 @@ errno_t PIAACMCsimul_CA2propCubeInt(const char *__restrict IDamp_name,
     uint64_t xysize;
 
     {
-        imageID IDa = image_ID(IDamp_name);
-        xsize       = data.image[IDa].md[0].size[0];
-        ysize       = data.image[IDa].md[0].size[1];
+        imageID IDa = image_ID(IDamp_name, data.core.image, data.core.NB_MAX_IMAGE);
+        xsize       = data.core.image[IDa].md[0].size[0];
+        ysize       = data.core.image[IDa].md[0].size[1];
         xysize      = xsize;
         xysize *= ysize;
 
         create_2Dimage_ID("retmpim", xsize, ysize, NULL);
         create_2Dimage_ID("imtmpim", xsize, ysize, NULL);
 
-        if(data.image[IDa].md[0].naxis == 3)
+        if(data.core.image[IDa].md[0].naxis == 3)
         {
-            nblambda = data.image[IDa].md[0].size[2];
+            nblambda = data.core.image[IDa].md[0].size[2];
         }
         else
         {
@@ -101,16 +102,16 @@ errno_t PIAACMCsimul_CA2propCubeInt(const char *__restrict IDamp_name,
                           zprop,
                           0));
 
-        imageID IDa = image_ID("_tmppropamp");
-        // imageID IDp = image_ID("_tmpproppha");
+        imageID IDa = image_ID("_tmppropamp", data.core.image, data.core.NB_MAX_IMAGE);
+        // imageID IDp = image_ID("_tmpproppha", data.core.image, data.core.NB_MAX_IMAGE);
 
         // write intensity
         for(long k = 0; k < nblambda; k++)
             for(long ii = 0; ii < xsize * ysize; ii++)
             {
-                data.image[IDout].array.F[l * xysize + ii] +=
-                    data.image[IDa].array.F[k * xysize + ii] *
-                    data.image[IDa].array.F[k * xysize + ii];
+                data.core.image[IDout].array.F[l * xysize + ii] +=
+                    data.core.image[IDa].array.F[k * xysize + ii] *
+                    data.core.image[IDa].array.F[k * xysize + ii];
             }
 
         FUNC_CHECK_RETURN(

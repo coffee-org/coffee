@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
 #include "OptSystProp/OptSystProp.h"
 
 //#include "PIAAshape/mkPIAAMshapes_from_RadSag.h"

@@ -9,7 +9,8 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -48,15 +49,15 @@ errno_t PIAACMCsimul_measure_transm_curve()
 
     if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
     {
-        centobs0 = data.variable[IDv].value.f;
+        centobs0 = data.core.variable[IDv].value.f;
     }
     if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
     {
-        centobs1 = data.variable[IDv].value.f;
+        centobs1 = data.core.variable[IDv].value.f;
     }
     if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
-        fpmradld = data.variable[IDv].value.f;
+        fpmradld = data.core.variable[IDv].value.f;
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
@@ -64,7 +65,7 @@ errno_t PIAACMCsimul_measure_transm_curve()
     if((IDv = variable_ID("PIAACMC_fpmtype")) != -1)
     {
         piaacmcparams.PIAACMC_fpmtype =
-            (int)(data.variable[IDv].value.f + 0.1);
+            (int)(data.core.variable[IDv].value.f + 0.1);
     }
 
     piaacmcparams.FORCE_CREATE_fpmza = 1;
@@ -137,13 +138,13 @@ errno_t PIAACMCsimul_measure_transm_curve()
                           0,
                           NULL));
 
-        imageID ID = image_ID("psfi0");
+        imageID ID = image_ID("psfi0", data.core.image, data.core.NB_MAX_IMAGE);
         //            sprintf(fname, "psfi0transm_%04.1f.fits", xld);
         //           save_fits("psfi0", fname);
         printf("ID = %ld\n", ID);
-        uint32_t xsize = data.image[ID].md[0].size[0];
-        uint32_t ysize = data.image[ID].md[0].size[1];
-        uint32_t zsize = data.image[ID].md[0].size[2];
+        uint32_t xsize = data.core.image[ID].md[0].size[0];
+        uint32_t ysize = data.core.image[ID].md[0].size[1];
+        uint32_t zsize = data.core.image[ID].md[0].size[2];
         printf("image size = %u %u %u\n", xsize, ysize, zsize);
         val = 0.0;
 
@@ -159,7 +160,7 @@ errno_t PIAACMCsimul_measure_transm_curve()
                     if((dx * dx + dy * dy) < 30.0 * 30.0)
                     {
                         val +=
-                            data.image[ID]
+                            data.core.image[ID]
                             .array.F[kk * xsize * ysize + jj * ysize + ii];
                     }
                 }

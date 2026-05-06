@@ -9,7 +9,8 @@
 
 // milk includes
 
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -318,7 +319,7 @@ errno_t mkFPM_zonemap(const char *__restrict__ IDname, imageID *outID)
                     }
                 }
 
-                data.image[ID]
+                data.core.image[ID]
                 .array.UI16[jj * piaacmcopticaldesign.fpmarraysize + ii] =
                     zoneindex;
             }
@@ -369,9 +370,9 @@ errno_t mkFPM_zonemap(const char *__restrict__ IDname, imageID *outID)
                     piaacmcopticaldesign.fpmarraysize;
                     ii++)
             {
-                if(data.image[ID1].array.F[ii] > 0.5)
+                if(data.core.image[ID1].array.F[ii] > 0.5)
                 {
-                    data.image[ID].array.UI16[ii] =
+                    data.core.image[ID].array.UI16[ii] =
                         (unsigned int) hex_number[hindex] + 1;
                 }
             }

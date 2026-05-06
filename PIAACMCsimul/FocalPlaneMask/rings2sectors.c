@@ -6,7 +6,8 @@
  *
  */
 
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_memory/COREMOD_memory.h"
 
@@ -81,8 +82,8 @@ errno_t rings2sectors(const char *IDin_name,
     long    zone;
     long    arrayring[5000];
 
-    IDin   = image_ID(IDin_name);
-    nbring = data.image[IDin].md[0].size[0];
+    IDin   = image_ID(IDin_name, data.core.image, data.core.NB_MAX_IMAGE);
+    nbring = data.core.image[IDin].md[0].size[0];
 
     nbzone = 0;
     nbring = 0;
@@ -103,11 +104,11 @@ errno_t rings2sectors(const char *IDin_name,
     nbring++;
     nbzone++;
 
-    FUNC_CHECK_RETURN(create_2Dimage_ID_double(IDout_name, nbzone, 1, &IDout););
+    FUNC_CHECK_RETURN(create_2Dimage_ID_double(IDout_name, nbzone, 1, &IDout));
 
     for(zone = 0; zone < nbzone; zone++)
-        data.image[IDout].array.D[zone] =
-            data.image[IDin].array.D[arrayring[zone]];
+        data.core.image[IDout].array.D[zone] =
+            data.core.image[IDin].array.D[arrayring[zone]];
 
     printf("%ld zones in %ld rings\n", nbzone, nbring);
 

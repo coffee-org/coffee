@@ -3,7 +3,7 @@
  * @brief PIAA-type coronagraph design, make PIAA shapes from radial sag
  */
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,7 +12,8 @@
 #include <omp.h>
 #endif
 
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -106,7 +107,7 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname,
 
     {
         // Read ASCII sag file
-        DEBUG_TRACEPOINT_LOG("read sag radial profile %s", piaa1Dsagfname);
+        DEBUG_TRACEPOINT("read sag radial profile %s", piaa1Dsagfname);
 
         FILE *fp = fopen(piaa1Dsagfname, "r");
         if(fp != NULL)
@@ -180,11 +181,11 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname,
                     }
                     double val =
                         (1.0 - alpha) * z0array[k - 1] + alpha * z0array[k];
-                    data.image[ID_PIAAM0].array.F[jj * size + ii] = val;
+                    data.core.image[ID_PIAAM0].array.F[jj * size + ii] = val;
                 }
                 else
                 {
-                    data.image[ID_PIAAM0].array.F[jj * size + ii] = 0.0;
+                    data.core.image[ID_PIAAM0].array.F[jj * size + ii] = 0.0;
                 }
 
                 if(r < r1limfact * beamrad)
@@ -203,12 +204,12 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname,
                     }
                     double val =
                         (1.0 - alpha) * z1array[k - 1] + alpha * z1array[k];
-                    data.image[ID_PIAAM1].array.F[jj * size + ii] =
+                    data.core.image[ID_PIAAM1].array.F[jj * size + ii] =
                         -val; //-piaacmc[0].PIAAsep);
                 }
                 else
                 {
-                    data.image[ID_PIAAM1].array.F[jj * size + ii] = 0.0;
+                    data.core.image[ID_PIAAM1].array.F[jj * size + ii] = 0.0;
                 }
             }
         }

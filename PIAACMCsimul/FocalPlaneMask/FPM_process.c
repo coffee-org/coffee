@@ -10,7 +10,8 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_memory/COREMOD_memory.h"
 
@@ -91,9 +92,9 @@ errno_t PIAACMC_FPM_process(const char *__restrict__ FPMsag_name,
 
     (void) zonescoord_name;
 
-    IDin    = image_ID(FPMsag_name);
-    NBzones = data.image[IDin].md[0].size[0];
-    atype   = data.image[IDin].md[0].datatype;
+    IDin    = image_ID(FPMsag_name, data.core.image, data.core.NB_MAX_IMAGE);
+    NBzones = data.core.image[IDin].md[0].size[0];
+    atype   = data.core.image[IDin].md[0].datatype;
 
     switch(atype)
     {
@@ -117,11 +118,11 @@ errno_t PIAACMC_FPM_process(const char *__restrict__ FPMsag_name,
     {
         if(atype == _DATATYPE_FLOAT)
         {
-            sagarray_in[zone] = (double) data.image[IDin].array.F[zone];
+            sagarray_in[zone] = (double) data.core.image[IDin].array.F[zone];
         }
         else
         {
-            sagarray_in[zone] = data.image[IDin].array.D[zone];
+            sagarray_in[zone] = data.core.image[IDin].array.D[zone];
         }
     }
 

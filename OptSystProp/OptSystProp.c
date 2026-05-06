@@ -9,7 +9,8 @@
 
 #include <string.h>
 
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "OptSystProp/OptSystProp.h"
 

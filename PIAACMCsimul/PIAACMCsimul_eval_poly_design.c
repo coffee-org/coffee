@@ -10,7 +10,8 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -58,19 +59,19 @@ errno_t PIAACMCsimul_eval_poly_design()
         IDv = variable_ID("PIAACMC_centobs0");
         if(IDv != -1)
         {
-            centobs0 = data.variable[IDv].value.f;
+            centobs0 = data.core.variable[IDv].value.f;
         }
 
         IDv = variable_ID("PIAACMC_centobs1");
         if(IDv != -1)
         {
-            centobs1 = data.variable[IDv].value.f;
+            centobs1 = data.core.variable[IDv].value.f;
         }
 
         IDv = variable_ID("PIAACMC_fpmradld");
         if(IDv != -1)
         {
-            fpmradld = data.variable[IDv].value.f;
+            fpmradld = data.core.variable[IDv].value.f;
             printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
         }
     }
@@ -79,7 +80,7 @@ errno_t PIAACMCsimul_eval_poly_design()
     //	printf("Loading (optional) OPDerr file\n");
     //	fflush(stdout);
     // load an error if it exists
-    imageID IDopderrC = image_ID("OPDerrC");
+    imageID IDopderrC = image_ID("OPDerrC", data.core.image, data.core.NB_MAX_IMAGE);
     if(IDopderrC == -1)
     {
         FUNC_CHECK_RETURN(load_fits("OPDerrC.fits", "OPDerrC", 0, &IDopderrC));
@@ -89,7 +90,7 @@ errno_t PIAACMCsimul_eval_poly_design()
     if(IDopderrC != -1)
     {
         nbOPDerr =
-            data.image[IDopderrC].md[0].size[2]; // number of error arrays
+            data.core.image[IDopderrC].md[0].size[2]; // number of error arrays
         //printf("INCLUDING %ld OPD ERROR MODES\n", nbOPDerr);
         //fflush(stdout);
     }
@@ -104,7 +105,7 @@ errno_t PIAACMCsimul_eval_poly_design()
         if(IDv != -1)
         {
             piaacmcparams.PIAACMC_fpmtype =
-                (int)(data.variable[IDv].value.f + 0.1);
+                (int)(data.core.variable[IDv].value.f + 0.1);
         }
     }
 
@@ -139,7 +140,7 @@ errno_t PIAACMCsimul_eval_poly_design()
         variableID IDv = variable_ID("PIAACMC_ldoffset");
         if(IDv != -1)
         {
-            ldoffset = data.variable[IDv].value.f;
+            ldoffset = data.core.variable[IDv].value.f;
         }
     }
 
@@ -167,12 +168,12 @@ errno_t PIAACMCsimul_eval_poly_design()
 
     float avpeak;
     {
-        imageID ID = image_ID("psfi0");
-        xsize      = data.image[ID].md[0].size[0];
-        ysize      = data.image[ID].md[0].size[1];
+        imageID ID = image_ID("psfi0", data.core.image, data.core.NB_MAX_IMAGE);
+        xsize      = data.core.image[ID].md[0].size[0];
+        ysize      = data.core.image[ID].md[0].size[1];
         xysize     = xsize;
         xysize *= ysize;
-        zsize = data.image[ID].md[0].size[2];
+        zsize = data.core.image[ID].md[0].size[2];
 
         float *peakarray = (float *) malloc(sizeof(float) * zsize);
         if(peakarray == NULL)
@@ -185,7 +186,7 @@ errno_t PIAACMCsimul_eval_poly_design()
             peakarray[kk] = 0.0;
             for(uint64_t ii = 0; ii < xysize; ii++)
             {
-                double val = data.image[ID].array.F[kk * xsize * ysize + ii];
+                double val = data.core.image[ID].array.F[kk * xsize * ysize + ii];
                 if(val > peakarray[kk])
                 {
                     peakarray[kk] = val;
@@ -227,7 +228,7 @@ errno_t PIAACMCsimul_eval_poly_design()
 
     {
         /// compute contrast curve
-        imageID ID = image_ID("psfi0");
+        imageID ID = image_ID("psfi0", data.core.image, data.core.NB_MAX_IMAGE);
 
         double focscale = (2.0 * piaacmcopticaldesign.beamrad /
                            piaacmcopticaldesign.pixscale) /
@@ -275,7 +276,7 @@ errno_t PIAACMCsimul_eval_poly_design()
                     if(ri < eval_sepNBpt)
                     {
                         eval_contrastCurve[ri] +=
-                            data.image[ID]
+                            data.core.image[ID]
                             .array.F[kk * xsize * ysize + jj * xsize + ii] /
                             avpeak;
                         eval_contrastCurve_cnt[ri] += 1.0;
@@ -283,7 +284,7 @@ errno_t PIAACMCsimul_eval_poly_design()
                     if((rc > 2.0) && (rc < 6.0))
                     {
                         aveC +=
-                            data.image[ID]
+                            data.core.image[ID]
                             .array.F[kk * xsize * ysize + jj * xsize + ii] /
                             avpeak;
 
@@ -412,14 +413,14 @@ errno_t PIAACMCsimul_eval_poly_design()
     }
 
     {
-        imageID ID   = image_ID("psfi0");
-        imageID IDre = image_ID("psfre0");
-        imageID IDim = image_ID("psfim0");
+        imageID ID   = image_ID("psfi0", data.core.image, data.core.NB_MAX_IMAGE);
+        imageID IDre = image_ID("psfre0", data.core.image, data.core.NB_MAX_IMAGE);
+        imageID IDim = image_ID("psfim0", data.core.image, data.core.NB_MAX_IMAGE);
         for(uint64_t ii = 0; ii < xysize * zsize; ii++)
         {
-            data.image[IDps].array.F[ii] += data.image[ID].array.F[ii];
-            data.image[IDps_re].array.F[ii] += data.image[IDre].array.F[ii];
-            data.image[IDps_im].array.F[ii] += data.image[IDim].array.F[ii];
+            data.core.image[IDps].array.F[ii] += data.core.image[ID].array.F[ii];
+            data.core.image[IDps_re].array.F[ii] += data.core.image[IDre].array.F[ii];
+            data.core.image[IDps_im].array.F[ii] += data.core.image[IDim].array.F[ii];
         }
     }
     NBpt++;
@@ -450,14 +451,14 @@ errno_t PIAACMCsimul_eval_poly_design()
     }
 
     {
-        imageID ID   = image_ID("psfi0");
-        imageID IDre = image_ID("psfre0");
-        imageID IDim = image_ID("psfim0");
+        imageID ID   = image_ID("psfi0", data.core.image, data.core.NB_MAX_IMAGE);
+        imageID IDre = image_ID("psfre0", data.core.image, data.core.NB_MAX_IMAGE);
+        imageID IDim = image_ID("psfim0", data.core.image, data.core.NB_MAX_IMAGE);
         for(uint64_t ii = 0; ii < xysize * zsize; ii++)
         {
-            data.image[IDps].array.F[ii] += data.image[ID].array.F[ii];
-            data.image[IDps_re].array.F[ii] += data.image[IDre].array.F[ii];
-            data.image[IDps_im].array.F[ii] += data.image[IDim].array.F[ii];
+            data.core.image[IDps].array.F[ii] += data.core.image[ID].array.F[ii];
+            data.core.image[IDps_re].array.F[ii] += data.core.image[IDre].array.F[ii];
+            data.core.image[IDps_im].array.F[ii] += data.core.image[IDim].array.F[ii];
         }
     }
     NBpt++;
@@ -488,14 +489,14 @@ errno_t PIAACMCsimul_eval_poly_design()
     }
 
     {
-        imageID ID   = image_ID("psfi0");
-        imageID IDre = image_ID("psfre0");
-        imageID IDim = image_ID("psfim0");
+        imageID ID   = image_ID("psfi0", data.core.image, data.core.NB_MAX_IMAGE);
+        imageID IDre = image_ID("psfre0", data.core.image, data.core.NB_MAX_IMAGE);
+        imageID IDim = image_ID("psfim0", data.core.image, data.core.NB_MAX_IMAGE);
         for(uint64_t ii = 0; ii < xysize * zsize; ii++)
         {
-            data.image[IDps].array.F[ii] += data.image[ID].array.F[ii];
-            data.image[IDps_re].array.F[ii] += data.image[IDre].array.F[ii];
-            data.image[IDps_im].array.F[ii] += data.image[IDim].array.F[ii];
+            data.core.image[IDps].array.F[ii] += data.core.image[ID].array.F[ii];
+            data.core.image[IDps_re].array.F[ii] += data.core.image[IDre].array.F[ii];
+            data.core.image[IDps_im].array.F[ii] += data.core.image[IDim].array.F[ii];
         }
     }
     NBpt++;
@@ -526,14 +527,14 @@ errno_t PIAACMCsimul_eval_poly_design()
     }
 
     {
-        imageID ID   = image_ID("psfi0");
-        imageID IDre = image_ID("psfre0");
-        imageID IDim = image_ID("psfim0");
+        imageID ID   = image_ID("psfi0", data.core.image, data.core.NB_MAX_IMAGE);
+        imageID IDre = image_ID("psfre0", data.core.image, data.core.NB_MAX_IMAGE);
+        imageID IDim = image_ID("psfim0", data.core.image, data.core.NB_MAX_IMAGE);
         for(uint64_t ii = 0; ii < xysize * zsize; ii++)
         {
-            data.image[IDps].array.F[ii] += data.image[ID].array.F[ii];
-            data.image[IDps_re].array.F[ii] += data.image[IDre].array.F[ii];
-            data.image[IDps_im].array.F[ii] += data.image[IDim].array.F[ii];
+            data.core.image[IDps].array.F[ii] += data.core.image[ID].array.F[ii];
+            data.core.image[IDps_re].array.F[ii] += data.core.image[IDre].array.F[ii];
+            data.core.image[IDps_im].array.F[ii] += data.core.image[IDim].array.F[ii];
         }
     }
     NBpt++;
@@ -547,7 +548,7 @@ errno_t PIAACMCsimul_eval_poly_design()
     // add error modes if any
     for(long OPDmode = 0; OPDmode < nbOPDerr; OPDmode++)
     {
-        size = data.image[IDopderrC].md[0].size[0];
+        size = data.core.image[IDopderrC].md[0].size[0];
 
         imageID IDopderr;
         create_2Dimage_ID("opderr", size, size, &IDopderr);
@@ -555,8 +556,8 @@ errno_t PIAACMCsimul_eval_poly_design()
         // "opderr" is a standard name read by PIAACMCsimul_init
         for(long ii = 0; ii < size * size; ii++)
         {
-            data.image[IDopderr].array.F[ii] =
-                data.image[IDopderrC].array.F[size * size * OPDmode + ii];
+            data.core.image[IDopderr].array.F[ii] =
+                data.core.image[IDopderrC].array.F[size * size * OPDmode + ii];
         }
 
         FUNC_CHECK_RETURN(
@@ -585,14 +586,14 @@ errno_t PIAACMCsimul_eval_poly_design()
             delete_image_ID("opderr", DELETE_IMAGE_ERRMODE_WARNING));
 
         {
-            imageID ID   = image_ID("psfi0");
-            imageID IDre = image_ID("psfre0");
-            imageID IDim = image_ID("psfim0");
+            imageID ID   = image_ID("psfi0", data.core.image, data.core.NB_MAX_IMAGE);
+            imageID IDre = image_ID("psfre0", data.core.image, data.core.NB_MAX_IMAGE);
+            imageID IDim = image_ID("psfim0", data.core.image, data.core.NB_MAX_IMAGE);
             for(uint64_t ii = 0; ii < xysize * zsize; ii++)
             {
-                data.image[IDps].array.F[ii] += data.image[ID].array.F[ii];
-                data.image[IDps_re].array.F[ii] += data.image[IDre].array.F[ii];
-                data.image[IDps_im].array.F[ii] += data.image[IDim].array.F[ii];
+                data.core.image[IDps].array.F[ii] += data.core.image[ID].array.F[ii];
+                data.core.image[IDps_re].array.F[ii] += data.core.image[IDre].array.F[ii];
+                data.core.image[IDps_im].array.F[ii] += data.core.image[IDim].array.F[ii];
             }
         }
         NBpt++;
@@ -602,19 +603,19 @@ errno_t PIAACMCsimul_eval_poly_design()
 
     for(uint64_t ii = 0; ii < xysize * zsize; ii++)
     {
-        data.image[IDps].array.F[ii] /= NBpt;
-        data.image[IDps_re].array.F[ii] /= NBpt; // average re
-        data.image[IDps_im].array.F[ii] /= NBpt; // average im
+        data.core.image[IDps].array.F[ii] /= NBpt;
+        data.core.image[IDps_re].array.F[ii] /= NBpt; // average re
+        data.core.image[IDps_im].array.F[ii] /= NBpt; // average im
     }
 
     for(uint64_t ii = 0; ii < xysize * zsize; ii++)
     {
-        data.image[IDps_COH].array.F[ii] =
-            data.image[IDps_re].array.F[ii] * data.image[IDps_re].array.F[ii] +
-            data.image[IDps_im].array.F[ii] * data.image[IDps_im].array.F[ii];
+        data.core.image[IDps_COH].array.F[ii] =
+            data.core.image[IDps_re].array.F[ii] * data.core.image[IDps_re].array.F[ii] +
+            data.core.image[IDps_im].array.F[ii] * data.core.image[IDps_im].array.F[ii];
 
-        data.image[IDps_INC].array.F[ii] =
-            data.image[IDps].array.F[ii] - data.image[IDps_COH].array.F[ii];
+        data.core.image[IDps_INC].array.F[ii] =
+            data.core.image[IDps].array.F[ii] - data.core.image[IDps_COH].array.F[ii];
     }
 
     // same as psfi0_extsrc
@@ -722,7 +723,7 @@ errno_t PIAACMCsimul_eval_poly_design()
                     xc *= focscale;
                     yc *= focscale;
                     double rc = sqrt(xc * xc + yc * yc);
-                    data.image[IDrc]
+                    data.core.image[IDrc]
                     .array.F[kk * xsize * ysize + jj * xsize + ii] = rc;
 
                     long ri = (long)(rc / eval_sepstepld - 0.5);
@@ -733,17 +734,17 @@ errno_t PIAACMCsimul_eval_poly_design()
                     if(ri < eval_sepNBpt)
                     {
                         eval_contrastCurve[ri] +=
-                            data.image[IDps]
+                            data.core.image[IDps]
                             .array.F[kk * xsize * ysize + jj * xsize + ii] /
                             avpeak;
 
                         eval_COHcontrastCurve[ri] +=
-                            data.image[IDps_COH]
+                            data.core.image[IDps_COH]
                             .array.F[kk * xsize * ysize + jj * xsize + ii] /
                             avpeak;
 
                         eval_INCcontrastCurve[ri] +=
-                            data.image[IDps_INC]
+                            data.core.image[IDps_INC]
                             .array.F[kk * xsize * ysize + jj * xsize + ii] /
                             avpeak;
 
@@ -752,17 +753,17 @@ errno_t PIAACMCsimul_eval_poly_design()
                     if((rc > 2.0) && (rc < 6.0))
                     {
                         aveC +=
-                            data.image[IDps]
+                            data.core.image[IDps]
                             .array.F[kk * xsize * ysize + jj * xsize + ii] /
                             avpeak;
 
                         aveC_COH +=
-                            data.image[IDps_COH]
+                            data.core.image[IDps_COH]
                             .array.F[kk * xsize * ysize + jj * xsize + ii] /
                             avpeak;
 
                         aveC_INC +=
-                            data.image[IDps_INC]
+                            data.core.image[IDps_INC]
                             .array.F[kk * xsize * ysize + jj * xsize + ii] /
                             avpeak;
                         aveCcnt++;
@@ -804,12 +805,12 @@ errno_t PIAACMCsimul_eval_poly_design()
                         for(uint32_t jj = 0; jj < ysize; jj++)
                         {
                             double rc =
-                                data.image[IDrc].array.F[kk * xsize * ysize +
+                                data.core.image[IDrc].array.F[kk * xsize * ysize +
                                                          jj * xsize + ii];
                             if((rc > rcmin) && (rc < rcmax))
                             {
                                 rcarray[rc_cnt] =
-                                    data.image[IDps]
+                                    data.core.image[IDps]
                                     .array.F[kk * xsize * ysize +
                                                 jj * xsize + ii] /
                                     avpeak;

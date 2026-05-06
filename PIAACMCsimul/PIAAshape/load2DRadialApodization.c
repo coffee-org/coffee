@@ -9,7 +9,8 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CommandLineInterface/CLIcore.h"
+#include "CLIcore.h"
+#include "coffee_compat.h"
 
 #include "COREMOD_arith/COREMOD_arith.h"
 #include "COREMOD_iofits/COREMOD_iofits.h"
@@ -52,7 +53,7 @@ errno_t load2DRadialApodization(const char *__restrict__ IDapo_name,
 
     {
         // Create 2D radial cos modes
-        if(image_ID("APOmodesCos") == -1)
+        if(image_ID("APOmodesCos", data.core.image, data.core.NB_MAX_IMAGE) == -1)
         {
             char fname[STRINGMAXLEN_FULLFILENAME];
             FUNC_CHECK_RETURN(
@@ -76,8 +77,8 @@ errno_t load2DRadialApodization(const char *__restrict__ IDapo_name,
         FUNC_CHECK_RETURN(
             create_2Dimage_ID("fitmaskapo", sizem, sizem, &IDmask));
 
-        imageID  IDin   = image_ID(IDapo_name);
-        uint32_t sizein = data.image[IDin].md[0].size[0];
+        imageID  IDin   = image_ID(IDapo_name, data.core.image, data.core.NB_MAX_IMAGE);
+        uint32_t sizein = data.core.image[IDin].md[0].size[0];
 
         imageID ID;
         FUNC_CHECK_RETURN(create_2Dimage_ID("_apoincrop", sizem, sizem, &ID));
@@ -86,13 +87,13 @@ errno_t load2DRadialApodization(const char *__restrict__ IDapo_name,
         for(uint32_t ii = 0; ii < sizem; ii++)
             for(uint32_t jj = 0; jj < sizem; jj++)
             {
-                data.image[ID].array.F[jj * sizem + ii] =
-                    data.image[IDin]
+                data.core.image[ID].array.F[jj * sizem + ii] =
+                    data.core.image[IDin]
                     .array.F[(jj + offset) * sizein + (ii + offset)];
-                if((data.image[ID].array.F[jj * sizem + ii] > eps) &&
+                if((data.core.image[ID].array.F[jj * sizem + ii] > eps) &&
                         (ii % 1 == 0) && (jj % 1 == 0))
                 {
-                    data.image[IDmask].array.F[jj * sizem + ii] = 1.0;
+                    data.core.image[IDmask].array.F[jj * sizem + ii] = 1.0;
                 }
             }
     }
