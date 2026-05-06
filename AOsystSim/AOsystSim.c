@@ -119,7 +119,8 @@ OPTSYST *optsystsim;
 // Module initialization macro in CLIcore.h
 // macro argument defines module name for bindings
 //
-INIT_MODULE_LIB(AOsystSim)
+MODULE_DEPS("milkWFpropagate", "milkOpticsMaterials");
+INIT_MODULE_LIB_DEPS(AOsystSim)
 
 /* ================================================================== */
 /* ================================================================== */
