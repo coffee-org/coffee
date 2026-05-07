@@ -16,6 +16,7 @@ set(SCRIPTS
 
 set(LINKLIBS
 	CLIcore
+	milkCOREMODiofits
 	milkWFpropagate
 	milkOpticsMaterials
 )

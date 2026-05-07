@@ -18,6 +18,7 @@ set(SCRIPTS
 
 set(LINKLIBS
 	CLIcore
+	milkCOREMODiofits
 	milkimagegen
 	milkfft
 	milkimagebasic
