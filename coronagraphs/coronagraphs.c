@@ -265,7 +265,7 @@ static double APLCapo_FPMRAD_STEP  = 0.001;
 // macro argument defines module name for bindings
 //
 MODULE_DEPS("milkimagegen", "milkfft", "milkimagebasic", "milkWFpropagate");
-INIT_MODULE_LIB_DEPS(coronagraphs)
+INIT_MODULE_LIB_DEPS(coffeecoronagraphs)
 
 /* ================================================================== */
 /* ================================================================== */
@@ -632,11 +632,33 @@ errno_t coronagraph_make_2Dprolate(double      fpmradpix,
                 0.0 * data.core.image[IDprolp].array.F[ii];
         }
 
-        mk_complex_from_amph("pupa0m", "pupp0", "pc1", 0);
+        if(mk_complex_from_amph("pupa0m", "pupp0", "pc1", 0) != RETURN_SUCCESS)
+        {
+            PRINT_ERROR("mk_complex_from_amph pupa0m->pc1 failed");
+            return RETURN_FAILURE;
+        }
+        if(image_ID("pc1", data.core.image, data.core.NB_MAX_IMAGE) == -1)
+        {
+            PRINT_ERROR("image pc1 not created");
+            return RETURN_FAILURE;
+        }
         permut("pc1");
-        do2dfft("pc1", "fc1");
+        if(do2dfft("pc1", "fc1") == -1)
+        {
+            PRINT_ERROR("do2dfft pc1->fc1 failed");
+            return RETURN_FAILURE;
+        }
+        if(image_ID("fc1", data.core.image, data.core.NB_MAX_IMAGE) == -1)
+        {
+            PRINT_ERROR("image fc1 not created");
+            return RETURN_FAILURE;
+        }
         permut("fc1");
-        mk_amph_from_complex("fc1", "fa1", "fp1", 0);
+        if(mk_amph_from_complex("fc1", "fa1", "fp1", 0) != RETURN_SUCCESS)
+        {
+            PRINT_ERROR("mk_amph_from_complex fc1->fa1,fp1 failed");
+            return RETURN_FAILURE;
+        }
 
         execute_arith("fa1m=fa1*FPmask");
 
@@ -649,6 +671,7 @@ errno_t coronagraph_make_2Dprolate(double      fpmradpix,
         transm = total / total0;
 
         ID    = image_ID("fa1m", data.core.image, data.core.NB_MAX_IMAGE);
+        if (ID == -1) return RETURN_FAILURE;
         total = 0.0;
         for(long ii = 0; ii < size2; ii++)
         {
@@ -657,6 +680,7 @@ errno_t coronagraph_make_2Dprolate(double      fpmradpix,
         total /= 1.0 * size2 * total0;
 
         ID     = image_ID("fa1", data.core.image, data.core.NB_MAX_IMAGE);
+        if (ID == -1) return RETURN_FAILURE;
         total2 = 0.0;
         for(long ii = 0; ii < size2; ii++)
         {
@@ -672,19 +696,40 @@ errno_t coronagraph_make_2Dprolate(double      fpmradpix,
             (double) transm);
 
         ID = image_ID("fp1", data.core.image, data.core.NB_MAX_IMAGE);
+        if (ID == -1) return RETURN_FAILURE;
         //      for(ii=0;ii<size2;ii++)
         //	data.core.image[ID].array.F[ii] = 0.0;
 
-        mk_complex_from_amph("fa1m", "fp1", "fc2", 0);
+        if(mk_complex_from_amph("fa1m", "fp1", "fc2", 0) != RETURN_SUCCESS)
+        {
+            PRINT_ERROR("mk_complex_from_amph fa1m->fc2 failed");
+            return RETURN_FAILURE;
+        }
+        if(image_ID("fc2", data.core.image, data.core.NB_MAX_IMAGE) == -1)
+        {
+            PRINT_ERROR("image fc2 not created");
+            return RETURN_FAILURE;
+        }
         permut("fc2");
-        do2dfft("fc2", "pc2");
+        if(do2dfft("fc2", "pc2") == -1)
+        {
+            PRINT_ERROR("do2dfft fc2->pc2 failed");
+            return RETURN_FAILURE;
+        }
+        if(image_ID("pc2", data.core.image, data.core.NB_MAX_IMAGE) == -1)
+        {
+            PRINT_ERROR("image pc2 not created");
+            return RETURN_FAILURE;
+        }
         permut("pc2");
 
         mk_reim_from_complex("pc2", "pr2", "pi2", 0);
 
         IDr = image_ID("pr2", data.core.image, data.core.NB_MAX_IMAGE);
+        if (IDr == -1) return RETURN_FAILURE;
         copy_image_ID("pr2", "pr2cp", 0);
         IDrcp = image_ID("pr2cp", data.core.image, data.core.NB_MAX_IMAGE);
+        if (IDrcp == -1) return RETURN_FAILURE;
         for(long ii = 0; ii < size; ii++)
             for(long jj = 0; jj < size; jj++)
             {
@@ -703,8 +748,10 @@ errno_t coronagraph_make_2Dprolate(double      fpmradpix,
         delete_image_ID("pr2cp", DELETE_IMAGE_ERRMODE_WARNING);
 
         IDi = image_ID("pi2", data.core.image, data.core.NB_MAX_IMAGE);
+        if (IDi == -1) return RETURN_FAILURE;
         copy_image_ID("pi2", "pi2cp", 0);
         IDicp = image_ID("pi2cp", data.core.image, data.core.NB_MAX_IMAGE);
+        if (IDicp == -1) return RETURN_FAILURE;
         for(long ii = 0; ii < size; ii++)
             for(long jj = 0; jj < size; jj++)
             {
@@ -908,21 +955,21 @@ double coronagraph_make_2Dprolate_DFT(double      fpmradpix,
     if(fpmshape_ra == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     fpmshape_ka = (double *) malloc(sizeof(double) * fpmshape_n);
     if(fpmshape_ka == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     fpmshape_pa = (double *) malloc(sizeof(double) * fpmshape_n);
     if(fpmshape_pa == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     if((ID = variable_ID("DFTZFACTOR")) != -1)
@@ -1057,7 +1104,7 @@ double coronagraph_make_2Dprolate_DFT(double      fpmradpix,
         if(data.core.image[IDpupa0].md[0].size[0] != size)
         {
             printf("ERROR: pupa0 should be %ld x %ld\n", size, size);
-            abort();
+            return RETURN_FAILURE;
         }
     }
     if(IDpupa0 == -1)
@@ -2096,21 +2143,21 @@ double coronagraph_apofit(const char *fnameout)
     if(fitapo_a_best == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     fitapo_b_best = (double *) malloc(sizeof(double) * fitapoN);
     if(fitapo_b_best == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     fitapo_c_best = (double *) malloc(sizeof(double) * fitapoN);
     if(fitapo_c_best == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     // read previous best solution (if it exits)
@@ -2633,28 +2680,28 @@ errno_t coronagraph_APLCapo_compile()
                     if(fitapo_a == NULL)
                     {
                         PRINT_ERROR("malloc returns NULL pointer");
-                        abort(); // or handle error in other ways
+                        return RETURN_FAILURE;
                     }
 
                     fitapo_b = (double *) malloc(sizeof(double) * fitapoN);
                     if(fitapo_b == NULL)
                     {
                         PRINT_ERROR("malloc returns NULL pointer");
-                        abort(); // or handle error in other ways
+                        return RETURN_FAILURE;
                     }
 
                     fitapo_c = (double *) malloc(sizeof(double) * fitapoN);
                     if(fitapo_c == NULL)
                     {
                         PRINT_ERROR("malloc returns NULL pointer");
-                        abort(); // or handle error in other ways
+                        return RETURN_FAILURE;
                     }
 
                     fitapo_c1 = (double *) malloc(sizeof(double) * fitapoN);
                     if(fitapo_c1 == NULL)
                     {
                         PRINT_ERROR("malloc returns NULL pointer");
-                        abort(); // or handle error in other ways
+                        return RETURN_FAILURE;
                     }
 
                     fitapo_a[0] = 1.0;
@@ -2798,7 +2845,7 @@ errno_t coronagraph_APLCapo_compile()
                         if(aporaw_r == NULL)
                         {
                             PRINT_ERROR("malloc returns NULL pointer");
-                            abort(); // or handle error in other ways
+                            return RETURN_FAILURE;
                         }
 
                         aporaw_v = (double *) malloc(sizeof(double) *
@@ -2806,7 +2853,7 @@ errno_t coronagraph_APLCapo_compile()
                         if(aporaw_v == NULL)
                         {
                             PRINT_ERROR("malloc returns NULL pointer");
-                            abort(); // or handle error in other ways
+                            return RETURN_FAILURE;
                         }
 
                         cnt = 0;
@@ -3066,14 +3113,14 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     if(PIAAAPO == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     PIAA_HYBRID_CPAAPO = (double *) malloc(sizeof(double) * PIAAAPO_NBPOINTS);
     if(PIAA_HYBRID_CPAAPO == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     //
@@ -3339,7 +3386,7 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     if(innerprof_cumul == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     dir = 1.0; // initial direction
@@ -3407,7 +3454,7 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     if(piaaconfpup_amp_profile == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     //long jj = 0;
@@ -3432,35 +3479,35 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     if(r0 == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     r1 = (double *) malloc(sizeof(double) * NBpoints0);
     if(r1 == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     pup = (double *) malloc(sizeof(double) * piaaconfNPUPFILESIZE);
     if(pup == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     pupsum = (double *) malloc(sizeof(double) * piaaconfNPUPFILESIZE);
     if(pupsum == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     pup0sum = (double *) malloc(sizeof(double) * NBpoints0);
     if(pup0sum == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     /* computing r0 and r1 */
@@ -10168,14 +10215,14 @@ int coronagraph_userfunc()
     if(zarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     zindex = (long *) malloc(sizeof(long) * NBzern);
     if(zindex == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     zindex[0] = 12; //24;
@@ -10271,45 +10318,45 @@ int coronagraph_compute_limitcoeff()
     if(coeffmax == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
     coeff = (double *) malloc(sizeof(double) * NBcoeff);
     if(coeff == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
     bestcoeff = (double *) malloc(sizeof(double) * NBcoeff);
     if(bestcoeff == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     xval = (double *) malloc(sizeof(double) * NBpts);
     if(xval == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
     pval = (double *) malloc(sizeof(double) * NBpts);
     if(pval == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
     xpow = (double *) malloc(sizeof(double) * NBcoeff * NBpts);
     if(xpow == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     pvalmax = (double *) malloc(sizeof(double) * NBpts);
     if(pvalmax == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     /* initialization */
@@ -10564,35 +10611,35 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
     if(starprofrad == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     starprofarray = (double *) malloc(sizeof(double) * starprofNBstep);
     if(starprofarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     starprofarraycnt = (double *) malloc(sizeof(double) * starprofNBstep);
     if(starprofarraycnt == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     transmarray = (double *) malloc(sizeof(double) * kmax);
     if(transmarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     separray = (double *) malloc(sizeof(double) * kmax);
     if(separray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     separray[0]  = 0.0;
@@ -10620,7 +10667,7 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
     if(obs1array == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     obs1_index = 0;
@@ -10634,7 +10681,7 @@ int CORONAGRAPHS_scanPIAACMC_centObs_perf(double obs0input)
     if(fpmaskradarray == NULL)
     {
         PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        return RETURN_FAILURE;
     }
 
     fpmaskrad_index = 0;
