@@ -103,6 +103,8 @@ set(SCRIPTS
 
 set(LINKLIBS
 	CLIcore
+    milkCOREMODiofits
+    milkCOREMODmemory
     milkinfo
     milkOpticsMaterials
     milklinoptimtools
