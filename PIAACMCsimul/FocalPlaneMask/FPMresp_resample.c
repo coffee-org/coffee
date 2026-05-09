@@ -191,7 +191,7 @@ static errno_t compute_function()
     return RETURN_SUCCESS;
 }
 
-INSERT_STD_FPSCLIfunctions
+INSERT_STD_CLIfunction
 
 // Register function in CLI
 errno_t
