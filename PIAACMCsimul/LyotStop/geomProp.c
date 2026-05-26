@@ -132,10 +132,6 @@ static CLICMDDATA CLIcmddata = {"piaacmcgeomprop",
                                };
 
 // detailed help
-static errno_t help_function()
-{
-    return RETURN_SUCCESS;
-}
 
 /**
  * @brief Lyot stops positions from zmin to zmax relative to current, working back (light goes from 0 to zmax)

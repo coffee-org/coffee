@@ -66,10 +66,6 @@ static CLICMDDATA CLIcmddata =
 };
 
 // detailed help
-static errno_t help_function()
-{
-    return RETURN_SUCCESS;
-}
 
 // compress FPMresp to smaller number of lambda and points
 errno_t PIAACMC_FPMresp_resample(const char *__restrict__ FPMresp_in_name,

@@ -56,10 +56,6 @@ static CLICMDDATA CLIcmddata = {"fpmresprm",
                                };
 
 // detailed help
-static errno_t help_function()
-{
-    return RETURN_SUCCESS;
-}
 
 // remove outer zones to FPMresp
 errno_t FPMresp_rmzones(const char *__restrict__ FPMresp_in_name,
