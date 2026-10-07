@@ -109,10 +109,13 @@ add_subdirectory(coronagraphs)
 add_subdirectory(PIAACMCsimul)
 
 # Top-level meta target
-add_custom_target(coffee-all ALL
-    DEPENDS
-        coffeeOptSystProp
-        coffeeAOsystSim
-        coffeecoronagraphs
-        coffeePIAACMCsimul
-)
+if(NOT TARGET coffee-all)
+    add_custom_target(coffee-all ALL
+        DEPENDS
+            coffeeOptSystProp
+            coffeeAOsystSim
+            coffeecoronagraphs
+            coffeePIAACMCsimul
+    )
+endif()
+
