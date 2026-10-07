@@ -42,7 +42,6 @@ OPTPIAACMCDESIGN    piaacmcopticaldesign;
 OPTSYST             piaacmcopticalsystem;
 
 MODULE_DEPS("milkinfo", "milkOpticsMaterials", "milklinoptimtools", "milkimagebasic", "milkimagefilter", "milkWFpropagate");
-INIT_MODULE_LIB_DEPS(coffee_PIAACMCsimul)
 
 /** @name MODULE INITIALIZATION
  * Registers CLI commands
@@ -121,3 +120,6 @@ static errno_t init_module_CLI()
 
     return RETURN_SUCCESS;
 }
+
+MILK_MODULE(coffeePIAACMCsimul, init_module_CLI, _module_deps);
+
