@@ -1,0 +1,142 @@
+# coffee Code Size Ratchet Baseline
+# Format: 2 lines per entry: <TYPE> <MAX_LINES> followed by <TARGET>
+# Generated on 2026-10-07 03:32:48 UTC
+# Update via: ./scripts/check_code_size.sh --update-baseline
+
+# --- File Lengths (> 1000 lines) ---
+FILE 7221
+AOsystSim/AOsystSim.c
+FILE 1025
+OptSystProp/OptSystProp_run.c
+FILE 1083
+PIAACMCsimul/PIAACMCsimul_computePSF.c
+FILE 1812
+PIAACMCsimul/PIAACMCsimul_exec.c
+FILE 2106
+PIAACMCsimul/init_piaacmcopticaldesign.c
+FILE 11374
+coronagraphs/coronagraphs.c
+
+# --- Function Lengths (> 150 lines, or main > 80 lines) ---
+FUNC 439
+AOsystSim/AOsystSim.c:AOsystSim_DM
+FUNC 377
+AOsystSim/AOsystSim.c:AOsystSim_FPWFS_imsimul
+FUNC 217
+AOsystSim/AOsystSim.c:AOsystSim_FPWFS_mkprobes
+FUNC 934
+AOsystSim/AOsystSim.c:AOsystSim_FPWFS_sensitivityAnalysis
+FUNC 423
+AOsystSim/AOsystSim.c:AOsystSim_PyrWFS
+FUNC 233
+AOsystSim/AOsystSim.c:AOsystSim_WFSsim_Pyramid
+FUNC 556
+AOsystSim/AOsystSim.c:AOsystSim_coroLOWFS
+FUNC 621
+AOsystSim/AOsystSim.c:AOsystSim_extremeAO_contrast_sim
+FUNC 315
+AOsystSim/AOsystSim.c:AOsystSim_fitTelPup
+FUNC 1036
+AOsystSim/AOsystSim.c:AOsystSim_mkWF
+FUNC 495
+AOsystSim/AOsystSim.c:AOsystSim_run
+FUNC 292
+AOsystSim/AOsystSim.c:AOsystSim_simpleAOfilter
+FUNC 983
+OptSystProp/OptSystProp_run.c:OptSystProp_run
+FUNC 725
+PIAACMCsimul/FocalPlaneMask/exec_multizone_fpm_calib.c:exec_multizone_fpm_calib
+FUNC 265
+PIAACMCsimul/FocalPlaneMask/exec_optimize_fpm_zones.c:exec_optimize_fpm_zones
+FUNC 207
+PIAACMCsimul/FocalPlaneMask/exec_optimize_fpmtransmission.c:exec_optimize_fpmtransmission
+FUNC 397
+PIAACMCsimul/FocalPlaneMask/mkFPM_zonemap.c:mkFPM_zonemap
+FUNC 590
+PIAACMCsimul/FocalPlaneMask/mkFocalPlaneMask.c:mkFocalPlaneMask
+FUNC 196
+PIAACMCsimul/LyotStop/exec_optimize_lyot_stop_position.c:exec_optimize_lyot_stop_position
+FUNC 349
+PIAACMCsimul/LyotStop/exec_optimize_lyot_stops_shapes_positions.c:exec_optimize_lyot_stops_shapes_positions
+FUNC 182
+PIAACMCsimul/LyotStop/mkLyotMask.c:mkLyotMask
+FUNC 458
+PIAACMCsimul/LyotStop/optimizeLyotStop.c:optimizeLyotStop
+FUNC 1003
+PIAACMCsimul/PIAACMCsimul_computePSF.c:PIAACMCsimul_computePSF
+FUNC 904
+PIAACMCsimul/PIAACMCsimul_eval_poly_design.c:PIAACMCsimul_eval_poly_design
+FUNC 1424
+PIAACMCsimul/PIAACMCsimul_exec.c:PIAACMCsimul_exec
+FUNC 233
+PIAACMCsimul/PIAACMCsimul_loadsavepiaacmcconf.c:PIAACMCsimul_loadpiaacmcconf
+FUNC 158
+PIAACMCsimul/PIAACMCsimul_loadsavepiaacmcconf.c:PIAACMCsimul_savepiaacmcconf
+FUNC 153
+PIAACMCsimul/PIAACMCsimul_measure_transm_curve.c:PIAACMCsimul_measure_transm_curve
+FUNC 625
+PIAACMCsimul/PIAACMCsimul_run.c:PIAACMCsimul_run
+FUNC 567
+PIAACMCsimul/PIAAshape/init_geomPIAA_rad.c:init_geomPIAA_rad
+FUNC 406
+PIAACMCsimul/PIAAshape/makePIAAshapes.c:makePIAAshapes
+FUNC 174
+PIAACMCsimul/PIAAshape/mkPIAAMshapes_from_RadSag.c:mkPIAAMshapes_from_RadSag
+FUNC 258
+PIAACMCsimul/exec_compute_image.c:exec_compute_image
+FUNC 316
+PIAACMCsimul/exec_optimize_PIAA_shapes_fpmtransm.c:exec_optimize_PIAA_shapes_fpmtransm
+FUNC 458
+PIAACMCsimul/init_piaacmcopticaldesign.c:PIAACMCsimul_initpiaacmcconf_readconfparams
+FUNC 598
+PIAACMCsimul/init_piaacmcopticaldesign.c:init_piaacmcopticaldesign
+FUNC 165
+PIAACMCsimul/init_piaacmcopticaldesign.c:make_C_F_modes
+FUNC 624
+PIAACMCsimul/init_piaacmcopticaldesign.c:setupPIAAshapes
+FUNC 722
+PIAACMCsimul/init_piaacmcopticalsystem.c:init_piaacmcopticalsystem
+FUNC 851
+coronagraphs/coronagraphs.c:CORONAGRAPHS_scanPIAACMC_centObs_perf
+FUNC 509
+coronagraphs/coronagraphs.c:coronagraph_APLCapo_compile
+FUNC 169
+coronagraphs/coronagraphs.c:coronagraph_PIAAperturbation
+FUNC 431
+coronagraphs/coronagraphs.c:coronagraph_apofit
+FUNC 230
+coronagraphs/coronagraphs.c:coronagraph_compute_limitcoeff
+FUNC 915
+coronagraphs/coronagraphs.c:coronagraph_init_PIAA
+FUNC 447
+coronagraphs/coronagraphs.c:coronagraph_make_2Dprolate
+FUNC 518
+coronagraphs/coronagraphs.c:coronagraph_make_2Dprolate_DFT
+FUNC 465
+coronagraphs/coronagraphs.c:coronagraph_simulPSF
+FUNC 176
+coronagraphs/coronagraphs.c:coronagraph_simul_AIC_PIAAC
+FUNC 184
+coronagraphs/coronagraphs.c:coronagraph_simul_BL4
+FUNC 232
+coronagraphs/coronagraphs.c:coronagraph_simul_BL8
+FUNC 271
+coronagraphs/coronagraphs.c:coronagraph_simul_DICC
+FUNC 987
+coronagraphs/coronagraphs.c:coronagraph_simul_MULTISTEP_APLC
+FUNC 178
+coronagraphs/coronagraphs.c:coronagraph_simul_ODC
+FUNC 278
+coronagraphs/coronagraphs.c:coronagraph_simul_OVC
+FUNC 183
+coronagraphs/coronagraphs.c:coronagraph_simul_PIAA
+FUNC 259
+coronagraphs/coronagraphs.c:coronagraph_simul_PIAAC
+FUNC 239
+coronagraphs/coronagraphs.c:coronagraph_simul_RRPM
+FUNC 590
+coronagraphs/coronagraphs.c:coronagraph_transm
+FUNC 377
+coronagraphs/coronagraphs.c:coronagraph_update_2Dprolate
+FUNC 301
+coronagraphs/coronagraphs.c:coronagraphs_PIAA_apodize_beam

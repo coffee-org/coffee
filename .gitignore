@@ -1,8 +1,38 @@
+# Build directories
+build/
+_build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+
+# Compiled binaries and libraries
+*.o
+*.a
+*.so
+*.dylib
+*.lo
+*.la
+
+# Backup and temp files
+*~
+*.bak
+*.save
+*#
+.#*
+*.swp
+
+# IDE and tool caches
+.vscode/
+.cache/
+compile_commands.json
+
+# Documentation generated files
+html/
+latex/
+doxygen_sqlite3.db
+
+# Legacy autotools leftovers
 .deps/
 .libs/
-00CORE.lo
-00CORE.o
 Makefile
 Makefile.in
-Makefile.bak
-lib00core.la

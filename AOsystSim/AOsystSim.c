@@ -120,7 +120,6 @@ OPTSYST *optsystsim;
 // macro argument defines module name for bindings
 //
 MODULE_DEPS("milkWFpropagate", "milkOpticsMaterials");
-INIT_MODULE_LIB_DEPS(AOsystSim)
 
 /* ================================================================== */
 /* ================================================================== */
@@ -380,6 +379,8 @@ static errno_t init_module_CLI()
 
     return RETURN_SUCCESS;
 }
+
+MILK_MODULE(AOsystSim, init_module_CLI, _module_deps);
 
 /* ================================================================== */
 /* ================================================================== */

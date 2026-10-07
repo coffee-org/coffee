@@ -65,10 +65,6 @@ static CLICMDDATA CLIcmddata =
 };
 
 // detailed help
-static errno_t help_function()
-{
-    return RETURN_SUCCESS;
-}
 
 errno_t PIAACMC_FPM_process(const char *__restrict__ FPMsag_name,
                             const char *__restrict__ zonescoord_name,

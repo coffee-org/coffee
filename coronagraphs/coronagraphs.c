@@ -265,7 +265,6 @@ static double APLCapo_FPMRAD_STEP  = 0.001;
 // macro argument defines module name for bindings
 //
 MODULE_DEPS("milkimagegen", "milkfft", "milkimagebasic", "milkWFpropagate");
-INIT_MODULE_LIB_DEPS(coffeecoronagraphs)
 
 /* ================================================================== */
 /* ================================================================== */
@@ -445,6 +444,8 @@ static errno_t init_module_CLI()
 
     return RETURN_SUCCESS;
 }
+
+MILK_MODULE(coffeecoronagraphs, init_module_CLI, _module_deps);
 
 /* ================================================================== */
 /* ================================================================== */
