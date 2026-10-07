@@ -40,21 +40,10 @@ if(TARGET CLIcore)
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/src/coremods
         ${CMAKE_SOURCE_DIR}/plugins/milk-extra-src
-        ${CMAKE_SOURCE_DIR}/plugins/milkatmturb/src
         $<TARGET_PROPERTY:CLIcore,INTERFACE_INCLUDE_DIRECTORIES>
-        /usr/local/milk/include
     )
 
-    set(OPT_WF_LIBS "")
-    if(TARGET milkWFpropagate)
-        list(APPEND OPT_WF_LIBS milkWFpropagate)
-    elseif(EXISTS "/usr/local/milk/lib/libmilkWFpropagate.so")
-        list(APPEND OPT_WF_LIBS "/usr/local/milk/lib/libmilkWFpropagate.so")
-    elseif(TARGET milkatmturb)
-        list(APPEND OPT_WF_LIBS milkatmturb)
-    else()
-        list(APPEND OPT_WF_LIBS milkWFpropagate)
-    endif()
+    set(OPT_WF_LIBS milkWFpropagate)
 
     target_link_libraries(${LIBNAME} PUBLIC
         CLIcore
@@ -117,7 +106,12 @@ else()
                 ${MILK_SOURCE_FOUND}/src
                 ${MILK_SOURCE_FOUND}/src/coremods
                 ${MILK_SOURCE_FOUND}/plugins/milk-extra-src
-                ${MILK_SOURCE_FOUND}/plugins/milkatmturb/src
+                ${CMAKE_CURRENT_SOURCE_DIR}/../../OpticsMaterials
+                ${CMAKE_CURRENT_SOURCE_DIR}/../../WFpropagate
+                ${MILK_SOURCE_FOUND}/plugins/OpticsMaterials
+                ${MILK_SOURCE_FOUND}/plugins/WFpropagate
+                ${MILK_SOURCE_FOUND}/plugins/milk-extra-src/OpticsMaterials
+                ${MILK_SOURCE_FOUND}/plugins/milk-extra-src/WFpropagate
                 ${MILK_SOURCE_FOUND}/src/cli
                 ${MILK_SOURCE_FOUND}/src/cli/CLIcore
                 ${MILK_SOURCE_FOUND}/src/cli/libmilkscript
@@ -165,20 +159,22 @@ else()
         milkstatistic
         milkZernikePolyn
         milkWFpropagate
+        milkOpticsMaterials
     )
 
     set(MILK_SEARCH_HINTS
-        ${MILK_ROOT}/lib
-        $ENV{MILK_ROOT}/lib
-        /usr/local/milk/lib
-        /usr/local/lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../OpticsMaterials/_build
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../WFpropagate/_build
     )
     if(MILK_SOURCE_FOUND)
         list(APPEND MILK_SEARCH_HINTS
             ${MILK_SOURCE_FOUND}/_build/lib
+            ${MILK_SOURCE_FOUND}/_build/plugins/OpticsMaterials
+            ${MILK_SOURCE_FOUND}/_build/plugins/WFpropagate
+            ${MILK_SOURCE_FOUND}/_build/plugins/milk-extra-src/OpticsMaterials
+            ${MILK_SOURCE_FOUND}/_build/plugins/milk-extra-src/WFpropagate
             ${MILK_SOURCE_FOUND}/_build/src/cli/CLIcore
             ${MILK_SOURCE_FOUND}/_build/src/engine/ImageStreamIO
-            ${MILK_SOURCE_FOUND}/_build/plugins/milkatmturb
             ${MILK_SOURCE_FOUND}/_build/plugins/milk-extra-src/fft
             ${MILK_SOURCE_FOUND}/_build/plugins/milk-extra-src/image_gen
             ${MILK_SOURCE_FOUND}/_build/plugins/milk-extra-src/image_basic
@@ -187,6 +183,12 @@ else()
             ${MILK_SOURCE_FOUND}/_build/plugins/milk-extra-src/ZernikePolyn
         )
     endif()
+    list(APPEND MILK_SEARCH_HINTS
+        ${MILK_ROOT}/lib
+        $ENV{MILK_ROOT}/lib
+        /usr/local/milk/lib
+        /usr/local/lib
+    )
 
     set(MILK_LIBRARIES "")
     foreach(lib ${MILK_LIB_NAMES})

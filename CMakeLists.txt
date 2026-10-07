@@ -61,8 +61,11 @@ set(MILK_STANDALONE_INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../AtmosphericTurbulenceSimul/src")
-    list(APPEND MILK_STANDALONE_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/../AtmosphericTurbulenceSimul/src")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../OpticsMaterials")
+    list(APPEND MILK_STANDALONE_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/../OpticsMaterials")
+endif()
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../WFpropagate")
+    list(APPEND MILK_STANDALONE_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/../WFpropagate")
 endif()
 
 if(MILK_SOURCE_FOUND)
@@ -70,7 +73,10 @@ if(MILK_SOURCE_FOUND)
         ${MILK_SOURCE_FOUND}/src
         ${MILK_SOURCE_FOUND}/src/coremods
         ${MILK_SOURCE_FOUND}/plugins/milk-extra-src
-        ${MILK_SOURCE_FOUND}/plugins/milkatmturb/src
+        ${MILK_SOURCE_FOUND}/plugins/OpticsMaterials
+        ${MILK_SOURCE_FOUND}/plugins/WFpropagate
+        ${MILK_SOURCE_FOUND}/plugins/milk-extra-src/OpticsMaterials
+        ${MILK_SOURCE_FOUND}/plugins/milk-extra-src/WFpropagate
         ${MILK_SOURCE_FOUND}/src/cli
         ${MILK_SOURCE_FOUND}/src/cli/CLIcore
         ${MILK_SOURCE_FOUND}/src/cli/libmilkscript
