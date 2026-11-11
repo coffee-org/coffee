@@ -1,48 +1,8 @@
 # coffee Code Size Ratchet Baseline
 # Format: 2 lines per entry: <TYPE> <MAX_LINES> followed by <TARGET>
-# Generated on 2026-11-11 08:59:53 UTC
+# Generated on 2026-11-11 19:47:01 UTC
 # Update via: ./scripts/check_code_size.sh --update-baseline
 
 # --- File Lengths (> 1000 lines) ---
 
 # --- Function Lengths (> 150 lines, or main > 80 lines) ---
-FUNC 639
-PIAACMCsimul/FocalPlaneMask/exec_multizone_fpm_calib.c:exec_multizone_fpm_calib
-FUNC 230
-PIAACMCsimul/FocalPlaneMask/exec_optimize_fpm_zones.c:exec_optimize_fpm_zones
-FUNC 207
-PIAACMCsimul/FocalPlaneMask/exec_optimize_fpmtransmission.c:exec_optimize_fpmtransmission
-FUNC 397
-PIAACMCsimul/FocalPlaneMask/mkFPM_zonemap.c:mkFPM_zonemap
-FUNC 580
-PIAACMCsimul/FocalPlaneMask/mkFocalPlaneMask.c:mkFocalPlaneMask
-FUNC 196
-PIAACMCsimul/LyotStop/exec_optimize_lyot_stop_position.c:exec_optimize_lyot_stop_position
-FUNC 349
-PIAACMCsimul/LyotStop/exec_optimize_lyot_stops_shapes_positions.c:exec_optimize_lyot_stops_shapes_positions
-FUNC 182
-PIAACMCsimul/LyotStop/mkLyotMask.c:mkLyotMask
-FUNC 458
-PIAACMCsimul/LyotStop/optimizeLyotStop.c:optimizeLyotStop
-FUNC 889
-PIAACMCsimul/PIAACMCsimul_eval_poly_design.c:PIAACMCsimul_eval_poly_design
-FUNC 233
-PIAACMCsimul/PIAACMCsimul_loadsavepiaacmcconf.c:PIAACMCsimul_loadpiaacmcconf
-FUNC 152
-PIAACMCsimul/PIAACMCsimul_loadsavepiaacmcconf.c:PIAACMCsimul_savepiaacmcconf
-FUNC 151
-PIAACMCsimul/PIAACMCsimul_measure_transm_curve.c:PIAACMCsimul_measure_transm_curve
-FUNC 608
-PIAACMCsimul/PIAACMCsimul_run.c:PIAACMCsimul_run
-FUNC 567
-PIAACMCsimul/PIAAshape/init_geomPIAA_rad.c:init_geomPIAA_rad
-FUNC 406
-PIAACMCsimul/PIAAshape/makePIAAshapes.c:makePIAAshapes
-FUNC 174
-PIAACMCsimul/PIAAshape/mkPIAAMshapes_from_RadSag.c:mkPIAAMshapes_from_RadSag
-FUNC 258
-PIAACMCsimul/exec_compute_image.c:exec_compute_image
-FUNC 316
-PIAACMCsimul/exec_optimize_PIAA_shapes_fpmtransm.c:exec_optimize_PIAA_shapes_fpmtransm
-FUNC 722
-PIAACMCsimul/init_piaacmcopticalsystem.c:init_piaacmcopticalsystem
