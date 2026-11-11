@@ -2,6 +2,8 @@
 # coffeecoronagraphs - Coronagraph Design & Propagation Algorithms
 # =====================================================================
 
+cmake_minimum_required(VERSION 3.16)
+
 set(LIBNAME "coffeecoronagraphs")
 set(SRCNAME "coronagraphs")
 
@@ -10,6 +12,28 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(SOURCEFILES
     coronagraphs.c
+    coronagraphs_prolate.c
+    coronagraphs_prolate_dft.c
+    coronagraphs_prolate_update.c
+    coronagraphs_apofit_eval.c
+    coronagraphs_apofit.c
+    coronagraphs_aplc_compile.c
+    coronagraphs_piaa_init.c
+    coronagraphs_piaa_remap.c
+    coronagraphs_piaa_beam.c
+    coronagraphs_masks_init.c
+    coronagraphs_sim_phase.c
+    coronagraphs_sim_bandlim.c
+    coronagraphs_sim_vortex_rrpm.c
+    coronagraphs_sim_apodized.c
+    coronagraphs_sim_piaac.c
+    coronagraphs_sim_aplc.c
+    coronagraphs_sim_aplc_prop.c
+    coronagraphs_eval.c
+    coronagraphs_transm.c
+    coronagraphs_limitcoeff.c
+    coronagraphs_scan_compute.c
+    coronagraphs_scan.c
     coronagraphs_cli.c
 )
 

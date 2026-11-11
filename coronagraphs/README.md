@@ -35,7 +35,30 @@ Optional numeric tuning variables (set via `@calc "VAR = VAL"` before calling pr
 | File | Description |
 |------|-------------|
 | `coronagraphs.h` | Public C API for 2D prolate generation, PIAA remapping, and PSF simulators |
-| `coronagraphs.c` | Core prolate spheroidal math, APLC fitting, PIAA init, and coronagraph models |
+| `coronagraphs_internal.h` | Internal state (`coro_state_t`), constants, and cross-file helpers |
+| `coronagraphs.c` | Shared module state definitions and common pupil, FFT, and PSF utilities |
+| `coronagraphs_prolate.c` | FFT-based and circularly symmetric 2D prolate apodizer synthesis |
+| `coronagraphs_prolate_dft.c` | Zoomed-DFT 2D prolate spheroidal eigenmode iteration engine |
+| `coronagraphs_prolate_update.c` | Iterative zoomed-DFT refinement of existing 2D prolate masks |
+| `coronagraphs_apofit_eval.c` | Analytical multi-basis radial apodizer profile evaluation |
+| `coronagraphs_apofit.c` | GSL Nelder-Mead analytical fitting of 1D prolate apodizer profiles |
+| `coronagraphs_aplc_compile.c` | Precomputed APLC prolate FITS lookup-cube compiler |
+| `coronagraphs_piaa_init.c` | Radial PIAA apodization profile loading and ray-mapping setup |
+| `coronagraphs_piaa_remap.c` | PIAA mirror shape integration, forward remapping, and unwrapping |
+| `coronagraphs_piaa_beam.c` | PIAA cleanup, Subaru pupil mask generator, and Zernike sensitivity |
+| `coronagraphs_masks_init.c` | Focal-plane and pupil mask builders (`CPA`, `ODC`, `BL`, `OVC`) |
+| `coronagraphs_sim_phase.c` | Phase-mask and interferometric PSF simulators (`AIC`, `4QPM`, etc.) |
+| `coronagraphs_sim_bandlim.c` | Band-limited and optical differentiation PSF simulators |
+| `coronagraphs_sim_vortex_rrpm.c` | Roddier & Roddier phase mask, optimizer, and vortex PSFs |
+| `coronagraphs_sim_apodized.c` | Apodized (`CPA`, `PPA`, `STRIPC`, `SIMXY`) and unocculted PSFs |
+| `coronagraphs_sim_piaac.c` | `PIAA`, `PIAAC`, and hybrid `AIC_PIAAC` coronagraph PSF simulators |
+| `coronagraphs_sim_aplc.c` | Multi-step APLC/PIAACMC setup and external occulter simulators |
+| `coronagraphs_sim_aplc_prop.c` | Multi-step APLC focal-plane cascade and Lyot-plane PSF readout |
+| `coronagraphs_eval.c` | Top-level `coronagraph_simulPSF` dispatcher and user hook |
+| `coronagraphs_transm.c` | Off-axis planetary throughput and IWA50 curve evaluator |
+| `coronagraphs_limitcoeff.c` | Fundamental Taylor-series inner-working-angle limit calculator |
+| `coronagraphs_scan_compute.c` | Grid PSF and radial profile synthesis for PIAACMC design scans |
+| `coronagraphs_scan.c` | PIAACMC central-obscuration performance scanner and FITS summary |
 | `coronagraphs_cli.c` | `MILK_RUNNABLE` CLI wrappers and `MILK_MODULE_RUNNABLES` registration |
 | `scripts/coffee` | Top-level `milk-cli` launcher preloading all `coffee` optical modules |
 
