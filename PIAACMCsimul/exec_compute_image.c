@@ -1,5 +1,5 @@
 /**
- * @file    PIAAACMCsimul_compute_image.c
+ * @file    exec_compute_image.c
  * @brief   PIAA-type coronagraph design, execute compute image
  *
  */
@@ -29,7 +29,7 @@
  * @brief Compute PSF or image scene
  *
  */
-errno_t exec_compute_image()
+errno_t exec_compute_image(void)
 {
     DEBUG_TRACE_FSTART();
 

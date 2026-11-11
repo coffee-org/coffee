@@ -1,6 +1,6 @@
 /**
- * @file    PIAAACMCsimul_exec_optimize_lyot_stop_position.c
- * @brief   Optimize Lyot stop(s) conjugations
+ * @file    exec_optimize_fpmtransmission.c
+ * @brief   Optimize idealized monochromatic focal plane mask transmission
  *
  *
  */
@@ -42,7 +42,7 @@
  *
  * @return errno_t
  */
-errno_t exec_optimize_fpmtransmission()
+errno_t exec_optimize_fpmtransmission(void)
 {
     DEBUG_TRACE_FSTART();
 

@@ -1,5 +1,5 @@
 /**
- * @file    PIAAACMCsimul_exec_optimize_lyot_stop_position.c
+ * @file    exec_optimize_lyot_stop_position.c
  * @brief   Optimize Lyot stop(s) conjugations
  *
  *
@@ -42,7 +42,7 @@ Vary these zpos, looking for the best contrast returned by PIAACMCsimul_computeP
 
 Search is performed by iterative refined marching
 **/
-errno_t exec_optimize_lyot_stop_position()
+errno_t exec_optimize_lyot_stop_position(void)
 {
     DEBUG_TRACE_FSTART();
 

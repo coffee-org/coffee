@@ -1,9 +1,15 @@
+/**
+ * @file    load2DRadialApodization.h
+ * @brief   Modal projection of 2D radial pupil apodizer onto radial cosine basis
+ */
 
 #ifndef LOAD2DRADIALAPODIZATION_H
 #define LOAD2DRADIALAPODIZATION_H
 
-errno_t load2DRadialApodization(const char *__restrict__ IDapo_name,
-                                float beamradpix,
-                                const char *__restrict__ IDapofit_name);
+/* Fit 2D apodizer IDapo_name (beam radius beamradpix [pix]) onto cosine vector IDapofit_name. */
+errno_t load2DRadialApodization(
+    const char *restrict IDapo_name,
+    float                beamradpix,
+    const char *restrict IDapofit_name);
 
-#endif
+#endif /* LOAD2DRADIALAPODIZATION_H */

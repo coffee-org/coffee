@@ -1,6 +1,6 @@
 /**
- * @file    PIAACMCsimul_mkLyotMask.c
- * @brief   PIAA-type coronagraph design
+ * @file    mkLyotMask.c
+ * @brief   Synthesize binary Lyot stop masks from off-axis/on-axis intensity maps
  *
  *
  */

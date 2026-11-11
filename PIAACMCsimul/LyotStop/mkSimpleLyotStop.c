@@ -1,6 +1,6 @@
 /**
  * @file    mkSimpleLyotStop.c
- * @brief   PIAA-type coronagraph design, run
+ * @brief   Create annular pupil Lyot stop mask between inner and outer radii
  *
  */
 

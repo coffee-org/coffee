@@ -1,6 +1,6 @@
 /**
- * @file    PIAAACMCsimul_loadsavepiaacmcconf.c
- * @brief   PIAA-type coronagraph design
+ * @file    PIAACMCsimul_loadsavepiaacmcconf.c
+ * @brief   Load/save PIAACMC design parameters and FPM filename descriptors
  *
  * Can design both APLCMC and PIAACMC coronagraphs
  *
@@ -262,7 +262,7 @@ errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname)
 /** @brief Assemble focal plane mask configuration name
  *
  */
-errno_t PIAACMCsimul_update_fnamedescr_conf()
+errno_t PIAACMCsimul_update_fnamedescr_conf(void)
 {
     DEBUG_TRACE_FSTART();
 
@@ -286,7 +286,7 @@ errno_t PIAACMCsimul_update_fnamedescr_conf()
  *
  *
  */
-errno_t PIAACMCsimul_update_fnamedescr()
+errno_t PIAACMCsimul_update_fnamedescr(void)
 {
     DEBUG_TRACE_FSTART();
 

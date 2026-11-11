@@ -1,85 +1,42 @@
-
 # Introduction {#page_PIAACMCsimul_Introduction}
-
 
 ## Scope
 
-Diffraction-based PIAACMC simulation / optimization
+`PIAACMCsimul` performs end-to-end diffractive simulation, multi-stage optimization, and
+polychromatic contrast evaluation of Phase-Induced Amplitude Apodization Complex Mask Coronagraphs
+(**PIAACMC**) and Apodized Pupil Lyot Complex Mask Coronagraphs (**APLCMC**):
 
-- Uses Fresnel propagation engine ( OptSystProp.c OptSystProp.h ) between optical elements
-- Computes linear perturbations around current design for optimization
-- Automatically computes multiple Lyot stop to follow variable conjugation in different parts of the beam
-- Polychromatic propagations
-- Fits aspheric PIAA shapes on basis of radial cosines and 2-D Fourier modes
+- Uses the multi-wavelength Fresnel propagation engine (`OptSystProp`) between optical elements.
+- Synthesizes multiple Lyot stops across distinct axial conjugations to track chromatic and
+  pupil-dependent diffraction.
+- Fits aspheric PIAA mirror or lens surfaces onto 2D radial cosine (`Cmodes`) and 2D Fourier
+  (`Fmodes`) modal bases.
+- Calibrates polychromatic complex electric-field zone responses (`FPMresp`) across parallel
+  worker processes and solves for optimal multi-zone focal plane mask sags via regularized SVD.
 
+---
 
-## Usage
+## Command-Line Architecture
 
-Scripts to run the software are located within the source code directory:
+Installed executables live in `<milk-install-prefix>/bin` (no workspace symlink scripts needed).
+Design workflows are driven through `coffee-piaacmc` (recommended) or the underlying layered
+scripts:
 
-	./src/PIAACMCsimul/scripts/
+| Executable | Role |
+|---|---|
+| `coffee-piaacmc` | Unified driver (`init`, `config`, `run`, `eval`, `quantize`, `status`) |
+| `coffee-runPIAACMCdesign` | Legacy flag-based entry point (`-e`, `-m`, `-q`, `-c`, `-C`) |
+| `coffee-run` | Reads `conf/conf_*.txt` workspace parameters and invokes `coffee-runopt` |
+| `coffee-runopt` | Manages single-point optimization, parameter sweeps, and evaluations |
+| `coffee-sim` | Resolves pupil files and invokes `coffee-runPIAACMC` |
+| `coffee-runPIAACMC` | Step state machine (`step000..step725`) driving `coffee` (`milk-cli`) |
 
-The scripts can be linked to your working directory by executing the following command:
-
-	ln -s $PWD/syncscripts /myworkdirectory/syncscripts
-
-Then, execute in your work directory:
-
-	./syncscripts
-
-This will install all required scripts in workdirectory and install any packages required.
-
-Code is composed of a several layers (from high to **low**) :
-
-
-Script            |     Description
-------------------|-----------------------------------------------------------
-runPIAACMCdesign  | Top level script ("-h" for help)
-run               |  Main script, calls **runopt** script
-runopt            |  Optimize a PIAACMC design or run an existing design, calls **sim** script
-sim               |  calls **runPIAACMC** script
-runPIAACMC        |  lower-level script calling C-written executable
-
-
-
-@dot
-digraph scripts_flow {
-	size ="4,4";
-	ratio = auto;
-
-  "runPIAACMCdesign" [ style = "filled, bold" penwidth = 5 fillcolor = "white" fontname = "Courier New" shape = "Mrecord"
-  label =<<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">runPIAACMCdesign</font></td></tr>
-  <tr><td align="left">Top level script</td></tr>
-  <tr><td align="left">Executes lower scripts</td></tr>
-  </table>> ];
-
-  "run" [ style = "filled, bold" penwidth = 5 fillcolor = "white" fontname = "Courier New" shape = "Mrecord"
-  label =<<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">run</font></td></tr>
-  <tr><td align="left">Main script</td></tr>
-  <tr><td align="left">Reads input variables</td></tr>
-  </table>> ];
-
-  "runopt" [ style = "filled" penwidth = 1 fillcolor = "white" fontname = "Courier New" shape = "Mrecord"
-  label =<<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">runopt</font></td></tr>
-  <tr><td align="left">Optimize a PIAACMC design or</td></tr>
-  <tr><td align="left"> run an existing design</td></tr>
-  </table>> ];
-
-  "sim" [ style = "filled" penwidth = 1 fillcolor = "white" fontname = "Courier New" shape = "Mrecord"
-  label =<<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">sim</font></td></tr>
-  <tr><td align="left"> </td></tr>
-  </table>> ];
-
-  "runPIAACMC" [ style = "filled" penwidth = 1 fillcolor = "white" fontname = "Courier New" shape = "Mrecord"
-  label =<<table border="0" cellborder="0" cellpadding="3" bgcolor="white"><tr><td bgcolor="black" align="center" colspan="2"><font color="white">runPIAACMC</font></td></tr>
-  <tr><td align="left">lower-level script calling C-written executable</td></tr>
-  </table>> ];
-
-
-
-  runPIAACMCdesign-> run [ penwidth = 5 fontsize = 28 fontcolor = "black" label = "" ];
-  run-> runopt [ penwidth = 5 fontsize = 28 fontcolor = "black" label = "" ];
-  runopt -> sim [ penwidth = 5 fontsize = 28 fontcolor = "black" label = "" ];
-  sim -> runPIAACMC [ penwidth = 5 fontsize = 28 fontcolor = "black" label = "" ];
-}
-@enddot
+```mermaid
+flowchart TD
+    A["coffee-piaacmc (piaacmc.conf)"] --> B["coffee-runPIAACMCdesign"]
+    B --> C["coffee-run"]
+    C --> D["coffee-runopt"]
+    D --> E["coffee-sim"]
+    E --> F["coffee-runPIAACMC"]
+    F --> G["coffee (milk-cli: coffeepiaacmcsim.run)"]
+```

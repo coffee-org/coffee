@@ -1,5 +1,5 @@
 /**
- * @file    PIAACMCsimul_makePIAAshapes.c
+ * @file    makePIAAshapes.c
  * @brief   PIAA-type coronagraph design, make PIAA shapes
  *
  * Can design both APLCMC and PIAACMC coronagraphs
@@ -35,7 +35,7 @@
  * piaa0Cz + piaa0Fz -> piaam0z
  *
  */
-errno_t makePIAAshapes()
+errno_t makePIAAshapes(void)
 {
     DEBUG_TRACE_FSTART();
     DEBUG_TRACEPOINT("PIAA material code = %d",

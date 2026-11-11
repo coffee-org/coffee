@@ -180,3 +180,33 @@ Inside `coffee` (`milk-cli`), `libcoffeePIAACMCsimul.so` registers commands unde
   x Nlambda)`.
 - `CnormFactor.txt`, `psfi0.fits`, `eval0/Contrast*.txt`: Unocculted normalization, polychromatic
   PSF cube, and contrast curves.
+
+---
+
+## 6. Source Files & Submodules
+
+Top-level files in `PIAACMCsimul/` (see submodule tables in
+[FocalPlaneMask/README.md](FocalPlaneMask/README.md), [LyotStop/README.md](LyotStop/README.md), and
+[PIAAshape/README.md](PIAAshape/README.md)):
+
+| File | Description |
+|------|-------------|
+| `PIAACMCsimul.h` / `.c` | Core `PIAACMCSIMUL_PARAMS`, `OPTPIAACMCDESIGN` structs & module table |
+| `PIAACMCsimul_run.h` / `.c` | `coffeepiaacmcsim.run` CLI wrapper, `mc_var` setup & Mode 13 loop |
+| `PIAACMCsimul_exec.h` / `.c` | Mode `0..303` dispatcher & regularized linear perturbation loop |
+| `init_piaacmcopticaldesign.h` / `.c` | Load/create `piaacmcparams.conf`, modes, PIAA, FPM & Lyot |
+| `init_piaacmcopticalsystem.h` / `.c` | Populate `OptSystProp` `OPTSYST` element sequence |
+| `PIAACMCsimul_loadsavepiaacmcconf.h` / `.c` | Read/write `piaacmcparams.conf` & filename tags |
+| `PIAACMCsimul_computePSF.h` / `.c` | Point-source & extended-star polychromatic PSF propagation |
+| `exec_compute_image.h` / `.c` | On-axis PSF or multi-point scene synthesis (`Mode 0`) |
+| `exec_computePSF_no_fpm.h` / `.c` | Unocculted reference PSF calibration (`Mode 3`) |
+| `exec_optimize_PIAA_shapes_fpmtransm.h` / `.c` | Joint PIAA + FPM linear setup (`Modes 40/41`) |
+| `PIAACMCsimul_CA2propCubeInt.h` / `.c` | Axial Fresnel intensity cube builder for Lyot design |
+| `PIAACMCsimul_achromFPMsol_eval.h` / `.c` | Fast dark-hole contrast evaluation from `FPMresp` |
+| `PIAACMCsimul_achromFPMsol_eval_zonezderivative.h` / `.c` | Analytical zone-sag field derivative |
+| `PIAACMC_f_evalmask.h` / `.c` | GSL Nelder-Mead / simulated-annealing merit callback |
+| `PIAACMCsimul_eval_poly_design.h` / `.c` | Polychromatic contrast & jitter eval (`Mode 100`) |
+| `PIAACMCsimul_measure_transm_curve.h` / `.c` | Off-axis planet throughput curve (`Mode 101`) |
+| `PIAACMCsimul_free.c` | Release dynamically allocated optimization working buffers |
+| `scripts/coffee-piaacmc` | Unified single-command CLI backed by `piaacmc.conf` |
+| `scripts/coffee-runPIAACMC*` | Underlying step-by-step monochromatic & polychromatic drivers |

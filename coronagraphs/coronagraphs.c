@@ -2337,7 +2337,7 @@ double coronagraph_apofit(const char *fnameout)
 // each FITS file has 2 dimensions: x = central obstruction, y = focal plane mask radius
 //
 //
-errno_t coronagraph_APLCapo_compile()
+errno_t coronagraph_APLCapo_compile(void)
 {
     FILE       *fp;
     struct stat buffer;
@@ -3760,7 +3760,7 @@ errno_t coronagraph_init_PIAA(long *outNBpoints)
     return RETURN_SUCCESS;
 }
 
-int coronagraphs_free_PIAA()
+int coronagraphs_free_PIAA(void)
 {
 
     free(fitapo_a);
@@ -3864,7 +3864,7 @@ int coronagraph_telescope_pupil_Subaru_inside1(double x, double y)
     return (inside);
 }
 
-int coronagraphs_make_SUBARU_pupil()
+int coronagraphs_make_SUBARU_pupil(void)
 {
     // double epsilon = 0.0000000001;;
     long    Ssize = 4096;
@@ -4403,7 +4403,7 @@ int coronagraphs_PIAA_apodize_beam(const char *ampl1,
     return (0);
 }
 
-int coronagraph_init_CPA()
+int coronagraph_init_CPA(void)
 {
     FILE    *fp;
     uint32_t size = CORONAGRAPHS_ARRAYSIZE;
@@ -4496,7 +4496,7 @@ int coronagraph_init_CPA()
     return (0);
 }
 
-int coronagraph_init_ODC()
+int coronagraph_init_ODC(void)
 {
     long    size     = CORONAGRAPHS_ARRAYSIZE;
     int     factor   = 4;
@@ -4559,7 +4559,7 @@ int coronagraph_init_ODC()
     return (0);
 }
 
-int coronagraph_init_BL8()
+int coronagraph_init_BL8(void)
 {
     long   size = CORONAGRAPHS_ARRAYSIZE;
     double x, y, r;
@@ -4653,7 +4653,7 @@ int coronagraph_init_BL8()
     return (0);
 }
 
-int coronagraph_init_BL4()
+int coronagraph_init_BL4(void)
 {
     long   size = CORONAGRAPHS_ARRAYSIZE;
     double x, y, r, rx;
@@ -4690,7 +4690,7 @@ int coronagraph_init_BL4()
     return (0);
 }
 
-int coronagraph_init_RRPM()
+int coronagraph_init_RRPM(void)
 {
     long   size  = CORONAGRAPHS_ARRAYSIZE;
     long   size2 = size * size;
@@ -7721,7 +7721,7 @@ int coronagraph_simul_AIC_PIAAC(double xld, double yld, const char *psfname)
     return (0);
 }
 
-int coronagraph_RRPM_optimize()
+int coronagraph_RRPM_optimize(void)
 {
     double best_RRPM_RADIUS = RRPM_RADIUS;
     double best_RRPM_P2     = RRPM_P2;
@@ -9996,7 +9996,7 @@ int coronagraph_transm(const char *fname,
     return (0);
 }
 
-int coronagraph_userfunc()
+int coronagraph_userfunc(void)
 {
     FILE   *fp;
     long    size = CORONAGRAPHS_ARRAYSIZE;
@@ -10088,7 +10088,7 @@ int coronagraph_userfunc()
     return (0);
 }
 
-int coronagraph_compute_limitcoeff()
+int coronagraph_compute_limitcoeff(void)
 {
     FILE   *fp;
     long    Csize = 200;

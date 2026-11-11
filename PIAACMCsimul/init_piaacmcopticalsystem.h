@@ -1,6 +1,14 @@
-#ifndef INIT_PIAACMCOPTICALSYSTEM_H
-#define INIT_PIAACMCOPTICALSYSTEM_H
+/**
+ * @file    init_piaacmcopticalsystem.h
+ * @brief   Population of OptSystProp OPTSYST element sequence from OPTPIAACMCDESIGN
+ */
 
-errno_t init_piaacmcopticalsystem(double TTxld, double TTyld);
+#ifndef PIAACMCSIMUL_INIT_PIAACMCOPTICALSYSTEM_H
+#define PIAACMCSIMUL_INIT_PIAACMCOPTICALSYSTEM_H
 
-#endif
+/* Assemble optical element train in piaacmcopticalsystem for source offset (xld, yld) [l/D]. */
+errno_t init_piaacmcopticalsystem(
+    double xld,
+    double yld);
+
+#endif /* PIAACMCSIMUL_INIT_PIAACMCOPTICALSYSTEM_H */

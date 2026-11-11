@@ -1,5 +1,5 @@
 /**
- * @file    PIAAACMCsimul_eval_poly_design.c
+ * @file    PIAACMCsimul_eval_poly_design.c
  * @brief   Evaluate polychromatic design
  *
  */
@@ -28,7 +28,7 @@
 
 #include "PIAAshape/makePIAAshapes.h"
 
-errno_t PIAACMCsimul_eval_poly_design()
+errno_t PIAACMCsimul_eval_poly_design(void)
 {
     DEBUG_TRACE_FSTART();
     DEBUG_TRACEPOINT("FUNC");

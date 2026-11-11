@@ -1,6 +1,6 @@
 /**
- * @file    PIAAACMCsimul_exec_optimize_lyot_stops_shapes_positions.c
- * @brief   PIAA-type coronagraph design, execute compute image
+ * @file    exec_optimize_lyot_stops_shapes_positions.c
+ * @brief   Jointly optimize multi-plane Lyot stop shapes and axial conjugations
  *
  */
 
@@ -103,7 +103,7 @@ errno_t optimizeLyotStop_offaxis_min(const char *__restrict__ IDincohc_name)
   *
   *
   */
-errno_t exec_optimize_lyot_stops_shapes_positions()
+errno_t exec_optimize_lyot_stops_shapes_positions(void)
 {
     DEBUG_TRACE_FSTART();
     DEBUG_TRACEPOINT("FARG");

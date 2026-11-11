@@ -6,7 +6,9 @@ function(coffee_configure_standalone_target TARGET_NAME)
     cmake_parse_arguments(ARG "" "" "EXTRA_INCLUDES;MILK_LIBS;LOCAL_TARGETS" ${ARGN})
 
     target_compile_definitions(${TARGET_NAME} PRIVATE MILK_NO_CLI)
-    target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Wno-unused-const-variable)
+    target_compile_options(${TARGET_NAME} PRIVATE
+        -Wall -Wextra -Wstrict-prototypes -Wno-unused-const-variable
+    )
 
     if(NOT DEFINED MILK_STANDALONE_INCLUDES)
         set(_coffee_root "${CMAKE_CURRENT_LIST_DIR}/..")

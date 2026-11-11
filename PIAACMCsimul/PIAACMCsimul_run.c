@@ -181,7 +181,7 @@ static errno_t PIAACMCsimul_setparam_variables(const char *confindex, long mode)
     return RETURN_SUCCESS;
 }
 
-static double read_searchtime()
+static double read_searchtime(void)
 {
     double searchtime = 3600.0 * 10.0; // [second] default 10 hours
     FILE  *fp;

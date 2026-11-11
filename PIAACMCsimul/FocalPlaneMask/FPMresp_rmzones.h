@@ -1,3 +1,8 @@
+/**
+ * @file    FPMresp_rmzones.h
+ * @brief   Outer-zone truncation utility for FPM complex response matrices
+ */
+
 #ifndef PIAACMCSIMUL_FOCALPLANEMASK_FPMRESP_RMZONES_H
 #define PIAACMCSIMUL_FOCALPLANEMASK_FPMRESP_RMZONES_H
 
@@ -5,7 +10,7 @@
 
 extern const MILK_RUNNABLE runnable_piaacmc_fpmresprm;
 
-/* Collapse outer zones of an FPM complex response matrix into the background slice. */
+/* Collapse zones beyond NBzones into the unmodulated reference row (y = 0). */
 errno_t FPMresp_rmzones(
     const char *restrict FPMresp_in_name,
     const char *restrict FPMresp_out_name,

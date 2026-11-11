@@ -940,7 +940,7 @@ int AOsystSim_simpleAOfilter(const char *IDin_name, const char *IDout_name)
     return (0);
 }
 
-errno_t AOsystSim_extremeAO_contrast_sim()
+errno_t AOsystSim_extremeAO_contrast_sim(void)
 {
     EXAOSIMCONF *exaosimconf;
     long         CN2layer;

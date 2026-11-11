@@ -1,5 +1,5 @@
 /**
- * @file    PIAAACMCsimul_init.c
+ * @file    PIAACMCsimul_exec.c
  * @brief   PIAA-type coronagraph design, execute
  *
  * Can design both APLCMC and PIAACMC coronagraphs
@@ -56,7 +56,7 @@
 #include "PIAAshape/exec_optimize_PIAA_shapes.h"
 #include "PIAAshape/makePIAAshapes.h"
 
-static double PIAACMCsimul_regularization_PIAAshapes_value()
+static double PIAACMCsimul_regularization_PIAAshapes_value(void)
 {
     DEBUG_TRACE_FSTART();
 
@@ -213,7 +213,7 @@ static double PIAACMCsimul_regularization_PIAAshapes_value()
  *
  */
 
-static double PIAACMCsimul_regularization_fpmsag_value()
+static double PIAACMCsimul_regularization_fpmsag_value(void)
 {
     DEBUG_TRACE_FSTART();
 

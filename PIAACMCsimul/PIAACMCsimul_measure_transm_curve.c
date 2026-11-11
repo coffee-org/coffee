@@ -1,5 +1,5 @@
 /**
- * @file    PIAAACMCsimul_measure_transm_curve.c
+ * @file    PIAACMCsimul_measure_transm_curve.c
  * @brief   Measure transmission as a function of angular separation
  *
  */
@@ -31,7 +31,7 @@
  * ## Mode 101: Measure transmission as a function of angular separation
  *
  */
-errno_t PIAACMCsimul_measure_transm_curve()
+errno_t PIAACMCsimul_measure_transm_curve(void)
 {
     DEBUG_TRACE_FSTART();
 

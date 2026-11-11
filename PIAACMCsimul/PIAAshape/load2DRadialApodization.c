@@ -1,6 +1,6 @@
 /**
- * @file    PIAACMCsimul_load2DRadialApodization.c
- * @brief   PIAA-type coronagraph design
+ * @file    load2DRadialApodization.c
+ * @brief   Fit 2D radial apodization profile onto radial cosine mode basis
  *
  *
  */

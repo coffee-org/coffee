@@ -1,6 +1,14 @@
-#ifndef PIAACMCSIMUL_FOCALPLANEMASK_MKFPM_ZOMEMAP_H
-#define PIAACMCSIMUL_FOCALPLANEMASK_MKFPM_ZOMEMAP_H
+/**
+ * @file    mkFPM_zonemap.h
+ * @brief   2D hexagonal ring and sector zone-index map generator for physical FPMs
+ */
 
-errno_t mkFPM_zonemap(const char *__restrict__ IDname, imageID *outID);
+#ifndef PIAACMCSIMUL_FOCALPLANEMASK_MKFPM_ZONEMAP_H
+#define PIAACMCSIMUL_FOCALPLANEMASK_MKFPM_ZONEMAP_H
 
-#endif
+/* Build high-resolution 2D integer zone index map IDname for physical FPM geometry. */
+errno_t mkFPM_zonemap(
+    const char *restrict IDname,
+    imageID             *outID);
+
+#endif /* PIAACMCSIMUL_FOCALPLANEMASK_MKFPM_ZONEMAP_H */

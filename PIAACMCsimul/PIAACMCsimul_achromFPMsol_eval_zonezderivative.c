@@ -1,6 +1,6 @@
 /**
  * @file    PIAACMCsimul_achromFPMsol_eval_zonezderivative.c
- * @brief   PIAA-type coronagraph design, run
+ * @brief   Evaluate analytical derivative of FPM complex response vs. zone sag
  *
  * Can design both APLCMC and PIAACMC coronagraphs
  *

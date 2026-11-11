@@ -2,7 +2,9 @@
 
 Mathematical coronagraph design algorithms (`libcoffeecoronagraphs.so`), including iterative 2D
 prolate spheroidal wave function synthesis for centrally obscured apertures, Apodized Pupil Lyot
-Coronagraph (APLC) mask compilation, and classical/apodized coronagraph PSF simulation.
+Coronagraph (APLC) mask compilation, PIAA radial ray-mapping, and multi-architecture coronagraph
+PSF / throughput simulation (`AIC`, `4QPM`, `BL4`, `BL8`, `OVC`, `RRPM`, `CPA`, `PIAA`, `PIAAC`,
+`MULTISTEP_APLC`).
 
 Also installs the top-level `coffee` launcher script, which starts `milk-cli` with
 `coffeeOptSystProp`, `coffeecoronagraphs`, `coffeePIAACMCsimul`, and `coffeeAOsystSim` preloaded.
@@ -28,8 +30,20 @@ Optional numeric tuning variables (set via `@calc "VAR = VAL"` before calling pr
 
 ---
 
+## Source Files
+
+| File | Description |
+|------|-------------|
+| `coronagraphs.h` | Public C API for 2D prolate generation, PIAA remapping, and PSF simulators |
+| `coronagraphs.c` | Core prolate spheroidal math, APLC fitting, PIAA init, and coronagraph models |
+| `coronagraphs_cli.c` | `MILK_RUNNABLE` CLI wrappers and `MILK_MODULE_RUNNABLES` registration |
+| `scripts/coffee` | Top-level `milk-cli` launcher preloading all `coffee` optical modules |
+
+---
+
 ## Public Header & Dependencies
 
 - **Public Header**: `coronagraphs/coronagraphs.h`
-- **Dependencies**: `CLIcore`, `milkCOREMODmemory`, `milkCOREMODiofits`, `milkCOREMODarith`,
-  `milkfft`, `milkimagegen`, `milkinfo`, `milkstatistic`, `milkkdtree`, `GSL`, `FFTW3`.
+- **Permitted Dependencies**: `CLIcore`, `milkCOREMODmemory`, `milkCOREMODiofits`,
+  `milkCOREMODarith`, `milkfft`, `milkimagegen`, `milkinfo`, `milkstatistic`, `milkkdtree`,
+  `GSL`, `FFTW3`, `OpenMP`.

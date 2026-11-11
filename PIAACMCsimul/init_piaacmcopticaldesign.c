@@ -1,5 +1,5 @@
 /**
- * @file    PIAAACMCsimul_initpiaacmcconf.c
+ * @file    init_piaacmcopticaldesign.c
  * @brief   PIAA-type coronagraph design, initialize
  *
  * Can design both APLCMC and PIAACMC coronagraphs

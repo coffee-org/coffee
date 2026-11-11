@@ -1,6 +1,6 @@
 /**
- * @file    PIAAACMCsimul_mkFPM_zonemap.c
- * @brief   PIAA-type coronagraph design, initialize
+ * @file    mkFPM_zonemap.c
+ * @brief   Generate 2D focal plane mask hexagonal ring/sector zone index map
  *
  */
 

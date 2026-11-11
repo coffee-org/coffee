@@ -1,6 +1,6 @@
 /**
- * @file    PIAACMCsimul_f_evalmask.c
- * @brief   PIAA-type coronagraph design, run
+ * @file    PIAACMC_f_evalmask.c
+ * @brief   Objective callback for Nelder-Mead / annealing FPM zone optimization
  *
  * Can design both APLCMC and PIAACMC coronagraphs
  *

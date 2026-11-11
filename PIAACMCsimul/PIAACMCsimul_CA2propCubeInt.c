@@ -1,6 +1,6 @@
 /**
  * @file    PIAACMCsimul_CA2propCubeInt.c
- * @brief   PIAA-type coronagraph design
+ * @brief   Propagate complex amplitude pupil field into 3D Fresnel intensity cube
  *
  * Can design both APLCMC and PIAACMC coronagraphs
  *

@@ -1,5 +1,5 @@
 /**
- * @file    PIAAACMCsimul_computePSF_no_fpm.c
+ * @file    exec_computePSF_no_fpm.c
  * @brief   Compute on-axis PSF with no focal plane mask
  *
  *

@@ -1,6 +1,6 @@
 /**
- * @file    PIAACMCsimul_init_geomPIAA_rad.c
- * @brief   PIAA-type coronagraph design
+ * @file    init_geomPIAA_rad.c
+ * @brief   Solve geometric ray-mapping ODEs for 1D radial PIAA mirror sags
  *
  */
 

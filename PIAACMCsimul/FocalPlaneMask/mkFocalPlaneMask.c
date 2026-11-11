@@ -1,5 +1,5 @@
 /**
- * @file    PIAAACMCsimul_mkFocalPlaneMask.c
+ * @file    mkFocalPlaneMask.c
  * @brief   PIAA-type coronagraph design, make focal plane mask
  *
  *

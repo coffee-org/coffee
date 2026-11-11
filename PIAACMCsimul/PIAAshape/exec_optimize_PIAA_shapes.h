@@ -1,6 +1,12 @@
-#ifndef PIAACMCSIMUL_EXEC_OPTIMIZE_PIAAA_SHAPES_H
-#define PIAACMCSIMUL_EXEC_OPTIMIZE_PIAAA_SHAPES_H
+/**
+ * @file    exec_optimize_PIAA_shapes.h
+ * @brief   Linear perturbation optimization of radial PIAA cosine modes (Mode 4)
+ */
 
-errno_t exec_optimize_PIAA_shapes();
+#ifndef PIAACMCSIMUL_EXEC_OPTIMIZE_PIAA_SHAPES_H
+#define PIAACMCSIMUL_EXEC_OPTIMIZE_PIAA_SHAPES_H
 
-#endif
+/* Register radial PIAA cosine modes for monochromatic linear dark-hole optimization. */
+errno_t exec_optimize_PIAA_shapes(void);
+
+#endif /* PIAACMCSIMUL_EXEC_OPTIMIZE_PIAA_SHAPES_H */

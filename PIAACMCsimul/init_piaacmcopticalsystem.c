@@ -1,5 +1,5 @@
 /**
- * @file    PIAAACMCsimul_init.c
+ * @file    init_piaacmcopticalsystem.c
  * @brief   Initializes the optsyst structure to simulate PIAACMC system
  *
  * Can design both APLCMC and PIAACMC coronagraphs

@@ -1,6 +1,6 @@
 /**
- * @file    PIAACMCsimul_optimizeLyotStop.c
- * @brief   PIAA-type coronagraph design
+ * @file    optimizeLyotStop.c
+ * @brief   Optimize multi-plane Lyot stop axial conjugations across Fresnel cube
  *
  * Can design both APLCMC and PIAACMC coronagraphs
  *

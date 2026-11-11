@@ -1,6 +1,6 @@
 /**
  * @file    PIAACMCsimul_computePSF.c
- * @brief   PIAA-type coronagraph design
+ * @brief   Compute polychromatic point or extended-source coronagraphic PSF
  *
  * Can design both APLCMC and PIAACMC coronagraphs
  *

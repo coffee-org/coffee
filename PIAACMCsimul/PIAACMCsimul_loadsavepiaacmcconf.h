@@ -1,12 +1,21 @@
+/**
+ * @file    PIAACMCsimul_loadsavepiaacmcconf.h
+ * @brief   Serialization of piaacmcparams.conf and FPM solution filename tags
+ */
+
 #ifndef PIAACMCSIMUL_LOADPIAACMCCONF_H
 #define PIAACMCSIMUL_LOADPIAACMCCONF_H
 
+/* Load optical prescription from <dname>/piaacmcparams.conf into piaacmcopticaldesign. */
 errno_t PIAACMCsimul_loadpiaacmcconf(const char *dname);
 
-errno_t PIAACMCsimul_update_fnamedescr_conf();
+/* Format geometry/bandpass descriptor string piaacmcparams.fnamedescr_conf. */
+errno_t PIAACMCsimul_update_fnamedescr_conf(void);
 
-errno_t PIAACMCsimul_update_fnamedescr();
+/* Format full FPM sag/regularization descriptor string piaacmcparams.fnamedescr. */
+errno_t PIAACMCsimul_update_fnamedescr(void);
 
-errno_t PIAACMCsimul_savepiaacmcconf(const char *__restrict dname);
+/* Write current piaacmcopticaldesign prescription to <dname>/piaacmcparams.conf. */
+errno_t PIAACMCsimul_savepiaacmcconf(const char *restrict dname);
 
-#endif
+#endif /* PIAACMCSIMUL_LOADPIAACMCCONF_H */

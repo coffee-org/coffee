@@ -1,5 +1,5 @@
 /**
- * @file    PIAACMCsimul_geomProp.c
+ * @file    geomProp.c
  * @brief   Beam geometrical propagation based on local slopes
  *
  * Uses local slopes of sag map to propagate (un-corrected intensity only) a beam

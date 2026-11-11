@@ -114,5 +114,6 @@ coffee-piaacmc eval --level 0
 coffee-piaacmc status
 ```
 
-See [PIAACMCsimul/README.md](PIAACMCsimul/README.md) and
-[coronagraphs/README.md](coronagraphs/README.md) for complete reference documentation.
+See module reference documentation in [OptSystProp/README.md](OptSystProp/README.md),
+[coronagraphs/README.md](coronagraphs/README.md), [PIAACMCsimul/README.md](PIAACMCsimul/README.md),
+and [AOsystSim/README.md](AOsystSim/README.md).

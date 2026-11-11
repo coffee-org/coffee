@@ -1,5 +1,5 @@
 /**
- * @file    PIAAACMCsimul_exec_multizone_fpm_calib.c
+ * @file    exec_multizone_fpm_calib.c
  * @brief   Setup and calibrate response of multizone focal plane mask
  *
  *
@@ -38,7 +38,7 @@
    (where each mask zone is completely tranparent)
    *
    */
-errno_t exec_multizone_fpm_calib()
+errno_t exec_multizone_fpm_calib(void)
 {
     DEBUG_TRACE_FSTART();
 

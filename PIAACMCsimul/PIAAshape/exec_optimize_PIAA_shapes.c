@@ -1,5 +1,5 @@
 /**
- * @file    PIAAACMCsimul_optimize_PIAA_shapes.c
+ * @file    exec_optimize_PIAA_shapes.c
  * @brief   Optimize PIAA optics shapes
  *
  *
@@ -24,7 +24,7 @@
  * ## Mode 4: Optimize PIAA optics shapes, cosine modes only (not currently used, replaced by mode 40. skipping)
  *
  */
-errno_t exec_optimize_PIAA_shapes()
+errno_t exec_optimize_PIAA_shapes(void)
 {
     DEBUG_TRACE_FSTART();
 

@@ -1,9 +1,16 @@
+/**
+ * @file    mkSimpleLyotStop.h
+ * @brief   Circular annular Lyot stop mask generator
+ */
+
 #ifndef MKSIMPLELYOTSTOP_H
 #define MKSIMPLELYOTSTOP_H
 
-errno_t mkSimpleLyotStop(const char *__restrict__ ID_name,
-                         float    rin,
-                         float    rout,
-                         imageID *outID);
+/* Create annular pupil transmission mask ID_name transmitting rin <= r <= rout [beamrad]. */
+errno_t mkSimpleLyotStop(
+    const char *restrict ID_name,
+    float                rin,
+    float                rout,
+    imageID             *outID);
 
-#endif
+#endif /* MKSIMPLELYOTSTOP_H */

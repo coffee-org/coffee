@@ -1,5 +1,5 @@
 /**
- * @file    PIAAACMCsimul_exec_optimize_PIAA_shapes_fpmtransm.c
+ * @file    exec_optimize_PIAA_shapes_fpmtransm.c
  * @brief   Optimize PIAA shapes and focal plane mask transmission
  *
  */
@@ -32,7 +32,7 @@
  *
  */
 
-errno_t exec_optimize_PIAA_shapes_fpmtransm()
+errno_t exec_optimize_PIAA_shapes_fpmtransm(void)
 {
     DEBUG_TRACE_FSTART();
 

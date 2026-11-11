@@ -1,6 +1,6 @@
 /**
- * @file    PIAAACMCsimul_free.c
- * @brief   PIAA-type coronagraph design, initialize
+ * @file    PIAACMCsimul_free.c
+ * @brief   Free dynamically allocated PIAACMC optimization working buffers
  *
  * Can design both APLCMC and PIAACMC coronagraphs
  *

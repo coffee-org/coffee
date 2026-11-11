@@ -1,3 +1,8 @@
+/**
+ * @file    geomProp.h
+ * @brief   Slope-driven geometric ray propagation of 2D pupil intensity maps
+ */
+
 #ifndef PIAACMCSIMUL_LYOTSTOP_GEOMPROP_H
 #define PIAACMCSIMUL_LYOTSTOP_GEOMPROP_H
 
@@ -5,7 +10,7 @@
 
 extern const MILK_RUNNABLE runnable_piaacmc_geomprop;
 
-/* Propagate 2D pupil intensity geometrically using local surface sag slopes. */
+/* Propagate 2D intensity IDin_name across distance zprop [m] using surface sag IDsag_name. */
 errno_t PIAACMCsimul_geomProp(
     const char *restrict IDin_name,
     const char *restrict IDsag_name,

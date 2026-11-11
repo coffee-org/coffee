@@ -1,6 +1,6 @@
 /**
  * @file    PIAACMCsimul_achromFPMsol_eval.c
- * @brief   PIAA-type coronagraph design, run
+ * @brief   Evaluate polychromatic contrast from precomputed FPM response matrix
  *
  *
  */

@@ -1,5 +1,5 @@
 /**
- * @file    PIAAACMCsimul_exec_optimize_fpm_zones.c
+ * @file    exec_optimize_fpm_zones.c
  * @brief   Optimize focal plane mask zone values
  *
  *
@@ -94,7 +94,7 @@ static errno_t read_cnorm_factor(
  *
  */
 
-errno_t exec_optimize_fpm_zones()
+errno_t exec_optimize_fpm_zones(void)
 {
     DEBUG_TRACE_FSTART();
 
