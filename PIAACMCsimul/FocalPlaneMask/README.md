@@ -12,8 +12,12 @@ lithographic quantization for `PIAACMCsimul`.
 |------|-------------|
 | `mkFPM_zonemap.h` / `.c` | Build 2D hexagonal ring/sector integer zone index map (`fpmzmap`) |
 | `mkFocalPlaneMask.h` / `.c` | Synthesize 3D polychromatic complex-amplitude FPM cube |
+| `mkFocalPlaneMask_internal.h` | Internal context and slice kernel API for `mkFocalPlaneMask` |
+| `mkFocalPlaneMask_cube.c` | Subpixel-integrated polychromatic FPM cube slice evaluation |
 | `exec_optimize_fpmtransmission.h` / `.c` | Optimize idealized monochromatic FPM transmission |
 | `exec_multizone_fpm_calib.h` / `.c` | Calibrate polychromatic FPM zone response (`Mode 11`) |
+| `exec_multizone_fpm_calib_internal.h` | Internal context and worker API for FPM calibration |
+| `exec_multizone_fpm_calib_zones.c` | Worker zone propagation and FITS combination (`Mode 11`) |
 | `exec_optimize_fpm_zones.h` / `.c` | Regularized SVD + line-search FPM sag optimizer (`Mode 13`) |
 | `FPMresp_resample.h` / `.c` | Interpolate/decimate `FPMresp` cube (`coffeepiaacmcsim.fpmresprs`) |
 | `FPMresp_rmzones.h` / `.c` | Collapse outer rings of `FPMresp` (`coffeepiaacmcsim.fpmresprm`) |

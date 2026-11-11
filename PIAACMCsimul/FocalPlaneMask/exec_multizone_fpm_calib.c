@@ -1,17 +1,13 @@
 /**
  * @file    exec_multizone_fpm_calib.c
- * @brief   Setup and calibrate response of multizone focal plane mask
- *
- *
+ * @brief   Setup and calibrate response of multizone focal plane mask (Mode 11)
  */
 
-// System includes
-#include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-// milk includes
 #include "milk_runnable.h"
 #include "coffee_compat.h"
 
@@ -19,660 +15,309 @@
 #include "COREMOD_memory/COREMOD_memory.h"
 
 #include "OptSystProp/OptSystProp.h"
-
 #include "PIAACMCsimul.h"
-
 #include "PIAACMCsimul_computePSF.h"
 #include "PIAACMCsimul_loadsavepiaacmcconf.h"
 #include "init_piaacmcopticaldesign.h"
 #include "init_piaacmcopticalsystem.h"
 
+#include "FocalPlaneMask/exec_multizone_fpm_calib.h"
+#include "FocalPlaneMask/exec_multizone_fpm_calib_internal.h"
 #include "PIAAshape/makePIAAshapes.h"
 
 /**
- * ---
- *
- * ## Mode 11: Setup multizone ring mask and Compute polychromatic response to zones, store result in FPMresp
+ * fpm_calib_load_cli_vars - Read CLI optical geometry overrides into calibration context
+ * @ctx: Calibration context initialized with default and CLI-overridden parameters.
+ */
+static void fpm_calib_load_cli_vars(struct fpm_calib_ctx *ctx)
+{
+    variableID IDv;
 
-   here we compute how the light propagates from each individual mask zone to the focal plane
-   (where each mask zone is completely tranparent)
-   *
-   */
+    ctx->fpmradld = 0.95;
+    ctx->centobs0 = 0.3;
+    ctx->centobs1 = 0.2;
+
+    if ((IDv = variable_ID("PIAACMC_centobs0")) != -1)
+    {
+        ctx->centobs0 = coffee_dcvar_f(IDv);
+    }
+    if ((IDv = variable_ID("PIAACMC_centobs1")) != -1)
+    {
+        ctx->centobs1 = coffee_dcvar_f(IDv);
+    }
+    if ((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
+    {
+        ctx->fpmradld = coffee_dcvar_f(IDv);
+        printf("MASK RADIUS = %lf lambda/D\n", ctx->fpmradld);
+    }
+}
+
+/**
+ * fpm_calib_print_summary - Print active Mode 11 optical design and bandpass summary
+ */
+static void fpm_calib_print_summary(void)
+{
+    printf("piaacmcconfdir     : %s\n", piaacmcparams.piaacmcconfdir);
+    printf("SCORINGMASKTYPE    : %d\n", piaacmcparams.SCORINGMASKTYPE);
+    printf("PIAACMC_FPMsectors : %d\n", piaacmcparams.PIAACMC_FPMsectors);
+    printf("lamda              : %ld nm\n", (long) (1.0e9 * piaacmcopticaldesign.lambda + 0.1));
+    printf("lamdaB             : %ld \n", (long) (1.0 * piaacmcopticaldesign.lambdaB + 0.1));
+    printf("piaacmcopticaldesign.NBrings : %ld\n", piaacmcopticaldesign.NBrings);
+    printf("mask rad           : %ld\n", (long) (100.0 * piaacmcparams.PIAACMC_MASKRADLD + 0.1));
+    printf("computePSF_ResolvedTarget : %d\n", piaacmcparams.computePSF_ResolvedTarget);
+    printf("computePSF_ResolvedTarget_mode : %d\n", piaacmcparams.computePSF_ResolvedTarget_mode);
+    printf("piaacmcopticaldesign.fpmmaterial_name : %s\n", piaacmcopticaldesign.fpmmaterial_name);
+    printf("piaacmcopticaldesign.nblambda         : %d\n", piaacmcopticaldesign.nblambda);
+}
+
+/**
+ * fpm_calib_init_mp_mode - Configure multi-process role flags and reinitialize physical FPM
+ * @ctx: Calibration context holding pupil and mask geometry parameters.
+ *
+ * Return: RETURN_SUCCESS on design initialization, error code otherwise.
+ */
+static errno_t fpm_calib_init_mp_mode(const struct fpm_calib_ctx *ctx)
+{
+    variableID IDv;
+
+    piaacmcparams.PIAACMC_FPMresp_mp = 1;
+    if ((IDv = variable_ID("PIAACMC_FPMresp_mp")) != -1)
+    {
+        piaacmcparams.PIAACMC_FPMresp_mp = (long) coffee_dcvar_f(IDv) + 0.01;
+    }
+    printf("PIAACMC_FPMresp_mp = %ld\n", piaacmcparams.PIAACMC_FPMresp_mp);
+
+    printf("------------------------------------- STEP02\n");
+    printf(
+        "piaacmcopticaldesign.focmNBzone  =  %ld   (%ld)\n",
+        piaacmcopticaldesign.focmNBzone,
+        piaacmcopticaldesign.NBrings);
+    fflush(stdout);
+
+    piaacmcparams.PIAACMC_FPMresp_thread = 0;
+    if ((IDv = variable_ID("PIAACMC_FPMresp_thread")) != -1)
+    {
+        piaacmcparams.PIAACMC_FPMresp_thread = (long) coffee_dcvar_f(IDv) + 0.01;
+    }
+    printf("PIAACMC_FPMresp_thread = %ld\n", piaacmcparams.PIAACMC_FPMresp_thread);
+
+    if (piaacmcparams.PIAACMC_FPMresp_mp == 1
+        || piaacmcparams.PIAACMC_FPMresp_thread > piaacmcparams.PIAACMC_FPMresp_mp - 1)
+    {
+        piaacmcparams.FORCE_CREATE_fpmzmap = 1;
+        piaacmcparams.FORCE_CREATE_fpmzt   = 1;
+        piaacmcparams.FORCE_CREATE_fpmza   = 1;
+    }
+    else
+    {
+        printf("NO initOK file created\n");
+        piaacmcparams.FORCE_CREATE_fpmzmap = 0;
+        piaacmcparams.FORCE_CREATE_fpmzt   = 0;
+        piaacmcparams.FORCE_CREATE_fpmza   = 0;
+    }
+
+    uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT
+                        | INIT_PIAACMCOPTICALDESIGN_MODE__READCONF
+                        | INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF
+                        | INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
+    return init_piaacmcopticaldesign(ctx->fpmradld, ctx->centobs0, ctx->centobs1, initflag, NULL);
+}
+
+/**
+ * fpm_calib_resolve_mp_files - Resolve combined or worker FPMresp FITS paths and probe cache
+ * @ctx: Calibration context updated with output paths, zone stride, and cached image IDs.
+ *
+ * Return: RETURN_SUCCESS on path formatting, error code otherwise.
+ */
+static errno_t fpm_calib_resolve_mp_files(struct fpm_calib_ctx *ctx)
+{
+    char fname[STRINGMAXLEN_FULLFILENAME];
+
+    PIAACMCsimul_update_fnamedescr_conf();
+
+    if (piaacmcparams.PIAACMC_FPMresp_mp == 1
+        || piaacmcparams.PIAACMC_FPMresp_thread > piaacmcparams.PIAACMC_FPMresp_mp - 1)
+    {
+        SNPRINTF_CHECK(
+            fname,
+            STRINGMAXLEN_FULLFILENAME,
+            "%s/FPMresp%d.%s.fits",
+            piaacmcparams.piaacmcconfdir,
+            piaacmcparams.SCORINGMASKTYPE,
+            piaacmcparams.fnamedescr_conf);
+        SNPRINTF_CHECK(ctx->fname1, STRINGMAXLEN_FULLFILENAME, "%s.tmp", fname);
+        SNPRINTF_CHECK(ctx->fname2, STRINGMAXLEN_FULLFILENAME, "%s", fname);
+
+        ctx->mzoffset = 0;
+        ctx->mzstep   = 1;
+
+        load_fits(fname, "FPMresp", 1, &ctx->ID_FPMresp);
+        ctx->IDcomb = ctx->ID_FPMresp;
+        return RETURN_SUCCESS;
+    }
+
+    char fnamecomb[STRINGMAXLEN_FULLFILENAME];
+    SNPRINTF_CHECK(
+        fnamecomb,
+        STRINGMAXLEN_FULLFILENAME,
+        "%s/FPMresp%d.%s.fits",
+        piaacmcparams.piaacmcconfdir,
+        piaacmcparams.SCORINGMASKTYPE,
+        piaacmcparams.fnamedescr_conf);
+
+    PIAACMCsimul_update_fnamedescr_conf();
+    SNPRINTF_CHECK(
+        fname,
+        STRINGMAXLEN_FULLFILENAME,
+        "%s/FPMresp%d.%s.mp%02ld_thread%02ld.fits",
+        piaacmcparams.piaacmcconfdir,
+        piaacmcparams.SCORINGMASKTYPE,
+        piaacmcparams.fnamedescr_conf,
+        piaacmcparams.PIAACMC_FPMresp_mp,
+        piaacmcparams.PIAACMC_FPMresp_thread);
+
+    SNPRINTF_CHECK(ctx->fname1, STRINGMAXLEN_FULLFILENAME, "%s.tmp", fname);
+    SNPRINTF_CHECK(ctx->fname2, STRINGMAXLEN_FULLFILENAME, "%s", fname);
+    ctx->mzoffset = piaacmcparams.PIAACMC_FPMresp_thread;
+    ctx->mzstep   = piaacmcparams.PIAACMC_FPMresp_mp;
+
+    load_fits(fname, "FPMresp", LOADFITS_ERRMODE_WARNING, &ctx->ID_FPMresp);
+    load_fits(fnamecomb, "FPMresp", LOADFITS_ERRMODE_WARNING, &ctx->IDcomb);
+
+    return RETURN_SUCCESS;
+}
+
+/**
+ * fpm_calib_create_resp_cube - Propagate unobstructed PSF and initialize FPMresp zone 0
+ * @ctx:          Active calibration context.
+ * @outIDfpmresp: Output pointer receiving allocated FPMresp 3D double image identifier.
+ *
+ * Return: RETURN_SUCCESS on PSF propagation and cube allocation, error code otherwise.
+ */
+static errno_t fpm_calib_create_resp_cube(
+    const struct fpm_calib_ctx *ctx,
+    imageID                    *outIDfpmresp)
+{
+    piaacmcopticalsystem.FOCMASKarray[0].mode = 1;
+    piaacmcopticaldesign.fpmRad =
+        0.5 * (piaacmcparams.LAMBDASTART + piaacmcparams.LAMBDAEND) * piaacmcopticaldesign.Fratio
+        * piaacmcparams.PIAACMC_MASKRADLD;
+
+    uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT
+                        | INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
+    FUNC_CHECK_RETURN(
+        init_piaacmcopticaldesign(ctx->fpmradld, ctx->centobs0, ctx->centobs1, initflag, NULL));
+    FUNC_CHECK_RETURN(makePIAAshapes());
+    FUNC_CHECK_RETURN(init_piaacmcopticalsystem(0.0, 0.0));
+    FUNC_CHECK_RETURN(makePIAAshapes());
+
+    piaacmcparams.focmMode = dcimg[piaacmcopticaldesign.zonezID].md[0].size[0] + 10;
+    piaacmcopticalsystem.FOCMASKarray[0].mode = 1;
+
+    FUNC_CHECK_RETURN(PIAACMCsimul_computePSF(
+        0.0,
+        0.0,
+        0,
+        piaacmcopticalsystem.NBelem,
+        0,
+        piaacmcparams.computePSF_ResolvedTarget,
+        piaacmcparams.computePSF_ResolvedTarget_mode,
+        0,
+        NULL));
+
+    imageID  IDimvect = image_ID("imvect", dcimg, dcnimg);
+    uint32_t neval    = dcimg[IDimvect].md[0].size[0];
+    uint32_t nzones1  = (uint32_t) (piaacmcopticaldesign.focmNBzone + 1);
+    imageID  IDfpmresp;
+
+    FUNC_CHECK_RETURN(create_3Dimage_ID_double(
+        "FPMresp",
+        neval,
+        nzones1,
+        piaacmcopticaldesign.nblambda,
+        &IDfpmresp));
+
+    for (int k = 0; k < piaacmcopticaldesign.nblambda; k++)
+    {
+        size_t kbase = (size_t) k * nzones1 * neval;
+        for (uint32_t ii = 0; ii < neval; ii++)
+        {
+            dcimg[IDfpmresp].array.D[kbase + ii] = dcimg[IDimvect].array.F[(size_t) k * neval + ii];
+        }
+    }
+
+    *outIDfpmresp = IDfpmresp;
+    return RETURN_SUCCESS;
+}
+
+/**
+ * exec_multizone_fpm_calib - Calibrate polychromatic multi-zone FPM response cube (Mode 11)
+ *
+ * Computes or assembles the 3D complex electric-field impulse-response matrix (FPMresp)
+ * across evaluation dark-hole points, individual FPM zones (plus exterior light in zone 0),
+ * and bandpass wavelengths, supporting both single-process and multi-worker execution.
+ *
+ * Return: RETURN_SUCCESS on calibration completion, error code otherwise.
+ */
 errno_t exec_multizone_fpm_calib(void)
 {
     DEBUG_TRACE_FSTART();
 
-    double fpmradld = 0.95; // default
-    double centobs0 = 0.3;
-    double centobs1 = 0.2;
+    struct fpm_calib_ctx ctx;
+    memset(&ctx, 0, sizeof(ctx));
 
-    // spreading computations over multiple processes for resp matrix
+    printf("=================================== mode 011 ===================================\n");
+    fpm_calib_load_cli_vars(&ctx);
 
-    printf(
-        "=================================== mode 011 "
-        "===================================\n");
-
-    // get cli variables
     {
-        variableID IDv;
-
-        if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
-        {
-            centobs0 = coffee_dcvar_f(IDv);
-        }
-        if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
-        {
-            centobs1 = coffee_dcvar_f(IDv);
-        }
-        if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
-        {
-            fpmradld = coffee_dcvar_f(IDv);
-            printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
-        }
+        uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT
+                            | INIT_PIAACMCOPTICALDESIGN_MODE__READCONF
+                            | INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF
+                            | INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
+        FUNC_CHECK_RETURN(
+            init_piaacmcopticaldesign(ctx.fpmradld, ctx.centobs0, ctx.centobs1, initflag, NULL));
     }
+    fpm_calib_print_summary();
 
-    // initialize
     {
-        uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT;
-        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
-        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
-        initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
-
-        FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld,
-                          centobs0,
-                          centobs1,
-                          initflag,
-                          NULL));
-    }
-
-    printf("piaacmcconfdir     : %s\n", piaacmcparams.piaacmcconfdir);
-    printf("SCORINGMASKTYPE    : %d\n", piaacmcparams.SCORINGMASKTYPE);
-    printf("PIAACMC_FPMsectors : %d\n", piaacmcparams.PIAACMC_FPMsectors);
-    printf("lamda              : %ld nm\n",
-           (long)(1.0e9 * piaacmcopticaldesign.lambda + 0.1));
-    printf("lamdaB             : %ld \n",
-           (long)(1.0 * piaacmcopticaldesign.lambdaB + 0.1));
-    printf("piaacmcopticaldesign.NBrings : %ld\n",
-           piaacmcopticaldesign.NBrings);
-    printf("mask rad           : %ld\n",
-           (long)(100.0 * piaacmcparams.PIAACMC_MASKRADLD + 0.1));
-    printf("computePSF_ResolvedTarget : %d\n",
-           piaacmcparams.computePSF_ResolvedTarget);
-    printf("computePSF_ResolvedTarget_mode : %d\n",
-           piaacmcparams.computePSF_ResolvedTarget_mode);
-    printf("piaacmcopticaldesign.fpmmaterial_name : %s\n",
-           piaacmcopticaldesign.fpmmaterial_name);
-    printf("piaacmcopticaldesign.nblambda         : %d\n",
-           piaacmcopticaldesign.nblambda);
-
-    imageID ID_FPMresp;
-    {
-        // get the combined focal plane mask response
-        // set output filename of the combined focal plane mask response file
         char fname[STRINGMAXLEN_FULLFILENAME];
 
         PIAACMCsimul_update_fnamedescr_conf();
-
-        SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME, "%s/FPMresp%d.%s.fits",
-                       piaacmcparams.piaacmcconfdir, piaacmcparams.SCORINGMASKTYPE,
-                       piaacmcparams.fnamedescr_conf);
-
-        load_fits(fname, "FPMresp", 1, &ID_FPMresp);
+        SNPRINTF_CHECK(
+            fname,
+            STRINGMAXLEN_FULLFILENAME,
+            "%s/FPMresp%d.%s.fits",
+            piaacmcparams.piaacmcconfdir,
+            piaacmcparams.SCORINGMASKTYPE,
+            piaacmcparams.fnamedescr_conf);
+        load_fits(fname, "FPMresp", 1, &ctx.ID_FPMresp);
     }
 
-    // if it did not exist, create it
-    if(ID_FPMresp == -1)
+    if (ctx.ID_FPMresp == -1)
     {
-        long mzoffset;
-        long mzstep;
+        FUNC_CHECK_RETURN(fpm_calib_init_mp_mode(&ctx));
+        FUNC_CHECK_RETURN(fpm_calib_resolve_mp_files(&ctx));
 
-        // get the number of tmux threads from cli
-
-        piaacmcparams.PIAACMC_FPMresp_mp = 1;
-        // 1: all computations on a single thread
-
+        if (ctx.IDcomb == -1 && ctx.ID_FPMresp == -1)
         {
-            variableID IDv;
-            if((IDv = variable_ID("PIAACMC_FPMresp_mp")) !=
-                    -1) // multi threaded
+            imageID IDfpmresp = -1;
+
+            FUNC_CHECK_RETURN(fpm_calib_create_resp_cube(&ctx, &IDfpmresp));
+            if (piaacmcparams.PIAACMC_FPMresp_thread > piaacmcparams.PIAACMC_FPMresp_mp - 1)
             {
-                piaacmcparams.PIAACMC_FPMresp_mp =
-                    (long) coffee_dcvar_f(IDv) + 0.01;
+                FUNC_CHECK_RETURN(fpm_calib_combine_threads(IDfpmresp));
             }
-        }
-        printf("PIAACMC_FPMresp_mp = %ld\n", piaacmcparams.PIAACMC_FPMresp_mp);
-
-        printf("------------------------------------- STEP02\n");
-        printf("piaacmcopticaldesign.focmNBzone  =  %ld   (%ld)\n",
-               piaacmcopticaldesign.focmNBzone,
-               piaacmcopticaldesign.NBrings);
-        fflush(stdout);
-
-        // get our tmux thread number in [0 PIAACMC_FPMresp_mp]
-        // where the master thread has PIAACMC_FPMresp_thread == PIAACMC_FPMresp_mp
-        piaacmcparams.PIAACMC_FPMresp_thread = 0;
-        {
-            variableID IDv;
-            if((IDv = variable_ID("PIAACMC_FPMresp_thread")) !=
-                    -1) // multi threaded
+            else
             {
-                piaacmcparams.PIAACMC_FPMresp_thread =
-                    (long) coffee_dcvar_f(IDv) + 0.01;
-            }
-        }
-        printf("PIAACMC_FPMresp_thread = %ld\n",
-               piaacmcparams.PIAACMC_FPMresp_thread);
-
-        //index = 0;
-        if((piaacmcparams.PIAACMC_FPMresp_mp == 1) ||
-                (piaacmcparams.PIAACMC_FPMresp_thread >
-                 piaacmcparams.PIAACMC_FPMresp_mp - 1)) // main or combine process
-            // why not test PIAACMC_FPMresp_thread == PIAACMC_FPMresp_mp?
-        {
-            // we're the parent set up the FPM zone map
-            piaacmcparams.FORCE_CREATE_fpmzmap = 1;
-            piaacmcparams.FORCE_CREATE_fpmzt   = 1;
-            piaacmcparams.FORCE_CREATE_fpmza   = 1;
-        }
-        else
-        {
-            printf("NO initOK file created\n");
-            // we're a child tmux thread, do not set up the FPM zone map, get it from parent via file
-            piaacmcparams.FORCE_CREATE_fpmzmap = 0;
-            piaacmcparams.FORCE_CREATE_fpmzt   = 0;
-            piaacmcparams.FORCE_CREATE_fpmza   = 0;
-        }
-
-        {
-            uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT;
-            initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
-            initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
-            initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
-
-            FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld,
-                              centobs0,
-                              centobs1,
-                              initflag,
-                              NULL));
-        }
-
-        //char fname[STRINGMAXLEN_FULLFILENAME];
-
-        char    fname1[STRINGMAXLEN_FULLFILENAME];
-        char    fname2[STRINGMAXLEN_FULLFILENAME];
-        imageID IDcomb;
-
-        // if we're the parent load
-        if((piaacmcparams.PIAACMC_FPMresp_mp == 1) ||
-                (piaacmcparams.PIAACMC_FPMresp_thread >
-                 piaacmcparams.PIAACMC_FPMresp_mp - 1))
-        {
-            PIAACMCsimul_update_fnamedescr_conf();
-            char fname[STRINGMAXLEN_FULLFILENAME];
-            SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME, "%s/FPMresp%d.%s.fits",
-                           piaacmcparams.piaacmcconfdir, piaacmcparams.SCORINGMASKTYPE,
-                           piaacmcparams.fnamedescr_conf);
-
-            SNPRINTF_CHECK(fname1, STRINGMAXLEN_FULLFILENAME, "%s.tmp", fname);
-
-            SNPRINTF_CHECK(fname2, STRINGMAXLEN_FULLFILENAME, "%s", fname);
-
-            mzoffset = 0;
-            mzstep   = 1;
-
-            // this will always fail in the current state (see line 6606) ************************
-            load_fits(fname, "FPMresp", 1, &ID_FPMresp);
-            IDcomb = ID_FPMresp;
-        }
-        else // we're a child tmux thread.
-        {
-            // combined FPMresp file
-            PIAACMCsimul_update_fnamedescr_conf();
-            char fnamecomb[STRINGMAXLEN_FULLFILENAME];
-            SNPRINTF_CHECK(fnamecomb, STRINGMAXLEN_FULLFILENAME, "%s/FPMresp%d.%s.fits",
-                           piaacmcparams.piaacmcconfdir, piaacmcparams.SCORINGMASKTYPE,
-                           piaacmcparams.fnamedescr_conf);
-
-            // partial FPMresp file
-            PIAACMCsimul_update_fnamedescr_conf();
-            char fname[STRINGMAXLEN_FULLFILENAME];
-            SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME,
-                           "%s/FPMresp%d.%s.mp%02ld_thread%02ld.fits",
-                           piaacmcparams.piaacmcconfdir, piaacmcparams.SCORINGMASKTYPE,
-                           piaacmcparams.fnamedescr_conf, piaacmcparams.PIAACMC_FPMresp_mp,
-                           piaacmcparams.PIAACMC_FPMresp_thread);
-
-            // stash the filename of the partial file for later
-            SNPRINTF_CHECK(fname1, STRINGMAXLEN_FULLFILENAME, "%s.tmp", fname);
-            SNPRINTF_CHECK(fname2, STRINGMAXLEN_FULLFILENAME, "%s", fname);
-            // set region of the partial file that this child computes
-            mzoffset = piaacmcparams.PIAACMC_FPMresp_thread;
-            mzstep   = piaacmcparams.PIAACMC_FPMresp_mp;
-
-            // may exist from a previous execution with restart
-            load_fits(fname, "FPMresp", LOADFITS_ERRMODE_WARNING, &ID_FPMresp);
-
-            // will always fail
-            load_fits(fnamecomb, "FPMresp", LOADFITS_ERRMODE_WARNING, &IDcomb);
-        }
-        // at this point IDcomb==-1, and in the parent ID==-1 always, and in the child ID==-1 if this is not a restart
-        // actually create the FPMresp file either as a part by a child or combined by the parent
-
-        if((IDcomb == -1) && (ID_FPMresp == -1))
-        {
-            // this will always fire for the parent thread,
-            // and will always fire for children in a fresh run
-
-            //                printf("--------------------------------------------------------STEP 0005 File \"%s\" does not exist: creating\n", fname);
-            //   printf("piaacmcopticaldesign.focmNBzone  =  %ld   (%ld)\n", piaacmcopticaldesign.focmNBzone, piaacmcopticaldesign.NBrings);
-            //  sleep(3);
-
-            // usual initialzation
-            piaacmcopticalsystem.FOCMASKarray[0].mode =
-                1; // use 1-fpm computation in optical propagation
-            //piaacmcopticaldesign.fpmaskamptransm = 1.0;
-            // set the physical size of the FPM as mean(lambda/D)*mask radius in units of lambda/D
-            piaacmcopticaldesign.fpmRad =
-                0.5 * (piaacmcparams.LAMBDASTART + piaacmcparams.LAMBDAEND) *
-                piaacmcopticaldesign.Fratio *
-                piaacmcparams
-                .PIAACMC_MASKRADLD; // piaacmcparams.PIAACMC_MASKRADLD l/D radius at central lambda
-            // initialize the optical system
-            {
-                uint64_t initflag = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT;
-                initflag |= INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
-                FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld,
-                                  centobs0,
-                                  centobs1,
-                                  initflag,
-                                  NULL));
-            }
-
-            //     printf("-------------------------- STEP 0005a  piaacmcopticaldesign.focmNBzone  =  %ld   (%ld)\n", piaacmcopticaldesign.focmNBzone, piaacmcopticaldesign.NBrings);
-            //            sleep(3);
-
-            // computes or loads the piaa optics from the piaacmc structure
-            FUNC_CHECK_RETURN(makePIAAshapes());
-
-            //   printf("-------------------------- STEP 0005b  piaacmcopticaldesign.focmNBzone  =  %ld   (%ld)\n", piaacmcopticaldesign.focmNBzone, piaacmcopticaldesign.NBrings);
-            //          sleep(3);
-
-            // initialize the optical system to be on axis
-            FUNC_CHECK_RETURN(init_piaacmcopticalsystem(0.0, 0.0));
-
-            // printf("-------------------------- STEP 0005c  piaacmcopticaldesign.focmNBzone  =  %ld   (%ld)\n", piaacmcopticaldesign.focmNBzone, piaacmcopticaldesign.NBrings);
-            //        sleep(3);
-
-            // make the shapes again why?  *****************************************
-            FUNC_CHECK_RETURN(makePIAAshapes());
-
-            /*               printf("piaacmcopticaldesign.NBrings =                             %ld\n", piaacmcopticaldesign.NBrings);
-                            printf("piaacmcopticaldesign.focmNBzone =                          %ld\n", piaacmcopticaldesign.focmNBzone);
-                            printf("piaacmcopticaldesign.nblambda =                            %d\n", piaacmcopticaldesign.nblambda);
-
-                            fflush(stdout);
-            sleep(5);*/
-
-            // focmMode controls which part of the FPM is propagated
-            // if focmMode is a legal zone index, that zone index is propagated
-            // here set focmMode beyond a legal zone index, so all zones are transparent and all
-            // light including that which misses the FPM is propagated.
-            // Later, we will subtract off the actual zone contributions, which will leave only
-            // the light that misses the FPM.
-            piaacmcparams.focmMode =
-                dcimg[piaacmcopticaldesign.zonezID].md[0].size[0] +
-                10; // response for no focal plane mask
-            piaacmcopticalsystem.FOCMASKarray[0].mode = 1;
-            // use 1-fpm computation in optical propagation
-            // To compute the on-axis PSF component for light around the FPM, we first compute the full PSF (no focal plane mask)
-            // We will, later on, subtract each zone response to it to get the response to light outside the focal plane mask
-            //
-
-            FUNC_CHECK_RETURN(PIAACMCsimul_computePSF(
-                                  0.0,
-                                  0.0,
-                                  0,
-                                  piaacmcopticalsystem.NBelem,
-                                  0,
-                                  piaacmcparams.computePSF_ResolvedTarget,
-                                  piaacmcparams.computePSF_ResolvedTarget_mode,
-                                  0,
-                                  NULL));
-
-            imageID IDfpmresp;
-            {
-                imageID IDimvect = image_ID("imvect", dcimg, dcnimg);
-                // FPMresp geometry:
-                // first dimension (size[0]) is twice the number of evaluation points in the focal plane, giving Re and Im
-                //      of the field at that evaluation point
-                // second dimension (size[1]) is nbzones+1 zone indices, where nbzones is the number of mask zones (hexagons)
-                // +1 because the first zone index stores the response to light that misses the FPM
-                // WARNING: FPMresp size[1] is nbzones+1, as first vector stored is the response for light outside the mask
-                // third dimension (size[2]) is wavelength
-
-                // axis 0: eval pts (ii) - size = dcimg[ID].md[0].size[0]
-                // axis 1: zones (mz) - size = dcimg[piaacmcopticaldesign.zonezID].md[0].size[0]+1
-                // axis 3: lambda (k) - size = piaacmcopticaldesign.nblambda
-
-                // allocate the combined FPMresp 3D array
-                // ID is the "imvect" array created by PIAACMCsimul_computePSF and contains the pixels in the
-                // evaluation set as a 1D vector (0th index) per wavelength
-                FUNC_CHECK_RETURN(create_3Dimage_ID_double(
-                                      "FPMresp",
-                                      dcimg[IDimvect].md[0].size[0],
-                                      piaacmcopticaldesign.focmNBzone + 1,
-                                      piaacmcopticaldesign.nblambda,
-                                      &IDfpmresp));
-
-                // light outside mask, initially set as full PSF
-                for(int k = 0; k < piaacmcopticaldesign.nblambda;
-                        k++) // loop over wavelengths
-                {
-                    for(uint32_t ii = 0;
-                            ii < dcimg[IDimvect].md[0].size[0];
-                            ii++)
-                    {
-                        // loop over evaluation points
-                        // set the 0th zone to be the light from the above on-axis PSF computation with a
-                        // black FPM on the evaluation pixels in "imvect"
-
-                        dcimg[IDfpmresp]
-                        .array.D[k * (piaacmcopticaldesign.focmNBzone + 1) *
-                                   dcimg[IDimvect].md[0].size[0] +
-                                   ii] =
-                                     dcimg[IDimvect]
-                                     .array
-                                     .F[k * dcimg[IDimvect].md[0].size[0] + ii];
-                    }
-                }
-            }
-
-            // if we're the parent, combine files
-            if(piaacmcparams.PIAACMC_FPMresp_thread >
-                    piaacmcparams.PIAACMC_FPMresp_mp - 1)
-            {
-                long index = 0;
-                {
-                    variableID IDv;
-                    if((IDv = variable_ID("PID")) != -1)
-                    {
-                        index = (long) coffee_dcvar_f(IDv) + 0.01;
-                    }
-                }
-                // this file is looked for in the bash script, which waits for this
-                // file to spawn the tmux child processes
-                EXECUTE_SYSTEM_COMMAND("touch initOK_%ld", index);
-                //printf("EXECUTING : %s\n", command);
-
-                // now the tmux children have been kicked off by the bash script and are
-                // computing their partial FPMresp files
-
-                // begin combining the partial files into the final FPMresp file when ready
-                printf("COMBINING FILES\n");
-                fflush(stdout);
-
-                char fnamet[STRINGMAXLEN_FULLFILENAME];
-                WRITE_FULLFILENAME(fnamet,
-                                   "%s/FPMthreadstatus.txt",
-                                   piaacmcparams.piaacmcconfdir);
-                FILE *fpt = fopen(fnamet, "w");
-                fclose(fpt);
-
-                // we now wait for the children to complete their partial FPM resp files, then combine them
-                for(long thr = 0; thr < piaacmcparams.PIAACMC_FPMresp_mp;
-                        thr++)
-                {
-                    printf("thr = %ld\n", thr);
-                    fflush(stdout);
-
-                    // each child creates an FPMresp...thread*.fits.tmp file, which is moved to
-                    // FPMresp...thread*.fits (set as fname in the next sprintf) when the child is done
-                    // signaling to the parent process that this part is ready to ingest.
-
-                    imageID ID1 = -1;
-                    while(
-                        ID1 ==
-                        -1) // wait for the partial FPMresp file from each child
-                    {
-                        // name of final child partial FPMresp file
-                        PIAACMCsimul_update_fnamedescr_conf();
-                        char fname[STRINGMAXLEN_FULLFILENAME];
-                        SNPRINTF_CHECK(
-                            fname, STRINGMAXLEN_FULLFILENAME,
-                            "%s/FPMresp%d.%s.mp%02ld_thread%02ld.fits",
-                            piaacmcparams.piaacmcconfdir, piaacmcparams.SCORINGMASKTYPE,
-                            piaacmcparams.fnamedescr_conf, piaacmcparams.PIAACMC_FPMresp_mp,
-                            thr);
-
-                        printf("Waiting for file \"%s\" ...\n", fname);
-                        fflush(stdout);
-
-                        {
-                            // update thread status file
-                            FILE *fpt = fopen(fnamet, "a");
-                            fprintf(fpt,
-                                    "Process %ld (thread %ld) --- Waiting for "
-                                    "file \"%s\" ...\n",
-                                    (long) getpid(),
-                                    thr,
-                                    fname);
-                            fclose(fpt);
-                            sleep(1.0);
-                        }
-
-                        // safely remove image with this name
-                        FUNC_CHECK_RETURN(
-                            delete_image_ID("tmpFPMresp",
-                                            DELETE_IMAGE_ERRMODE_WARNING));
-
-                        // try to load the final child's partial FPMresp file
-                        FUNC_CHECK_RETURN(load_fits(fname,
-                                                    "tmpFPMresp",
-                                                    LOADFITS_ERRMODE_WARNING,
-                                                    &ID1));
-                        //  list_image_ID();
-                    }
-                    // we found this child's partial FPMresp file!
-                    // now insert it into our combined FPMresp file
-
-                    {
-                        FILE *fpt = fopen(fnamet, "a");
-                        fprintf(fpt, "READING %s\n", fnamet);
-                        fclose(fpt);
-                    }
-
-                    /*     list_image_ID();
-
-                         printf("piaacmcopticaldesign.NBrings =                             %ld\n", piaacmcopticaldesign.NBrings);
-                         printf("piaacmcopticaldesign.focmNBzone =                          %ld\n", piaacmcopticaldesign.focmNBzone);
-                         printf("piaacmcopticaldesign.nblambda =                            %d\n", piaacmcopticaldesign.nblambda);
-                         printf("dcimg[ID].md[0].size[0] =                   %ld\n", dcimg[ID].md[0].size[0]);
-                         printf("dcimg[piaacmcopticaldesign.zonezID].md[0].size[0] =   %ld\n", dcimg[piaacmcopticaldesign.zonezID].md[0].size[0]);
-                         fflush(stdout);
-                         sleep(100);
-                    */
-
-                    // ID1 is now != -1
-
-                    mzstep =
-                        piaacmcparams
-                        .PIAACMC_FPMresp_mp; // total number of tmux threads
-                    mzoffset =
-                        thr; // the thread number of the child that just delivered its result
-                    // insert the partial result of child thr into the combined FPMresp array
-                    // be sure to skip the first line 'cause we already set it to be the light the went around the FPM
-                    for(
-                        long mz = 1 + mzoffset;
-                        mz < piaacmcopticaldesign.focmNBzone + 1;
-                        mz +=
-                            mzstep) // loop over zone, do every PIAACMC_FPMresp_mp line
-                    {
-
-                        printf("mz = %ld    %ld %ld\n", mz, IDfpmresp, ID1);
-                        fflush(stdout);
-                        uint32_t neval   = dcimg[IDfpmresp].md[0].size[0];
-                        uint32_t nzones1 = dcimg[piaacmcopticaldesign.zonezID].md[0].size[0] + 1;
-                        for(int k = 0; k < piaacmcopticaldesign.nblambda; k++)
-                        {
-                            for(uint32_t ii = 0; ii < neval; ii++)
-                            {
-                                size_t kbase = (size_t) k * nzones1 * neval;
-                                size_t tmpl1 = kbase + (size_t) mz * neval + ii;
-
-                                dcimg[IDfpmresp].array.D[tmpl1] = dcimg[ID1].array.D[tmpl1];
-                                dcimg[IDfpmresp].array.D[kbase + ii] -= dcimg[ID1].array.D[tmpl1];
-                            }
-                        }
-                    }
-
-                    // we're done with the partial array, so delete it
-                    FUNC_CHECK_RETURN(
-                        delete_image_ID("tmpFPMresp",
-                                        DELETE_IMAGE_ERRMODE_WARNING));
-                }
-                // write out the current state of the combined FPMresp file
-                {
-                    PIAACMCsimul_update_fnamedescr_conf();
-                    char fname[STRINGMAXLEN_FULLFILENAME];
-                    SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME, "%s/FPMresp%d.%s.fits",
-                                   piaacmcparams.piaacmcconfdir, piaacmcparams.SCORINGMASKTYPE,
-                                   piaacmcparams.fnamedescr_conf);
-
-                    save_fits("FPMresp", fname);
-                }
-                EXECUTE_SYSTEM_COMMAND("rm -f %s/FPMresp*.fits.tmp",
-                                       piaacmcparams.piaacmcconfdir);
-            }
-            else // worker or single-process: compute the response for our zone subset
-            {
-                // diagnostic file to make sure the child is working with the right zones
-                {
-                    char fnametmp[STRINGMAXLEN_FULLFILENAME];
-                    WRITE_FULLFILENAME(fnametmp,
-                                       "%s/fpmzmap_thread%02ld.fits",
-                                       piaacmcparams.piaacmcconfdir,
-                                       piaacmcparams.PIAACMC_FPMresp_thread);
-                    FUNC_CHECK_RETURN(save_fits("fpmzmap", fnametmp));
-                }
-
-                printf("Making component %ld / %ld\n",
-                       piaacmcparams.PIAACMC_FPMresp_thread,
-                       piaacmcparams.PIAACMC_FPMresp_mp);
-                fflush(stdout);
-                piaacmcparams.WRITE_OK = 0;
-                // for each FPM zone, compute the response
-                // skip the first one 'cause it is not computed by the children
-                for(long mz = 1 + mzoffset;
-                        mz < piaacmcopticaldesign.focmNBzone + 1;
-                        mz += mzstep)
-                {
-                    piaacmcparams.focmMode =
-                        mz; // focmMode can be a zone index, in which case operations are on that zone
-                    piaacmcopticalsystem.FOCMASKarray[0].mode =
-                        0; // direct focal plane mask response
-
-                    // find the optical element immediately preceding the focal plane mask
-                    long elem0 = 0;
-                    for(long elem = 1; elem < piaacmcopticalsystem.NBelem; elem++)
-                    {
-                        if(strcmp("post focal plane mask pupil",
-                                  piaacmcopticalsystem.name[elem]) == 0)
-                        {
-                            elem0 = elem - 1;
-                            break;
-                        }
-                    }
-
-                    piaacmcopticalsystem.keepMem[elem0] =
-                        1; // keep it in memory
-
-                    printf(
-                        "piaacmcopticaldesign.NBrings =                        "
-                        "     %ld\n",
-                        piaacmcopticaldesign.NBrings);
-                    printf(
-                        "piaacmcopticaldesign.focmNBzone =                     "
-                        "     %ld\n",
-                        piaacmcopticaldesign.focmNBzone);
-                    printf(
-                        "piaacmcopticaldesign.nblambda =                       "
-                        "     %d\n",
-                        piaacmcopticaldesign.nblambda);
-                    printf(
-                        "dcimg[IDfpmresp].md[0].size[0] =            "
-                        "%ld\n",
-                        (long) dcimg[IDfpmresp].md[0].size[0]);
-                    printf(
-                        "dcimg[piaacmcopticaldesign.zonezID].md[0].size[0]"
-                        " =   %ld\n",
-                        (long) dcimg[piaacmcopticaldesign.zonezID]
-                        .md[0]
-                        .size[0]);
-                    fflush(stdout);
-
-                    // compute the on-axis PSF
-                    FUNC_CHECK_RETURN(PIAACMCsimul_computePSF(
-                                          0.0,
-                                          0.0,
-                                          elem0,
-                                          piaacmcopticalsystem.NBelem,
-                                          0,
-                                          piaacmcparams.computePSF_ResolvedTarget,
-                                          piaacmcparams.computePSF_ResolvedTarget_mode,
-                                          0,
-                                          NULL));
-
-                    imageID  IDimvect = image_ID("imvect", dcimg, dcnimg);
-                    uint32_t neval    = dcimg[IDimvect].md[0].size[0];
-                    uint32_t nzones1  = dcimg[piaacmcopticaldesign.zonezID].md[0].size[0] + 1;
-
-                    // set the response of this zone from the PSF evaluation vector
-                    for(int k = 0; k < piaacmcopticaldesign.nblambda; k++)
-                    {
-                        size_t kbase = (size_t) k * nzones1 * neval;
-                        for(uint32_t ii = 0; ii < neval; ii++)
-                        {
-                            float val = dcimg[IDimvect].array.F[(size_t) k * neval + ii];
-
-                            dcimg[IDfpmresp].array.D[kbase + (size_t) mz * neval + ii] = val;
-                            if(piaacmcparams.PIAACMC_FPMresp_mp == 1)
-                            {
-                                dcimg[IDfpmresp].array.D[kbase + ii] -= val;
-                            }
-                        }
-                    }
-
-                    printf("Saving FPMresp (ID = %ld) as \"%s\" ...",
-                           image_ID("FPMresp", dcimg, dcnimg),
-                           fname1);
-                    fflush(stdout);
-                    FUNC_CHECK_RETURN(save_fits("FPMresp", fname1));
-                    printf("Done \n");
-                    fflush(stdout);
-                }
-
-                // partial file complete: save to .tmp and atomically rename to final name
-                printf("Saving FPMresp (ID = %ld) as \"%s\" ...",
-                       image_ID("FPMresp", dcimg, dcnimg),
-                       fname2);
-                fflush(stdout);
-                FUNC_CHECK_RETURN(save_fits("FPMresp", fname1));
-                if(rename(fname1, fname2) != 0)
-                {
-                    perror("rename");
-                    return RETURN_FAILURE;
-                }
-                printf("Done \n");
-                fflush(stdout);
-                piaacmcparams.WRITE_OK = 0;
+                FUNC_CHECK_RETURN(fpm_calib_compute_worker_zones(&ctx, IDfpmresp));
             }
         }
         else
         {
             printf("File FPMresp exists\n");
-            //printf("File \"%s\" or \"%s\" exists\n", fname, fnamecomb);
         }
     }
+
     piaacmcparams.focmMode = -1;
 
     DEBUG_TRACE_FEXIT();

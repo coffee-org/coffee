@@ -12,6 +12,7 @@ set(SOURCEFILES
     PIAACMCsimul.c
     init_piaacmcopticaldesign.c
     init_piaacmcopticalsystem.c
+    init_piaacmcopticalsystem_elements.c
     PIAACMCsimul_conf_io.c
     PIAACMC_f_evalmask.c
     PIAACMCsimul_exec.c
@@ -28,16 +29,20 @@ set(SOURCEFILES
     PIAACMCsimul_computePSF.c
     PIAACMCsimul_computePSF_fast.c
     PIAACMCsimul_eval_poly_design.c
+    PIAACMCsimul_eval_poly_sens.c
     PIAACMCsimul_run.c
+    PIAACMCsimul_run_params.c
     exec_compute_image.c
     exec_computePSF_no_fpm.c
     FocalPlaneMask/exec_multizone_fpm_calib.c
+    FocalPlaneMask/exec_multizone_fpm_calib_zones.c
     FocalPlaneMask/exec_optimize_fpm_zones.c
     FocalPlaneMask/exec_optimize_fpmtransmission.c
     FocalPlaneMask/FPM_process.c
     FocalPlaneMask/FPMresp_resample.c
     FocalPlaneMask/FPMresp_rmzones.c
     FocalPlaneMask/mkFocalPlaneMask.c
+    FocalPlaneMask/mkFocalPlaneMask_cube.c
     FocalPlaneMask/mkFPM_zonemap.c
     FocalPlaneMask/rings2sectors.c
     LyotStop/exec_optimize_lyot_stop_position.c
@@ -46,8 +51,10 @@ set(SOURCEFILES
     LyotStop/mkLyotMask.c
     LyotStop/mkSimpleLyotStop.c
     LyotStop/optimizeLyotStop.c
+    LyotStop/optimizeLyotStop_eval.c
     PIAAshape/exec_optimize_PIAA_shapes.c
     PIAAshape/init_geomPIAA_rad.c
+    PIAAshape/init_geomPIAA_rad_march.c
     PIAAshape/load2DRadialApodization.c
     PIAAshape/makePIAAshapes.c
     PIAAshape/mkPIAAMshapes_from_RadSag.c

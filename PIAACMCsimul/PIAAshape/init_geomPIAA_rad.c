@@ -1,596 +1,347 @@
 /**
  * @file    init_geomPIAA_rad.c
  * @brief   Solve geometric ray-mapping ODEs for 1D radial PIAA mirror sags
- *
  */
 
-#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-// milk includes
 #include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_memory/COREMOD_memory.h"
 
 #include "PIAACMCsimul.h"
+#include "PIAAshape/init_geomPIAA_rad.h"
+
+#include "init_geomPIAA_rad_internal.h"
 
 /**
- * @brief Computes radial PIAA mirror shapes
- *
- * Only works for circular PIAA.
- *
- * @param[in] IDapofit_name
- *      Radial amplitude apodization, expressed as linear sum of cosines
- *
- * @return errno_t
+ * build_output_apodization_flux - Reconstruct cosine-fit output amplitude `pup1` and enclosed flux.
+ * @ctx:           Radial PIAA profile context to populate (`pup1`, `flux1cumul`, `flux1_in/out`)
+ * @IDapofit_name: Name of 1D radial cosine fit coefficient image
  */
-errno_t init_geomPIAA_rad(const char *__restrict__ IDapofit_name)
+static void build_output_apodization_flux(
+    struct geom_piaa_rad_ctx *ctx,
+    const char      *restrict IDapofit_name)
 {
-    DEBUG_TRACE_FSTART();
-    DEBUG_TRACEPOINT("FARG %s", IDapofit_name);
-
-    long   nbcoeff;
-    double total;
-
-    // to convert r ro r1 (assymptotic outer radius on pup1)
-    double coeffa  = 3.0; // convergence rate from linear to assymptotic value
-    double coeffa1 = 0.5; // convergence radius limit (added to 1.0)
-
-    double FLUX0_in  = 0.0; // inside central obstruction
-    double FLUX0_out = 0.0; // outside beam edge
-    double FLUX1_in  = 0.0; // inside central obstruction
-    double FLUX1_out = 0.0; // outside beam edge
-    double normcoeff;
-
-    //double *piaar11;
-    double *piaar01;
-    double *piaar10;
-
-    double *piaaM0z;
-    double *piaaM1z;
-
-    double *pup0 =
-        (double *) malloc(sizeof(double) * piaacmcopticaldesign.NBradpts);
-    if(pup0 == NULL)
-    {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
-    }
-
-    double *pup1 =
-        (double *) malloc(sizeof(double) * piaacmcopticaldesign.NBradpts);
-    if(pup1 == NULL)
-    {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
-    }
-
-    double *flux0cumul =
-        (double *) malloc(sizeof(double) * piaacmcopticaldesign.NBradpts);
-    if(flux0cumul == NULL)
-    {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
-    }
-
-    double *flux1cumul =
-        (double *) malloc(sizeof(double) * piaacmcopticaldesign.NBradpts);
-    if(flux1cumul == NULL)
-    {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
-    }
-
-    // STEP 1: CREATE AMPLITUDE AND CUMULATIVE INTENSITY PROFILES
-
-    // CREATE OUTPUT AMPLITUDE APODIZATION PROFILE AND ITS CUMUL
+    double coeffa  = 3.0;
+    double coeffa1 = 0.5;
 
     imageID IDcoeff = image_ID(IDapofit_name, dcimg, dcnimg);
-    nbcoeff         = dcimg[IDcoeff].md->size[0];
+    long    nbcoeff = dcimg[IDcoeff].md->size[0];
     printf("%ld coefficients\n", nbcoeff);
 
-    total = 0.0;
-    for(long ii = 0; ii < piaacmcopticaldesign.NBradpts; ii++)
+    double total     = 0.0;
+    double flux1_in  = 0.0;
+    double flux1_out = 0.0;
+
+    for (long ii = 0; ii < ctx->NBradpts; ii++)
     {
+        ctx->pup1[ii] = 0.0;
+        double r      = 1.0 * ii / ctx->NBradpts * piaacmcopticaldesign.r1lim;
         double r1;
 
-        pup1[ii] = 0.0;
-        double r = 1.0 * ii / piaacmcopticaldesign.NBradpts *
-                   piaacmcopticaldesign.r1lim;
-        if(r < 1.0)
+        if (r < 1.0)
         {
             r1 = r;
         }
         else
-            r1 = 1.0 +
-                 (r - 1) / pow((1.0 + pow(1.0 / coeffa1 * (r - 1), coeffa)),
-                               1.0 / coeffa);
-
-        // reconstruct apodization profile from cosine coefficients
-        for(long k = 0; k < nbcoeff; k++)
         {
-            pup1[ii] += dcimg[IDcoeff].array.F[k] *
-                        cos(r1 * k * M_PI / ApoFitCosFact);
+            r1 = 1.0 + (r - 1) / pow((1.0 + pow(1.0 / coeffa1 * (r - 1), coeffa)), 1.0 / coeffa);
         }
 
-        // sum up flux inside central obstruction
-        if(r < piaacmcopticaldesign.centObs1)
+        for (long k = 0; k < nbcoeff; k++)
         {
-            FLUX1_in += pup1[ii] * pup1[ii] * r;
+            ctx->pup1[ii] += dcimg[IDcoeff].array.F[k] * cos(r1 * k * M_PI / ApoFitCosFact);
         }
 
-        // sum up flux outside pupil edge
-        if(r > 1.0)
+        if (r < piaacmcopticaldesign.centObs1)
         {
-            FLUX1_out += pup1[ii] * pup1[ii] * r;
+            flux1_in += ctx->pup1[ii] * ctx->pup1[ii] * r;
+        }
+        if (r > 1.0)
+        {
+            flux1_out += ctx->pup1[ii] * ctx->pup1[ii] * r;
         }
 
-        total += pup1[ii] * pup1[ii] * r;
-        flux1cumul[ii] = total;
+        total += ctx->pup1[ii] * ctx->pup1[ii] * r;
+        ctx->flux1cumul[ii] = total;
     }
 
-    normcoeff = 1.0 / (total - FLUX1_in - FLUX1_out);
-
-    FLUX1_in *= normcoeff;
-    FLUX1_out *= normcoeff;
-    for(long ii = 0; ii < piaacmcopticaldesign.NBradpts; ii++)
+    double normcoeff = 1.0 / (total - flux1_in - flux1_out);
+    flux1_in *= normcoeff;
+    flux1_out *= normcoeff;
+    for (long ii = 0; ii < ctx->NBradpts; ii++)
     {
-        // r = 1.0*ii/piaacmc->NBradpts*piaacmc->r1lim;
-        flux1cumul[ii] *= normcoeff;
+        ctx->flux1cumul[ii] *= normcoeff;
     }
 
-    printf("outer fluxes 1: %lf %lf\n", FLUX1_in, FLUX1_out);
+    printf("outer fluxes 1: %lf %lf\n", flux1_in, flux1_out);
+    ctx->flux1_in  = flux1_in;
+    ctx->flux1_out = flux1_out;
+}
 
-    // CREATE FLUX0
+/**
+ * init_input_flat_flux - Initialize uniform input beam `pup0` and annular flux normalization.
+ * @ctx: Radial PIAA profile context (`pup0`, `flux0cumul`, `normcoeff0`)
+ */
+static void init_input_flat_flux(struct geom_piaa_rad_ctx *ctx)
+{
+    double total     = 0.0;
+    double flux0_in  = 0.0;
+    double flux0_out = 0.0;
 
-    total = 0.0;
-    for(long ii = 0; ii < piaacmcopticaldesign.NBradpts; ii++)
+    for (long ii = 0; ii < ctx->NBradpts; ii++)
     {
-        double r = 1.0 * ii / piaacmcopticaldesign.NBradpts *
-                   piaacmcopticaldesign.r0lim;
-        pup0[ii] = 1.0;
+        double r      = 1.0 * ii / ctx->NBradpts * piaacmcopticaldesign.r0lim;
+        ctx->pup0[ii] = 1.0;
 
-        if(r < piaacmcopticaldesign.centObs0)
+        if (r < piaacmcopticaldesign.centObs0)
         {
-            FLUX0_in += pup0[ii] * pup0[ii] * r;
+            flux0_in += ctx->pup0[ii] * ctx->pup0[ii] * r;
         }
-        if(r > 1.0)
+        if (r > 1.0)
         {
-            FLUX0_out += pup0[ii] * pup0[ii] * r;
-        }
-
-        total += pup0[ii] * pup0[ii] * r;
-        flux0cumul[ii] = total;
-    }
-    normcoeff = 1.0 / (total - FLUX0_in - FLUX0_out);
-
-    FLUX0_in *= normcoeff;
-    FLUX0_out *= normcoeff;
-
-    printf("outer fluxes 0: %lf (%lf)    %lf\n", FLUX0_in, FLUX1_in, FLUX0_out);
-
-    //
-    // Compute inner pseudo profile
-    //
-    {
-        double a       = 0.5;
-        double b       = 0.5;
-        double bstep   = 0.1;
-        double verr    = 1.0;
-        double eps1    = 1e-8;
-        long   NBistep = piaacmcopticaldesign.centObs0 *
-                         piaacmcopticaldesign.NBradpts /
-                         piaacmcopticaldesign.r0lim;
-        //  innerprof_cumul = (double*) malloc(sizeof(double)*NBistep);
-
-        int dir = 1; // initial direction
-
-        double t0;
-        while(fabs(verr) > 1.0e-9)
-        {
-            int odir;
-            t0 = 0.0;
-            //t0cnt = 0.0;
-            for(long ii = 0; ii < NBistep; ii++)
-            {
-                double x = 1.0 * ii / NBistep;
-                double r = 1.0 * ii / piaacmcopticaldesign.NBradpts *
-                           piaacmcopticaldesign.r0lim;
-
-                if(x < eps1)
-                {
-                    x = eps1;
-                }
-                if(x > 1.0 - eps1)
-                {
-                    x = 1.0 - eps1;
-                }
-
-                pup0[ii] = b + (1.0 - b) * (0.5 + atan(-a / b / (x * x) +
-                                                       a / pow(x - 1.0, 2)) /
-                                            M_PI);
-                t0 += r * pup0[ii] * pup0[ii];
-                flux0cumul[ii] = t0;
-            }
-
-            verr = t0 * normcoeff - FLUX1_in;
-
-            odir = dir;
-            if(verr > 0.0)  // too much light
-            {
-                b /= (1.0 + bstep);
-                dir = -1;
-            }
-            else
-            {
-                b *= (1.0 + bstep);
-                dir = 1;
-            }
-            if(odir * dir < 0)
-            {
-                bstep *= 0.1;
-            }
-            printf(".");
-            fflush(stdout);
-        }
-        printf("\n");
-        printf("TOTAL = %f -> %g (%g %g)\n", b, t0 * normcoeff, bstep, verr);
-    }
-
-    // outer region
-    {
-        double a     = 0.5;
-        double b     = 0.5;
-        double bstep = 0.1;
-        double verr  = 1.0;
-        double eps1  = 1e-8;
-
-        long NBistep = piaacmcopticaldesign.NBradpts *
-                       (piaacmcopticaldesign.r0lim - 1.0) /
-                       piaacmcopticaldesign.r0lim;
-        //  innerprof_cumul = (double*) malloc(sizeof(double)*NBistep);
-        long iioffset = (long)(1.0 * piaacmcopticaldesign.NBradpts /
-                               piaacmcopticaldesign.r0lim);
-        NBistep       = piaacmcopticaldesign.NBradpts - iioffset;
-
-        int dir = 1; // initial direction
-        int odir;
-
-        double t0;
-        while(fabs(verr) > 1.0e-9)
-        {
-            t0 = 0.0;
-            //t0cnt = 0.0;
-            for(long ii = 0; ii < NBistep; ii++)
-            {
-                double x = 1.0 - 1.0 * ii / NBistep;
-                double r = 1.0 + 1.0 * ii / piaacmcopticaldesign.NBradpts *
-                           piaacmcopticaldesign.r0lim;
-
-                if(x < eps1)
-                {
-                    x = eps1;
-                }
-                if(x > 1.0 - eps1)
-                {
-                    x = 1.0 - eps1;
-                }
-                pup0[ii + iioffset] =
-                    b + (1.0 - b) * (0.5 + atan(-a / b / (x * x) +
-                                                a / pow(x - 1.0, 2)) /
-                                     M_PI);
-                t0 += r * pup0[ii + iioffset] * pup0[ii + iioffset];
-                flux0cumul[ii + iioffset] = t0;
-            }
-
-            verr = t0 * normcoeff - FLUX1_out;
-
-            odir = dir;
-            if(verr > 0.0)  // too much light
-            {
-                b /= (1.0 + bstep);
-                dir = -1;
-            }
-            else
-            {
-                b *= (1.0 + bstep);
-                dir = 1;
-            }
-            if(odir * dir < 0)
-            {
-                bstep *= 0.1;
-            }
-            printf(".");
-            fflush(stdout);
-        }
-        printf("\n");
-        printf("TOTAL = %f -> %g (%g %g)\n", b, t0 * normcoeff, bstep, verr);
-    }
-
-    total     = 0.0;
-    FLUX0_in  = 0.0;
-    FLUX0_out = 0.0;
-    for(long ii = 0; ii < piaacmcopticaldesign.NBradpts; ii++)
-    {
-        double r = 1.0 * ii / piaacmcopticaldesign.NBradpts *
-                   piaacmcopticaldesign.r0lim;
-        if(r < piaacmcopticaldesign.centObs0)
-        {
-            FLUX0_in += pup0[ii] * pup0[ii] * r;
-        }
-        if(r > 1.0)
-        {
-            FLUX0_out += pup0[ii] * pup0[ii] * r;
+            flux0_out += ctx->pup0[ii] * ctx->pup0[ii] * r;
         }
 
-        total += pup0[ii] * pup0[ii] * r;
-        flux0cumul[ii] = total;
-        flux0cumul[ii] *= normcoeff;
-        ;
+        total += ctx->pup0[ii] * ctx->pup0[ii] * r;
+        ctx->flux0cumul[ii] = total;
     }
-    FLUX0_in *= normcoeff;
-    FLUX0_out *= normcoeff;
 
-    printf("outer fluxes 0: %lf (%lf)    %lf\n", FLUX0_in, FLUX1_in, FLUX0_out);
+    double normcoeff = 1.0 / (total - flux0_in - flux0_out);
+    flux0_in *= normcoeff;
+    flux0_out *= normcoeff;
 
+    printf("outer fluxes 0: %lf (%lf)    %lf\n", flux0_in, ctx->flux1_in, flux0_out);
+    ctx->normcoeff0 = normcoeff;
+}
+
+/**
+ * solve_inner_pseudo_profile - Match input central-obstruction pseudo-flux to output `flux1_in`.
+ * @ctx: Radial PIAA profile context (`pup0`, `flux0cumul`)
+ */
+static void solve_inner_pseudo_profile(struct geom_piaa_rad_ctx *ctx)
+{
+    double a       = 0.5;
+    double b       = 0.5;
+    double bstep   = 0.1;
+    double verr    = 1.0;
+    double eps1    = 1e-8;
+    long   NBistep =
+        piaacmcopticaldesign.centObs0 * ctx->NBradpts / piaacmcopticaldesign.r0lim;
+    int    dir     = 1;
+    double t0      = 0.0;
+
+    while (fabs(verr) > 1.0e-9)
     {
-        // write beam amplitude profiles to file
-        //
-        char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname,
-                           "%s/pup01.prof",
-                           piaacmcparams.piaacmcconfdir);
-        FILE *fp = fopen(fname, "w");
-        if(fp == NULL)
+        t0 = 0.0;
+        for (long ii = 0; ii < NBistep; ii++)
         {
-            PRINT_ERROR("Cannot create file %s", fname);
-            abort();
+            double x = 1.0 * ii / NBistep;
+            double r = 1.0 * ii / ctx->NBradpts * piaacmcopticaldesign.r0lim;
+
+            if (x < eps1)
+            {
+                x = eps1;
+            }
+            if (x > 1.0 - eps1)
+            {
+                x = 1.0 - eps1;
+            }
+
+            ctx->pup0[ii] =
+                b + (1.0 - b) * (0.5 + atan(-a / b / (x * x) + a / pow(x - 1.0, 2)) / M_PI);
+            t0 += r * ctx->pup0[ii] * ctx->pup0[ii];
+            ctx->flux0cumul[ii] = t0;
         }
-        for(long ii = 0; ii < piaacmcopticaldesign.NBradpts; ii++)
+
+        verr     = t0 * ctx->normcoeff0 - ctx->flux1_in;
+        int odir = dir;
+        if (verr > 0.0)
         {
-            double r0 = 1.0 * ii / piaacmcopticaldesign.NBradpts *
-                        piaacmcopticaldesign.r0lim;
-            double r1 = 1.0 * ii / piaacmcopticaldesign.NBradpts *
-                        piaacmcopticaldesign.r1lim;
-
-            fprintf(fp,
-                    "%f %f %g %g %g %g\n",
-                    r0,
-                    r1,
-                    pup0[ii],
-                    pup1[ii],
-                    flux0cumul[ii],
-                    flux1cumul[ii]);
-        }
-        fclose(fp);
-    }
-
-    // STEP 2: COMPUTE r0 - r1 CORRESPONDANCE
-
-    double *piaar00 = (double *) malloc(
-                          sizeof(double) *
-                          piaacmcopticaldesign.NBradpts); // r0 as a function of r0 index
-    if(piaar00 == NULL)
-    {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
-    }
-    /*
-        piaar11 = (double*) malloc(sizeof(double)*piaacmc->NBradpts); // r1 as a function of r1 index
-        if(piaar11 == NULL) {
-            PRINT_ERROR("malloc returns NULL pointer");
-            abort(); // or handle error in other ways
-        }
-    */
-    piaar10 = (double *) malloc(
-                  sizeof(double) *
-                  piaacmcopticaldesign.NBradpts); // r1 as a function of r0 index
-    if(piaar10 == NULL)
-    {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
-    }
-
-    piaar01 = (double *) malloc(
-                  sizeof(double) *
-                  piaacmcopticaldesign.NBradpts); // r0 as a function of r1 index
-    if(piaar01 == NULL)
-    {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
-    }
-    /* computing r0 and r1 */
-    /* r0 and r1 are dimensionless */
-
-    /* first, r0 is evenly distributed on the first optic */
-    for(long i = 0; i < piaacmcopticaldesign.NBradpts; i++)
-    {
-        piaar00[i] =
-            piaacmcopticaldesign.r0lim * i / piaacmcopticaldesign.NBradpts;
-        //piaar11[i] = piaacmc->r1lim*i/piaacmc->NBradpts;
-    }
-
-    piaar00[0] = 0.0;
-    piaar10[0] = 0.0;
-    //  fp = fopen("test0.txt", "w");
-    {
-        long ii = 0;
-        for(long i = 1; i < piaacmcopticaldesign.NBradpts; i++)
-        {
-            double F0 = flux0cumul[i];
-
-            while((ii < piaacmcopticaldesign.NBradpts) &&
-                    (flux1cumul[ii] < flux0cumul[i]))
-            {
-                ii++;
-            }
-
-            double F1 = flux1cumul[ii - 1];
-            double F2 = flux1cumul[ii];
-
-            /* F0 = F1 + ( (F2-F1)/(ii^2-(ii-1)^2) * ((ii-1+x)^2-(ii-1)^2) ) */
-            double fluxdens;
-            if(fabs(F2 - F1) > 0.0000000001)
-            {
-                fluxdens = (F2 - F1) / (2.0 * ii - 1.0);
-            }
-            else
-            {
-                fluxdens = 0.0000000001;
-            }
-
-            double x =
-                sqrt((F0 - F1) / fluxdens + (1.0 * ii * ii - 2.0 * ii + 1.0)) +
-                1.0 - 1.0 * ii;
-
-            piaar10[i] = piaacmcopticaldesign.r1lim * (1.0 * ii - 1.0 + x) /
-                         piaacmcopticaldesign.NBradpts;
-            //  fprintf(fp, "%lf %lf %lf\n", piaar00[i], piaar10[i], F0);
-        }
-    }
-    //  fclose(fp);
-
-    piaar01[0] = 0.0;
-    //piaar11[0] = 0.0;
-    //  fp = fopen("test1.txt", "w");
-    {
-        long ii = 0;
-        for(long i = 1; i < piaacmcopticaldesign.NBradpts; i++)
-        {
-            double F0 = flux1cumul[i];
-
-            while((ii < piaacmcopticaldesign.NBradpts) &&
-                    (flux0cumul[ii] < flux1cumul[i]))
-            {
-                ii++;
-            }
-
-            double F1 = flux0cumul[ii - 1];
-            double F2 = flux0cumul[ii];
-
-            /* F0 = F1 + ( (F2-F1)/(ii^2-(ii-1)^2) * ((ii-1+x)^2-(ii-1)^2) ) */
-            double fluxdens;
-            if(fabs(F2 - F1) > 0.0000000001)
-            {
-                fluxdens = (F2 - F1) / (2.0 * ii - 1.0);
-            }
-            else
-            {
-                fluxdens = 0.0000000001;
-            }
-
-            double x =
-                sqrt((F0 - F1) / fluxdens + (1.0 * ii * ii - 2.0 * ii + 1.0)) +
-                1.0 - 1.0 * ii;
-
-            piaar01[i] = piaacmcopticaldesign.r0lim * (1.0 * ii - 1.0 + x) /
-                         piaacmcopticaldesign.NBradpts;
-            //  fprintf(fp, "%lf %lf %lf\n", piaar11[i], piaar01[i], F0);
-        }
-    }
-    //  fclose(fp);
-
-    printf("======== Compute PIAA optics shapes ============\n");
-
-    piaaM0z = (double *) malloc(sizeof(double) * piaacmcopticaldesign.NBradpts);
-    if(piaaM0z == NULL)
-    {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
-    }
-
-    piaaM1z = (double *) malloc(sizeof(double) * piaacmcopticaldesign.NBradpts);
-    if(piaaM1z == NULL)
-    {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
-    }
-
-    piaaM0z[0] = 0.0;
-    piaaM1z[0] = piaacmcopticaldesign.PIAAsep;
-
-    for(long i = 0; i < piaacmcopticaldesign.NBradpts - 1; i++)
-    {
-        double r0c = piaar00[i];
-        double r1c = piaar10[i];
-        double dx  = (r0c - r1c) * piaacmcopticaldesign.beamrad;
-        double dz  = piaaM1z[i] - piaaM0z[i];
-        //     dist = sqrt(dx*dx+dz*dz);
-        double dist =
-            dz * sqrt(1. + (dx / dz) * (dx / dz)); // preserve sign of dz
-        double y3 = dist - dz;
-
-        double slope;
-        if(fabs(dx) > 0.000000001)
-        {
-            slope = y3 / dx;
+            b /= (1.0 + bstep);
+            dir = -1;
         }
         else
         {
-            slope = 0.0;
+            b *= (1.0 + bstep);
+            dir = 1;
         }
-
-        double r0n = piaacmcopticaldesign.r0lim * (i + 1) /
-                     piaacmcopticaldesign.NBradpts;
-
-        piaaM0z[i + 1] =
-            piaaM0z[i] + slope * (r0n - r0c) * piaacmcopticaldesign.beamrad;
-
-        if(fabs(dx) > 0.000000001)
+        if (odir * dir < 0)
         {
-            slope = y3 / dx;
+            bstep *= 0.1;
         }
-        else
-        {
-            slope = 0.0;
-        }
-
-        piaaM1z[i + 1] = piaaM1z[i] + slope * (piaar10[i + 1] - r1c) *
-                         piaacmcopticaldesign.beamrad;
+        printf(".");
+        fflush(stdout);
     }
+    printf("\n");
+    printf("TOTAL = %f -> %g (%g %g)\n", b, t0 * ctx->normcoeff0, bstep, verr);
+}
 
+/**
+ * solve_outer_pseudo_profile - Match input outer-extrapolation pseudo-flux to output `flux1_out`.
+ * @ctx: Radial PIAA profile context (`pup0`, `flux0cumul`)
+ */
+static void solve_outer_pseudo_profile(struct geom_piaa_rad_ctx *ctx)
+{
+    double a        = 0.5;
+    double b        = 0.5;
+    double bstep    = 0.1;
+    double verr     = 1.0;
+    double eps1     = 1e-8;
+    long   iioffset = (long)(1.0 * ctx->NBradpts / piaacmcopticaldesign.r0lim);
+    long   NBistep  = ctx->NBradpts - iioffset;
+    int    dir      = 1;
+    double t0       = 0.0;
+
+    while (fabs(verr) > 1.0e-9)
     {
-        // write PIAA optics radial shapes to file
-
-        char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname,
-                           "%s/PIAA_Mshapes.txt",
-                           piaacmcparams.piaacmcconfdir);
-        FILE *fp = fopen(fname, "w");
-        if(fp != NULL)
+        t0 = 0.0;
+        for (long ii = 0; ii < NBistep; ii++)
         {
-            for(long ii = 0; ii < piaacmcopticaldesign.NBradpts; ii++)
+            double x = 1.0 - 1.0 * ii / NBistep;
+            double r = 1.0 + 1.0 * ii / ctx->NBradpts * piaacmcopticaldesign.r0lim;
+
+            if (x < eps1)
             {
-                fprintf(fp,
-                        "%18.16f %18.16f %18.16f %18.16f\n",
-                        piaar00[ii] * piaacmcopticaldesign.beamrad,
-                        piaaM0z[ii],
-                        piaar10[ii] * piaacmcopticaldesign.beamrad,
-                        piaaM1z[ii]);
+                x = eps1;
             }
-            fclose(fp);
+            if (x > 1.0 - eps1)
+            {
+                x = 1.0 - eps1;
+            }
+
+            long idx       = ii + iioffset;
+            ctx->pup0[idx] =
+                b + (1.0 - b) * (0.5 + atan(-a / b / (x * x) + a / pow(x - 1.0, 2)) / M_PI);
+            t0 += r * ctx->pup0[idx] * ctx->pup0[idx];
+            ctx->flux0cumul[idx] = t0;
+        }
+
+        verr     = t0 * ctx->normcoeff0 - ctx->flux1_out;
+        int odir = dir;
+        if (verr > 0.0)
+        {
+            b /= (1.0 + bstep);
+            dir = -1;
         }
         else
         {
-            FUNC_RETURN_FAILURE("cannot write file %s", fname);
+            b *= (1.0 + bstep);
+            dir = 1;
         }
+        if (odir * dir < 0)
+        {
+            bstep *= 0.1;
+        }
+        printf(".");
+        fflush(stdout);
+    }
+    printf("\n");
+    printf("TOTAL = %f -> %g (%g %g)\n", b, t0 * ctx->normcoeff0, bstep, verr);
+}
+
+/**
+ * finalize_and_save_pup01_prof - Normalize input cumulative flux and export `pup01.prof`.
+ * @ctx: Radial PIAA profile context (`pup0`, `pup1`, `flux0cumul`, `flux1cumul`)
+ */
+static void finalize_and_save_pup01_prof(struct geom_piaa_rad_ctx *ctx)
+{
+    double total     = 0.0;
+    double flux0_in  = 0.0;
+    double flux0_out = 0.0;
+
+    for (long ii = 0; ii < ctx->NBradpts; ii++)
+    {
+        double r = 1.0 * ii / ctx->NBradpts * piaacmcopticaldesign.r0lim;
+        if (r < piaacmcopticaldesign.centObs0)
+        {
+            flux0_in += ctx->pup0[ii] * ctx->pup0[ii] * r;
+        }
+        if (r > 1.0)
+        {
+            flux0_out += ctx->pup0[ii] * ctx->pup0[ii] * r;
+        }
+
+        total += ctx->pup0[ii] * ctx->pup0[ii] * r;
+        ctx->flux0cumul[ii] = total * ctx->normcoeff0;
+    }
+    flux0_in *= ctx->normcoeff0;
+    flux0_out *= ctx->normcoeff0;
+
+    printf("outer fluxes 0: %lf (%lf)    %lf\n", flux0_in, ctx->flux1_in, flux0_out);
+
+    char fname[STRINGMAXLEN_FULLFILENAME];
+    WRITE_FULLFILENAME(fname, "%s/pup01.prof", piaacmcparams.piaacmcconfdir);
+    FILE *fp = fopen(fname, "w");
+    if (fp == NULL)
+    {
+        PRINT_ERROR("Cannot create file %s", fname);
+        abort();
+    }
+    for (long ii = 0; ii < ctx->NBradpts; ii++)
+    {
+        double r0 = 1.0 * ii / ctx->NBradpts * piaacmcopticaldesign.r0lim;
+        double r1 = 1.0 * ii / ctx->NBradpts * piaacmcopticaldesign.r1lim;
+        fprintf(fp,
+                "%f %f %g %g %g %g\n",
+                r0,
+                r1,
+                ctx->pup0[ii],
+                ctx->pup1[ii],
+                ctx->flux0cumul[ii],
+                ctx->flux1cumul[ii]);
+    }
+    fclose(fp);
+}
+
+/**
+ * init_geomPIAA_rad - Compute lossless 1D radial PIAA mirror profiles from cosine apodization fit.
+ * @IDapofit_name: Input 1D cosine-fit radial amplitude apodization image name
+ *
+ * Only works for circular PIAA geometries. Writes `pup01.prof` and `PIAA_Mshapes.txt`.
+ *
+ * Return: RETURN_SUCCESS on completion, or milk error code if output file creation fails.
+ */
+errno_t init_geomPIAA_rad(const char *restrict IDapofit_name)
+{
+    DEBUG_TRACE_FSTART();
+    DEBUG_TRACEPOINT("FARG %s", IDapofit_name);
+
+    struct geom_piaa_rad_ctx ctx = {0};
+    ctx.NBradpts                 = piaacmcopticaldesign.NBradpts;
+
+    ctx.pup0       = (double *) malloc(sizeof(double) * ctx.NBradpts);
+    ctx.pup1       = (double *) malloc(sizeof(double) * ctx.NBradpts);
+    ctx.flux0cumul = (double *) malloc(sizeof(double) * ctx.NBradpts);
+    ctx.flux1cumul = (double *) malloc(sizeof(double) * ctx.NBradpts);
+    if ((ctx.pup0 == NULL) || (ctx.pup1 == NULL) || (ctx.flux0cumul == NULL) ||
+        (ctx.flux1cumul == NULL))
+    {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
     }
 
-    free(piaaM0z);
-    free(piaaM1z);
+    build_output_apodization_flux(&ctx, IDapofit_name);
+    init_input_flat_flux(&ctx);
+    solve_inner_pseudo_profile(&ctx);
+    solve_outer_pseudo_profile(&ctx);
+    finalize_and_save_pup01_prof(&ctx);
 
-    free(flux0cumul);
-    free(flux1cumul);
-    free(pup0);
-    free(pup1);
+    errno_t status = geom_piaa_rad_march_and_save(&ctx);
 
-    free(piaar00);
-    free(piaar10);
-    free(piaar01);
-    //free(piaar11);
+    free(ctx.flux0cumul);
+    free(ctx.flux1cumul);
+    free(ctx.pup0);
+    free(ctx.pup1);
+
+    if (status != RETURN_SUCCESS)
+    {
+        return status;
+    }
 
     DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;

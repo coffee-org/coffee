@@ -1,34 +1,27 @@
 /**
  * @file    PIAACMCsimul_run.c
- * @brief   PIAA-type coronagraph design, run
- *
- * Can design both APLCMC and PIAACMC coronagraphs
- *
- *
+ * @brief   CLI entry point and Mode 13 multi-pass FPM optimization driver
  */
 
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <sys/time.h>
 
-// milk includes
 #include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
-#include "statistic/statistic.h"
 
 #include "OptSystProp/OptSystProp.h"
 #include "OpticsMaterials/OpticsMaterials.h"
 
 #include "PIAACMCsimul.h"
-
 #include "PIAACMCsimul_exec.h"
 #include "PIAACMCsimul_loadsavepiaacmcconf.h"
 #include "PIAACMCsimul_run.h"
-#include "init_piaacmcopticaldesign.h"
+#include "PIAACMCsimul_run_internal.h"
 
 static char    *confindex;
 static int64_t *mode;
@@ -58,7 +51,7 @@ static CLICMDARGDEF piaacmc_run_farg[] =
 MILK_RUNNABLE_RT_DEFINE(piaacmc_run);
 
 /**
- * cli_piaacmc_run - CLI entry wrapper invoking PIAACMCsimul_run
+ * cli_piaacmc_run - CLI entry wrapper invoking PIAACMCsimul_run.
  *
  * Return: errno_t status from PIAACMCsimul_run.
  */
@@ -81,739 +74,385 @@ const MILK_RUNNABLE runnable_piaacmc_run =
     .rt       = &piaacmc_run_rt,
 };
 
-static errno_t PIAACMCsimul_setparam_variables(const char *confindex, long mode)
+/**
+ * mode13_sync_best_fits - Update in-memory fpmbestsol and copy FPM FITS products to .best.fits.
+ * @ctx: Mutable Mode 13 outer loop context
+ */
+static void mode13_sync_best_fits(struct mode13_loop_ctx *ctx)
 {
-    DEBUG_TRACE_FSTART();
-    DEBUG_TRACEPOINT("FARG %s %ld", confindex, mode);
+    char fname1[STRINGMAXLEN_FULLFILENAME];
+    char fnamebestsol[STRINGMAXLEN_FULLFILENAME];
 
-    variableID IDv = -1;
+    PIAACMCsimul_update_fnamedescr();
+    SNPRINTF_CHECK(
+        fnamebestsol,
+        STRINGMAXLEN_FULLFILENAME,
+        "%s/fpm_zonez.%s.best.fits",
+        piaacmcparams.piaacmcconfdir,
+        piaacmcparams.fnamedescr);
 
-    // PIAACMC design mask radius in l/D
-    if((IDv = variable_ID("PIAACMC_MASKRADLD")) != -1)
+    if (ctx->IDbestsol == -1)
     {
-        piaacmcparams.PIAACMC_MASKRADLD = coffee_dcvar_f(IDv);
+        load_fits(fnamebestsol, "fpmbestsol", LOADFITS_ERRMODE_IGNORE, &ctx->IDbestsol);
     }
-
-    // sectors
-    if((IDv = variable_ID("PIAACMC_FPMsectors")) != -1)
+    else
     {
-        piaacmcparams.PIAACMC_FPMsectors =
-            (long) coffee_dcvar_f(IDv) + 0.01;
-    }
-    printf("PIAACMC_FPMsectors = %d\n", piaacmcparams.PIAACMC_FPMsectors);
-
-    if((IDv = variable_ID("SCORINGMASKTYPE")) != -1)
-    {
-        piaacmcparams.SCORINGMASKTYPE =
-            (long) coffee_dcvar_f(IDv) + 0.01;
-    }
-    printf("SCORINGMASKTYPE = %d\n", piaacmcparams.SCORINGMASKTYPE);
-
-    if((IDv = variable_ID("PIAACMC_save")) != -1)
-    {
-        piaacmcparams.PIAACMC_save = (long) coffee_dcvar_f(IDv) + 0.01;
-    }
-    printf("PIAACMC_save = %d\n", piaacmcparams.PIAACMC_save);
-
-    if((IDv = variable_ID("PIAACMC_resolved")) != -1)
-    {
-        piaacmcparams.computePSF_ResolvedTarget =
-            (long)(coffee_dcvar_f(IDv) + 0.01);
-    }
-
-    if((IDv = variable_ID("PIAACMC_extmode")) != -1)
-    {
-        piaacmcparams.computePSF_ResolvedTarget_mode =
-            (long)(coffee_dcvar_f(IDv) + 0.01);
-    }
-
-    printf("mode = %ld\n", mode);
-    fflush(stdout);
-
-    double fpmradld = 0.95; // default
-    double centobs0 = 0.3;
-    double centobs1 = 0.2;
-
-    // set the result directories
-    WRITE_DIRNAME(piaacmcparams.piaacmcconfdir, "%s", confindex);
-
-    // load some more cli variables
-    if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
-    {
-        centobs0 = coffee_dcvar_f(IDv);
-    }
-    if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
-    {
-        centobs1 = coffee_dcvar_f(IDv);
-    }
-    if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
-    {
-        fpmradld = coffee_dcvar_f(IDv);
-        printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
-    }
-
-    piaacmcparams.PIAACMC_fpmtype = 0; // idealized (default)
-    if((IDv = variable_ID("PIAACMC_fpmtype")) != -1)
-    {
-        piaacmcparams.PIAACMC_fpmtype =
-            (int)(coffee_dcvar_f(IDv) + 0.1);
-    }
-
-    {
-        uint64_t initflags = INIT_PIAACMCOPTICALDESIGN_MODE__DEFAULT;
-
-        initflags |= INIT_PIAACMCOPTICALDESIGN_MODE__READCONF;
-        initflags |= INIT_PIAACMCOPTICALDESIGN_MODE__LOADPIAACMCCONF;
-
-        if(piaacmcparams.PIAACMC_fpmtype == 1)
+        imageID IDbestsoltmp = -1;
+        load_fits(fnamebestsol, "fpmbestsoltmp", LOADFITS_ERRMODE_IGNORE, &IDbestsoltmp);
+        if (IDbestsoltmp != -1)
         {
-            initflags |= INIT_PIAACMCOPTICALDESIGN_MODE__FPMPHYSICAL;
+            for (uint32_t k = 0; k < dcimg[ctx->IDbestsol].md[0].size[0]; k++)
+            {
+                dcimg[ctx->IDbestsol].array.D[k] = dcimg[IDbestsoltmp].array.D[k];
+            }
+            delete_image_ID("fpmbestsoltmp", DELETE_IMAGE_ERRMODE_WARNING);
         }
-
-        FUNC_CHECK_RETURN(init_piaacmcopticaldesign(fpmradld,
-                          centobs0,
-                          centobs1,
-                          initflags,
-                          NULL));
     }
 
-    DEBUG_TRACE_FEXIT();
-    return RETURN_SUCCESS;
+    PIAACMCsimul_update_fnamedescr();
+    SNPRINTF_CHECK(
+        fname1,
+        STRINGMAXLEN_FULLFILENAME,
+        "%s/fpm_zonez.%s.fits",
+        piaacmcparams.piaacmcconfdir,
+        piaacmcparams.fnamedescr);
+    SNPRINTF_CHECK(
+        fnamebestsol,
+        STRINGMAXLEN_FULLFILENAME,
+        "%s/fpm_zonez.%s.best.fits",
+        piaacmcparams.piaacmcconfdir,
+        piaacmcparams.fnamedescr);
+
+    EXECUTE_SYSTEM_COMMAND("cp %s %s", fname1, fnamebestsol);
+    EXECUTE_SYSTEM_COMMAND("echo \"cp %s %s\" > cmdlogtest.txt", fname1, fnamebestsol);
+
+    SNPRINTF_CHECK(
+        fname1,
+        STRINGMAXLEN_FULLFILENAME,
+        "%s/fpm_sagmapHR.%s.fits",
+        piaacmcparams.piaacmcconfdir,
+        piaacmcparams.fnamedescr);
+    SNPRINTF_CHECK(
+        fnamebestsol,
+        STRINGMAXLEN_FULLFILENAME,
+        "%s/fpm_sagmapHR.%s.best.fits",
+        piaacmcparams.piaacmcconfdir,
+        piaacmcparams.fnamedescr);
+
+    EXECUTE_SYSTEM_COMMAND("cp %s %s", fname1, fnamebestsol);
+    EXECUTE_SYSTEM_COMMAND("echo \"cp %s %s\" > cmdlogtest1.txt", fname1, fnamebestsol);
 }
 
-static double read_searchtime(void)
+/**
+ * mode13_write_bestval_file - Record updated best contrast merit and touch newbestsol.txt.
+ * @fnamebestval: Path to mode13.<descr>.bestval.txt
+ * @bestval:      Updated best objective merit value
+ */
+static void mode13_write_bestval_file(
+    const char *fnamebestval,
+    double      bestval)
 {
-    double searchtime = 3600.0 * 10.0; // [second] default 10 hours
-    FILE  *fp;
-    char   fname[STRINGMAXLEN_FILENAME];
-
-    WRITE_FILENAME(fname, "searchtime.txt");
-    fp = fopen(fname, "r");
-    if(fp != NULL)
+    FILE *fp = fopen(fnamebestval, "w");
+    if (fp != NULL)
     {
-        int r = fscanf(fp, "%lf\n", &searchtime);
-        (void) r;
+        fprintf(
+            fp,
+            "%30g %d %04ld %02ld %03ld %5.2f %02d %d %s %02d %07.3f\n",
+            bestval,
+            piaacmcparams.PIAACMC_FPMsectors,
+            (long) (1.0e9 * piaacmcopticaldesign.lambda + 0.1),
+            (long) (1.0 * piaacmcopticaldesign.lambdaB + 0.1),
+            piaacmcopticaldesign.NBrings,
+            piaacmcparams.PIAACMC_MASKRADLD,
+            piaacmcparams.computePSF_ResolvedTarget,
+            piaacmcparams.computePSF_ResolvedTarget_mode,
+            piaacmcopticaldesign.fpmmaterial_name,
+            piaacmcopticaldesign.nblambda,
+            piaacmcopticaldesign.fpmsagreg_coeff);
         fclose(fp);
     }
 
-    printf("searchtime = %f sec\n", searchtime);
-    fflush(stdout);
-
-    return searchtime;
+    EXECUTE_SYSTEM_COMMAND("touch %s/newbestsol.txt", piaacmcparams.piaacmcconfdir);
 }
 
-/*
-    entry point for PIAACMCsimul from the cli
-*/
+/**
+ * mode13_log_opt_entry - Append per-iteration optimization summary line to mode13.*.opt.txt.
+ * @ctx: Mode 13 outer loop context
+ * @bOK: Non-zero if this iteration achieved a new global best
+ */
+static void mode13_log_opt_entry(
+    const struct mode13_loop_ctx *ctx,
+    int                           bOK)
+{
+    char fname[STRINGMAXLEN_FULLFILENAME];
+
+    PIAACMCsimul_update_fnamedescr();
+    SNPRINTF_CHECK(
+        fname,
+        STRINGMAXLEN_FULLFILENAME,
+        "%s/mode13.%s.opt.txt",
+        piaacmcparams.piaacmcconfdir,
+        piaacmcparams.fnamedescr);
+
+    printf("Add current solution (possibly not best) to file: %s\n", fname);
+
+    FILE *fp = fopen(fname, "a");
+    if (fp == NULL)
+    {
+        return;
+    }
+
+    fprintf(
+        fp,
+        "%10d %20.5g   %16.5g -> %16.5g   (%16.5g) %d "
+        "%5ld/%5ld [%12g %2d %12g %12g  %12g]%s\n",
+        ctx->loopiter,
+        piaacmcparams.MODampl,
+        piaacmcparams.PIAACMCSIMUL_VALREF,
+        piaacmcparams.PIAACMCSIMUL_VAL,
+        ctx->bestval,
+        ctx->zeroST,
+        ctx->cnt0,
+        ctx->cnt00,
+        piaacmcparams.CnormFactor,
+        piaacmcopticaldesign.nblambda,
+        piaacmcopticalsystem.flux[0],
+        piaacmcparams.SCORINGTOTAL,
+        piaacmcparams.PIAACMCSIMUL_VAL0,
+        (bOK == 1) ? " BEST" : "");
+    fclose(fp);
+}
+
+/**
+ * mode13_should_continue - Check stoploop13.txt and wall-clock searchtime budget.
+ * @ctx: Mode 13 outer loop context
+ *
+ * Return: 1 to continue outer search loop, 0 to terminate.
+ */
+static int mode13_should_continue(const struct mode13_loop_ctx *ctx)
+{
+    int loopOK = 1;
+
+    if (file_exists(ctx->stopfile) == 1)
+    {
+        printf("FILE \"%s\" found -> stopping\n", ctx->stopfile);
+        loopOK = 0;
+        EXECUTE_SYSTEM_COMMAND("touch stop.stopfile.txt");
+        EXECUTE_SYSTEM_COMMAND("rm %s", ctx->stopfile);
+    }
+    else
+    {
+        printf("File \"%s\" not found -> continuing\n", ctx->stopfile);
+    }
+
+    struct timeval end;
+    gettimeofday(&end, NULL);
+    printf("start: %ld secs, %ld usecs\n", (long) ctx->start.tv_sec, (long) ctx->start.tv_usec);
+    printf("end: %ld secs, %ld usecs\n", (long) end.tv_sec, (long) end.tv_usec);
+
+    long secs_used   = end.tv_sec - ctx->start.tv_sec;
+    long micros_used = (secs_used * 1000000) + end.tv_usec - ctx->start.tv_usec;
+
+    FILE *fp = fopen("timeused.txt", "w");
+    if (fp != NULL)
+    {
+        fprintf(fp, "# Time used vs. time limit\n");
+        fprintf(fp, "# Time limit can be written in file searchtime.txt\n\n");
+        fprintf(fp, "%12.3f    %12.3f\n", 1.0e-6 * micros_used, ctx->searchtime);
+        fclose(fp);
+    }
+
+    if (micros_used > 1000000.0 * ctx->searchtime)
+    {
+        loopOK = 0;
+        EXECUTE_SYSTEM_COMMAND("touch stop.time_elapsed.ttxt");
+    }
+
+    printf("End of loop\n");
+    return loopOK;
+}
+
+/**
+ * mode13_finalize_summary - Print final Mode 13 configuration summary and restore best FPM sags.
+ */
+static void mode13_finalize_summary(void)
+{
+    printf("piaacmcconfdir              : %s\n", piaacmcparams.piaacmcconfdir);
+    printf("computePSF_ResolvedTarget   : %d\n", piaacmcparams.computePSF_ResolvedTarget);
+    printf("computePSF_ResolvedTarget_mode   : %d\n", piaacmcparams.computePSF_ResolvedTarget_mode);
+    printf("PIAACMC_FPMsectors   : %d\n", piaacmcparams.PIAACMC_FPMsectors);
+    printf(
+        "(long) (10.0*PIAACMC_MASKRADLD+0.1)   : %ld\n",
+        (long) (10.0 * piaacmcparams.PIAACMC_MASKRADLD + 0.1));
+    printf("piaacmcopticaldesign.NBrings   : %ld\n", piaacmcopticaldesign.NBrings);
+    printf("piaacmcopticaldesign.nblambda   : %d\n", piaacmcopticaldesign.nblambda);
+    fflush(stdout);
+
+    char fname[STRINGMAXLEN_FULLFILENAME];
+    char fnamebestsol[STRINGMAXLEN_FULLFILENAME];
+
+    PIAACMCsimul_update_fnamedescr();
+    SNPRINTF_CHECK(
+        fname,
+        STRINGMAXLEN_FULLFILENAME,
+        "%s/fpm_zonez.%s.fits",
+        piaacmcparams.piaacmcconfdir,
+        piaacmcparams.fnamedescr);
+    SNPRINTF_CHECK(
+        fnamebestsol,
+        STRINGMAXLEN_FULLFILENAME,
+        "%s/fpm_zonez.%s.best.fits",
+        piaacmcparams.piaacmcconfdir,
+        piaacmcparams.fnamedescr);
+
+    EXECUTE_SYSTEM_COMMAND("cp %s %s", fnamebestsol, fname);
+}
+
+/**
+ * PIAACMCsimul_run_mode13 - Execute randomized multi-start FPM zone sag optimization (Mode 13).
+ * @confindex: Configuration directory name/index
+ *
+ * Return: RETURN_SUCCESS on success, error code on failure.
+ */
+static errno_t PIAACMCsimul_run_mode13(const char *confindex)
+{
+    struct mode13_loop_ctx ctx;
+
+    ctx.bestval    = 1.0;
+    ctx.loopin     = 0;
+    ctx.loopiter   = 0;
+    ctx.IDbestsol  = -1;
+    ctx.sag0       = 1.0;
+    ctx.searchtime = PIAACMCsimul_run_read_searchtime();
+
+    int loopOK = (ctx.searchtime < 0.1) ? 0 : 1;
+    printf("loopOK = %d\n", loopOK);
+    fflush(stdout);
+
+    gettimeofday(&ctx.start, NULL);
+    SNPRINTF_CHECK(
+        ctx.stopfile,
+        STRINGMAXLEN_FULLFILENAME,
+        "%s/stoploop13.txt",
+        piaacmcparams.piaacmcconfdir);
+
+    while ((loopOK == 1) && (ctx.loopiter < 1000000))
+    {
+        printf("LOOP start\n");
+        fflush(stdout);
+
+        ctx.searchtime = PIAACMCsimul_run_read_searchtime();
+        ctx.loopin     = 1;
+        PIAACMCsimul_run_prep_mode13_zones(&ctx);
+
+        printf("Execute optimization\n");
+        FUNC_CHECK_RETURN(PIAACMCsimul_exec(confindex, 13));
+
+        double pha0 = OpticsMaterials_pha_lambda(
+            piaacmcopticaldesign.fpmmaterial_code, ctx.sag0, piaacmcopticaldesign.lambda);
+        printf("%g m  -> %g rad\n", ctx.sag0, pha0);
+        fflush(stdout);
+        ctx.sag0 = ctx.sag0 / (pha0 / 2.0 / M_PI);
+        printf(
+            "======================= sag0 = %g m  -> %g rad\n",
+            ctx.sag0,
+            (double) OpticsMaterials_pha_lambda(
+                piaacmcopticaldesign.fpmmaterial_code, ctx.sag0, piaacmcopticaldesign.lambda));
+
+        if (ctx.IDbestsol == -1)
+        {
+            char fnamebestsol[STRINGMAXLEN_FULLFILENAME];
+            PIAACMCsimul_update_fnamedescr();
+            SNPRINTF_CHECK(
+                fnamebestsol,
+                STRINGMAXLEN_FULLFILENAME,
+                "%s/fpm_zonez.%s.best.fits",
+                piaacmcparams.piaacmcconfdir,
+                piaacmcparams.fnamedescr);
+            printf("LOADING \"%s\"...\n", fnamebestsol);
+            fflush(stdout);
+            FUNC_CHECK_RETURN(
+                load_fits(fnamebestsol, "fpmbestsol", LOADFITS_ERRMODE_IGNORE, &ctx.IDbestsol));
+        }
+
+        char fnamebestval[STRINGMAXLEN_FULLFILENAME];
+        PIAACMCsimul_update_fnamedescr();
+        SNPRINTF_CHECK(
+            fnamebestval,
+            STRINGMAXLEN_FULLFILENAME,
+            "%s/mode13.%s.bestval.txt",
+            piaacmcparams.piaacmcconfdir,
+            piaacmcparams.fnamedescr);
+
+        if (ctx.loopiter == 0)
+        {
+            printf("READING FILE \"%s\"\n", fnamebestval);
+            fflush(stdout);
+            FILE *fp = fopen(fnamebestval, "r");
+            if (fp != NULL)
+            {
+                int r = fscanf(fp, "%lf", &ctx.bestval);
+                (void) r;
+                fclose(fp);
+            }
+        }
+
+        printf("\n\n\n\n======= val = %g [%g]\n", piaacmcparams.PIAACMCSIMUL_VAL, ctx.bestval);
+        fflush(stdout);
+
+        int bOK = 0;
+        if (piaacmcparams.PIAACMCSIMUL_VAL < ctx.bestval)
+        {
+            bOK         = 1;
+            ctx.bestval = piaacmcparams.PIAACMCSIMUL_VAL;
+            printf("========================================= ");
+            printf("SAVING BEST MASK SOLUTION -> fpm_zonez.[name].best.fits\n");
+            mode13_sync_best_fits(&ctx);
+            mode13_write_bestval_file(fnamebestval, ctx.bestval);
+        }
+
+        mode13_log_opt_entry(&ctx, bOK);
+        ctx.loopiter++;
+        loopOK = mode13_should_continue(&ctx);
+    } // while loopOK
+
+    if (ctx.loopin == 1)
+    {
+        mode13_finalize_summary();
+    }
+
+    return RETURN_SUCCESS;
+}
+
+/**
+ * PIAACMCsimul_run - Primary entry point for PIAACMC design and evaluation modes.
+ * @confindex: Configuration directory name/index
+ * @mode:      Operation mode index
+ *
+ * Return: RETURN_SUCCESS on success, error code on failure.
+ */
 errno_t PIAACMCsimul_run(
-    const char  *
-    confindex, /// @param[in] confindex	configuration index (sets name of directory for results)
-    long mode       /// @param[in] mode			operation to be executed
-)
+    const char *confindex,
+    long        mode)
 {
     DEBUG_TRACE_FSTART();
     DEBUG_TRACEPOINT("FARG %s mode %ld", confindex, mode);
 
 #ifdef PIAASIMUL_LOGFUNC0
-    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log",
-                                 __FUNCTION__,
-                                 __LINE__,
-                                 "");
+    PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log", __FUNCTION__, __LINE__, "");
 #endif
 
-    //piaacmc = NULL; // set the pointer to the piaacmc structure to null
+    FUNC_CHECK_RETURN(PIAACMCsimul_run_setparam_variables(confindex, mode));
 
-    // read various cli variables, possibly setting globals
-    FUNC_CHECK_RETURN(PIAACMCsimul_setparam_variables(confindex, mode));
-
-    // mode 13: optimize focal plane mask zones only, setting the sag values for each mask zone
-    // This outer loop is to choose more different starting points for the exec loop
-    if(mode == 13)  // loop to keep looking for optimal solution
+    if (mode == 13)
     {
-        double bestval = 1.0;
-        int    loopin  = 0;
-
-        double searchtime = read_searchtime();
-
-        int loopOK;
-        if(searchtime < 0.1)
-        {
-            loopOK = 0;
-        }
-        else
-        {
-            loopOK = 1;
-        }
-        printf("loopOK = %d\n", loopOK);
-        fflush(stdout);
-
-        struct timeval start;
-        gettimeofday(&start, NULL);
-
-        // set the name of the stopfile
-        char stopfile[STRINGMAXLEN_FULLFILENAME];
-        SNPRINTF_CHECK(stopfile, STRINGMAXLEN_FULLFILENAME, "%s/stoploop13.txt",
-                       piaacmcparams.piaacmcconfdir);
-
-        int     loopiter  = 0;
-        imageID IDbestsol = -1; // data array index of current best solution
-
-        double sag0; // sag to change OPD by 1 wave at central wavelength
-        // compute the material thickness producing a lambda phase shift at the center of the spectral band
-        sag0 = 1.0;
-
-        // while not exceed searchtime or no stop file
-        // EXECUTE_SYSTEM_COMMAND("touch start.loop.ttxt");
-        while((loopOK == 1) && (loopiter < 1000000))
-        {
-            printf("LOOP start\n");
-            fflush(stdout);
-
-            //EXECUTE_SYSTEM_COMMAND("touch start.iter%05ld.ttxt", i);
-
-            // read in the real searchtime nominally set by the bash script
-            searchtime = read_searchtime();
-
-            //EXECUTE_SYSTEM_COMMAND("touch step00.iter%05ld.ttxt", i);
-
-            loopin = 1; // loop has been initialized
-            if((loopiter < 1))
-            {
-                piaacmcparams.MODampl = 0.0; // MODampl is a global
-            }
-            else
-            {
-                piaacmcparams.MODampl =
-                    1.0e-6 *
-                    pow(ran1(),
-                        8.0); // pick amplitude for random optimization starting point
-            }
-
-            // compute the material thickness producing a lambda phase shift at the center of the spectral band
-            //sag0 = 1.0e-6;
-
-            // after the first iteration, half the time set zeroST = 0
-            // 1/4th the time when a best solution exists set zeroST = 1
-            // 1/4th the time set zeroST = 2
-            // zeroST is an information-only flag that does not control activity: it reflects
-            //  the settings in each conditional
-            // zeroST = 0 => starting point uses previous solution
-            // zeroST = 1 => starting point is a mask that has no sag: blank focal plane mask
-            // zeroST = 2 => starting point is best solution found so far
-            //
-            long cnt00  = 0;
-            long cnt0   = 0;
-            int  zeroST = 0; // default
-            if((loopiter > 1) && (ran1() > 0.5))
-            {
-                if((ran1() > 0.5) && (IDbestsol != -1))
-                {
-                    zeroST = 2; // starting point = optimal solution
-                    printf("[%d] Adopting best solution as starting point\n",
-                           __LINE__);
-                    fflush(stdout);
-                    // copy the best solution to the current zoneID of array of sags
-                    for(uint32_t k = 0;
-                            k <
-                            dcimg[piaacmcopticaldesign.zonezID].md[0].size[0];
-                            k++)
-                    {
-                        dcimg[piaacmcopticaldesign.zonezID].array.D[k] =
-                            dcimg[IDbestsol].array.D[k];
-                    }
-                }
-                else
-                {
-                    zeroST = 1; // starting point = 0
-                    printf("[%d] Adopting zero as starting point\n", __LINE__);
-                    printf("piaacmcopticaldesign.zonezID = %ld\n",
-                           piaacmcopticaldesign.zonezID);
-                    fflush(stdout);
-                    // zero out the current zoneID of array of sags
-                    for(uint32_t k = 0;
-                            k <
-                            dcimg[piaacmcopticaldesign.zonezID].md[0].size[0];
-                            k++)
-                    {
-                        dcimg[piaacmcopticaldesign.zonezID].array.D[k] =
-                            0.0;
-                    }
-                }
-            }
-
-            //EXECUTE_SYSTEM_COMMAND("touch step01.iter%05ld.ttxt", i);
-
-            // zeroST = 3 => starting point is best solution found so far.  Same as zeroST=2
-            // this flags that it's this value 'cause it's third iteration
-            if(loopiter == 3)
-            {
-                if(IDbestsol != -1)
-                {
-                    printf("[%d] Adopting best solution as starting point\n",
-                           __LINE__);
-                    fflush(stdout);
-
-                    zeroST = 3;
-                    for(uint32_t k = 0;
-                            k <
-                            dcimg[piaacmcopticaldesign.zonezID].md[0].size[0];
-                            k++)
-                    {
-                        dcimg[piaacmcopticaldesign.zonezID].array.D[k] =
-                            dcimg[IDbestsol].array.D[k];
-                    }
-                    piaacmcparams.MODampl = 0.0;
-                }
-                else
-                {
-                    zeroST = 1; // starting point = 0
-                    printf("[%d] Adopting zero as starting point\n", __LINE__);
-                    printf("piaacmcopticaldesign.zonezID = %ld\n",
-                           piaacmcopticaldesign.zonezID);
-                    fflush(stdout);
-                    // zero out the current zoneID of array of sags
-                    for(uint32_t k = 0;
-                            k <
-                            dcimg[piaacmcopticaldesign.zonezID].md[0].size[0];
-                            k++)
-                    {
-                        dcimg[piaacmcopticaldesign.zonezID].array.D[k] =
-                            0.0;
-                    }
-                }
-            }
-
-            if(loopiter > 0)
-            {
-                EXECUTE_SYSTEM_COMMAND(
-                    "echo \"%g  %ld\" > sag0.txt",
-                    sag0,
-                    (long) dcimg[piaacmcopticaldesign.zonezID]
-                    .md[0]
-                    .size[0]);
-
-                // randomly select regions that are abs()>sag0/2 and push them back toward zero
-                // probability that each zone is pushed back toward zero
-                double prob1 = pow(ran1(), 8.0);
-
-                for(uint32_t k = 0;
-                        k < dcimg[piaacmcopticaldesign.zonezID].md[0].size[0];
-                        k++)
-                {
-                    if(dcimg[piaacmcopticaldesign.zonezID].array.D[k] >
-                            sag0 / 2.0)
-                    {
-                        cnt00++;
-                        if(ran1() < prob1)
-                        {
-                            dcimg[piaacmcopticaldesign.zonezID]
-                            .array.D[k] -= sag0;
-                            cnt0++;
-                        }
-                    }
-                    if(dcimg[piaacmcopticaldesign.zonezID].array.D[k] <
-                            -sag0 / 2.0)
-                    {
-                        cnt00++;
-                        if(ran1() < prob1)
-                        {
-                            dcimg[piaacmcopticaldesign.zonezID]
-                            .array.D[k] += sag0;
-                            cnt0++;
-                        }
-                    }
-                }
-
-                printf("Write sag values to file fpsagtest.txt\n");
-                fflush(stdout);
-
-                {
-                    FILE *fp;
-
-                    fp = fopen("fpsagtest.txt", "w");
-                    fprintf(fp, "# %9.6f\n", sag0 * 1.0e6);
-                    fprintf(fp,
-                            "#    %5ld    %5ld    %5ld\n",
-                            cnt0,
-                            cnt00,
-                            (long) dcimg[piaacmcopticaldesign.zonezID]
-                            .md[0]
-                            .size[0]);
-                    for(uint32_t k = 0;
-                            k <
-                            dcimg[piaacmcopticaldesign.zonezID].md[0].size[0];
-                            k++)
-                    {
-                        fprintf(fp,
-                                "%5ld %9.6f\n",
-                                (long) k,
-                                dcimg[piaacmcopticaldesign.zonezID]
-                                .array.D[k] *
-                                1.0e6);
-                    }
-                    fclose(fp);
-                }
-            }
-
-            //EXECUTE_SYSTEM_COMMAND("touch step02.iter%05ld.ttxt", i);
-
-            // Perform the optmization
-            printf("Execute optimization\n");
-            {
-                FUNC_CHECK_RETURN(PIAACMCsimul_exec(confindex, mode));
-            }
-
-            printf("%g m  -> %g rad\n",
-                   sag0,
-                   (double) OpticsMaterials_pha_lambda(
-                       piaacmcopticaldesign.fpmmaterial_code,
-                       sag0,
-                       piaacmcopticaldesign.lambda));
-            fflush(stdout);
-
-            sag0 = sag0 / (OpticsMaterials_pha_lambda(
-                               piaacmcopticaldesign.fpmmaterial_code,
-                               sag0,
-                               piaacmcopticaldesign.lambda) /
-                           2.0 / M_PI);
-
-            printf("======================= sag0 = %g m  -> %g rad\n",
-                   sag0,
-                   (double) OpticsMaterials_pha_lambda(
-                       piaacmcopticaldesign.fpmmaterial_code,
-                       sag0,
-                       (double) piaacmcopticaldesign.lambda));
-
-            // if there is no best _solution_, load the current solution
-            if(IDbestsol == -1)
-            {
-                char fnamebestsol[STRINGMAXLEN_FULLFILENAME];
-
-                PIAACMCsimul_update_fnamedescr();
-
-                SNPRINTF_CHECK(fnamebestsol, STRINGMAXLEN_FULLFILENAME, "%s/fpm_zonez.%s.best.fits",
-                               piaacmcparams.piaacmcconfdir, piaacmcparams.fnamedescr);
-
-                printf("LOADING \"%s\"...\n", fnamebestsol);
-                fflush(stdout);
-
-                FUNC_CHECK_RETURN(load_fits(fnamebestsol,
-                                            "fpmbestsol",
-                                            LOADFITS_ERRMODE_IGNORE,
-                                            &IDbestsol));
-            }
-
-            //EXECUTE_SYSTEM_COMMAND("touch step03.iter%05ld.ttxt", i);
-
-            PIAACMCsimul_update_fnamedescr();
-
-            char fnamebestval[STRINGMAXLEN_FULLFILENAME];
-            SNPRINTF_CHECK(fnamebestval, STRINGMAXLEN_FULLFILENAME, "%s/mode13.%s.bestval.txt",
-                           piaacmcparams.piaacmcconfdir, piaacmcparams.fnamedescr);
-
-            // on first iteration load the best _value_ if it exists
-            if(loopiter == 0)
-            {
-                FILE *fp;
-                printf("READING FILE \"%s\"\n", fnamebestval);
-                fflush(stdout);
-
-                fp = fopen(fnamebestval, "r");
-                if(fp != NULL)
-                {
-                    int r = fscanf(
-                                fp,
-                                "%lf",
-                                &bestval); // this loads only the first value on the line
-                    (void) r;
-                    fclose(fp);
-                }
-            }
-
-            //EXECUTE_SYSTEM_COMMAND("touch step04.iter%05ld.ttxt", i);
-
-            printf("\n\n\n\n======= val = %g [%g]\n",
-                   piaacmcparams.PIAACMCSIMUL_VAL,
-                   bestval);
-            fflush(stdout);
-
-            // Check if the best solution should be updated
-            // piaacmcparams.PIAACMCSIMUL_VAL was set in PIAACMCsimul_exec()
-            int bOK =
-                0; // initialize have better value flag for printing "best" in a nice place
-            if(piaacmcparams.PIAACMCSIMUL_VAL < bestval)
-            {
-                //EXECUTE_SYSTEM_COMMAND("touch step05.iter%05ld.ttxt", i);
-
-                // we have a better solution!
-                bOK     = 1;
-                bestval = piaacmcparams.PIAACMCSIMUL_VAL; // record it
-                printf(
-                    "========================================= \
-                       SAVING BEST MASK SOLUTION -> fpm_zonez.[name].best.fits\n");
-
-                {
-                    PIAACMCsimul_update_fnamedescr();
-
-                    char fnamebestsol[STRINGMAXLEN_FULLFILENAME];
-                    SNPRINTF_CHECK(fnamebestsol, STRINGMAXLEN_FULLFILENAME,
-                                   "%s/fpm_zonez.%s.best.fits",
-                                   piaacmcparams.piaacmcconfdir, piaacmcparams.fnamedescr);
-
-                    // if a previous best solution has not been identified with an index, set its index
-                    // by loading the current best solution.  This probably never happens
-                    if(IDbestsol == -1)
-                    {
-                        load_fits(fnamebestsol,
-                                  "fpmbestsol",
-                                  LOADFITS_ERRMODE_IGNORE,
-                                  &IDbestsol);
-                    }
-                    else // otherwise load the temporary best solution.  This is probably what always happens
-                    {
-                        imageID IDbestsoltmp;
-                        load_fits(fnamebestsol,
-                                  "fpmbestsoltmp",
-                                  LOADFITS_ERRMODE_IGNORE,
-                                  &IDbestsoltmp);
-
-                        for(uint32_t k = 0;
-                                k < dcimg[IDbestsol].md[0].size[0];
-                                k++)
-                        {
-                            dcimg[IDbestsol].array.D[k] =
-                                dcimg[IDbestsoltmp].array.D[k];
-                        }
-
-                        delete_image_ID("fpmbestsoltmp",
-                                        DELETE_IMAGE_ERRMODE_WARNING);
-                    }
-                }
-
-                {
-                    // fname1 is the name of the current solution, which is now the best solution
-                    PIAACMCsimul_update_fnamedescr();
-
-                    char fname1[STRINGMAXLEN_FULLFILENAME];
-                    SNPRINTF_CHECK(fname1, STRINGMAXLEN_FULLFILENAME, "%s/fpm_zonez.%s.fits",
-                                   piaacmcparams.piaacmcconfdir, piaacmcparams.fnamedescr);
-
-                    // fnamebestsol is the name of the stored best solution, should always be the same
-                    // as the name in line 8599 (if(IDbestsol==-1)...)
-                    PIAACMCsimul_update_fnamedescr();
-
-                    char fnamebestsol[STRINGMAXLEN_FULLFILENAME];
-                    SNPRINTF_CHECK(fnamebestsol, STRINGMAXLEN_FULLFILENAME,
-                                   "%s/fpm_zonez.%s.best.fits",
-                                   piaacmcparams.piaacmcconfdir, piaacmcparams.fnamedescr);
-
-                    // copy the current solution to the best solution
-                    EXECUTE_SYSTEM_COMMAND("cp %s %s", fname1, fnamebestsol);
-                    EXECUTE_SYSTEM_COMMAND("echo \"cp %s %s\" > cmdlogtest.txt",
-                                           fname1,
-                                           fnamebestsol);
-
-                    SNPRINTF_CHECK(fname1, STRINGMAXLEN_FULLFILENAME, "%s/fpm_sagmapHR.%s.fits",
-                                   piaacmcparams.piaacmcconfdir, piaacmcparams.fnamedescr);
-
-                    SNPRINTF_CHECK(fnamebestsol, STRINGMAXLEN_FULLFILENAME,
-                                   "%s/fpm_sagmapHR.%s.best.fits",
-                                   piaacmcparams.piaacmcconfdir, piaacmcparams.fnamedescr);
-
-                    EXECUTE_SYSTEM_COMMAND("cp %s %s", fname1, fnamebestsol);
-                    EXECUTE_SYSTEM_COMMAND(
-                        "echo \"cp %s %s\" > cmdlogtest1.txt",
-                        fname1,
-                        fnamebestsol);
-                }
-
-                {
-                    // write new best value in file
-                    FILE *fp;
-
-                    fp = fopen(fnamebestval, "w");
-                    fprintf(fp,
-                            "%30g %d %04ld %02ld %03ld %5.2f %02d %d %s %02d "
-                            "%07.3f\n",
-                            bestval,
-                            piaacmcparams.PIAACMC_FPMsectors,
-                            (long)(1.0e9 * piaacmcopticaldesign.lambda + 0.1),
-                            (long)(1.0 * piaacmcopticaldesign.lambdaB + 0.1),
-                            piaacmcopticaldesign.NBrings,
-                            piaacmcparams.PIAACMC_MASKRADLD,
-                            piaacmcparams.computePSF_ResolvedTarget,
-                            piaacmcparams.computePSF_ResolvedTarget_mode,
-                            piaacmcopticaldesign.fpmmaterial_name,
-                            piaacmcopticaldesign.nblambda,
-                            piaacmcopticaldesign.fpmsagreg_coeff);
-                    fclose(fp);
-                }
-
-                // advertise the existence of new best solution via file signaling.  Currently no listeners?
-                EXECUTE_SYSTEM_COMMAND("touch %s/newbestsol.txt",
-                                       piaacmcparams.piaacmcconfdir);
-
-                //EXECUTE_SYSTEM_COMMAND("touch step06.iter%05ld.ttxt", i);
-            }
-
-            // Add current solution (possibly not best) to the mode13...opt.txt file
-            if(1)
-            {
-                FILE *fp;
-
-                PIAACMCsimul_update_fnamedescr();
-
-                char fname[STRINGMAXLEN_FULLFILENAME];
-                SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME, "%s/mode13.%s.opt.txt",
-                               piaacmcparams.piaacmcconfdir, piaacmcparams.fnamedescr);
-
-                printf("Add current solution (possibly not best) to file: %s\n",
-                       fname);
-
-                //EXECUTE_SYSTEM_COMMAND("touch step07.iter%05ld.ttxt", i);
-
-                // open mode13...opt.txt for adding and write current value
-                fp = fopen(fname, "a");
-                fprintf(fp,
-                        "%10d %20.5g   %16.5g -> %16.5g   (%16.5g) %d "
-                        "%5ld/%5ld [%12g %2d %12g %12g  %12g]",
-                        loopiter,
-                        piaacmcparams.MODampl,
-                        piaacmcparams.PIAACMCSIMUL_VALREF,
-                        piaacmcparams.PIAACMCSIMUL_VAL,
-                        bestval,
-                        zeroST,
-                        cnt0,
-                        cnt00,
-                        piaacmcparams.CnormFactor,
-                        piaacmcopticaldesign.nblambda,
-                        piaacmcopticalsystem.flux[0],
-                        piaacmcparams.SCORINGTOTAL,
-                        piaacmcparams.PIAACMCSIMUL_VAL0);
-                if(bOK == 1)  // mark it as best if it is
-                {
-                    fprintf(fp, " BEST\n");
-                }
-                else
-                {
-                    fprintf(fp, "\n");
-                }
-                fclose(fp);
-            }
-
-            loopiter++; // increment iteration counter
-
-            // stop iterations if stopfile exists
-            if(file_exists(stopfile) == 1)
-            {
-                printf("FILE \"%s\" found -> stopping\n", stopfile);
-                loopOK = 0;
-                EXECUTE_SYSTEM_COMMAND("touch stop.stopfile.txt");
-                EXECUTE_SYSTEM_COMMAND("rm %s", stopfile);
-            }
-            else
-            {
-                printf("File \"%s\" not found -> continuing\n", stopfile);
-            }
-
-            // update timing : write used time in timeused.txt
-            // and check to see if time has run out
-            if(1)
-            {
-                //EXECUTE_SYSTEM_COMMAND("touch step08.iter%05ld.ttxt", i);
-                long secs_used, micros_used;
-
-                struct timeval end;
-                gettimeofday(&end, NULL);
-
-                printf("start: %ld secs, %ld usecs\n",
-                       (long) start.tv_sec,
-                       (long) start.tv_usec);
-                printf("end: %ld secs, %ld usecs\n",
-                       (long) end.tv_sec,
-                       (long) end.tv_usec);
-
-                secs_used =
-                    (end.tv_sec -
-                     start.tv_sec); //avoid overflow by subtracting first
-                micros_used =
-                    ((secs_used * 1000000) + end.tv_usec) - (start.tv_usec);
-
-                FILE *fp;
-                fp = fopen("timeused.txt", "w");
-                fprintf(fp, "# Time used vs. time limit\n");
-                fprintf(fp,
-                        "# Time limit can be written in file searchtime.txt\n");
-                fprintf(fp, "\n");
-                fprintf(fp,
-                        "%12.3f    %12.3f\n",
-                        1.0e-6 * micros_used,
-                        searchtime);
-                fclose(fp);
-
-                //EXECUTE_SYSTEM_COMMAND("touch step09.iter%05ld.ttxt", i);
-
-                // check to see if time has run out
-                if(micros_used >
-                        1000000.0 * searchtime) // searchtime is in seconds
-                {
-                    loopOK = 0; // stop loop flag
-                    EXECUTE_SYSTEM_COMMAND("touch stop.time_elapsed.ttxt");
-                }
-                //EXECUTE_SYSTEM_COMMAND("touch step10.iter%05ld.ttxt", i);
-            }
-
-            printf("End of loop\n");
-        }
-
-        // initialize loop.  loopin is always set to 1 above.
-        if(loopin == 1)
-        {
-            printf("piaacmcconfdir              : %s\n",
-                   piaacmcparams.piaacmcconfdir);
-            printf("computePSF_ResolvedTarget   : %d\n",
-                   piaacmcparams.computePSF_ResolvedTarget);
-            printf("computePSF_ResolvedTarget_mode   : %d\n",
-                   piaacmcparams.computePSF_ResolvedTarget_mode);
-            printf("PIAACMC_FPMsectors   : %d\n",
-                   piaacmcparams.PIAACMC_FPMsectors);
-            printf("(long) (10.0*PIAACMC_MASKRADLD+0.1)   : %ld\n",
-                   (long)(10.0 * piaacmcparams.PIAACMC_MASKRADLD + 0.1));
-            printf("piaacmcopticaldesign.NBrings   : %ld\n",
-                   piaacmcopticaldesign.NBrings);
-            printf("piaacmcopticaldesign.nblambda   : %d\n",
-                   piaacmcopticaldesign.nblambda);
-            fflush(stdout);
-
-            {
-                // copy current solution to best solution ************************** why?
-                char fname[STRINGMAXLEN_FULLFILENAME];
-                char fnamebestsol[STRINGMAXLEN_FULLFILENAME];
-
-                PIAACMCsimul_update_fnamedescr();
-
-                SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME, "%s/fpm_zonez.%s.fits",
-                               piaacmcparams.piaacmcconfdir, piaacmcparams.fnamedescr);
-
-                PIAACMCsimul_update_fnamedescr();
-
-                SNPRINTF_CHECK(fnamebestsol, STRINGMAXLEN_FULLFILENAME,
-                               "%s/fpm_zonez.%s.best.fits",
-                               piaacmcparams.piaacmcconfdir, piaacmcparams.fnamedescr);
-
-                EXECUTE_SYSTEM_COMMAND("cp %s %s", fnamebestsol, fname);
-            }
-        }
+        FUNC_CHECK_RETURN(PIAACMCsimul_run_mode13(confindex));
     }
     else
     {
-        {
-            DEBUG_TRACEPOINT("running exec function");
-            FUNC_CHECK_RETURN(PIAACMCsimul_exec(confindex, mode));
-        }
+        DEBUG_TRACEPOINT("running exec function");
+        FUNC_CHECK_RETURN(PIAACMCsimul_exec(confindex, mode));
     }
-
-    //free(piaacmcoptdesign);
 
     DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;

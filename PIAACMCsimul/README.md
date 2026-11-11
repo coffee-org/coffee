@@ -192,7 +192,9 @@ Top-level files in `PIAACMCsimul/` (see submodule tables in
 | File | Description |
 |------|-------------|
 | `PIAACMCsimul.h` / `.c` | Core `PIAACMCSIMUL_PARAMS`, `OPTPIAACMCDESIGN` structs & module table |
-| `PIAACMCsimul_run.h` / `.c` | `coffeepiaacmcsim.run` CLI wrapper, `mc_var` setup & Mode 13 loop |
+| `PIAACMCsimul_run.h` / `.c` | `coffeepiaacmcsim.run` CLI wrapper & Mode 13 outer search loop |
+| `PIAACMCsimul_run_internal.h` | Internal Mode 13 loop state & parameter helper declarations |
+| `PIAACMCsimul_run_params.c` | CLI `mc_var` ingestion & Mode 13 zone sag seed perturbations |
 | `PIAACMCsimul_exec.h` / `.c` | Mode `0..302` dispatcher & shared-memory execution status setup |
 | `PIAACMCsimul_linopt.h` / `.c` | Reference setup, Jacobian assembly & outer linear opt loop |
 | `PIAACMCsimul_linopt_scan.c` | Multi-cutoff SVD directions & clamped step-gain line search |
@@ -200,6 +202,8 @@ Top-level files in `PIAACMCsimul/` (see submodule tables in
 | `init_piaacmcopticaldesign.h` / `.c` | Top-level optical design, FPM zone & Lyot initialization |
 | `PIAACMCsimul_conf_io.h` / `.c` | `conf_*.txt` parameter & CLI variable ingestion helpers |
 | `init_piaacmcopticalsystem.h` / `.c` | Populate `OptSystProp` `OPTSYST` element sequence |
+| `init_piaacmcopticalsystem_internal.h` | Internal `OPTSYST` stage builder declarations |
+| `init_piaacmcopticalsystem_elements.c` | PIAA, focal plane mask & Lyot `OPTSYST` builders |
 | `PIAACMCsimul_loadsavepiaacmcconf.h` / `.c` | Read/write `piaacmcparams.conf` & filename tags |
 | `PIAACMCsimul_computePSF.h` / `.c` | Full Fresnel point & extended-source PSF evaluator |
 | `PIAACMCsimul_computePSF_fast.h` / `.c` | Dark-hole scoring mask & fast `FPMresp` evaluator |
@@ -210,7 +214,9 @@ Top-level files in `PIAACMCsimul/` (see submodule tables in
 | `PIAACMCsimul_achromFPMsol_eval.h` / `.c` | Fast dark-hole contrast evaluation from `FPMresp` |
 | `PIAACMCsimul_achromFPMsol_eval_zonezderivative.h` / `.c` | Analytical zone-sag field derivative |
 | `PIAACMC_f_evalmask.h` / `.c` | GSL Nelder-Mead / simulated-annealing merit callback |
-| `PIAACMCsimul_eval_poly_design.h` / `.c` | Polychromatic contrast & jitter eval (`Mode 100`) |
+| `PIAACMCsimul_eval_poly_design.h` / `.c` | Polychromatic point-source contrast eval (`Mode 100`) |
+| `PIAACMCsimul_eval_poly_internal.h` | Shared Mode 100 evaluation context & declarations |
+| `PIAACMCsimul_eval_poly_sens.c` | Pointing, OPD error & coherent/incoherent contrast eval |
 | `PIAACMCsimul_measure_transm_curve.h` / `.c` | Off-axis planet throughput curve (`Mode 101`) |
 | `PIAACMCsimul_free.c` | Release dynamically allocated optimization working buffers |
 | `scripts/coffee-piaacmc` | Unified single-command CLI backed by `piaacmc.conf` |

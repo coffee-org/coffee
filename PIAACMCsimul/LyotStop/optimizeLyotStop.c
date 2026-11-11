@@ -2,51 +2,261 @@
  * @file    optimizeLyotStop.c
  * @brief   Optimize multi-plane Lyot stop axial conjugations across Fresnel cube
  *
- * Can design both APLCMC and PIAACMC coronagraphs
- *
- *
+ * Can design both APLCMC and PIAACMC coronagraphs.
  */
 
-// System includes
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-// milk includes
 #include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
 #include "COREMOD_memory/COREMOD_memory.h"
-#include "image_filter/image_filter.h"
-
-#include "OptSystProp/OptSystProp.h"
 
 #include "PIAACMCsimul/LyotStop/mkLyotMask.h"
+#include "PIAACMCsimul/LyotStop/optimizeLyotStop.h"
 #include "PIAACMCsimul/PIAACMCsimul.h"
 
+#include "optimizeLyotStop_internal.h"
+
 /**
- * @brief Lyot stops positions from zmin to zmax relative to current, working back (light goes from 0 to zmax)
+ * free_lyot_opt_ctx - Release heap buffers held by a Lyot stop optimization context.
+ * @ctx: Context whose member arrays should be freed
+ */
+static void free_lyot_opt_ctx(struct lyot_opt_ctx *ctx)
+{
+    free(ctx->totarray);
+    free(ctx->tot2array);
+    free(ctx->rinarray);
+    free(ctx->routarray);
+    free(ctx->zarray);
+    free(ctx->rarray);
+}
+
+/**
+ * init_lyot_opt_ctx - Allocate optimization arrays and compute annular zone radii and z planes.
+ * @ctx:           Output context to initialize
+ * @IDamp_name:    Input 2D/3D amplitude image name
+ * @IDincohc_name: Input 3D incoherent off-axis intensity cube name
+ * @zmin:          Minimum axial propagation distance [m]
+ * @zmax:          Maximum axial propagation distance [m]
+ */
+static void init_lyot_opt_ctx(
+    struct lyot_opt_ctx *ctx,
+    const char *restrict IDamp_name,
+    const char *restrict IDincohc_name,
+    float                zmin,
+    float                zmax)
+{
+    long NBz     = ctx->NBz;
+    long NBmasks = ctx->NBmasks;
+
+    ctx->zarray    = (float *) malloc(sizeof(float) * NBz);
+    ctx->rinarray  = (float *) malloc(sizeof(float) * NBmasks);
+    ctx->routarray = (float *) malloc(sizeof(float) * NBmasks);
+    ctx->totarray  = (double *) malloc(sizeof(double) * NBmasks * NBz);
+    ctx->tot2array = (double *) malloc(sizeof(double) * NBmasks * NBz);
+    if ((ctx->zarray == NULL) || (ctx->rinarray == NULL) || (ctx->routarray == NULL) ||
+        (ctx->totarray == NULL) || (ctx->tot2array == NULL))
+    {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
+    ctx->routarray[0] = 1.0;
+    ctx->rinarray[0]  = 1.0 - 1.0 / NBmasks;
+    for (long m = 1; m < NBmasks; m++)
+    {
+        ctx->routarray[m] = ctx->rinarray[m - 1];
+        ctx->rinarray[m] =
+            ctx->routarray[m] - (1.0 - piaacmcopticaldesign.centObs1) / NBmasks;
+    }
+    ctx->rinarray[NBmasks - 1] = 0.0;
+
+    for (long m = 0; m < NBmasks; m++)
+    {
+        DEBUG_TRACEPOINT("annulus %ld : %f - %f\n", m, ctx->routarray[m], ctx->rinarray[m]);
+    }
+
+    imageID IDa  = image_ID(IDamp_name, dcimg, dcnimg);
+    ctx->xsize   = dcimg[IDa].md[0].size[0];
+    ctx->ysize   = dcimg[IDa].md[0].size[1];
+    ctx->xysize  = (uint64_t) ctx->xsize * ctx->ysize;
+    ctx->nblambda = (dcimg[IDa].md[0].naxis == 3) ? dcimg[IDa].md[0].size[2] : 1;
+    ctx->IDincohc = image_ID(IDincohc_name, dcimg, dcnimg);
+
+    ctx->rarray = (float *) malloc(sizeof(float) * ctx->xysize);
+    if (ctx->rarray == NULL)
+    {
+        PRINT_ERROR("malloc returns NULL pointer");
+        abort();
+    }
+
+    for (long l = 0; l < NBz; l++)
+    {
+        ctx->zarray[l] = zmin + (zmax - zmin) * l / (NBz - 1);
+    }
+}
+
+/**
+ * build_lyot_zone_map - Populate 2D radial coordinate buffer and annular LMzonemap image.
+ * @ctx: Initialized Lyot optimization context
  *
- * @param[in]	IDamp_name    image : 2D amplitude
- * @param[in]	IDpha_name    image : 2D phase
- * @param[in]   IDincohc_name image : 3D incoherent intensity
- * @param[in]   zmin          float : minimum propagation value
- * @param[in]   zmax          float : maximum propagation value
- * @param[in]   throughput    double: Geometric throughput of Lyot stop(s)
- * @param[in]   NBz           long  : Number of discrete propagation planes between zmin and zmax
- * @param[in]   NBmasks       long  : Number of Lyot stop(s)
+ * Return: RETURN_SUCCESS or image/FITS error status.
+ */
+static errno_t build_lyot_zone_map(struct lyot_opt_ctx *ctx)
+{
+    FUNC_CHECK_RETURN(create_2Dimage_ID("LMzonemap", ctx->xsize, ctx->ysize, &ctx->IDzone));
+
+    double rad_pix = piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale;
+    for (uint32_t ii = 0; ii < ctx->xsize; ii++)
+    {
+        for (uint32_t jj = 0; jj < ctx->ysize; jj++)
+        {
+            uint64_t idx = (uint64_t) jj * ctx->xsize + ii;
+            dcimg[ctx->IDzone].array.F[idx] = -2;
+
+            double x         = (1.0 * ii - 0.5 * ctx->xsize) / rad_pix;
+            double y         = (1.0 * jj - 0.5 * ctx->xsize) / rad_pix;
+            double r         = sqrt(x * x + y * y);
+            ctx->rarray[idx] = r;
+
+            for (long m = 0; m < ctx->NBmasks; m++)
+            {
+                if ((r > ctx->rinarray[m] - 0.0001) && (r < ctx->routarray[m] + 0.0001))
+                {
+                    dcimg[ctx->IDzone].array.F[idx] = m;
+                }
+            }
+        }
+    }
+
+    if (piaacmcparams.PIAACMC_save == 1)
+    {
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/LMzonemap.fits", piaacmcparams.piaacmcconfdir);
+        FUNC_CHECK_RETURN(save_fits("LMzonemap", fname));
+    }
+
+    return RETURN_SUCCESS;
+}
+
+/**
+ * fill_single_annular_mask - Populate individual Lyot mask m from synthesized full LMask.
+ * @ctx:        Lyot optimization context
+ * @m:          Mask index
+ * @IDm:        Output 2D mask image ID
+ * @IDlyotmask: Full synthesized binary Lyot mask ID
+ * @dr:         Radial overlap margin around zone boundaries
+ */
+static void fill_single_annular_mask(
+    const struct lyot_opt_ctx *ctx,
+    long                       m,
+    imageID                    IDm,
+    imageID                    IDlyotmask,
+    float                      dr)
+{
+    double rad_pix = piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale;
+
+    for (uint32_t ii = 0; ii < ctx->xsize; ii++)
+    {
+        for (uint32_t jj = 0; jj < ctx->ysize; jj++)
+        {
+            uint64_t idx = (uint64_t) jj * ctx->xsize + ii;
+            double   x   = (1.0 * ii - 0.5 * ctx->xsize) / rad_pix;
+            double   y   = (1.0 * jj - 0.5 * ctx->xsize) / rad_pix;
+            double   r   = sqrt(x * x + y * y);
+
+            if ((r > ctx->rinarray[m] - dr) && (r < ctx->routarray[m] + dr))
+            {
+                dcimg[IDm].array.F[idx] = dcimg[IDlyotmask].array.F[idx];
+            }
+            else
+            {
+                dcimg[IDm].array.F[idx] = 1.0;
+            }
+
+            if ((m == 0) && (r > 1.0))
+            {
+                dcimg[IDm].array.F[idx] = 0.0;
+            }
+        }
+    }
+}
+
+/**
+ * export_annular_lyot_masks - Partition LMask into cumulative per-plane optLM%02ld.fits files.
+ * @ctx:        Lyot optimization context
+ * @IDlyotmask: Synthesized binary Lyot mask image ID
+ * @dr:         Radial overlap margin around zone boundaries
  *
-*/
-errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
-                         const char *__restrict__ IDpha_name,
-                         const char *__restrict__ IDincohc_name,
-                         float   zmin,
-                         float   zmax,
-                         double  throughput,
-                         long    NBz,
-                         long    NBmasks,
-                         double *outratioval)
+ * Return: RETURN_SUCCESS or image/FITS error status.
+ */
+static errno_t export_annular_lyot_masks(
+    const struct lyot_opt_ctx *ctx,
+    imageID                    IDlyotmask,
+    float                      dr)
+{
+    imageID IDlscumul;
+    FUNC_CHECK_RETURN(create_2Dimage_ID("LMcumul", ctx->xsize, ctx->ysize, &IDlscumul));
+
+    for (uint64_t ii = 0; ii < ctx->xysize; ii++)
+    {
+        dcimg[IDlscumul].array.F[ii] = 1.0;
+    }
+
+    for (long m = 0; m < ctx->NBmasks; m++)
+    {
+        char name[STRINGMAXLEN_IMGNAME];
+        WRITE_IMAGENAME(name, "optLM%02ld", m);
+
+        imageID IDm;
+        FUNC_CHECK_RETURN(create_2Dimage_ID(name, ctx->xsize, ctx->ysize, &IDm));
+
+        fill_single_annular_mask(ctx, m, IDm, IDlyotmask, dr);
+
+        for (uint64_t ii = 0; ii < ctx->xysize; ii++)
+        {
+            dcimg[IDm].array.F[ii] *= dcimg[IDlscumul].array.F[ii];
+            dcimg[IDlscumul].array.F[ii] = dcimg[IDm].array.F[ii];
+        }
+
+        char fname[STRINGMAXLEN_FULLFILENAME];
+        WRITE_FULLFILENAME(fname, "%s/optLM%02ld.fits", piaacmcparams.piaacmcconfdir, m);
+        FUNC_CHECK_RETURN(save_fits(name, fname));
+    }
+
+    FUNC_CHECK_RETURN(delete_image_ID("LMcumul", DELETE_IMAGE_ERRMODE_WARNING));
+    return RETURN_SUCCESS;
+}
+
+/**
+ * optimizeLyotStop - Optimize Lyot stop axial conjugations and masks from zmin to zmax.
+ * @IDamp_name:    Input 2D/3D amplitude image name
+ * @IDpha_name:    Input 2D/3D phase image name
+ * @IDincohc_name: Input 3D incoherent off-axis intensity cube name
+ * @zmin:          Minimum propagation distance [m]
+ * @zmax:          Maximum propagation distance [m]
+ * @throughput:    Target geometric throughput of Lyot stop(s)
+ * @NBz:           Number of discrete propagation planes between zmin and zmax
+ * @NBmasks:       Number of Lyot stop planes
+ * @outratioval:   Optional output metric placeholder (may be NULL)
+ *
+ * Return: RETURN_SUCCESS on completion, or milk error code on failure.
+ */
+errno_t optimizeLyotStop(
+    const char *restrict IDamp_name,
+    const char *restrict IDpha_name,
+    const char *restrict IDincohc_name,
+    float                zmin,
+    float                zmax,
+    double               throughput,
+    long                 NBz,
+    long                 NBmasks,
+    double              *outratioval)
 {
     DEBUG_TRACE_FSTART();
     DEBUG_TRACEPOINT("FARG %s %s %s %f %f %lf %ld %ld",
@@ -59,445 +269,55 @@ errno_t optimizeLyotStop(const char *__restrict__ IDamp_name,
                      NBz,
                      NBmasks);
 
-    // initial guess places Lyot stops regularly from zmin to zmax
-    // light propagates from zmin to zmax
-    // we start with a single mask in zmax, and work back
-    //
-    double ratio =
-        1.0; // output metric... not used yet, currently a placeholder
+    double ratio = 1.0;
+    float  dr    = 0.02;
+    double alpha = 1.01;
 
-    long nblambda; // number of wavelengths, read from input cube
+    struct lyot_opt_ctx ctx = {0};
+    ctx.NBz                 = NBz;
+    ctx.NBmasks             = NBmasks;
 
-    float dr = 0.02;
+    init_lyot_opt_ctx(&ctx, IDamp_name, IDincohc_name, zmin, zmax);
 
-    imageID IDincohc, IDint, IDmc, IDmc1;
-    double  alpha = 1.01; // norm alpha used to identify best plane
-
-    float *zarray = (float *) malloc(sizeof(float) * NBz);
-    if(zarray == NULL)
+    errno_t status = build_lyot_zone_map(&ctx);
+    if (status == RETURN_SUCCESS)
     {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        status = lyot_opt_propagate_onaxis_cube(&ctx, IDamp_name, IDpha_name);
+    }
+    if (status == RETURN_SUCCESS)
+    {
+        status = lyot_opt_select_conjugations(&ctx, alpha);
     }
 
-    float *rinarray = (float *) malloc(sizeof(float) * NBmasks);
-    if(rinarray == NULL)
+    imageID IDlyotmask = -1;
+    if (status == RETURN_SUCCESS)
     {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
+        status = mkLyotMask("LcombOA", "Lcomb", "LMzonemap", throughput, "LMask", &IDlyotmask);
     }
-
-    float *routarray = (float *) malloc(sizeof(float) * NBmasks);
-    if(routarray == NULL)
-    {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
-    }
-
-    double *totarray = (double *) malloc(sizeof(double) * NBmasks * NBz);
-    if(totarray == NULL)
-    {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
-    }
-
-    double *tot2array = (double *) malloc(sizeof(double) * NBmasks * NBz);
-    if(tot2array == NULL)
-    {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
-    }
-
-    routarray[0] = 1.0;
-    rinarray[0]  = 1.0 - 1.0 / NBmasks;
-    for(long m = 1; m < NBmasks; m++)
-    {
-        routarray[m] = rinarray[m - 1];
-        rinarray[m] =
-            routarray[m] - (1.0 - piaacmcopticaldesign.centObs1) / NBmasks;
-    }
-    rinarray[NBmasks - 1] = 0.0;
-
-    for(long m = 0; m < NBmasks; m++)
-    {
-        DEBUG_TRACEPOINT("annulus %ld : %f - %f\n",
-                         m,
-                         routarray[m],
-                         rinarray[m]);
-    }
-
-    imageID  IDa    = image_ID(IDamp_name, dcimg, dcnimg);
-    uint32_t xsize  = dcimg[IDa].md[0].size[0];
-    uint32_t ysize  = dcimg[IDa].md[0].size[1];
-    uint64_t xysize = xsize;
-    xysize *= ysize;
-
-    float *rarray = (float *) malloc(sizeof(float) * xsize * ysize);
-    if(rarray == NULL)
-    {
-        PRINT_ERROR("malloc returns NULL pointer");
-        abort(); // or handle error in other ways
-    }
-
-    IDincohc = image_ID(IDincohc_name, dcimg, dcnimg);
-
-    if(dcimg[IDa].md[0].naxis == 3)
-    {
-        nblambda = dcimg[IDa].md[0].size[2];
-    }
-    else
-    {
-        nblambda = 1;
-    }
-
-    imageID IDzone;
-    FUNC_CHECK_RETURN(create_2Dimage_ID("LMzonemap", xsize, ysize, &IDzone));
-
-    for(uint32_t ii = 0; ii < xsize; ii++)
-        for(uint32_t jj = 0; jj < ysize; jj++)
-        {
-            dcimg[IDzone].array.F[jj * xsize + ii] = -2;
-            double x =
-                (1.0 * ii - 0.5 * xsize) /
-                (piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale);
-            double y =
-                (1.0 * jj - 0.5 * xsize) /
-                (piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale);
-            double r                = sqrt(x * x + y * y);
-            rarray[jj * xsize + ii] = r;
-            for(long m = 0; m < NBmasks; m++)
-                if((r > rinarray[m] - 0.0001) && (r < routarray[m] + 0.0001))
-                {
-                    dcimg[IDzone].array.F[jj * xsize + ii] = m;
-                }
-        }
-    if(piaacmcparams.PIAACMC_save == 1)
+    if ((status == RETURN_SUCCESS) && (piaacmcparams.PIAACMC_save == 1))
     {
         char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname,
-                           "%s/LMzonemap.fits",
-                           piaacmcparams.piaacmcconfdir);
-        FUNC_CHECK_RETURN(save_fits("LMzonemap", fname));
+        WRITE_FULLFILENAME(fname, "%s/LMask.fits", piaacmcparams.piaacmcconfdir);
+        status = save_fits("LMask", fname);
     }
-    // initialize zarray
-    for(long l = 0; l < NBz; l++)
+    if (status == RETURN_SUCCESS)
     {
-        zarray[l] = zmin + (zmax - zmin) * l / (NBz - 1);
+        status = delete_image_ID("Lcomb", DELETE_IMAGE_ERRMODE_WARNING);
     }
-
-    imageID IDre;
-    FUNC_CHECK_RETURN(create_2Dimage_ID("retmpim", xsize, ysize, &IDre));
-
-    imageID IDim;
-    FUNC_CHECK_RETURN(create_2Dimage_ID("imtmpim", xsize, ysize, &IDim));
-
-    imageID ID_LMintC;
-    FUNC_CHECK_RETURN(
-        create_3Dimage_ID("LMintC", xsize, ysize, NBz, &ID_LMintC));
-
-    imageID IDintg;
-    FUNC_CHECK_RETURN(create_2Dimage_ID("tmpintg", xsize, ysize, &IDintg));
-
-    float sigma =
-        0.01 * piaacmcopticaldesign.beamrad / piaacmcopticaldesign.pixscale;
-    int filter_size = (long)(sigma * 2.0);
-
-    for(long l = 0; l < NBz; l++)
+    if (status == RETURN_SUCCESS)
     {
-        char nameamp[STRINGMAXLEN_IMGNAME];
-        WRITE_IMAGENAME(nameamp, "LMPamp%02ld", l);
-
-        char namepha[STRINGMAXLEN_IMGNAME];
-        WRITE_IMAGENAME(namepha, "LMPpha%02ld", l);
-
-        double zprop = zarray[l];
-        FUNC_CHECK_RETURN(OptSystProp_propagateCube(&piaacmcopticalsystem,
-                          0,
-                          IDamp_name,
-                          IDpha_name,
-                          nameamp,
-                          namepha,
-                          zprop,
-                          0));
-
-        imageID IDa1 = image_ID(nameamp, dcimg, dcnimg);
-        imageID IDp1 = image_ID(namepha, dcimg, dcnimg);
-
-        for(long k = 0; k < nblambda; k++)
-        {
-            for(uint64_t ii = 0; ii < xysize; ii++)
-            {
-                double amp = dcimg[IDa1].array.F[k * xsize * ysize + ii];
-                double pha = dcimg[IDp1].array.F[k * xsize * ysize + ii];
-                dcimg[IDre].array.F[ii] = amp * cos(pha);
-                dcimg[IDim].array.F[ii] = amp * sin(pha);
-            }
-            imageID IDreg =
-                gauss_filter("retmpim", "retmpimg", sigma, filter_size);
-            imageID IDimg =
-                gauss_filter("imtmpim", "imtmpimg", sigma, filter_size);
-
-            for(uint64_t ii = 0; ii < xysize; ii++)
-            {
-                double re                      = dcimg[IDreg].array.F[ii];
-                double im                      = dcimg[IDimg].array.F[ii];
-                dcimg[IDintg].array.F[ii] = re * re + im * im;
-            }
-            imageID IDintgg =
-                gauss_filter("tmpintg", "tmpintgg", 2.0 * sigma, filter_size);
-
-            for(uint64_t ii = 0; ii < xysize; ii++)
-            {
-                dcimg[ID_LMintC].array.F[l * xsize * ysize + ii] +=
-                    dcimg[IDintgg].array.F[ii];
-            }
-            //dcimg[IDa1].array.F[ii]*dcimg[IDa1].array.F[ii]; //dcimg[IDintgg].array.F[ii];
-
-            FUNC_CHECK_RETURN(
-                delete_image_ID("retmpimg", DELETE_IMAGE_ERRMODE_WARNING));
-
-            FUNC_CHECK_RETURN(
-                delete_image_ID("imtmpimg", DELETE_IMAGE_ERRMODE_WARNING));
-
-            FUNC_CHECK_RETURN(
-                delete_image_ID("tmpintgg", DELETE_IMAGE_ERRMODE_WARNING));
-        }
-
-        /*    for(ii=0; ii<xsize*ysize; ii++)
-            {
-                m = (long) (dcimg[IDzone].array.F[ii]+0.1);
-
-
-                if((m>-1)&&(m<NBmasks)&&(rarray[ii]<1.0)&&(rarray[ii]>0.9*piaacmcopticaldesign.centObs1))
-                {
-                    totarray[l*NBmasks+m] += dcimg[ID].array.F[l*xsize*ysize+ii];
-                    tot2array[l*NBmasks+m] += pow(dcimg[ID].array.F[l*xsize*ysize+ii], alpha);
-                }
-            }*/
-        FUNC_CHECK_RETURN(
-            delete_image_ID(nameamp, DELETE_IMAGE_ERRMODE_WARNING));
-
-        FUNC_CHECK_RETURN(
-            delete_image_ID(namepha, DELETE_IMAGE_ERRMODE_WARNING));
+        status = export_annular_lyot_masks(&ctx, IDlyotmask, dr);
     }
 
-    FUNC_CHECK_RETURN(delete_image_ID("retmpim", DELETE_IMAGE_ERRMODE_WARNING));
-
-    FUNC_CHECK_RETURN(delete_image_ID("imtmpim", DELETE_IMAGE_ERRMODE_WARNING));
-
+    free_lyot_opt_ctx(&ctx);
+    if (status != RETURN_SUCCESS)
     {
-        char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname,
-                           "%s/LMintC.fits",
-                           piaacmcparams.piaacmcconfdir);
-        FUNC_CHECK_RETURN(save_fits("LMintC", fname));
+        return status;
     }
 
-    for(long l = 0; l < NBz; l++)
-        for(long m = 0; m < NBmasks; m++)
-        {
-            totarray[l * NBmasks + m]  = 0.0;
-            tot2array[l * NBmasks + m] = 0.0;
-        }
+    FUNC_CHECK_RETURN(delete_image_ID("LMzonemap", DELETE_IMAGE_ERRMODE_WARNING));
 
-    for(long l = 0; l < NBz; l++)
-    {
-        for(uint64_t ii = 0; ii < xysize; ii++)
-        {
-            long m = (long)(dcimg[IDzone].array.F[ii] + 0.1);
-
-            if((m > -1) && (m < NBmasks) && (rarray[ii] < 1.0) &&
-                    (rarray[ii] > 0.9 * piaacmcopticaldesign.centObs1))
-            {
-                totarray[l * NBmasks + m] +=
-                    dcimg[IDincohc].array.F[l * xysize + ii];
-                tot2array[l * NBmasks + m] +=
-                    pow(dcimg[IDincohc].array.F[l * xysize + ii], alpha);
-            }
-        }
-    }
-
-    FUNC_CHECK_RETURN(create_2Dimage_ID("Lcomb", xsize, ysize, &IDmc));
-
-    FUNC_CHECK_RETURN(create_2Dimage_ID("LcombOA", xsize, ysize, &IDmc1));
-
-    for(uint64_t ii = 0; ii < xysize; ii++)
-    {
-        dcimg[IDmc1].array.F[ii] = 0.0;
-    }
-
-    {
-        IDint = image_ID("LMintC", dcimg, dcnimg);
-        for(long m = 0; m < NBmasks; m++)
-        {
-            double valbest = 0.0;
-            long   lbest   = 0;
-            double zbest   = 0.0;
-            for(long l = 0; l < NBz; l++)
-            {
-                double val = tot2array[l * NBmasks + m] /
-                             pow(totarray[l * NBmasks + m], alpha);
-                printf("MASK %ld   z(%ld)= %f  ->  %g   ( %g %g) \n",
-                       m,
-                       l,
-                       zarray[l],
-                       val,
-                       tot2array[l * NBmasks + m],
-                       totarray[l * NBmasks + m]);
-                if(val > valbest)
-                {
-                    valbest = val;
-                    zbest   = zarray[l];
-                    lbest   = l;
-                }
-            }
-            printf(" ==========  MASK %ld   BEST CONJUGATION : %ld %f (%g)\n",
-                   m,
-                   lbest,
-                   zbest,
-                   valbest);
-            piaacmcopticaldesign.LyotStop_zpos[m] =
-                zbest; // relative to starting plane
-
-            {
-                char fname1[STRINGMAXLEN_FULLFILENAME];
-                WRITE_FULLFILENAME(fname1,
-                                   "%s/LyotMasks_zpos.txt",
-                                   piaacmcparams.piaacmcconfdir);
-                FILE *fp = fopen(fname1, "w");
-                fprintf(fp, "%02ld %f\n", lbest, zbest);
-                fclose(fp);
-            }
-
-            for(uint64_t ii = 0; ii < xysize; ii++)
-                if(m == dcimg[IDzone].array.F[ii])
-                {
-                    dcimg[IDmc].array.F[ii] =
-                        dcimg[IDint].array.F[lbest * xysize + ii];
-                    dcimg[IDmc1].array.F[ii] =
-                        dcimg[IDincohc].array.F[lbest * xysize + ii];
-                }
-        }
-    }
-
-    if(piaacmcparams.PIAACMC_save == 1)
-    {
-        char fname[STRINGMAXLEN_FULLFILENAME];
-
-        WRITE_FULLFILENAME(fname,
-                           "%s/Lcomb.fits",
-                           piaacmcparams.piaacmcconfdir);
-        FUNC_CHECK_RETURN(save_fits("Lcomb", fname));
-
-        WRITE_FULLFILENAME(fname,
-                           "%s/LcombOA.fits",
-                           piaacmcparams.piaacmcconfdir);
-        FUNC_CHECK_RETURN(save_fits("LcombOA", fname));
-    }
-
-    /// call PIAACMCsimul_mkLyotMask()
-    imageID IDlyotmask;
-    FUNC_CHECK_RETURN(mkLyotMask("LcombOA",
-                                 "Lcomb",
-                                 "LMzonemap",
-                                 throughput,
-                                 "LMask",
-                                 &IDlyotmask));
-
-    if(piaacmcparams.PIAACMC_save == 1)
-    {
-        char fname[STRINGMAXLEN_FULLFILENAME];
-        WRITE_FULLFILENAME(fname,
-                           "%s/LMask.fits",
-                           piaacmcparams.piaacmcconfdir);
-        FUNC_CHECK_RETURN(save_fits("LMask", fname));
-    }
-
-    FUNC_CHECK_RETURN(delete_image_ID("Lcomb", DELETE_IMAGE_ERRMODE_WARNING));
-
-    imageID IDlscumul;
-    FUNC_CHECK_RETURN(create_2Dimage_ID("LMcumul", xsize, ysize, &IDlscumul));
-
-    for(uint64_t ii = 0; ii < xysize; ii++)
-    {
-        dcimg[IDlscumul].array.F[ii] = 1.0;
-    }
-
-    for(long m = 0; m < NBmasks; m++)
-    {
-        char name[STRINGMAXLEN_IMGNAME];
-        WRITE_IMAGENAME(name, "optLM%02ld", m);
-
-        imageID IDm;
-        FUNC_CHECK_RETURN(create_2Dimage_ID(name, xsize, ysize, &IDm));
-
-        for(uint32_t ii = 0; ii < xsize; ii++)
-            for(uint32_t jj = 0; jj < ysize; jj++)
-            {
-                double x =
-                    (1.0 * ii - 0.5 * xsize) / (piaacmcopticaldesign.beamrad /
-                                                piaacmcopticaldesign.pixscale);
-                double y =
-                    (1.0 * jj - 0.5 * xsize) / (piaacmcopticaldesign.beamrad /
-                                                piaacmcopticaldesign.pixscale);
-                double r = sqrt(x * x + y * y);
-
-                if((r > rinarray[m] - dr) && (r < routarray[m] + dr))
-                {
-                    dcimg[IDm].array.F[jj * xsize + ii] =
-                        dcimg[IDlyotmask].array.F[jj * xsize + ii];
-                }
-                else
-                {
-                    dcimg[IDm].array.F[jj * xsize + ii] = 1.0;
-                }
-            }
-        if(m == 0)
-            for(uint32_t ii = 0; ii < xsize; ii++)
-                for(uint32_t jj = 0; jj < ysize; jj++)
-                {
-                    double x = (1.0 * ii - 0.5 * xsize) /
-                               (piaacmcopticaldesign.beamrad /
-                                piaacmcopticaldesign.pixscale);
-                    double y = (1.0 * jj - 0.5 * xsize) /
-                               (piaacmcopticaldesign.beamrad /
-                                piaacmcopticaldesign.pixscale);
-                    double r = sqrt(x * x + y * y);
-                    if(r > 1.0)
-                    {
-                        dcimg[IDm].array.F[jj * xsize + ii] = 0.0;
-                    }
-                }
-
-        for(uint64_t ii = 0; ii < xysize; ii++)
-        {
-            dcimg[IDm].array.F[ii] *= dcimg[IDlscumul].array.F[ii];
-            dcimg[IDlscumul].array.F[ii] = dcimg[IDm].array.F[ii];
-        }
-
-        {
-            char fname[STRINGMAXLEN_FULLFILENAME];
-            WRITE_FULLFILENAME(fname,
-                               "%s/optLM%02ld.fits",
-                               piaacmcparams.piaacmcconfdir,
-                               m);
-            FUNC_CHECK_RETURN(save_fits(name, fname));
-        }
-    }
-
-    FUNC_CHECK_RETURN(delete_image_ID("LMcumul", DELETE_IMAGE_ERRMODE_WARNING));
-
-    free(totarray);
-    free(tot2array);
-    free(rinarray);
-    free(routarray);
-    free(zarray);
-    free(rarray);
-
-    FUNC_CHECK_RETURN(
-        delete_image_ID("LMzonemap", DELETE_IMAGE_ERRMODE_WARNING));
-
-    if(outratioval != NULL)
+    if (outratioval != NULL)
     {
         *outratioval = ratio;
     }
