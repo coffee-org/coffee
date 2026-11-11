@@ -2,6 +2,8 @@
 # coffeeAOsystSim - Adaptive Optics System Simulator
 # =====================================================================
 
+cmake_minimum_required(VERSION 3.16)
+
 set(LIBNAME "coffeeAOsystSim")
 set(SRCNAME "AOsystSim")
 
@@ -10,6 +12,21 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(SOURCEFILES
     AOsystSim.c
+    AOsystSim_filter.c
+    AOsystSim_extremeAO.c
+    AOsystSim_pupil.c
+    AOsystSim_wf_conf.c
+    AOsystSim_wf.c
+    AOsystSim_wfs_pyramid.c
+    AOsystSim_pyrwfs.c
+    AOsystSim_dm_shape.c
+    AOsystSim_dm.c
+    AOsystSim_lowfs_init.c
+    AOsystSim_lowfs.c
+    AOsystSim_fpwfs_imsimul.c
+    AOsystSim_fpwfs_probes.c
+    AOsystSim_fpwfs_solver.c
+    AOsystSim_fpwfs_sens.c
     AOsystSim_cli.c
 )
 
@@ -54,6 +71,13 @@ if(COMMAND milk_add_runnable_module)
 else()
     include("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/coffee_standalone.cmake")
     add_library(${LIBNAME} SHARED ${SOURCEFILES})
+    if(TARGET coffeeOptSystProp)
+        set(AOSIM_LOCAL_TARGETS LOCAL_TARGETS coffeeOptSystProp)
+        set(AOSIM_EXTRA_MILK_LIBS "")
+    else()
+        set(AOSIM_LOCAL_TARGETS "")
+        set(AOSIM_EXTRA_MILK_LIBS coffeeOptSystProp)
+    endif()
     coffee_configure_standalone_target(${LIBNAME}
         MILK_LIBS
             milkinfo
@@ -63,8 +87,8 @@ else()
             milkfft
             milkWFpropagate
             milkOpticsMaterials
-        LOCAL_TARGETS
-            coffeeOptSystProp
+            ${AOSIM_EXTRA_MILK_LIBS}
+        ${AOSIM_LOCAL_TARGETS}
     )
     install(TARGETS ${LIBNAME} DESTINATION lib)
 endif()
