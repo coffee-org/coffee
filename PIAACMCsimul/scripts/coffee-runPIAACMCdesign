@@ -12,6 +12,12 @@ set -e
 # milk exit on error
 export MILK_ERROREXIT="1"
 
+tput() {
+    if [ "${TERM:-dumb}" != "dumb" ]; then
+        command tput "$@" 2>/dev/null || true
+    fi
+}
+
 # function to check previous command return code and exit if not successful
 exit_on_error() {
     exit_code=$1
@@ -21,9 +27,6 @@ exit_on_error() {
         exit $exit_code
     fi
 }
-
-# enable !! command completion
-set -o history -o histexpand
 
 
 
@@ -58,19 +61,31 @@ function loadparam() {
 
 
 
-# source code directory
-if [ -f .scripts_src_dir.conf ]; then
-    srcdir=$( cat .scripts_src_dir.conf )
-fi
-
-
-
-
-# copy PIAACMC design scripts to local directory
 execname="coffee"
-echo "reading $execname srcdir"
-srcdir=$( $execname -i 2> /dev/null | grep SOURCEDIR| awk '{ print $NF }')
-destdir=$( pwd )
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+srcdir=""
+if [ -f ./conf/conf_srcdir.txt ]; then
+    srcdir=$(cat ./conf/conf_srcdir.txt)
+elif [ -f .scripts_src_dir.conf ]; then
+    srcdir=$(cat .scripts_src_dir.conf)
+fi
+destdir=$(pwd)
+
+resolve_exampledir() {
+    local d
+    for d in \
+        "$srcdir/PIAACMCsimul/examples" \
+        "$srcdir/plugins/coffee-src/PIAACMCsimul/examples" \
+        "$SCRIPT_DIR/../share/coffee/PIAACMCsimul/examples" \
+        "$SCRIPT_DIR/../examples" \
+        "./examples"; do
+        if [ -n "$d" ] && [ -d "$d" ]; then
+            echo "$d"
+            return 0
+        fi
+    done
+    echo "$SCRIPT_DIR/../share/coffee/PIAACMCsimul/examples"
+}
 
 
 
@@ -303,10 +318,9 @@ set_pupil=0
 
 
 function mkPupClear1024 {
-    exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
-    cp $exampledir/pup_clear_1024_200.fits.gz pup_1024.fits.gz
-    rm -f pup_1024.fits
-    gunzip pup_1024.fits.gz
+    exampledir="$(resolve_exampledir)"
+    cp "$exampledir/pup_clear_1024_200.fits.gz" pup_1024.fits.gz
+    gunzip -f pup_1024.fits.gz
     coin="0.0"
     coout="0.0"
     pupoutmaskrad="0.92"
@@ -314,10 +328,9 @@ function mkPupClear1024 {
 }
 
 function loadPup_WFIRST1024 {
-    exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
-    cp $exampledir/pup_WFIRST1024.fits.gz pup_1024.fits.gz
-    rm -f pup_1024.fits
-    gunzip pup_1024.fits.gz
+    exampledir="$(resolve_exampledir)"
+    cp "$exampledir/pup_WFIRST1024.fits.gz" pup_1024.fits.gz
+    gunzip -f pup_1024.fits.gz
     coin="0.3"
     coout="0.29"
     pupoutmaskrad="0.92"
@@ -327,10 +340,9 @@ function loadPup_WFIRST1024 {
 
 
 function loadPup_Subaru1024 {
-    exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
-    cp $exampledir/pupSubaru_native_1024_200.fits.gz pup_1024.fits.gz
-    rm -f pup_1024.fits
-    gunzip pup_1024.fits.gz
+    exampledir="$(resolve_exampledir)"
+    cp "$exampledir/pupSubaru_native_1024_200.fits.gz" pup_1024.fits.gz
+    gunzip -f pup_1024.fits.gz
     coin="0.29"
     coout="0.2"
     pupoutmaskrad="0.95"
@@ -339,11 +351,9 @@ function loadPup_Subaru1024 {
 
 
 function loadPup_MagAOX1024 {
-    exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
-    cp $exampledir/pupMagAOXM_1024_200.fits.gz pup_1024.fits.gz
-    rm -f pup_1024.fits
-    gunzip pup_1024.fits.gz
-    #coin="0.33"
+    exampledir="$(resolve_exampledir)"
+    cp "$exampledir/pupMagAOXM_1024_200.fits.gz" pup_1024.fits.gz
+    gunzip -f pup_1024.fits.gz
     coin="0.31"
     coout="0.2"
     pupoutmaskrad="0.95"
@@ -354,10 +364,9 @@ function loadPup_MagAOX1024 {
 
 
 function loadPup_Subaru2048 {
-    exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
-    cp $exampledir/pupSubaruM_2048.fits.gz pup_2048.fits.gz
-    rm -f pup_2048.fits
-    gunzip pup_2048.fits.gz
+    exampledir="$(resolve_exampledir)"
+    cp "$exampledir/pupSubaruM_2048.fits.gz" pup_2048.fits.gz
+    gunzip -f pup_2048.fits.gz
     coin="0.29"
     coout="0.2"
     pupoutmaskrad="0.95"
@@ -367,10 +376,9 @@ function loadPup_Subaru2048 {
 
 
 function loadPup_seg3rings1024 {
-    exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
-    cp $exampledir/pup_seg3rings_1024.fits.gz pup_1024.fits.gz
-    rm -f pup_1024.fits
-    gunzip pup_1024.fits.gz
+    exampledir="$(resolve_exampledir)"
+    cp "$exampledir/pup_seg3rings_1024.fits.gz" pup_1024.fits.gz
+    gunzip -f pup_1024.fits.gz
     coin="0.3"
     coout="0.22"
     pupoutmaskrad="0.95"
@@ -381,30 +389,27 @@ function loadPup_seg3rings1024 {
 
 
 function loadPup_LUVOIR1024 {
-    exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
-    cp $exampledir/pupLUVOIRap6.1024.208.fits.gz pup_1024.fits.gz
-    rm -f pup_1024.fits
-    gunzip pup_1024.fits.gz
+    exampledir="$(resolve_exampledir)"
+    cp "$exampledir/pupLUVOIRap6.1024.208.fits.gz" pup_1024.fits.gz
+    gunzip -f pup_1024.fits.gz
     coin="0.11"
     pupoutmaskrad="0.98"
     set_pupil=1
 }
 
 function loadPup_LUVOIR2048 {
-    exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
-    cp $exampledir/pupLUVOIRap6.2048.474.fits.gz pup_2048.fits.gz
-    rm -f pup_2048.fits
-    gunzip pup_2048.fits.gz
+    exampledir="$(resolve_exampledir)"
+    cp "$exampledir/pupLUVOIRap6.2048.474.fits.gz" pup_2048.fits.gz
+    gunzip -f pup_2048.fits.gz
     coin="0.11"
     pupoutmaskrad="0.98"
     set_pupil=1
 }
 
 function loadPup_LUVOIR4096 {
-    exampledir="$srcdir/plugins/coffee-src/PIAACMCsimul/examples"
-    cp $exampledir/pupLUVOIRap6.4096.948.fits.gz pup_4096.fits.gz
-    rm -f pup_4096.fits
-    gunzip pup_4096.fits.gz
+    exampledir="$(resolve_exampledir)"
+    cp "$exampledir/pupLUVOIRap6.4096.948.fits.gz" pup_4096.fits.gz
+    gunzip -f pup_4096.fits.gz
     coin="0.11"
     pupoutmaskrad="0.98"
     set_pupil=1
@@ -980,6 +985,9 @@ if [ "$SETparams" = "1" ]; then
     # LYOT STOP(S) DESIGN
     echo "$lambda" > conf/conf_lambda.txt
     echo "$NBls" > conf/conf_NBls.txt
+    if [ -n "${LStransm:-}" ]; then
+        echo "$LStransm" > conf/conf_LStransm.txt
+    fi
 
     # FOCAL PLANE MASK DESIGN
     echo "$fpmmaterial" > conf/conf_fpmmaterial.txt
@@ -1036,27 +1044,38 @@ if [ "$FPMprocess" -eq 1 ]; then
     echo "PROCESSING Focal Plane Mask"
     loadparam NBrings "12"
     loadparam FPMsectors "0"
-    FPMcoordFile=$( printf "fpmsectors%d_%03d.txt" $FPMsectors $NBrings )
+    FPMcoordFile=$( printf "piaacmcconf_i000/fpm_zonescoord_%d_%03d.txt" $FPMsectors $NBrings )
+    if [ ! -f "$FPMcoordFile" ]; then
+        FPMcoordFile=$( printf "fpmsectors%d_%03d.txt" $FPMsectors $NBrings )
+    fi
     echo "Coordinates file    :  $FPMcoordFile"
 
-    loadparam mlambda "1000"
-    loadparam mlambdaB "20"
-    loadparam maskradld "2.00"
-    maskradld3=$( echo "$maskradld" | sed 's/\.//g')
-    loadparam fpmregsag_coeff "1.0"
-    fpmregsag_coeff3=$( printf "%07.3f" $fpmregsag_coeff | sed 's/\.//g' )
-    loadparam ssize 20
-    loadparam fpmmaterial "SiO2"
-    loadparam nblambda "20"
-    FPMsagfile=$( printf "fpm_zonez_s%d_l%04ld_sr%02d_nbr%03d_mr%03d_minsag-02000_maxsag002000_fpmreg%s_ssr%02d_ssm0_%s_wb%02d.best.fits" $FPMsectors $mlambda $mlambdaB $NBrings $maskradld3 "$fpmregsag_coeff3" $ssize $fpmmaterial $nblambda )
+    FPMsagfile=""
+    if [ -f fpm_name.txt ]; then
+        fpmname=$(cat fpm_name.txt)
+        cand="piaacmcconf_i000/fpm_zonez.${fpmname}.best.fits"
+        if [ -f "$cand" ]; then
+            FPMsagfile="$cand"
+        fi
+    fi
+    if [ -z "$FPMsagfile" ]; then
+        FPMsagfile=$(ls -1t piaacmcconf_i000/fpm_zonez*.best.fits 2>/dev/null | head -n 1 || true)
+    fi
+    if [ -z "$FPMsagfile" ]; then
+        echo "ERROR: No best focal plane mask sag file found in piaacmcconf_i000/" >&2
+        exit 1
+    fi
     echo "FPM sag file        :  $FPMsagfile"
 
-
-$execname << EOF
-loadfits "piaacmcconf_i000/$FPMsagfile" fpmin
-piaacmcfpmprocess fpmin $FPMcoordFile $NBexp fpmout.txt
+    cp -f "$FPMsagfile" _fpmsag_in.fits
+    rc=0
+    "$execname" -q -e << EOF || rc=$?
+iofits.loadfits "_fpmsag_in.fits" fpmin 2
+coffeepiaacmcsim.fpmprocess fpmin "$FPMcoordFile" $NBexp fpmout.txt
 exit
 EOF
+    rm -f _fpmsag_in.fits
+    exit_on_error "$rc" "$execname"
 
     exitOK
 fi
@@ -1451,8 +1470,7 @@ fi
 # this command will run for a few hrs if the number of focal plane mask zones is large
 # the complex amplitude response of each mask zone is computed
 # Several sub-processes are launched, each computing a subset of the total number of zones
-# you can follow the progress of each subprocess in the corresponding tmux sessions
-# the tmux session names are PID followed by FPMt<index>n<NBindex>
+# you can follow the progress of each subprocess in log/step100_thread<index>.log
 #
 # as each subprocess computes zone responses, they are stored in FITS files FPMresp..._thread<index>.fits.tmp
 # you can open/view these files to follow progress - each zone appears as a line, and files should fill from the bottom to the top
@@ -1558,3 +1576,5 @@ if [ "$step" = "$mSTEP" ]; then
         rsync -au --progress $PWD/ $PWD.step${step}
     fi
 fi
+
+exitOK

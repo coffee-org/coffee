@@ -27,9 +27,6 @@ exit_on_error() {
     fi
 }
 
-# enable !! command completion
-set -o history -o histexpand
-
 
 
 
@@ -266,7 +263,10 @@ fi
 
 if [ $1 == "optsingle" ]; then
 	echo "optimize single configuration"
-	searchtime=7200.0
+	searchtime="${COFFEE_SEARCHTIME:-7200.0}"
+	if [ -f "./conf/conf_searchtime.txt" ] && [ -z "${COFFEE_SEARCHTIME:-}" ]; then
+		searchtime=$(cat ./conf/conf_searchtime.txt)
+	fi
 	computecontrast=0
 	inputmode=2
 fi
@@ -274,7 +274,10 @@ fi
 
 if [ $1 == "optloop" ]; then
 	echo "optimize single configuration (loop)"
-	searchtime=7200.0
+	searchtime="${COFFEE_SEARCHTIME:-7200.0}"
+	if [ -f "./conf/conf_searchtime.txt" ] && [ -z "${COFFEE_SEARCHTIME:-}" ]; then
+		searchtime=$(cat ./conf/conf_searchtime.txt)
+	fi
 	computecontrast=0
 	inputmode=2
 	optimizeloop=1
@@ -334,6 +337,9 @@ fi
 reoptimize=1
 
 NBlambda=20
+if [ -f "./conf/conf_nblambda.txt" ]; then
+    NBlambda=$(cat ./conf/conf_nblambda.txt)
+fi
 
 
 echo "lambda = $lambda nm"
@@ -349,7 +355,7 @@ echo "-- STEP 00 --"
 
 mzfpmoptimize ()
 {
-stepfile=$(printf "stepfile_fpmr%4.2f_coin%4.2f_coout%4.2f_sr%02d_l%04d_maskrad%4.2f_rings%03d_ss%02d" "$fpmrad" "$coin" "$coout" "$lambdaB" "$lambda" "$maskradld" "$NBrings" "$ssize")
+stepfile=$(printf "stepfile_fpmr%4.2f_coin%4.2f_coout%4.2f_sr%02d_l%04d_maskrad%4.2f_rings%03d_ss%02d" "$fpmrad" "$coin" "$coout" "$mlambdaB" "$lambda" "$maskradld" "$NBrings" "$ssize")
 
 if [ $reoptimize -eq 1 ]; then
 	stepfiletest="bogus"
@@ -365,12 +371,6 @@ then
 # Turn focal plane mask into zones, Compute polychromatic response to zones, store result in FPMresp
 echo "1" > ./log/conf_FPMsectors.txt
 echo "$NBlambda" > ./log/conf_nblambda.txt
-
-#NOTE: this does nothing... can be removed ?
-datestr=`date -u +%Y-%m-%d_%H:%M:%S`
-echo "$datestr  coffee-sim 800 $pscale $coin $coout $fpmrad $lambda $PIAAmaterial $LStransm $NBlyotstop $mlambda $mlambdaB $NBrings $maskradld $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz $ssize $extmode $fpmmaterial $index" >> cmdlog.txt
-coffee-sim 800 $pscale $coin $coout $fpmrad $lambda $PIAAmaterial $LStransm $NBlyotstop $mlambda $mlambdaB $NBrings $maskradld $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz $ssize $extmode $fpmmaterial $index # set configuration settings
-checkerrorstatus
 
 datestr=`date -u +%Y-%m-%d_%H:%M:%S`
 echo "$datestr  coffee-sim 101 $pscale $coin $coout $fpmrad $lambda $PIAAmaterial $LStransm $NBlyotstop $mlambda $mlambdaB $NBrings $maskradld $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz $ssize $extmode $fpmmaterial $index" >> cmdlog.txt
@@ -389,19 +389,21 @@ checkerrorstatus
 
 
 # LOOP STUFF
-loopOK=1
+loopOK=0
+if [ $computecontrast -gt 0 ] || [ $loopmode -eq 1 ]; then
+    loopOK=1
+fi
 loopcnt=0
 touch looppsfcomp
-rm looppsfcomp_done
+rm -f looppsfcomp_done
 
 
 initlooppsf=0
 
 while [ $loopOK -eq 1 ]; do
 coffee-waitforfile1 looppsfcomp loopstop
-rm looppsfcomp
+rm -f looppsfcomp
 echo "loopOK $loopcnt"
-sleep 1
 loopcnt=$(( $loopcnt + 1 ))
 
 
@@ -491,47 +493,38 @@ fi
 
 touch looppsfcomp_done  # letting know other process that the PSF has been computed
 
-
-
-
-# END OF LOOP STUFF
-$execname << EOF
-creaimshm psfout $size $size $
-quit
-EOF
-exit_on_error $? "$execname"
-
-
-if [ $initlooppsf -eq 0 ]; then
-$execname << EOF
-creaimshm psfout $size $size $NBlambda
-creaimshm psfout_re $size $size $NBlambda
-creaimshm psfout_im $size $size $NBlambda
+if [ $loopmode -eq 1 ]; then
+    if [ $initlooppsf -eq 0 ]; then
+        "$execname" -q -e << EOF
+mem.mk3Dim tmp3d $size $size $NBlambda
+mem.imcpshm tmp3d psfout
+mem.imcpshm tmp3d psfout_re
+mem.imcpshm tmp3d psfout_im
 exit
 EOF
-exit_on_error $? "$execname"
+        exit_on_error $? "$execname"
+        initlooppsf=1
+    fi
+    checkerrorstatus
 
-initlooppsf=1
+    # copy psf0 to shared memory
+    "$execname" -q -e << EOF
+mem.readshmim psfout
+mem.readshmim psfout_re
+mem.readshmim psfout_im
+iofits.loadfits "$dirname/psfi0.fits" psf 2
+iofits.loadfits "$dirname/psfa0.fits" psfa 2
+iofits.loadfits "$dirname/psfp0.fits" psfp 2
+mem.cp psf psfout
+mem.ap2c psfa psfp psfc
+mem.c2ri psfc psfre psfim
+mem.cp psfre psfout_re
+mem.cp psfim psfout_im
+exit
+EOF
+    exit_on_error $? "$execname"
+    checkerrorstatus
 fi
-checkerrorstatus
-
-# copy psf0 to shared memory
-$execname << EOF
-readshmim psfout
-readshmim psfout_re
-readshmim psfout_im
-loadfits "$dirname/psfi0.fits" psf
-loadfits "$dirname/psfa0.fits" psfa
-loadfits "$dirname/psfp0.fits" psfp
-cp psf psfout
-ap2c psfa psfp psfc
-c2ri psfc psfre psfim
-cp psfre psfout_re
-cp psfim psfout_im
-exit
-EOF
-exit_on_error $? "$execname"
-checkerrorstatus
 
 loopOK=0 # default: exit loop
 if [ $loopmode -eq 1 ]; then
@@ -642,7 +635,7 @@ if [ $inputmode -eq 1 ]; then
 	reoptimize=1
 	funcprocess
 	i=$( echo "$MdesignStepMax" | awk '{printf("%02d\n",$1-1)}')
-	cp PSFcontrastval.txt PSFcontrastval_step$i.txt
+	cp PSFcontrastval.txt PSFcontrastval_step$i.txt 2>/dev/null || :
 	checkerrorstatus
 fi
 
@@ -661,8 +654,7 @@ fi
 if [ $inputmode -eq 11 ]; then
 	# COMPUTE ON-AXIS PSF polychromatic
 	datestr=`date -u +%Y-%m-%d_%H:%M:%S`
-	echo "$datestr  coffee-sim 720 $pscale $coin $coout $fpmrad $lambda $PIAAmaterial $LStransm $NBlyotstop $mlambda $mlambdaB $NBrings $maskradld $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz $ssize $extmode $fpmmaterial $index
-	checkerrorstatus" >> cmdlog.txt
+	echo "$datestr  coffee-sim 720 $pscale $coin $coout $fpmrad $lambda $PIAAmaterial $LStransm $NBlyotstop $mlambda $mlambdaB $NBrings $maskradld $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz $ssize $extmode $fpmmaterial $index" >> cmdlog.txt
 	coffee-sim 720 $pscale $coin $coout $fpmrad $lambda $PIAAmaterial $LStransm $NBlyotstop $mlambda $mlambdaB $NBrings $maskradld $fpmminsag $fpmmaxsag $fpmregsag_coeff $fpmregsag_alpha $fpmccnbr $fpmccz $fpmocradld $fpmocz $ssize $extmode $fpmmaterial $index
 	checkerrorstatus
 fi

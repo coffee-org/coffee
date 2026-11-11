@@ -83,7 +83,11 @@ echo "-0.05" > ./conf/conf_LyotZmax.txt             # conjugation range for Lyot
 #    SET PUPIL
 # ===========================================
 
-rm pup_2048.fits &> /dev/null
-cp examples/pupSPEED_2048_450.fits.gz .
-gunzip pupSPEED_2048_450.fits.gz
+rm -f pup_2048.fits
+exampledir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ ! -f "$exampledir/pupSPEED_2048_450.fits.gz" ] && [ -d "./examples" ]; then
+    exampledir="./examples"
+fi
+cp "$exampledir/pupSPEED_2048_450.fits.gz" pupSPEED_2048_450.fits.gz
+gunzip -f pupSPEED_2048_450.fits.gz
 cp pupSPEED_2048_450.fits pup_2048.fits

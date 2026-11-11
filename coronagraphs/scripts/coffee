@@ -1,3 +1,29 @@
 #!/usr/bin/env bash
+# Wrapper launching milk-cli with standard milk + coffee coronagraph modules.
 
-MILKCLI_APPNAME="coffee" MILKCLI_ADD_LIBS="$MILKCLI_ADD_LIBS;coffeeAOsystSim,coffeecoronagraphs,coffeeOptSystProp,coffeePIAACMCsimul,milkWFpropagate,milkcudacomp" milk-cli "$@"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [ -x "${SCRIPT_DIR}/milk-cli" ]; then
+    MILK_CLI_BIN="${SCRIPT_DIR}/milk-cli"
+    export MILK_INSTALLDIR="${MILK_INSTALLDIR:-$(cd "${SCRIPT_DIR}/.." && pwd)}"
+elif [ -n "${MILK_INSTALLDIR:-}" ] && [ -x "${MILK_INSTALLDIR}/bin/milk-cli" ]; then
+    MILK_CLI_BIN="${MILK_INSTALLDIR}/bin/milk-cli"
+else
+    MILK_CLI_BIN="milk-cli"
+fi
+
+MILK_STD_LIBS="milklinalgebra,milklinoptimtools,milkfft,milkimagebasic,milkimagefilter"
+MILK_STD_LIBS="${MILK_STD_LIBS},milkimageformat,milkimagegen,milkimgreduce,milkinfo,milkkdtree"
+MILK_STD_LIBS="${MILK_STD_LIBS},milklinARfilterPred,milkpsf"
+MILK_STD_LIBS="${MILK_STD_LIBS},milkstatistic,milkZernikePolyn"
+
+COFFEE_LIBS="milkOpticsMaterials,milkWFpropagate,coffeeOptSystProp"
+COFFEE_LIBS="${COFFEE_LIBS},coffeeAOsystSim,coffeecoronagraphs,coffeePIAACMCsimul"
+
+if [ -n "${MILKCLI_ADD_LIBS:-}" ]; then
+    ADD_LIBS="${MILKCLI_ADD_LIBS},${COFFEE_LIBS}"
+else
+    ADD_LIBS="${MILK_STD_LIBS},${COFFEE_LIBS}"
+fi
+
+exec env MILKCLI_APPNAME="coffee" MILKCLI_ADD_LIBS="${ADD_LIBS}" "${MILK_CLI_BIN}" "$@"

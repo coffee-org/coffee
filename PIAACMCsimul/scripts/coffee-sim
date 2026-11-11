@@ -189,23 +189,23 @@ echo "$dirname1" > ./log/dirname1.txt
 if [ ! -d $dirname1 ]; then
 echo "CREATING DIRECTORY $dirname1"
 mkdir -p $dirname1
-cp $dirname/pupa0_*.fits $dirname1/
-cp $dirname/piaa0Cmodes.fits $dirname1/
-cp $dirname/piaa0Fmodes.fits $dirname1/
-cp $dirname/piaa1Cmodes.fits $dirname1/
-cp $dirname/piaa1Fmodes.fits $dirname1/
-cp $dirname/piaacmcparams.conf $dirname1/
-cp $dirname/LyotStop*.fits $dirname1/
-cp $dirname/PIAA_Mshapes.txt $dirname1/
-cp $dirname/piaam0z.fits $dirname1/
-cp $dirname/piaam1z.fits $dirname1/
-cp $dirname/piaa0z.fits $dirname1/
-cp $dirname/piaa1z.fits $dirname1/
-cp $dirname/APOmodesCos.fits $dirname1/
-cp $dirname/apo2Drad.fits $dirname1/
-cp $dirname/APLCapo.*.info $dirname1/
-cp $dirname/step0*.txt $dirname1/
-cp $dirname/piaacmcparams_idealmonomask.conf $dirname1/
+cp $dirname/pupa0_*.fits $dirname1/ || :
+cp $dirname/piaa0Cmodes.fits $dirname1/ || :
+cp $dirname/piaa0Fmodes.fits $dirname1/ || :
+cp $dirname/piaa1Cmodes.fits $dirname1/ || :
+cp $dirname/piaa1Fmodes.fits $dirname1/ || :
+cp $dirname/piaacmcparams.conf $dirname1/ || :
+cp $dirname/LyotStop*.fits $dirname1/ || :
+cp $dirname/PIAA_Mshapes.txt $dirname1/ || :
+cp $dirname/piaam0z.fits $dirname1/ || :
+cp $dirname/piaam1z.fits $dirname1/ || :
+cp $dirname/piaa0z.fits $dirname1/ || :
+cp $dirname/piaa1z.fits $dirname1/ || :
+cp $dirname/APOmodesCos.fits $dirname1/ || :
+cp $dirname/apo2Drad.fits $dirname1/ || :
+cp $dirname/APLCapo.*.info $dirname1/ || :
+cp $dirname/step0*.txt $dirname1/ || :
+cp $dirname/piaacmcparams_idealmonomask.conf $dirname1/ || :
 fi
 exit
 fi
@@ -220,26 +220,25 @@ echo "$dirname1" > ./log/dirname1.txt
 if [ -d $dirname1 ]; then
 if [ ! -d $dirname ]; then
 echo "IMPORTING MONOCHROMATIC SOLUTION ... "
-sleep 2
 echo "CREATING DIRECTORY $dirname"
 mkdir -p $dirname
-cp $dirname1/pupa0_*.fits $dirname/
-cp $dirname1/piaa0Cmodes.fits $dirname/
-cp $dirname1/piaa0Fmodes.fits $dirname/
-cp $dirname1/piaa1Cmodes.fits $dirname/
-cp $dirname1/piaa1Fmodes.fits $dirname/
-cp $dirname1/piaacmcparams.conf $dirname/
-cp $dirname1/LyotStop*.fits $dirname/
-cp $dirname1/PIAA_Mshapes.txt $dirname/
-cp $dirname1/piaam0z.fits $dirname/
-cp $dirname1/piaam1z.fits $dirname/
-cp $dirname1/piaa0z.fits $dirname/
-cp $dirname1/piaa1z.fits $dirname/
-cp $dirname1/APOmodesCos.fits $dirname/
-cp $dirname1/apo2Drad.fits $dirname/
-cp $dirname1/APLCapo.*.info $dirname/
-cp $dirname1/step0*.txt $dirname/
-cp $dirname1/piaacmcparams_idealmonomask.conf $dirname/
+cp $dirname1/pupa0_*.fits $dirname/ || :
+cp $dirname1/piaa0Cmodes.fits $dirname/ || :
+cp $dirname1/piaa0Fmodes.fits $dirname/ || :
+cp $dirname1/piaa1Cmodes.fits $dirname/ || :
+cp $dirname1/piaa1Fmodes.fits $dirname/ || :
+cp $dirname1/piaacmcparams.conf $dirname/ || :
+cp $dirname1/LyotStop*.fits $dirname/ || :
+cp $dirname1/PIAA_Mshapes.txt $dirname/ || :
+cp $dirname1/piaam0z.fits $dirname/ || :
+cp $dirname1/piaam1z.fits $dirname/ || :
+cp $dirname1/piaa0z.fits $dirname/ || :
+cp $dirname1/piaa1z.fits $dirname/ || :
+cp $dirname1/APOmodesCos.fits $dirname/ || :
+cp $dirname1/apo2Drad.fits $dirname/ || :
+cp $dirname1/APLCapo.*.info $dirname/ || :
+cp $dirname1/step0*.txt $dirname/ || :
+cp $dirname1/piaacmcparams_idealmonomask.conf $dirname/ || :
 fi
 fi
 exit

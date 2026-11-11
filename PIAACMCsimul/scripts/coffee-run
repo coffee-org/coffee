@@ -10,6 +10,12 @@ set -e
 
 export MILK_ERROREXIT="1"
 
+tput() {
+    if [ "${TERM:-dumb}" != "dumb" ]; then
+        command tput "$@" 2>/dev/null || true
+    fi
+}
+
 function exitOK() {
 	echo -e "\n\033[32;1m SUCCESS \033[0m $0 \n"
 	exit
@@ -707,6 +713,10 @@ runoptcmd=$1
 
 echo "200" > ./log/conf_MdesignStepMax.txt
 
+if [ "$runoptcmd" = "optsingle" ] && [ "$2" -gt 18 ] 2>/dev/null; then
+echo "18" > ./log/conf_MdesignStepMax.txt
+fi
+
 if [ "$runoptcmd" = "designmono" ]; then
 echo "$2" > ./log/conf_MdesignStepMax.txt
 fi
@@ -763,60 +773,46 @@ coffee-runopt $runoptcmd $pscale $coin $coout $fpmradld $lambda $PIAAmaterial $L
 if [ "$runoptcmd" = "eval0" ]; then
 mkdir -p eval0
 printhelpeval0 > ./eval0/README.txt
-# copy all new files
-# find ./piaacmcconf_i000/ -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval0/
-# copy fpm_zonez
 
-cp ./ref/Fmode*.fits ./eval0/
-gzip -f ./eval0/Fmode*.fits
-cp ./ref/Cmode*.fits ./eval0/
-gzip -f ./eval0/Cmode*.fits
+cp ./ref/Fmode*.fits ./eval0/ 2>/dev/null && gzip -f ./eval0/Fmode*.fits || :
+cp ./ref/Cmode*.fits ./eval0/ 2>/dev/null && gzip -f ./eval0/Cmode*.fits || :
 
-find ./piaacmcconf_i000/fpm_*map2D.*.fits.gz -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval0/
-find ./piaacmcconf_i000/contrast_* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval0/
-find ./piaacmcconf_i000/flux_* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval0/
-find ./piaacmcconf_i000/psfi0_ptsrc* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval0/
-find ./piaacmcconf_i000/WFamp0_* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval0/
-find ./piaacmcconf_i000/WFpha0_* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval0/
-find ./piaacmcconf_i000/conf_* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval0/
-find ./piaacmcconf_i000/scoring* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval0/
+for pat in "fpm_*map2D.*.fits.gz" "contrast_*" "flux_*" "psfi0_ptsrc*" \
+           "WFamp0_*" "WFpha0_*" "conf_*" "scoring*" "Contrast*" \
+           "psfi0_x00*" "psfi0_x50*"; do
+    find ./piaacmcconf_i000/ -maxdepth 1 -name "$pat" -type f \
+        -newer run.cmd.tsart -print0 | xargs -0 -r cp -t ./eval0/
+done
 
-# added by Justin to match modified on line 386 in rupopt fxn mzfpmoptimize
-find ./piaacmcconf_i000/Contrast* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval0/
-find ./piaacmcconf_i000/psfi0_x00* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval0/
-find ./piaacmcconf_i000/psfi0_x50* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval0/
+if [ -f fpm_name.txt ]; then
+    fpmname=$(cat fpm_name.txt)
+    cp piaacmcconf_i000/fpm_zone*${fpmname}* ./eval0/ 2>/dev/null || :
+    cp piaacmcconf_i000/fpm_sagmapHR*${fpmname}*.best.fits ./eval0/ 2>/dev/null || :
+fi
 
-#find ./piaacmcconf_i000/ -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval0/
-
-echo "cp piaacmcconf_i000/fpm_zone*$( cat fpm_name.txt )* ./eval0/" > tmpcmd
-echo "cp piaacmcconf_i000/fpm_sagmapHR*$( cat fpm_name.txt )*.best.fits ./eval0/" >> tmpcmd
-chmod +x tmpcmd
-./tmpcmd
-
-
-cp __test_zonemap_00.fits ./eval0/fpmzmap.fits
+cp __test_zonemap_00.fits ./eval0/fpmzmap.fits 2>/dev/null || :
 
 cd piaacmcconf_i000/
-cp fpm_zonescoord*.txt ../eval0/ || :
-cp ModesExpr_CPA.txt ../eval0/ || :
-cp ModesExpr_CosRad.txt ../eval0/ || :
-cp lambdalist.txt ../eval0/ || :
-cp conjugations.txt ../eval0/ || :
-cp piaacmcparams.conf ../eval0/ || :
-cp LyotStop*.fits ../eval0/ || :
-cp piaa*modes.fits ../eval0/ || :
-cp piaam[0-1]z.fits ../eval0/ || :
-cp piaa[0-1]Cz.fits ../eval0/ || :
-cp piaa[0-1]Fz.fits ../eval0/ || :
-cp CnormFactor.txt ../eval0/ || :
-cp psfi0_step699.fits ../eval0/psfi0_nofpm.fits || :
+cp fpm_zonescoord*.txt ../eval0/ 2>/dev/null || :
+cp ModesExpr_CPA.txt ../eval0/ 2>/dev/null || :
+cp ModesExpr_CosRad.txt ../eval0/ 2>/dev/null || :
+cp lambdalist.txt ../eval0/ 2>/dev/null || :
+cp conjugations.txt ../eval0/ 2>/dev/null || :
+cp piaacmcparams.conf ../eval0/ 2>/dev/null || :
+cp LyotStop*.fits ../eval0/ 2>/dev/null || :
+cp piaa*modes.fits ../eval0/ 2>/dev/null || :
+cp piaam[0-1]z.fits ../eval0/ 2>/dev/null || :
+cp piaa[0-1]Cz.fits ../eval0/ 2>/dev/null || :
+cp piaa[0-1]Fz.fits ../eval0/ 2>/dev/null || :
+cp CnormFactor.txt ../eval0/ 2>/dev/null || :
+cp psfi0_step699.fits ../eval0/psfi0_nofpm.fits 2>/dev/null || :
 cd ../eval0
 
 # compress some files
-gzip -f WFamp*.fits
-gzip -f WFpha*.fits
-gzip -f fpmzmap.fits
-gzip -f fpm_sagmapHR*.best.fits
+gzip -f WFamp*.fits 2>/dev/null || :
+gzip -f WFpha*.fits 2>/dev/null || :
+gzip -f fpmzmap.fits 2>/dev/null || :
+gzip -f fpm_sagmapHR*.best.fits 2>/dev/null || :
 cd ..
 fi
 
@@ -826,17 +822,13 @@ function eval1cp ()
 {
 mkdir -p eval1
 printhelpeval1 > ./eval1/README.txt
-find ./piaacmcconf_i000/Contrast* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval1/
-find ./piaacmcconf_i000/contrast_* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval1/
-find ./piaacmcconf_i000/flux_* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval1/
-find ./piaacmcconf_i000/psfi0_extsrc* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval1/
-find ./piaacmcconf_i000/psfi0INC_* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval1/
-find ./piaacmcconf_i000/psfi0COH_* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval1/
-find ./piaacmcconf_i000/psfi0_ptsrc* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval1/
-find ./piaacmcconf_i000/psfi0_x00* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval1/
-find ./piaacmcconf_i000/psfi0_x50* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval1/
+for pat in "Contrast*" "contrast_*" "flux_*" "psfi0_extsrc*" "psfi0INC_*" \
+           "psfi0COH_*" "psfi0_ptsrc*" "psfi0_x00*" "psfi0_x50*"; do
+    find ./piaacmcconf_i000/ -maxdepth 1 -name "$pat" -type f \
+        -newer run.cmd.tsart -print0 | xargs -0 -r cp -t ./eval1/
+done
 cd eval1
-gzip -f *.fits
+gzip -f *.fits 2>/dev/null || :
 cd ..
 }
 
@@ -853,7 +845,8 @@ eval1cp
 
 mkdir -p eval2
 printhelpeval2 > ./eval2/README.txt
-find ./piaacmcconf_i000/transmCurve_* -type f -newer run.cmd.tsart -print0 | xargs -0 cp -t ./eval2/
+find ./piaacmcconf_i000/ -maxdepth 1 -name "transmCurve_*" -type f \
+    -newer run.cmd.tsart -print0 | xargs -0 -r cp -t ./eval2/
 fi
 
 

@@ -15,9 +15,8 @@ mkdir -p log
 
 pid=$$
 
-NBthreadsFPMresp=4
+NBthreadsFPMresp="${COFFEE_JOBS:-4}"
 
-#execname="PIAACMCdesign -e"  # only run program if X is inactive (prevents slowing down user)
 execname="coffee"
 
 # exit on error
@@ -32,9 +31,6 @@ exit_on_error() {
         exit $exit_code
     fi
 }
-
-# enable !! command completion
-set -o history -o histexpand
 
 
 
@@ -92,6 +88,12 @@ fi
 alias Reset="tput sgr0"      #  Reset text attributes to normal
                              #+ without clearing screen.
 
+tput() {
+    if [ "${TERM:-dumb}" != "dumb" ]; then
+        command tput "$@" 2>/dev/null || true
+    fi
+}
+
 
 
 
@@ -143,7 +145,6 @@ function checkexit() {
 if [ $state -eq $statestop ]
 then
 echo "STATE STOP POINT ($statestop)"
-sleep 1
 cleanup
 exitOK
 fi
@@ -393,8 +394,18 @@ loadparam FPMsectors "1"
 loadparam nblambda "10"
 loadparam beamrad "0.01"
 loadparam Fratio "80"
-loadparam r0lim "1.15"
-loadparam r1lim "1.50"
+if [ -f "conf/conf_r0lim.txt" ] && [ ! -f "conf/conf_PIAAr0lim.txt" ]; then
+    loadparam r0lim "1.15"
+else
+    loadparam PIAAr0lim "1.15"
+    r0lim="$PIAAr0lim"
+fi
+if [ -f "conf/conf_r1lim.txt" ] && [ ! -f "conf/conf_PIAAr1lim.txt" ]; then
+    loadparam r1lim "1.50"
+else
+    loadparam PIAAr1lim "1.50"
+    r1lim="$PIAAr1lim"
+fi
 loadparam PIAAsep "1.00"
 loadparam PIAA0pos "1.00"
 loadparam prePIAA0maskpos "1.00"
@@ -406,6 +417,9 @@ loadparam LyotZmax "-2.5"
 loadparam pupoutmaskrad "0.99"
 loadparam invPIAAmode "1"
 
+if [ -z "${COFFEE_JOBS:-}" ] && [ -f "conf/conf_NBthreads.txt" ]; then
+    NBthreadsFPMresp=$(cat "conf/conf_NBthreads.txt")
+fi
 
 loadparam REGPIAACCOEFF "300.0"
 loadparam REGPIAACALPHA "0.2"
@@ -545,68 +559,80 @@ LStransm1=$( echo "($LStransm0+$LStransm2)*0.5" | bc -l )
 SCORINGMASKTYPE=1
 
 
-NBpropStep=200
+NBpropStep="${COFFEE_NBPROPSTEP:-200}"
+if [ -z "${COFFEE_NBPROPSTEP:-}" ] && [ -f "conf/conf_NBpropStep.txt" ]; then
+    NBpropStep=$(cat "conf/conf_NBpropStep.txt")
+fi
+NBiterSA="${COFFEE_NBITER_SA:-10000}"
+if [ -z "${COFFEE_NBITER_SA:-}" ] && [ -f "conf/conf_nbiterSA.txt" ]; then
+    NBiterSA=$(cat "conf/conf_nbiterSA.txt")
+fi
+NBiterDS="${COFFEE_NBITER_DS:-100}"
+if [ -z "${COFFEE_NBITER_DS:-}" ] && [ -f "conf/conf_nbiterDS.txt" ]; then
+    NBiterDS=$(cat "conf/conf_nbiterDS.txt")
+fi
 
 # PARAMETER LOAD SCRIPT TO BE EXECUTED - DEFAULT VALUES
 startupfile="clistartup$pid.txt"
-echo "PIAACMC_PIAAmode=${PIAAmode}" > $startupfile
-echo "PIAACMC_size=${size}" >> $startupfile  #2
-echo "PIAACMC_pixscale=${pscale}" >> $startupfile  #3
-echo "PIAACMC_centobs0=${centobs0}" >> $startupfile #5
-echo "PIAACMC_centobs1=${centobs1}" >> $startupfile #6
-echo "PIAACMC_fpmradld=${fpmradld}" >> $startupfile #7
-echo "PIAACMC_LStransm0=$LStransm0" >> $startupfile #10
-echo "PIAACMC_LStransm1=$LStransm1" >> $startupfile #10
-echo "PIAACMC_LStransm2=$LStransm2" >> $startupfile #10
-echo "PIAACMC_nblstop=$NBlyotstop" >> $startupfile #11
-echo "PIAACMC_lambda=${mlambda}" >> $startupfile #12
-echo "PIAACMC_lambdaB=${mlambdaB}" >> $startupfile #13
-echo "PIAACMC_NBrings=$NBrings" >> $startupfile #14
-echo "PIAACMC_MASKRADLD=${FPM_MASKRADLD}" >> $startupfile #15
-echo "PIAACMC_resolved=$PIAACMC_resolved" >> $startupfile #16
-echo "PIAACMC_extmode=$PIAACMC_extmode" >> $startupfile #17
-echo "PIAACMC_fpmminsag=${fpmminsag}" >> $startupfile #19
-echo "PIAACMC_fpmmaxsag=${fpmmaxsag}" >> $startupfile #20
-echo "PIAACMC_fpmsagreg_coeff=${fpmsagreg_coeff}" >> $startupfile #21
-echo "PIAACMC_fpmsagreg_alpha=${fpmsagreg_alpha}" >> $startupfile #22
-echo "PIAACMC_NBringCentCone=${fpmccnbr}" >> $startupfile #23
-echo "PIAACMC_fpmCentConeZ=${fpmccz}" >> $startupfile #24
-echo "PIAACMC_fpmOuterConeRadld=${fpmocr}" >> $startupfile #25
-echo "PIAACMC_fpmOuterConeZ=${fpmocz}" >> $startupfile #26
-
-echo "PIAACMC_dftgrid=${PIAACMC_dftgrid}" >> $startupfile
-echo "PIAACMC_nblambda=${nblambda}" >> $startupfile
-echo "PIAACMC_beamrad=${beamrad}" >> $startupfile
-echo "PIAACMC_Fratio=${Fratio}" >> $startupfile
-echo "PIAACMC_r0lim=${r0lim}" >> $startupfile
-echo "PIAACMC_r1lim=${r1lim}" >> $startupfile
-echo "PIAACMC_PIAAsep=${PIAAsep}" >> $startupfile
-echo "PIAACMC_PIAA0pos=${PIAA0pos}" >> $startupfile
-echo "PIAACMC_invPIAAmode=${invPIAAmode}" >> $startupfile
-echo "PIAACMC_prePIAA0maskpos=${prePIAA0maskpos}" >> $startupfile
-echo "PIAACMC_postPIAA0maskpos=${postPIAA0maskpos}" >> $startupfile
-echo "PIAACMC_piaaNBCmodesmax=${piaaNBCmodesmax}" >> $startupfile
-echo "PIAACMC_piaaCPAmax=${piaaCPAmax}" >> $startupfile
-echo "PIAACMC_LyotZmin=${LyotZmin}" >> $startupfile
-echo "PIAACMC_LyotZmax=${LyotZmax}" >> $startupfile
-echo "PIAACMC_pupoutmaskrad=${pupoutmaskrad}" >> $startupfile
+cat > "$startupfile" << EOF
+@calc "PIAACMC_PIAAmode = ${PIAAmode}"
+@calc "PIAACMC_size = ${size}"
+@calc "PIAACMC_pixscale = ${pscale}"
+@calc "PIAACMC_centobs0 = ${centobs0}"
+@calc "PIAACMC_centobs1 = ${centobs1}"
+@calc "PIAACMC_fpmradld = ${fpmradld}"
+@calc "PIAACMC_LStransm0 = ${LStransm0}"
+@calc "PIAACMC_LStransm1 = ${LStransm1}"
+@calc "PIAACMC_LStransm2 = ${LStransm2}"
+@calc "PIAACMC_nblstop = ${NBlyotstop}"
+@calc "PIAACMC_lambda = ${mlambda}"
+@calc "PIAACMC_lambdaB = ${mlambdaB}"
+@calc "PIAACMC_NBrings = ${NBrings}"
+@calc "PIAACMC_MASKRADLD = ${FPM_MASKRADLD}"
+@calc "PIAACMC_resolved = ${PIAACMC_resolved}"
+@calc "PIAACMC_extmode = ${PIAACMC_extmode}"
+@calc "PIAACMC_fpmminsag = ${fpmminsag}"
+@calc "PIAACMC_fpmmaxsag = ${fpmmaxsag}"
+@calc "PIAACMC_fpmsagreg_coeff = ${fpmsagreg_coeff}"
+@calc "PIAACMC_fpmsagreg_alpha = ${fpmsagreg_alpha}"
+@calc "PIAACMC_NBringCentCone = ${fpmccnbr}"
+@calc "PIAACMC_fpmCentConeZ = ${fpmccz}"
+@calc "PIAACMC_fpmOuterConeRadld = ${fpmocr}"
+@calc "PIAACMC_fpmOuterConeZ = ${fpmocz}"
+@calc "PIAACMC_dftgrid = ${PIAACMC_dftgrid}"
+@calc "PIAACMC_nblambda = ${nblambda}"
+@calc "PIAACMC_beamrad = ${beamrad}"
+@calc "PIAACMC_Fratio = ${Fratio}"
+@calc "PIAACMC_r0lim = ${r0lim}"
+@calc "PIAACMC_r1lim = ${r1lim}"
+@calc "PIAACMC_PIAAsep = ${PIAAsep}"
+@calc "PIAACMC_PIAA0pos = ${PIAA0pos}"
+@calc "PIAACMC_invPIAAmode = ${invPIAAmode}"
+@calc "PIAACMC_prePIAA0maskpos = ${prePIAA0maskpos}"
+@calc "PIAACMC_postPIAA0maskpos = ${postPIAA0maskpos}"
+@calc "PIAACMC_piaaNBCmodesmax = ${piaaNBCmodesmax}"
+@calc "PIAACMC_piaaCPAmax = ${piaaCPAmax}"
+@calc "PIAACMC_LyotZmin = ${LyotZmin}"
+@calc "PIAACMC_LyotZmax = ${LyotZmax}"
+@calc "PIAACMC_pupoutmaskrad = ${pupoutmaskrad}"
+EOF
 fifoname="runPIAACMCfifo$pid"
 
+run_coffee() {
+    local stepname="$1"
+    {
+        cat "$startupfile"
+        cat
+    } | "$execname" -q -e -n "$stepname"
+}
 
-
-execnamestring="$execname -s $startupfile -f $fifoname"
-
-
-cp $startupfile test_startupfile.txt
-
-
-
-
+cp "$startupfile" test_startupfile.txt
 
 cleanup ()
 {
-rm -f $startupfile
-rm -f $fifoname
+rm -f "$startupfile"
+rm -f "$fifoname"
+rm -f "initOK_${pid}" "coord_done_${pid}"
 rm -f runPIAACMCfifo*
 rm -f clistartup*.txt
 }
@@ -641,33 +667,30 @@ fi
 
 if [ 210 -eq ${state} ]; then
 datestr=`date -u +%Y-%m-%d_%H:%M:%S`
+step="210"
 echo "$datestr  $0  LINE $LINENO    step210  Tune PIAA shapes and focal plane mask zones, 10 cosine modes, 5 Fourier modes"
 echo "$datestr  $0  LINE $LINENO    step210  Tune PIAA shapes and focal plane mask zones, 10 cosine modes, 5 Fourier modes" >> cmdlog.txt
  echo "step 210"
 echo "210" > ./$1/runstep
 touch ./$1/step210.run.txt
-$execnamestring -n step210 << EOF
-PIAACMC_nbiter=20
-PIAACMC_lambda=${lambda}
-PIAACMC_maxoptCterm=${kmaxC}
-PIAACMC_maxoptFterm=${kmaxF}
-
-REGPIAASHAPES=1
-loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref
-loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref
-loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref
-loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref
-
-
-REGPIAA_C_COEFF=${REGPIAACCOEFF}
-REGPIAA_C_ALPHA=${REGPIAACALPHA}
-REGPIAA_F_COEFF=${REGPIAAFCOEFF}
-REGPIAA_F_ALPHA=${REGPIAAFALPHA}
-
+run_coffee step210 << EOF
+@calc "PIAACMC_nbiter = 20"
+@calc "PIAACMC_lambda = ${lambda}"
+@calc "PIAACMC_maxoptCterm = ${kmaxC}"
+@calc "PIAACMC_maxoptFterm = ${kmaxF}"
+@calc "REGPIAASHAPES = 1"
+iofits.loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref 2
+iofits.loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref 2
+iofits.loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref 2
+iofits.loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref 2
+@calc "REGPIAA_C_COEFF = ${REGPIAACCOEFF}"
+@calc "REGPIAA_C_ALPHA = ${REGPIAACALPHA}"
+@calc "REGPIAA_F_COEFF = ${REGPIAAFCOEFF}"
+@calc "REGPIAA_F_ALPHA = ${REGPIAAFALPHA}"
 coffeepiaacmcsim.run $1 40
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step210"
 
 
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
@@ -740,21 +763,22 @@ echo "$datestr  $0  LINE $LINENO    step699  Compute on-axis monochromatic PSF- 
 echo "$datestr  $0  LINE $LINENO    step699  Compute on-axis monochromatic PSF- idealized PIAACMC - no focal plane mask" >> cmdlog.txt
 echo "699" > ./$1/runstep
 touch ./$1/step699.run.txt
-cp ./$1/piaacmcparams_idealmonomask.conf ./$1/piaacmcparams.conf
-$execnamestring -n step699 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-PIAACMC_NOFPM=1
-PIAACMC_fpmtype=0
-PIAACMC_FPMsectors=0
-PIAACMC_NBrings=1
-PIAACMC_nblambda=1
-PIAACMC_resolved=0
-SCORINGMASKTYPE=$SCORINGMASKTYPE
+if [ -f "./$1/piaacmcparams_idealmonomask.conf" ]; then
+    cp ./$1/piaacmcparams_idealmonomask.conf ./$1/piaacmcparams.conf
+fi
+run_coffee step699 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_NOFPM = 1"
+@calc "PIAACMC_fpmtype = 0"
+@calc "PIAACMC_FPMsectors = 0"
+@calc "PIAACMC_NBrings = 1"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_resolved = 0"
+@calc "SCORINGMASKTYPE = $SCORINGMASKTYPE"
 coffeepiaacmcsim.run $1 0
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step699"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step699.fits
 cleanup
@@ -783,23 +807,23 @@ echo "$datestr  $0  LINE $LINENO    step700  Compute on-axis monochromatic PSF -
 echo "$datestr  $0  LINE $LINENO    step700  Compute on-axis monochromatic PSF - idealized PIAACMC" >> cmdlog.txt
 echo "700" > ./$1/runstep
 touch ./$1/step700.run.txt
-cp ./$1/piaacmcparams_idealmonomask.conf ./$1/piaacmcparams.conf
-$execnamestring -n step700 << EOF
-#
-PIAACMC_dftgrid=0
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-loadfits "OPDerr.fits" opderr
-PIAACMC_fpmtype=0
-PIAACMC_FPMsectors=0
-PIAACMC_NBrings=1
-PIAACMC_nblambda=1
-PIAACMC_resolved=0
-SCORINGMASKTYPE=$SCORINGMASKTYPE
+if [ -f "./$1/piaacmcparams_idealmonomask.conf" ]; then
+    cp ./$1/piaacmcparams_idealmonomask.conf ./$1/piaacmcparams.conf
+fi
+run_coffee step700 << EOF
+@calc "PIAACMC_dftgrid = 0"
+@calc "PIAACMC_MASKRADLD = 0.0"
+iofits.loadfits "OPDerr.fits" opderr 0
+@calc "PIAACMC_fpmtype = 0"
+@calc "PIAACMC_FPMsectors = 0"
+@calc "PIAACMC_NBrings = 1"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_resolved = 0"
+@calc "SCORINGMASKTYPE = $SCORINGMASKTYPE"
 coffeepiaacmcsim.run $1 0
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step700"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step700.fits
 cleanup
@@ -815,26 +839,26 @@ then
 datestr=`date -u +%Y-%m-%d_%H:%M:%S`
 echo "$datestr  $0  LINE $LINENO    step701  Eval monochromatic contrast for on-axis PSF, and pointing sensitivity - idealized PIAACMC"
 echo "$datestr  $0  LINE $LINENO    step701  Eval monochromatic contrast for on-axis PSF, and pointing sensitivity - idealized PIAACMC" >> cmdlog.txt
- if [ ! -f ./$1/step007.txt ]
+ if [ ! -f ./$1/step000.txt ]
  then
- echo "====================== step 701 requires step 007 ======================================="
- echo "====================== step 701 requires step 007 =======================================" >> cmdlog.txt
+ echo "====================== step 701 requires step 000 ======================================="
+ echo "====================== step 701 requires step 000 =======================================" >> cmdlog.txt
  else
  echo "eval monochromatic contrast for on-axis PSF, and pointing sensitivity - idealized PIAACMC"
 echo "701" > ./$1/runstep
 touch ./$1/step701.run.txt
-$execnamestring -n step701 << EOF
-PIAACMC_fpmtype=0
-PIAACMC_FPMsectors=0
-PIAACMC_NBrings=1
-PIAACMC_nblambda=1
-PIAACMC_resolved=0
+run_coffee step701 << EOF
+@calc "PIAACMC_fpmtype = 0"
+@calc "PIAACMC_FPMsectors = 0"
+@calc "PIAACMC_NBrings = 1"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_resolved = 0"
 coffeepiaacmcsim.run $1 100
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step701"
 
-mv ./$1/psfi0_starim.fits ./$1/psfi0_step701.fits
+[ -f "./$1/psfi0_starim.fits" ] && mv ./$1/psfi0_starim.fits ./$1/psfi0_step701.fits || :
 cleanup
 exitOK
 fi
@@ -852,15 +876,15 @@ echo "$datestr  $0  LINE $LINENO    step702  Compute on-axis monochromatic PSF -
 echo "$datestr  $0  LINE $LINENO    step702  Compute on-axis monochromatic PSF - extended source"  >> cmdlog.txt
 echo "702" > ./$1/runstep
 touch ./$1/step702.run.txt
-$execnamestring -n step702 << EOF
-PIAACMC_FPMsectors=0
-PIAACMC_NBrings=1
-PIAACMC_nblambda=1
-PIAACMC_resolved=1
+run_coffee step702 << EOF
+@calc "PIAACMC_FPMsectors = 0"
+@calc "PIAACMC_NBrings = 1"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_resolved = 1"
 coffeepiaacmcsim.run $1 0
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step702"
 
 cleanup
 exitOK
@@ -883,17 +907,16 @@ echo "$datestr  $0  LINE $LINENO    step720  Compute on-axis polychromatic PSF"
 echo "$datestr  $0  LINE $LINENO    step720  Compute on-axis polychromatic PSF" >> cmdlog.txt
 echo "720" > ./$1/runstep
 touch ./$1/step720.run.txt
-$execnamestring -n step720 << EOF
-#
-PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1
-PIAACMC_FPMsectors=$FPMsectors
-PIAACMC_nblambda=$nblambda
-PIAACMC_SAVE_fpm=1
+run_coffee step720 << EOF
+@calc "PIAACMC_dftgrid = 0"
+@calc "PIAACMC_fpmtype = 1"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "PIAACMC_nblambda = $nblambda"
+@calc "PIAACMC_SAVE_fpm = 1"
 coffeepiaacmcsim.run $1 0
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step720"
 
 cleanup
 exitOK
@@ -909,30 +932,29 @@ then
 datestr=`date -u +%Y-%m-%d_%H:%M:%S`
 echo "$datestr  $0  LINE $LINENO    step721  Eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.01 l/D"
 echo "$datestr  $0  LINE $LINENO    step721  Eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.01 l/D" >> cmdlog.txt
-if [ ! -f ./$1/step007.txt ]
+if [ ! -f ./$1/step000.txt ]
  then
- echo "====================== step 721 requires step 007 ======================================="
+ echo "====================== step 721 requires step 000 ======================================="
  exit 1
  else
  echo "721: eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.01 l/D"
 echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7"
 echo "721" > ./$1/runstep
 touch ./$1/step721.run.txt
-$execnamestring -n step721 << EOF
-#
-PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1
-PIAACMC_FPMsectors=$FPMsectors
-PIAACMC_nblambda=$nblambda
-PIAACMC_ldoffset=0.01
+run_coffee step721 << EOF
+@calc "PIAACMC_dftgrid = 0"
+@calc "PIAACMC_fpmtype = 1"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "PIAACMC_nblambda = $nblambda"
+@calc "PIAACMC_ldoffset = 0.01"
 coffeepiaacmcsim.run $1 100
-exitCLI
-EOF
-exit_on_error $? "$execnamestring"
-
-mv ./$1/psfi0_starim.fits ./$1/psfi0_step721.fits
-cleanup
 exit
+EOF
+exit_on_error $? "run_coffee step721"
+
+[ -f "./$1/psfi0_starim.fits" ] && mv ./$1/psfi0_starim.fits ./$1/psfi0_step721.fits || :
+cleanup
+exitOK
 fi
 fi
 
@@ -944,27 +966,27 @@ then
 datestr=`date -u +%Y-%m-%d_%H:%M:%S`
 echo "$datestr  $0  LINE $LINENO    step722  Eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.03 l/D"
 echo "$datestr  $0  LINE $LINENO    step722  Eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.03 l/D" >> cmdlog.txt
- if [ ! -f ./$1/step007.txt ]
+ if [ ! -f ./$1/step000.txt ]
  then
- echo "====================== step 722 requires step 007 ======================================="
+ echo "====================== step 722 requires step 000 ======================================="
  exit 1
  else
  echo "722: eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.03 l/D"
 echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7"
 echo "722" > ./$1/runstep
 touch ./$1/step722.run.txt
-$execnamestring -n step722 << EOF
-PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1
-PIAACMC_FPMsectors=$FPMsectors
-PIAACMC_nblambda=$nblambda
-PIAACMC_ldoffset=0.03
+run_coffee step722 << EOF
+@calc "PIAACMC_dftgrid = 0"
+@calc "PIAACMC_fpmtype = 1"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "PIAACMC_nblambda = $nblambda"
+@calc "PIAACMC_ldoffset = 0.03"
 coffeepiaacmcsim.run $1 100
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step722"
 
-mv ./$1/psfi0_starim.fits ./$1/psfi0_step722.fits
+[ -f "./$1/psfi0_starim.fits" ] && mv ./$1/psfi0_starim.fits ./$1/psfi0_step722.fits || :
 cleanup
 exitOK
 fi
@@ -977,27 +999,27 @@ then
 datestr=`date -u +%Y-%m-%d_%H:%M:%S`
 echo "$datestr  $0  LINE $LINENO    step723  Eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.001 l/D"
 echo "$datestr  $0  LINE $LINENO    step723  Eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.001 l/D" >> cmdlog.txt
- if [ ! -f ./$1/step007.txt ]
+ if [ ! -f ./$1/step000.txt ]
  then
- echo "====================== step 723 requires step 007 ======================================="
- exit
+ echo "====================== step 723 requires step 000 ======================================="
+ exit 1
  else
  echo "723: eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.001 l/D"
 echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7"
-echo "722" > ./$1/runstep
+echo "723" > ./$1/runstep
 touch ./$1/step723.run.txt
-$execnamestring -n step723 << EOF
-PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1
-PIAACMC_FPMsectors=$FPMsectors
-PIAACMC_nblambda=$nblambda
-PIAACMC_ldoffset=0.001
+run_coffee step723 << EOF
+@calc "PIAACMC_dftgrid = 0"
+@calc "PIAACMC_fpmtype = 1"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "PIAACMC_nblambda = $nblambda"
+@calc "PIAACMC_ldoffset = 0.001"
 coffeepiaacmcsim.run $1 100
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step723"
 
-mv ./$1/psfi0_starim.fits ./$1/psfi0_step723.fits
+[ -f "./$1/psfi0_starim.fits" ] && mv ./$1/psfi0_starim.fits ./$1/psfi0_step723.fits || :
 cleanup
 exitOK
 fi
@@ -1010,27 +1032,27 @@ then
 datestr=`date -u +%Y-%m-%d_%H:%M:%S`
 echo "$datestr  $0  LINE $LINENO    step724  Eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.003 l/D"
 echo "$datestr  $0  LINE $LINENO    step724  Eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.003 l/D" >> cmdlog.txt
- if [ ! -f ./$1/step007.txt ]
+ if [ ! -f ./$1/step000.txt ]
  then
- echo "====================== step 724 requires step 007 ======================================="
- exit
+ echo "====================== step 724 requires step 000 ======================================="
+ exit 1
  else
  echo "724: eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.003 l/D"
 echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7"
 echo "724" > ./$1/runstep
 touch ./$1/step724.run.txt
-$execnamestring -n step724 << EOF
-PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1
-PIAACMC_FPMsectors=$FPMsectors
-PIAACMC_nblambda=$nblambda
-PIAACMC_ldoffset=0.003
+run_coffee step724 << EOF
+@calc "PIAACMC_dftgrid = 0"
+@calc "PIAACMC_fpmtype = 1"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "PIAACMC_nblambda = $nblambda"
+@calc "PIAACMC_ldoffset = 0.003"
 coffeepiaacmcsim.run $1 100
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step724"
 
-mv ./$1/psfi0_starim.fits ./$1/psfi0_step724.fits
+[ -f "./$1/psfi0_starim.fits" ] && mv ./$1/psfi0_starim.fits ./$1/psfi0_step724.fits || :
 cleanup
 exitOK
 fi
@@ -1043,27 +1065,27 @@ then
 datestr=`date -u +%Y-%m-%d_%H:%M:%S`
 echo "$datestr  $0  LINE $LINENO    step725  Eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.0001 l/D"
 echo "$datestr  $0  LINE $LINENO    step725  Eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.0001 l/D" >> cmdlog.txt
- if [ ! -f ./$1/step007.txt ]
+ if [ ! -f ./$1/step000.txt ]
  then
- echo "====================== step 725 requires step 007 ======================================="
- exit
+ echo "====================== step 725 requires step 000 ======================================="
+ exit 1
  else
  echo "725: eval polychromatic contrast for on-axis PSF, and pointing sensitivity, 0.0001 l/D"
 echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $2 $3 $5 $6 $7"
 echo "725" > ./$1/runstep
 touch ./$1/step725.run.txt
-$execnamestring -n step725 << EOF
-PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1
-PIAACMC_FPMsectors=$FPMsectors
-PIAACMC_nblambda=$nblambda
-PIAACMC_ldoffset=0.0001
+run_coffee step725 << EOF
+@calc "PIAACMC_dftgrid = 0"
+@calc "PIAACMC_fpmtype = 1"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "PIAACMC_nblambda = $nblambda"
+@calc "PIAACMC_ldoffset = 0.0001"
 coffeepiaacmcsim.run $1 100
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step725"
 
-mv ./$1/psfi0_starim.fits ./$1/psfi0_step725.fits
+[ -f "./$1/psfi0_starim.fits" ] && mv ./$1/psfi0_starim.fits ./$1/psfi0_step725.fits || :
 cleanup
 exitOK
 fi
@@ -1095,16 +1117,16 @@ echo "$datestr  $0  LINE $LINENO    step730  Compute on-axis polychromatic PSF, 
 echo "$datestr  $0  LINE $LINENO    step730  Compute on-axis polychromatic PSF, includes WFC with 1 DM" >> cmdlog.txt
 echo "730" > ./$1/runstep
 touch ./$1/step730.run.txt
-$execnamestring -n step730 << EOF
-PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1
-PIAACMC_FPMsectors=$FPMsectors
-PIAACMC_nblambda=$nblambda
-PIAACMC_WFCmode=1
+run_coffee step730 << EOF
+@calc "PIAACMC_dftgrid = 0"
+@calc "PIAACMC_fpmtype = 1"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "PIAACMC_nblambda = $nblambda"
+@calc "PIAACMC_WFCmode = 1"
 coffeepiaacmcsim.run $1 0
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step730"
 
 cleanup
 exitOK
@@ -1118,16 +1140,16 @@ echo "$datestr  $0  LINE $LINENO    step740  Compute on-axis polychromatic PSF, 
 echo "$datestr  $0  LINE $LINENO    step740  Compute on-axis polychromatic PSF, includes WFC with 2 DMs" >> cmdlog.txt
 echo "740" > ./$1/runstep
 touch ./$1/step740.run.txt
-$execnamestring -n step740 << EOF
-PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1
-PIAACMC_FPMsectors=$FPMsectors
-PIAACMC_nblambda=$nblambda
-PIAACMC_WFCmode=2
+run_coffee step740 << EOF
+@calc "PIAACMC_dftgrid = 0"
+@calc "PIAACMC_fpmtype = 1"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "PIAACMC_nblambda = $nblambda"
+@calc "PIAACMC_WFCmode = 2"
 coffeepiaacmcsim.run $1 0
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step740"
 
 cleanup
 exitOK
@@ -1144,25 +1166,25 @@ then
 datestr=`date -u +%Y-%m-%d_%H:%M:%S`
 echo "$datestr  $0  LINE $LINENO    step750  transmission curve"
 echo "$datestr  $0  LINE $LINENO    step750  transmission curve" >> cmdlog.txt
- if [ ! -f ./$1/step007.txt ]
+ if [ ! -f ./$1/step000.txt ]
  then
- echo "====================== step 750 requires step 007 ======================================="
- echo "====================== step 750 requires step 007 =======================================" >> cmdlog.txt
- exit
+ echo "====================== step 750 requires step 000 ======================================="
+ echo "====================== step 750 requires step 000 =======================================" >> cmdlog.txt
+ exit 1
  else
  echo "750: transmission curve"
 echo "${FPM_MASKRADLD} $FPMsectors $NBrings ${10} ${11} $PIAACMC_resolved $PIAACMC_extmode $2 $3 $5 $6 $7"
 echo "750" > ./$1/runstep
 touch ./$1/step750.run.txt
-$execnamestring -n step750 << EOF
-PIAACMC_dftgrid=0
-PIAACMC_fpmtype=1
-PIAACMC_FPMsectors=$FPMsectors
-PIAACMC_nblambda=$nblambda
+run_coffee step750 << EOF
+@calc "PIAACMC_dftgrid = 0"
+@calc "PIAACMC_fpmtype = 1"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "PIAACMC_nblambda = $nblambda"
 coffeepiaacmcsim.run $1 101
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step750"
 
 cleanup
 exitOK
@@ -1182,14 +1204,14 @@ echo "$datestr  $0  LINE $LINENO    step771  eval polychromatic contrast for on-
 echo "$datestr  $0  LINE $LINENO    step771  eval polychromatic contrast for on-axis PSF, and pointing sensitivity" >> cmdlog.txt
 echo "111" > ./$1/runstep
 touch ./$1/step111.run.txt
-$execnamestring -n step111 << EOF
-PIAACMC_dftgrid=0
-PIAACMC_FPMsectors=$FPMsectors
-PIAACMC_nblambda=$nblambda
+run_coffee step111 << EOF
+@calc "PIAACMC_dftgrid = 0"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "PIAACMC_nblambda = $nblambda"
 coffeepiaacmcsim.run $1 100
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step111"
 
 cleanup
 exitOK
@@ -1204,15 +1226,15 @@ echo "$datestr  $0  LINE $LINENO    step772  Eval monochromatic contrast for on-
 echo "$datestr  $0  LINE $LINENO    step772  Eval monochromatic contrast for on-axis PSF, and pointing sensitivity" >> cmdlog.txt
 echo "112" > ./$1/runstep
 touch ./$1/step112.run.txt
-$execnamestring -n step112 << EOF
-PIAACMC_dftgrid=0
-PIAACMC_FPMsectors=$FPMsectors
-PIAACMC_nblambda=1
-PIAACMC_resolved=0
+run_coffee step112 << EOF
+@calc "PIAACMC_dftgrid = 0"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_resolved = 0"
 coffeepiaacmcsim.run $1 100
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step112"
 
 cleanup
 exitOK
@@ -1228,15 +1250,15 @@ echo "$datestr  $0  LINE $LINENO    step773  Eval monochromatic contrast for on-
 echo "$datestr  $0  LINE $LINENO    step773  Eval monochromatic contrast for on-axis PSF, and pointing sensitivity" >> cmdlog.txt
 echo "113" > ./$1/runstep
 touch ./$1/step113.run.txt
-$execnamestring -n step113 << EOF
-PIAACMC_dftgrid=2
-PIAACMC_FPMsectors=$FPMsectors
-PIAACMC_nblambda=1
-PIAACMC_resolved=0
+run_coffee step113 << EOF
+@calc "PIAACMC_dftgrid = 2"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_resolved = 0"
 coffeepiaacmcsim.run $1 100
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step113"
 
 cleanup
 exitOK
@@ -1251,14 +1273,14 @@ echo "$datestr  $0  LINE $LINENO    step774  Eval monochromatic transmission cur
 echo "$datestr  $0  LINE $LINENO    step774  Eval monochromatic transmission curve" >> cmdlog.txt
 echo "114" > ./$1/runstep
 touch ./$1/step114.run.txt
-$execnamestring -n step114 << EOF
-PIAACMC_dftgrid=0
-PIAACMC_FPMsectors=0
-PIAACMC_nblambda=1
+run_coffee step114 << EOF
+@calc "PIAACMC_dftgrid = 0"
+@calc "PIAACMC_FPMsectors = 0"
+@calc "PIAACMC_nblambda = 1"
 coffeepiaacmcsim.run $1 101
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step114"
 
 cleanup
 exitOK
@@ -1295,16 +1317,8 @@ echo "$datestr  $0  LINE $LINENO    step800  Import FPM configuration setting fr
 echo "$datestr  $0  LINE $LINENO    step800  Import FPM configuration setting from parent directory" >> cmdlog.txt
 touch ./$1/step800.run.txt
 echo "800" > ./$1/runstep
-$execnamestring -n step800 << EOF
-PIAACMC_fpmtype=1
-PIAACMC_FPMsectors=$FPMsectors
-coffeepiaacmcsim.run $1 300
-exitCLI
-EOF
-exit_on_error $? "$execnamestring"
-
 cleanup
-exit
+exitOK
 fi
 
 
@@ -1317,14 +1331,6 @@ echo "$datestr  $0  LINE $LINENO    step801  Remove FPM configuration settings"
 echo "$datestr  $0  LINE $LINENO    step801  Remove FPM configuration settings" >> cmdlog.txt
 echo "801" > ./$1/runstep
 touch ./$1/step801.run.txt
-$execnamestring -n step801 << EOF
-PIAACMC_fpmtype=1
-PIAACMC_FPMsectors=$FPMsectors
-coffeepiaacmcsim.run $1 301
-exitCLI
-EOF
-exit_on_error $? "$execnamestring"
-
 cleanup
 exitOK
 fi
@@ -1339,14 +1345,14 @@ echo "$datestr  $0  LINE $LINENO    step802  Restore FPM configuration settings"
 echo "$datestr  $0  LINE $LINENO    step802  Restore FPM configuration settings" >> cmdlog.txt
 echo "802" > ./$1/runstep
 touch ./$1/step802.run.txt
-$execnamestring -n step802 << EOF
-PIAACMC_fpmtype=1
-PIAACMC_FPMsectors=$FPMsectors
-PIAACMC_NBrings=$NBrings
+run_coffee step802 << EOF
+@calc "PIAACMC_fpmtype = 1"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "PIAACMC_NBrings = $NBrings"
 coffeepiaacmcsim.run $1 302
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step802"
 
 cleanup
 exitOK
@@ -1442,24 +1448,21 @@ touch ./$1/step017.txt
 fi
 
 
-$execnamestring -n step000 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
-
-# load mask if available
-loadfits .errmode 1
-loadfits "_pupmaskload.fits" pupmaskim
-
+run_coffee step000 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
+iofits.loadfits "_pupmaskload.fits" pupmaskim 1
 coffeepiaacmcsim.run $1 0
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step000"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step000.fits
+if [ -f "./$1/piaacmcparams.conf" ]; then
+    cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
+fi
 touch ./$1/step000.txt
 else
  echo "$datestr  $0  LINE $LINENO    skip step 000 [  0] (Compute on-axis PSF, monochromatic, idealized PIAACMC, first iteration)"
@@ -1482,7 +1485,6 @@ fi
 if [ $state -eq $statestop ]
 then
 echo "STATE STOP POINT (000)"
-sleep 5
 cleanup
 exitOK
 fi
@@ -1511,20 +1513,19 @@ echo "$datestr  $0  LINE $LINENO    step001  Compute on-axis PSF"
 echo "$datestr  $0  LINE $LINENO    step001  Compute on-axis PSF" >> cmdlog.txt
  echo "001" > ./$1/runstep
  touch ./$1/step001.run.txt
-$execnamestring -n step001 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
+run_coffee step001 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
 coffeepiaacmcsim.run $1 0
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step001"
 
  mv ./$1/psfi0.fits ./$1/psfi0_step001.fits
  cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step001.conf
+ cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
  cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step001.fits
  cp ./$1/piaa0Fmodes.fits ./$1/piaa0Fmodes_step001.fits
  cp ./$1/piaa1Cmodes.fits ./$1/piaa1Cmodes_step001.fits
@@ -1587,19 +1588,18 @@ echo "$datestr  $0  LINE $LINENO    step003  compute on-axis PSF"
 echo "$datestr  $0  LINE $LINENO    step003  compute on-axis PSF" >> cmdlog.txt
 echo "003" > ./$1/runstep
 touch ./$1/step003.run.txt
-$execnamestring -n step003 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
+run_coffee step003 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
 coffeepiaacmcsim.run $1 0
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step003"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step003.fits
+cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 touch ./$1/step003.txt
  else
  echo "$datestr  $0  LINE $LINENO    skip step 003 [  0] (Compute on-axis PSF)"
@@ -1635,19 +1635,17 @@ echo "$datestr  $0  LINE $LINENO    step004  Compute Lyot stops shapes and locat
 echo "$datestr  $0  LINE $LINENO    step004  Compute Lyot stops shapes and locations" >> cmdlog.txt
 echo "004" > ./$1/runstep
 touch ./$1/step004.run.txt
-$execnamestring -n step004 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_lstransm=$LStransm2
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
-PIAACMC_nbpropstep=$NBpropStep
+run_coffee step004 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_lstransm = $LStransm2"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
+@calc "PIAACMC_nbpropstep = $NBpropStep"
 coffeepiaacmcsim.run $1 5
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step004"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step004.fits
 
@@ -1658,6 +1656,7 @@ cp ./$1/LyotStop2.fits ./$1/LyotStop2_step004.fits || :
 cp ./$1/LyotStop3.fits ./$1/LyotStop3_step004.fits || :
 
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step004.conf
+cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 touch ./$1/step004.txt
  else
  echo "$datestr  $0  LINE $LINENO    skip step 004 [  5] (Compute Lyot stops shapes and locations, 1st pass)"
@@ -1686,20 +1685,19 @@ echo "$datestr  $0  LINE $LINENO    step005  Optimize focal plane mask transm"
 echo "$datestr  $0  LINE $LINENO    step005  Optimize focal plane mask transm" >> cmdlog.txt
 echo "005" > ./$1/runstep
 touch ./$1/step005.run.txt
-$execnamestring -n step005 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
+run_coffee step005 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
 coffeepiaacmcsim.run $1 2
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step005"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step005.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step005.conf
+cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 touch ./$1/step005.txt
  else
  echo "$datestr  $0  LINE $LINENO    skip step 005 [  2] (optimize focal plane mask transm, 1st pass - see result_fpmt.log for results)"
@@ -1731,22 +1729,21 @@ echo "$datestr  $0  LINE $LINENO    step006  Compute Lyot stops shapes and locat
 echo "$datestr  $0  LINE $LINENO    step006  Compute Lyot stops shapes and locations, 2nd pass, 70%% throughput" >> cmdlog.txt
 echo "006" > ./$1/runstep
 touch ./$1/step006.run.txt
-$execnamestring -n step006 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_lstransm=$LStransm0
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
-PIAACMC_nbpropstep=$NBpropStep
+run_coffee step006 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_lstransm = $LStransm0"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
+@calc "PIAACMC_nbpropstep = $NBpropStep"
 coffeepiaacmcsim.run $1 5
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step006"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step006.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step006.conf
+cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 
 cp ./$1/LMintC.fits ./$1/LMintC_step006.fits
 cp ./$1/LcombOA.fits ./$1/LcombOA_step006.fits
@@ -1780,11 +1777,10 @@ fi
 echo "PIAAcirc = $PIAAcirc"
 echo "kmaxF = $kmaxF"
 
-#sleep 10000000
-
 if [ "007" -eq ${state} ]
 then
 datestr=`date -u +%Y-%m-%d_%H:%M:%S`
+step="007"
  if [ ! -f ./$1/step007.txt ]
  then
  echo "$datestr  $0  LINE $LINENO    step007  Tune PIAA shapes and focal plane mask transm # modes: $kmaxC, $kmaxF"
@@ -1792,37 +1788,32 @@ datestr=`date -u +%Y-%m-%d_%H:%M:%S`
  echo "step 007"
 echo "007" > ./$1/runstep
 touch ./$1/step007.run.txt
-$execnamestring -n step007 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_nbiter=20
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
-PIAACMC_maxoptCterm=${kmaxC}
-PIAACMC_maxoptFterm=${kmaxF}
-
-REGPIAASHAPES=1
-loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref
-loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref
-loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref
-loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref
-
-REGPIAA_C_COEFF=${REGPIAACCOEFF}
-REGPIAA_C_ALPHA=${REGPIAACALPHA}
-REGPIAA_F_COEFF=${REGPIAAFCOEFF}
-REGPIAA_F_ALPHA=${REGPIAAFALPHA}
-
-PIAACMC_dftgrid=0
-
+run_coffee step007 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_nbiter = 20"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
+@calc "PIAACMC_maxoptCterm = ${kmaxC}"
+@calc "PIAACMC_maxoptFterm = ${kmaxF}"
+@calc "REGPIAASHAPES = 1"
+iofits.loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref 2
+iofits.loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref 2
+iofits.loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref 2
+iofits.loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref 2
+@calc "REGPIAA_C_COEFF = ${REGPIAACCOEFF}"
+@calc "REGPIAA_C_ALPHA = ${REGPIAACALPHA}"
+@calc "REGPIAA_F_COEFF = ${REGPIAAFCOEFF}"
+@calc "REGPIAA_F_ALPHA = ${REGPIAAFALPHA}"
+@calc "PIAACMC_dftgrid = 0"
 coffeepiaacmcsim.run $1 40
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step007"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
+cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step$step.fits
 cp ./$1/piaa0Fmodes.fits ./$1/piaa0Fmodes_step$step.fits
 cp ./$1/piaa1Cmodes.fits ./$1/piaa1Cmodes_step$step.fits
@@ -1864,36 +1855,32 @@ echo "$datestr  $0  LINE $LINENO    step008  Tune PIAA shapes and focal plane ma
 echo "$datestr  $0  LINE $LINENO    step008  Tune PIAA shapes and focal plane mask transm # modes: $kmaxC, $kmaxF" >> cmdlog.txt
 echo "008" > ./$1/runstep
 touch ./$1/step008.run.txt
-$execnamestring -n step008 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_nbiter=20
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
-PIAACMC_maxoptCterm=${kmaxC}
-PIAACMC_maxoptFterm=${kmaxF}
-
-REGPIAASHAPES=1
-loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref
-loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref
-loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref
-loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref
-REGPIAA_C_COEFF=${REGPIAACCOEFF}
-REGPIAA_C_ALPHA=${REGPIAACALPHA}
-REGPIAA_F_COEFF=${REGPIAAFCOEFF}
-REGPIAA_F_ALPHA=${REGPIAAFALPHA}
-
-PIAACMC_dftgrid=0
-
+run_coffee step008 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_nbiter = 20"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
+@calc "PIAACMC_maxoptCterm = ${kmaxC}"
+@calc "PIAACMC_maxoptFterm = ${kmaxF}"
+@calc "REGPIAASHAPES = 1"
+iofits.loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref 2
+iofits.loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref 2
+iofits.loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref 2
+iofits.loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref 2
+@calc "REGPIAA_C_COEFF = ${REGPIAACCOEFF}"
+@calc "REGPIAA_C_ALPHA = ${REGPIAACALPHA}"
+@calc "REGPIAA_F_COEFF = ${REGPIAAFCOEFF}"
+@calc "REGPIAA_F_ALPHA = ${REGPIAAFALPHA}"
+@calc "PIAACMC_dftgrid = 0"
 coffeepiaacmcsim.run $1 40
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step008"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step008.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step008.conf
+cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step008.fits
 cp ./$1/piaa0Fmodes.fits ./$1/piaa0Fmodes_step008.fits
 cp ./$1/piaa1Cmodes.fits ./$1/piaa1Cmodes_step008.fits
@@ -1929,22 +1916,21 @@ echo "$datestr  $0  LINE $LINENO    step009  Compute Lyot stops shapes and locat
 step="009"
 echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
-$execnamestring -n step009 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_lstransm=$LStransm1
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
-PIAACMC_nbpropstep=$NBpropStep
+run_coffee step009 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_lstransm = $LStransm1"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
+@calc "PIAACMC_nbpropstep = $NBpropStep"
 coffeepiaacmcsim.run $1 5
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step009"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step009.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step009.conf
+cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 
 cp ./$1/LMintC.fits ./$1/LMintC_step009.fits
 cp ./$1/LcombOA.fits ./$1/LcombOA_step009.fits
@@ -1955,8 +1941,8 @@ cp ./$1/LyotStop3.fits ./$1/LyotStop3_step009.fits || :
 
 touch ./$1/step009.txt
  else
- echo "datestr  $0  LINE $LINENO    skip step 009 [  5] (Compute Lyot stops shapes and locations, 3nd pass, $LStransm1 throughput)"
- echo "datestr  $0  LINE $LINENO    skip step 009 [  5] (Compute Lyot stops shapes and locations, 3nd pass, $LStransm1 throughput)" >> cmdlog.txt
+ echo "$datestr  $0  LINE $LINENO    skip step 009 [  5] (Compute Lyot stops shapes and locations, 3nd pass, $LStransm1 throughput)"
+ echo "$datestr  $0  LINE $LINENO    skip step 009 [  5] (Compute Lyot stops shapes and locations, 3nd pass, $LStransm1 throughput)" >> cmdlog.txt
  fi
 state="010"
 fi
@@ -1981,25 +1967,22 @@ echo "$datestr  $0  LINE $LINENO    step010  Tune Lyot stops conjugations" >> cm
 step="010"
 echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
-$execnamestring -n step010 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_lstransm=$LStransm1
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
-PIAACMC_nbpropstep=$NBpropStep
-
-PIAACMC_dftgrid=0
-
+run_coffee step010 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_lstransm = $LStransm1"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
+@calc "PIAACMC_nbpropstep = $NBpropStep"
+@calc "PIAACMC_dftgrid = 0"
 coffeepiaacmcsim.run $1 1
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step010"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step010.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step010.conf
+cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 touch ./$1/step010.txt
  else
  echo "$datestr  $0  LINE $LINENO    skip step 010 [  1] (Tune Lyot stops conjugations)"
@@ -2034,38 +2017,32 @@ echo "$datestr  $0  LINE $LINENO    step011  Tune PIAA shapes and focal plane ma
 step="011"
 echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
-$execnamestring -n step011 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_nbiter=20
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
-
-PIAACMC_maxoptCterm=${kmaxC}
-PIAACMC_maxoptFterm=${kmaxF}
-
-REGPIAASHAPES=1
-loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref
-loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref
-loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref
-loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref
-
-REGPIAA_C_COEFF=${REGPIAACCOEFF}
-REGPIAA_C_ALPHA=${REGPIAACALPHA}
-REGPIAA_F_COEFF=${REGPIAAFCOEFF}
-REGPIAA_F_ALPHA=${REGPIAAFALPHA}
-
-PIAACMC_dftgrid=0
-
+run_coffee step011 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_nbiter = 20"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
+@calc "PIAACMC_maxoptCterm = ${kmaxC}"
+@calc "PIAACMC_maxoptFterm = ${kmaxF}"
+@calc "REGPIAASHAPES = 1"
+iofits.loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref 2
+iofits.loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref 2
+iofits.loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref 2
+iofits.loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref 2
+@calc "REGPIAA_C_COEFF = ${REGPIAACCOEFF}"
+@calc "REGPIAA_C_ALPHA = ${REGPIAACALPHA}"
+@calc "REGPIAA_F_COEFF = ${REGPIAAFCOEFF}"
+@calc "REGPIAA_F_ALPHA = ${REGPIAAFALPHA}"
+@calc "PIAACMC_dftgrid = 0"
 coffeepiaacmcsim.run $1 40
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step011"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
+cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 cp ./$1/piaa0Cmodes.fits ./$1/piaa0Cmodes_step$step.fits
 cp ./$1/piaa0Fmodes.fits ./$1/piaa0Fmodes_step$step.fits
 cp ./$1/piaa1Cmodes.fits ./$1/piaa1Cmodes_step$step.fits
@@ -2113,34 +2090,28 @@ echo "$datestr  $0  LINE $LINENO    step$step  Tune PIAA shapes and focal plane 
 echo "$datestr  $0  LINE $LINENO    step$step  Tune PIAA shapes and focal plane mask transm, # modes: $kmaxC, $kmaxF" >> cmdlog.txt
 echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
-$execnamestring -n step012 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_nbiter=10
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
-PIAACMC_maxoptCterm=${kmaxC}
-PIAACMC_maxoptFterm=${kmaxF}
-
-REGPIAASHAPES=1
-loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref
-loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref
-loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref
-loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref
-
-REGPIAA_C_COEFF=${REGPIAACCOEFF}
-REGPIAA_C_ALPHA=${REGPIAACALPHA}
-REGPIAA_F_COEFF=${REGPIAAFCOEFF}
-REGPIAA_F_ALPHA=${REGPIAAFALPHA}
-
-PIAACMC_dftgrid=0
-
+run_coffee step012 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_nbiter = 10"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
+@calc "PIAACMC_maxoptCterm = ${kmaxC}"
+@calc "PIAACMC_maxoptFterm = ${kmaxF}"
+@calc "REGPIAASHAPES = 1"
+iofits.loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref 2
+iofits.loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref 2
+iofits.loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref 2
+iofits.loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref 2
+@calc "REGPIAA_C_COEFF = ${REGPIAACCOEFF}"
+@calc "REGPIAA_C_ALPHA = ${REGPIAACALPHA}"
+@calc "REGPIAA_F_COEFF = ${REGPIAAFCOEFF}"
+@calc "REGPIAA_F_ALPHA = ${REGPIAAFALPHA}"
+@calc "PIAACMC_dftgrid = 0"
 coffeepiaacmcsim.run $1 40
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step012"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
@@ -2181,20 +2152,18 @@ echo "$datestr  $0  LINE $LINENO    step$step  Compute Lyot stops shapes and loc
 echo "$datestr  $0  LINE $LINENO    step$step  Compute Lyot stops shapes and locations, 4rth pass, $LStransm2 throughput" >> cmdlog.txt
 echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
-$execnamestring -n step013 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_lstransm=$LStransm2
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
-PIAACMC_nbpropstep=$NBpropStep
-PIAACMC_save=1
+run_coffee step013 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_lstransm = $LStransm2"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
+@calc "PIAACMC_nbpropstep = $NBpropStep"
+@calc "PIAACMC_save = 1"
 coffeepiaacmcsim.run $1 5
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step013"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
@@ -2234,31 +2203,26 @@ echo "$datestr  $0  LINE $LINENO    step$step  Tune Lyot stops conjugations"
 echo "$datestr  $0  LINE $LINENO    step$step  Tune Lyot stops conjugations" >> cmdlog.txt
 echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
-$execnamestring -n step014 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_lstransm=$LStransm2
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
-PIAACMC_nbpropstep=$NBpropStep
-
-PIAACMC_dftgrid=0
-
+run_coffee step014 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_lstransm = $LStransm2"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
+@calc "PIAACMC_nbpropstep = $NBpropStep"
+@calc "PIAACMC_dftgrid = 0"
 coffeepiaacmcsim.run $1 1
-
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step014"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_idealmonomask.conf
 touch ./$1/step014.txt
  else
- echo "$datestr  $0  LINE $LINENO    skip step 014 [  1] (Tune Lyot stops conjugations)\n"
- echo "$datestr  $0  LINE $LINENO    skip step 014 [  1] (Tune Lyot stops conjugations)\n" >> cmdlog.txt
+ echo "$datestr  $0  LINE $LINENO    skip step 014 [  1] (Tune Lyot stops conjugations)"
+ echo "$datestr  $0  LINE $LINENO    skip step 014 [  1] (Tune Lyot stops conjugations)" >> cmdlog.txt
  fi
 state="015"
 fi
@@ -2283,41 +2247,35 @@ fi
 if [ "015" -eq ${state} ]
 then
 datestr=`date -u +%Y-%m-%d_%H:%M:%S`
-step=015
+step="015"
  if [ ! -f ./$1/step015.txt ]
  then
 echo "$datestr  $0  LINE $LINENO    step$step  Tune PIAA shapes and focal plane mask transm # modes: $kmaxC, $kmaxF"
 echo "$datestr  $0  LINE $LINENO    step$step  Tune PIAA shapes and focal plane mask transm # modes: $kmaxC, $kmaxF" >> cmdlog.txt
 echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
-$execnamestring -n step015 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_nbiter=20
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
-PIAACMC_maxoptCterm=${kmaxC}
-PIAACMC_maxoptFterm=${kmaxF}
-
-REGPIAASHAPES=1
-loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref
-loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref
-loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref
-loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref
-
-REGPIAA_C_COEFF=${REGPIAACCOEFF}
-REGPIAA_C_ALPHA=${REGPIAACALPHA}
-REGPIAA_F_COEFF=${REGPIAAFCOEFF}
-REGPIAA_F_ALPHA=${REGPIAAFALPHA}
-
-PIAACMC_dftgrid=0
-
+run_coffee step015 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_nbiter = 20"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
+@calc "PIAACMC_maxoptCterm = ${kmaxC}"
+@calc "PIAACMC_maxoptFterm = ${kmaxF}"
+@calc "REGPIAASHAPES = 1"
+iofits.loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref 2
+iofits.loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref 2
+iofits.loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref 2
+iofits.loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref 2
+@calc "REGPIAA_C_COEFF = ${REGPIAACCOEFF}"
+@calc "REGPIAA_C_ALPHA = ${REGPIAACALPHA}"
+@calc "REGPIAA_F_COEFF = ${REGPIAAFCOEFF}"
+@calc "REGPIAA_F_ALPHA = ${REGPIAAFALPHA}"
+@calc "PIAACMC_dftgrid = 0"
 coffeepiaacmcsim.run $1 40
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step015"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
@@ -2362,38 +2320,32 @@ datestr=`date -u +%Y-%m-%d_%H:%M:%S`
 step="016"
  if [ ! -f ./$1/step016.txt ]
  then
-echo "$datestr  $0  LINE $LINENO    step$stepT  une PIAA shapes and focal plane mask transm, # modes: $kmaxC, $kmaxF"
-echo "$datestr  $0  LINE $LINENO    step$stepT  une PIAA shapes and focal plane mask transm, # modes: $kmaxC, $kmaxF" >> cmdlog.txt
+echo "$datestr  $0  LINE $LINENO    step$step  Tune PIAA shapes and focal plane mask transm, # modes: $kmaxC, $kmaxF"
+echo "$datestr  $0  LINE $LINENO    step$step  Tune PIAA shapes and focal plane mask transm, # modes: $kmaxC, $kmaxF" >> cmdlog.txt
 echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
-$execnamestring -n step016 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_nbiter=10
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
-PIAACMC_maxoptCterm=${kmaxC}
-PIAACMC_maxoptFterm=${kmaxF}
-
-REGPIAASHAPES=1
-loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref
-loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref
-loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref
-loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref
-
-REGPIAA_C_COEFF=${REGPIAACCOEFF}
-REGPIAA_C_ALPHA=${REGPIAACALPHA}
-REGPIAA_F_COEFF=${REGPIAAFCOEFF}
-REGPIAA_F_ALPHA=${REGPIAAFALPHA}
-
-PIAACMC_dftgrid=0
-
+run_coffee step016 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_nbiter = 10"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
+@calc "PIAACMC_maxoptCterm = ${kmaxC}"
+@calc "PIAACMC_maxoptFterm = ${kmaxF}"
+@calc "REGPIAASHAPES = 1"
+iofits.loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref 2
+iofits.loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref 2
+iofits.loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref 2
+iofits.loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref 2
+@calc "REGPIAA_C_COEFF = ${REGPIAACCOEFF}"
+@calc "REGPIAA_C_ALPHA = ${REGPIAACALPHA}"
+@calc "REGPIAA_F_COEFF = ${REGPIAAFCOEFF}"
+@calc "REGPIAA_F_ALPHA = ${REGPIAAFALPHA}"
+@calc "PIAACMC_dftgrid = 0"
 coffeepiaacmcsim.run $1 40
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step016"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
@@ -2429,44 +2381,38 @@ if [ "$PIAAcirc" -eq "0" ]; then
 kmaxF=625
 fi
 
-if [ 017 -eq ${state} ]
+if [ "017" -eq ${state} ]
 then
 datestr=`date -u +%Y-%m-%d_%H:%M:%S`
-step=017
+step="017"
  if [ ! -f ./$1/step017.txt ]
  then
 echo "$datestr  $0  LINE $LINENO    step$step  Tune PIAA shapes and focal plane mask transm, # modes: $kmaxC, $kmaxF"
 echo "$datestr  $0  LINE $LINENO    step$step  Tune PIAA shapes and focal plane mask transm, # modes: $kmaxC, $kmaxF" >> cmdlog.txt
 echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
-$execnamestring -n step017 << EOF
-# idealized mask
-PIAACMC_MASKRADLD=0.0
-
-PIAACMC_resolved=0
-PIAACMC_nbiter=10
-PIAACMC_nblambda=1
-PIAACMC_lambda=${lambda}
-PIAACMC_maxoptCterm=${kmaxC}
-PIAACMC_maxoptFterm=${kmaxF}
-
-REGPIAASHAPES=1
-loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref
-loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref
-loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref
-loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref
-
-REGPIAA_C_COEFF=${REGPIAACCOEFF}
-REGPIAA_C_ALPHA=${REGPIAACALPHA}
-REGPIAA_F_COEFF=${REGPIAAFCOEFF}
-REGPIAA_F_ALPHA=${REGPIAAFALPHA}
-
-PIAACMC_dftgrid=0
-
+run_coffee step017 << EOF
+@calc "PIAACMC_MASKRADLD = 0.0"
+@calc "PIAACMC_resolved = 0"
+@calc "PIAACMC_nbiter = 10"
+@calc "PIAACMC_nblambda = 1"
+@calc "PIAACMC_lambda = ${lambda}"
+@calc "PIAACMC_maxoptCterm = ${kmaxC}"
+@calc "PIAACMC_maxoptFterm = ${kmaxF}"
+@calc "REGPIAASHAPES = 1"
+iofits.loadfits "$1/piaa0Cmodes_step001.fits" piaa0Cmref 2
+iofits.loadfits "$1/piaa1Cmodes_step001.fits" piaa1Cmref 2
+iofits.loadfits "$1/piaa0Fmodes_step001.fits" piaa0Fmref 2
+iofits.loadfits "$1/piaa1Fmodes_step001.fits" piaa1Fmref 2
+@calc "REGPIAA_C_COEFF = ${REGPIAACCOEFF}"
+@calc "REGPIAA_C_ALPHA = ${REGPIAACALPHA}"
+@calc "REGPIAA_F_COEFF = ${REGPIAAFCOEFF}"
+@calc "REGPIAA_F_ALPHA = ${REGPIAAFALPHA}"
+@calc "PIAACMC_dftgrid = 0"
 coffeepiaacmcsim.run $1 40
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step017"
 
 mv ./$1/psfi0.fits ./$1/psfi0_step$step.fits
 cp ./$1/piaacmcparams.conf ./$1/piaacmcparams_step$step.conf
@@ -2525,115 +2471,115 @@ checkexit
 if [ "100" -eq ${state} ]
 then
     datestr=`date -u +%Y-%m-%d_%H:%M:%S`
-step="100"
+    step="100"
     if [ ! -f ./$1/step100.txt ]
     then
-    echo "$datestr  $0  LINE $LINENO    step100  Turn focal plane mask into physical mask with zones, Compute polychromatic response to zones, store result in FPMresp"
-    echo "$datestr  $0  LINE $LINENO    step100  Turn focal plane mask into physical mask with zones, Compute polychromatic response to zones, store result in FPMresp" >> cmdlog.txt
-    echo "$step" > ./$1/runstep
-    touch ./$1/step$step.run.txt
+        echo "$datestr  $0  LINE $LINENO    step100  Turn focal plane mask into physical mask with zones, Compute polychromatic response to zones, store result in FPMresp"
+        echo "$datestr  $0  LINE $LINENO    step100  Turn focal plane mask into physical mask with zones, Compute polychromatic response to zones, store result in FPMresp" >> cmdlog.txt
+        echo "$step" > ./$1/runstep
+        touch ./$1/step$step.run.txt
+        echo "NBthreadsFPMresp = ${NBthreadsFPMresp}"
 
-
-    NBthreadsFPMrespm1=$(( $NBthreadsFPMresp - 1 ))
-
-    echo "NBthreadsFPMrespm1 = ${NBthreadsFPMrespm1}"
-    echo "NBthreadsFPMresp = ${NBthreadsFPMresp}"
-
-    for thread in `seq 0 1 ${NBthreadsFPMrespm1}`;
-    do
-    echo " - thread = $thread"
-    done
-
-
-
-    rm -f initOK_${pid}
-
-
-
-
-for thread in `seq 0 1 ${NBthreadsFPMrespm1}`;
-do
-echo "STARTING COMPONENT $thread"
-echo "waitforfile initOK_${pid}" > script${pid}FPMt${thread}n${NBthreadsFPMresp}
-
-fifoname1="${fifoname}t${thread}n${NBthreadsFPMresp}"
-execname1="$execname -s $startupfile -f $fifoname1"
-
-echo "$execname1 -n ${pid}FPMt${thread}n${NBthreadsFPMresp} << EOF" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
-echo "PIAACMC_fpmtype=1" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
-echo "PIAACMC_FPMsectors=$FPMsectors" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
-echo "SCORINGMASKTYPE=$SCORINGMASKTYPE" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
-
-echo "# Number of threads" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
-echo "PIAACMC_FPMresp_mp=${NBthreadsFPMresp}" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
-
-echo "# Current thread ( if thread > mp, then combine results)" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
-echo "PIAACMC_FPMresp_thread=${thread}" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
-
-echo "PIAACMC_save=0" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
-echo "coffeepiaacmcsim.run $1 11" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
-echo "exitCLI" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
-echo "EOF" >> script${pid}FPMt${thread}n${NBthreadsFPMresp}
-
-
-chmod +x script${pid}FPMt${thread}n${NBthreadsFPMresp}
-
-tmux new-session -d -s ${pid}FPMt${thread}n${NBthreadsFPMresp}
-tmux send-keys -t ${pid}FPMt${thread}n${NBthreadsFPMresp} "./script${pid}FPMt${thread}n${NBthreadsFPMresp}" C-m
-#tmux send-keys -t ${pid}FPMt${thread}n${NBthreadsFPMresp} "exit" C-m
-done
-
-
-
-
-
-
-if [ 1 -eq 1 ]
-then
-touch teststep_002
-thread=${NBthreadsFPMresp} # this thread waits for the other ones to complete
-$execnamestring -n ${pid}FPMt${thread}n${NBthreadsFPMresp} << EOF
-PIAACMC_fpmtype=1
-PIAACMC_FPMsectors=$FPMsectors
-SCORINGMASKTYPE=$SCORINGMASKTYPE
-
-# Number of threads
-PIAACMC_FPMresp_mp=${NBthreadsFPMresp}
-
-# Current thread ( if thread > mp, then combine results)
-PIAACMC_FPMresp_thread=${thread}
-PIAACMC_save=0
-PID=${pid}
+        if [ "${NBthreadsFPMresp}" -le 1 ]; then
+            run_coffee step100 << EOF
+@calc "PIAACMC_fpmtype = 1"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "SCORINGMASKTYPE = $SCORINGMASKTYPE"
+@calc "PIAACMC_FPMresp_mp = 1"
+@calc "PIAACMC_FPMresp_thread = 0"
+@calc "PIAACMC_save = 0"
 coffeepiaacmcsim.run $1 11
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+            exit_on_error $? "run_coffee step100"
+        else
+            NBthreadsFPMrespm1=$(( NBthreadsFPMresp - 1 ))
+            mkdir -p log
+            rm -f "initOK_${pid}" "coord_done_${pid}"
+            worker_pids=()
+            worker_done=()
 
-rm -f initOK_${pid}
+            for thread in $(seq 0 1 "${NBthreadsFPMrespm1}"); do
+                echo "STARTING WORKER $thread / ${NBthreadsFPMresp} (log/step100_thread${thread}.log)"
+                (
+                    while [ ! -f "initOK_${pid}" ]; do
+                        if [ -f "coord_done_${pid}" ] || ! kill -0 "$pid" 2>/dev/null; then
+                            exit 0
+                        fi
+                        sleep 0.2
+                    done
+                    run_coffee "${pid}FPMt${thread}n${NBthreadsFPMresp}" << EOF
+@calc "PIAACMC_fpmtype = 1"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "SCORINGMASKTYPE = $SCORINGMASKTYPE"
+@calc "PIAACMC_FPMresp_mp = ${NBthreadsFPMresp}"
+@calc "PIAACMC_FPMresp_thread = ${thread}"
+@calc "PIAACMC_save = 0"
+coffeepiaacmcsim.run $1 11
+exit
+EOF
+                ) > "log/step100_thread${thread}.log" 2>&1 &
+                worker_pids+=("$!")
+                worker_done+=(0)
+            done
 
+            thread=${NBthreadsFPMresp}
+            run_coffee "${pid}FPMt${thread}n${NBthreadsFPMresp}" << EOF &
+@calc "PIAACMC_fpmtype = 1"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "SCORINGMASKTYPE = $SCORINGMASKTYPE"
+@calc "PIAACMC_FPMresp_mp = ${NBthreadsFPMresp}"
+@calc "PIAACMC_FPMresp_thread = ${thread}"
+@calc "PIAACMC_save = 0"
+@calc "PID = ${pid}"
+coffeepiaacmcsim.run $1 11
+exit
+EOF
+            coord_pid="$!"
+            trap 'touch "coord_done_${pid}"; kill "$coord_pid" "${worker_pids[@]}" 2>/dev/null || true; rm -f "initOK_${pid}" "coord_done_${pid}"' INT TERM
 
-# clean up threads and temporary files
-for thread in `seq 0 1 ${NBthreadsFPMrespm1}`;
-do
-tmux kill-session -t ${pid}FPMt${thread}n${NBthreadsFPMresp}
-rm -f script${pid}FPMt${thread}n${NBthreadsFPMresp}
-done
-fi
+            while kill -0 "$coord_pid" 2>/dev/null; do
+                for idx in "${!worker_pids[@]}"; do
+                    if [ "${worker_done[$idx]}" -eq 0 ] && ! kill -0 "${worker_pids[$idx]}" 2>/dev/null; then
+                        if wait "${worker_pids[$idx]}"; then
+                            worker_done[$idx]=1
+                        else
+                            echo "ERROR: step100 worker $idx failed; tail of log/step100_thread${idx}.log:" >&2
+                            tail -n 30 "log/step100_thread${idx}.log" >&2 || true
+                            touch "coord_done_${pid}"
+                            kill "$coord_pid" "${worker_pids[@]}" 2>/dev/null || true
+                            trap - INT TERM
+                            rm -f "initOK_${pid}" "coord_done_${pid}"
+                            exit_on_error 1 "step100 worker $idx"
+                        fi
+                    fi
+                done
+                sleep 0.3
+            done
 
-
-
-
-
-#touch ./$1/step100.txt
-
-
-
-#mv ./$1/psfi0.fits ./$1/psfi0_step100.fits
- else
- echo "$datestr  $0  LINE $LINENO    skip step 100 [ 11] turn focal plane mask into zones, Compute polychromatic response to zones, store result in FPMresp"
- echo "$datestr  $0  LINE $LINENO    skip step 100 [ 11] turn focal plane mask into zones, Compute polychromatic response to zones, store result in FPMresp" >> cmdlog.txt
- fi
-state="101"
+            wait "$coord_pid" && coord_rc=0 || coord_rc=$?
+            touch "coord_done_${pid}"
+            if [ "$coord_rc" -ne 0 ]; then
+                kill "${worker_pids[@]}" 2>/dev/null || true
+            fi
+            for idx in "${!worker_pids[@]}"; do
+                if [ "${worker_done[$idx]}" -eq 0 ]; then
+                    if ! wait "${worker_pids[$idx]}"; then
+                        echo "ERROR: step100 worker $idx failed; tail of log/step100_thread${idx}.log:" >&2
+                        tail -n 30 "log/step100_thread${idx}.log" >&2 || true
+                        coord_rc=1
+                    fi
+                fi
+            done
+            trap - INT TERM
+            rm -f "initOK_${pid}" "coord_done_${pid}"
+            exit_on_error "$coord_rc" "run_coffee step100 coordinator"
+        fi
+    else
+        echo "$datestr  $0  LINE $LINENO    skip step 100 [ 11] turn focal plane mask into zones, Compute polychromatic response to zones, store result in FPMresp"
+        echo "$datestr  $0  LINE $LINENO    skip step 100 [ 11] turn focal plane mask into zones, Compute polychromatic response to zones, store result in FPMresp" >> cmdlog.txt
+    fi
+    state="101"
 fi
 
 
@@ -2656,18 +2602,17 @@ echo "$datestr  $0  LINE $LINENO    step101  Search for optimal FPM solution" >>
 step="101"
 echo "$step" > ./$1/runstep
 touch ./$1/step$step.run.txt
-$execnamestring -n step101 << EOF
-PIAACMC_fpmtype=1
-PIAACMC_FPMsectors=$FPMsectors
-SCORINGMASKTYPE=$SCORINGMASKTYPE
-PIAACMC_save=0
-PIAACMC_nbiterSA=10000
-PIAACMC_nbiterDS=100
-
+run_coffee step101 << EOF
+@calc "PIAACMC_fpmtype = 1"
+@calc "PIAACMC_FPMsectors = $FPMsectors"
+@calc "SCORINGMASKTYPE = $SCORINGMASKTYPE"
+@calc "PIAACMC_save = 0"
+@calc "PIAACMC_nbiterSA = ${NBiterSA}"
+@calc "PIAACMC_nbiterDS = ${NBiterDS}"
 coffeepiaacmcsim.run $1 13
-exitCLI
+exit
 EOF
-exit_on_error $? "$execnamestring"
+exit_on_error $? "run_coffee step101"
  else
 echo "$datestr  $0  LINE $LINENO    skip step 101 [ 13] search for optimal solution"
 echo "$datestr  $0  LINE $LINENO    skip step 101 [ 13] search for optimal solution" >> cmdlog.txt
@@ -2707,7 +2652,7 @@ checkexit
 
 
 
-====================================== END OF STATE MACHINE ==============================================
+# ====================================== END OF STATE MACHINE ==============================================
 cleanup
 
 

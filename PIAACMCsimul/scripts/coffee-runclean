@@ -3,6 +3,12 @@
 # number of arguments to script
 NBARGS=0
 
+tput() {
+    if [ "${TERM:-dumb}" != "dumb" ]; then
+        command tput "$@" 2>/dev/null || true
+    fi
+}
+
 
 # ======================= PROCESS NAME =================================
 pname=`echo "$0" | sed "s/\.\///g"`
@@ -21,10 +27,10 @@ function exitERR() {
 
 
 function CLEANinput {
-rm pup_1024.fits
-rm pup_2048.fits
+rm -f pup_512.fits pup_1024.fits pup_2048.fits pup_4096.fits
 rm -rf conf
-rm piaacmcscriptsinit.txt
+rm -f piaacmc.conf
+rm -f piaacmcscriptsinit.txt
 }
 
 
@@ -226,7 +232,7 @@ shift $((OPTIND-1))
 
 
 
-if [ "$1" = "help" ] || [ "$#" -ne $NBARGS ] || [ "$OptionSelected" = "0" ]; then
+if [ "$1" = "help" ] || [ "$#" -ne $NBARGS ]; then
 if [ "$#" -ne $NBARGS ]; then
     echo "$(tput setaf 1)$(tput bold) $0: Illegal number of parameters ($NBARGS params required, $# entered) $(tput sgr0)"
 fi
