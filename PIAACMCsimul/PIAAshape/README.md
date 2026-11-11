@@ -9,6 +9,8 @@ cosine apodization fitting, and modal surface optimization for `PIAACMCsimul`.
 
 | File | Description |
 |------|-------------|
+| `PIAAshape_modes.h` / `.c` | Pupil coordinate maps (`x,y,r,PA`) & `Cmodes` / `Fmodes` bases |
+| `setup_PIAA_shapes.h` / `.c` | 2D prolate apodizer, radial sag solve & modal fit pipeline |
 | `load2DRadialApodization.h` / `.c` | Project 2D prolate apodizer onto radial cosine basis |
 | `init_geomPIAA_rad.h` / `.c` | Integrate 1D geometric ray-mapping ODEs -> `PIAA_Mshapes.txt` |
 | `mkPIAAMshapes_from_RadSag.h` / `.c` | Interpolate 1D radial sags onto 2D pupil grids |

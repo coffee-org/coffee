@@ -12,8 +12,12 @@ set(SOURCEFILES
     PIAACMCsimul.c
     init_piaacmcopticaldesign.c
     init_piaacmcopticalsystem.c
+    PIAACMCsimul_conf_io.c
     PIAACMC_f_evalmask.c
     PIAACMCsimul_exec.c
+    PIAACMCsimul_regularization.c
+    PIAACMCsimul_linopt.c
+    PIAACMCsimul_linopt_scan.c
     PIAACMCsimul_loadsavepiaacmcconf.c
     PIAACMCsimul_measure_transm_curve.c
     PIAACMCsimul_achromFPMsol_eval.c
@@ -22,6 +26,7 @@ set(SOURCEFILES
     PIAACMCsimul_CA2propCubeInt.c
     PIAACMCsimul_free.c
     PIAACMCsimul_computePSF.c
+    PIAACMCsimul_computePSF_fast.c
     PIAACMCsimul_eval_poly_design.c
     PIAACMCsimul_run.c
     exec_compute_image.c
@@ -46,6 +51,8 @@ set(SOURCEFILES
     PIAAshape/load2DRadialApodization.c
     PIAAshape/makePIAAshapes.c
     PIAAshape/mkPIAAMshapes_from_RadSag.c
+    PIAAshape/PIAAshape_modes.c
+    PIAAshape/setup_PIAA_shapes.c
 )
 
 set(INCLUDEFILES

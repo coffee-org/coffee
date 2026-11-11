@@ -193,11 +193,16 @@ Top-level files in `PIAACMCsimul/` (see submodule tables in
 |------|-------------|
 | `PIAACMCsimul.h` / `.c` | Core `PIAACMCSIMUL_PARAMS`, `OPTPIAACMCDESIGN` structs & module table |
 | `PIAACMCsimul_run.h` / `.c` | `coffeepiaacmcsim.run` CLI wrapper, `mc_var` setup & Mode 13 loop |
-| `PIAACMCsimul_exec.h` / `.c` | Mode `0..303` dispatcher & regularized linear perturbation loop |
-| `init_piaacmcopticaldesign.h` / `.c` | Load/create `piaacmcparams.conf`, modes, PIAA, FPM & Lyot |
+| `PIAACMCsimul_exec.h` / `.c` | Mode `0..302` dispatcher & shared-memory execution status setup |
+| `PIAACMCsimul_linopt.h` / `.c` | Reference setup, Jacobian assembly & outer linear opt loop |
+| `PIAACMCsimul_linopt_scan.c` | Multi-cutoff SVD directions & clamped step-gain line search |
+| `PIAACMCsimul_regularization.h` / `.c` | PIAA modal & FPM zone sag regularization penalties |
+| `init_piaacmcopticaldesign.h` / `.c` | Top-level optical design, FPM zone & Lyot initialization |
+| `PIAACMCsimul_conf_io.h` / `.c` | `conf_*.txt` parameter & CLI variable ingestion helpers |
 | `init_piaacmcopticalsystem.h` / `.c` | Populate `OptSystProp` `OPTSYST` element sequence |
 | `PIAACMCsimul_loadsavepiaacmcconf.h` / `.c` | Read/write `piaacmcparams.conf` & filename tags |
-| `PIAACMCsimul_computePSF.h` / `.c` | Point-source & extended-star polychromatic PSF propagation |
+| `PIAACMCsimul_computePSF.h` / `.c` | Full Fresnel point & extended-source PSF evaluator |
+| `PIAACMCsimul_computePSF_fast.h` / `.c` | Dark-hole scoring mask & fast `FPMresp` evaluator |
 | `exec_compute_image.h` / `.c` | On-axis PSF or multi-point scene synthesis (`Mode 0`) |
 | `exec_computePSF_no_fpm.h` / `.c` | Unocculted reference PSF calibration (`Mode 3`) |
 | `exec_optimize_PIAA_shapes_fpmtransm.h` / `.c` | Joint PIAA + FPM linear setup (`Modes 40/41`) |
