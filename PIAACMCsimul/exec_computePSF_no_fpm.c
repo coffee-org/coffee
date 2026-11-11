@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -57,15 +57,15 @@ errno_t exec_computePSF_no_fpm(double *outval)
 
         if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
         {
-            centobs0 = data.core.variable[IDv].value.f;
+            centobs0 = coffee_dcvar_f(IDv);
         }
         if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
         {
-            centobs1 = data.core.variable[IDv].value.f;
+            centobs1 = coffee_dcvar_f(IDv);
         }
         if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
         {
-            fpmradld = data.core.variable[IDv].value.f;
+            fpmradld = coffee_dcvar_f(IDv);
             printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
         }
     }

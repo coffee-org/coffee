@@ -1,24 +1,29 @@
 /**
  * @file    OptSystProp.c
- * @brief   Optical system propagation
- *
- * Propagate beam through optical systsm
- *
- *
+ * @brief   Optical system Fresnel propagation engine module descriptor
  */
 
-#include <string.h>
+#define MODULE_SHORTNAME_DEFAULT "optsystprop"
+#define MODULE_DESCRIPTION       "Optical System Fresnel Propagation Engine"
 
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
-
 #include "OptSystProp/OptSystProp.h"
 
-#define SBUFFERSIZE 2000
+MODULE_DEPS("milkfft", "milkOpticsMaterials", "milkWFpropagate");
 
-errno_t init_OptSystProp()
+/**
+ * init_OptSystProp - Initialize OptSystProp module
+ *
+ * Return: RETURN_SUCCESS
+ */
+errno_t init_OptSystProp(void)
 {
-    // add atexit functions here
-
     return RETURN_SUCCESS;
 }
+
+static const MILK_RUNNABLE *const runnables[] = {
+    NULL,
+};
+
+MILK_MODULE_RUNNABLES(coffeeOptSystProp, _module_deps, runnables);

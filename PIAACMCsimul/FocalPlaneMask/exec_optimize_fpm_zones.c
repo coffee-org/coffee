@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
@@ -27,6 +27,55 @@
 #include "init_piaacmcopticalsystem.h"
 
 #include "PIAAshape/makePIAAshapes.h"
+
+/**
+ * read_cnorm_factor - Read contrast normalization factor from CnormFactor.txt
+ * @fname: Path to CnormFactor.txt.
+ * @val:   Output pointer receiving the parsed normalization factor.
+ *
+ * Skips leading blank lines and '#' header comments written by
+ * PIAACMCsimul_computePSF().
+ *
+ * Return: RETURN_SUCCESS on valid parse, RETURN_FAILURE otherwise.
+ */
+static errno_t read_cnorm_factor(
+    const char *restrict fname,
+    double     *restrict val)
+{
+    FILE *fp = fopen(fname, "r");
+    if (fp == NULL)
+    {
+        FUNC_RETURN_FAILURE("Cannot open %s", fname);
+    }
+
+    char line[256];
+    int  parsed = 0;
+    while (fgets(line, (int) sizeof(line), fp) != NULL)
+    {
+        const char *p = line;
+        while (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n')
+        {
+            p++;
+        }
+        if (*p == '\0' || *p == '#')
+        {
+            continue;
+        }
+        if (sscanf(p, "%lf", val) == 1)
+        {
+            parsed = 1;
+        }
+        break;
+    }
+
+    fclose(fp);
+    if (parsed != 1)
+    {
+        FUNC_RETURN_FAILURE("Failed to parse CnormFactor from %s", fname);
+    }
+
+    return RETURN_SUCCESS;
+}
 
 /**
  * ---
@@ -78,15 +127,15 @@ errno_t exec_optimize_fpm_zones()
 
     if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
     {
-        centobs0 = data.core.variable[IDv].value.f;
+        centobs0 = coffee_dcvar_f(IDv);
     }
     if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
     {
-        centobs1 = data.core.variable[IDv].value.f;
+        centobs1 = coffee_dcvar_f(IDv);
     }
     if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
-        fpmradld = data.core.variable[IDv].value.f;
+        fpmradld = coffee_dcvar_f(IDv);
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
@@ -95,11 +144,11 @@ errno_t exec_optimize_fpm_zones()
     if((IDv = variable_ID("REGFPMSAG")) != -1)
     {
         piaacmcparams.linopt_REGFPMSAG =
-            (long) data.core.variable[IDv].value.f + 0.01;
+            (long) coffee_dcvar_f(IDv) + 0.01;
     }
 
     // set current state for statistical tracking
-    //    data.core.image[IDstatus].array.UI16[0] = 0;
+    //    dcimg[IDstatus].array.UI16[0] = 0;
 
     // usual initialization
     {
@@ -120,18 +169,20 @@ errno_t exec_optimize_fpm_zones()
     FUNC_CHECK_RETURN(init_piaacmcopticalsystem(0.0, 0.0));
 
     // set current state for statistical tracking
-    //data.core.image[IDstatus].array.UI16[0] = 1;
+    //dcimg[IDstatus].array.UI16[0] = 1;
 
     // tracking diagnostic, giving the total flux in each plane
     WRITE_FULLFILENAME(fname, "%s/tmp_flux.txt", piaacmcparams.piaacmcconfdir);
     fp = fopen(fname, "r");
+    if(fp == NULL)
+    {
+        FUNC_RETURN_FAILURE("Cannot open tmp_flux.txt");
+    }
     for(long elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
     {
         //ret = fscanf(fp, "%lf %lf  %d\n", &tmplf1, &tmplf2, &tmpd1);
-
-        int    fscanfcnt;
         double tmplf1, tmplf2;
-        fscanfcnt = fscanf(fp, "%lf %lf  %d\n", &tmplf1, &tmplf2, &tmpd1);
+        int fscanfcnt = fscanf(fp, "%lf %lf  %d\n", &tmplf1, &tmplf2, &tmpd1);
         if(fscanfcnt == EOF)
         {
             if(ferror(fp))
@@ -140,24 +191,20 @@ errno_t exec_optimize_fpm_zones()
             }
             else
             {
-                fprintf(stderr,
-                        "Error: fscanf reached end of file, no matching "
-                        "characters, no matching failure\n");
+                fprintf(stderr, "Error: fscanf reached end of file\n");
             }
+            fclose(fp);
             FUNC_RETURN_FAILURE("Call to fscanf failed");
         }
         else if(fscanfcnt != 3)
         {
-            fprintf(stderr,
-                    "Error: fscanf successfully matched and assigned %i input "
-                    "items, 3 expected\n",
-                    fscanfcnt);
+            fprintf(stderr, "Error: fscanf matched %i items, 3 expected\n", fscanfcnt);
+            fclose(fp);
             FUNC_RETURN_FAILURE("Call to fscanf failed");
         }
 
         // scale flux to current number of lambda
-        piaacmcopticalsystem.flux[elem] =
-            tmplf1 / tmpd1 * piaacmcopticalsystem.nblambda;
+        piaacmcopticalsystem.flux[elem] = tmplf1 / tmpd1 * piaacmcopticalsystem.nblambda;
     }
     fclose(fp);
 
@@ -167,7 +214,7 @@ errno_t exec_optimize_fpm_zones()
     /*
     if((IDv = variable_ID("PIAACMC_nbiter")) != -1)
     {
-        NBiter = (long) data.core.variable[IDv].value.f + 0.01;
+        NBiter = (long) coffee_dcvar_f(IDv) + 0.01;
     }
     else
     {
@@ -175,20 +222,18 @@ errno_t exec_optimize_fpm_zones()
     }
     */
     // set current state for statistical tracking
-    //data.core.image[IDstatus].array.UI16[0] = 2;
+    //dcimg[IDstatus].array.UI16[0] = 2;
 
     // get the FPMresp array computed in mode 11
     PIAACMCsimul_update_fnamedescr_conf();
-    WRITE_FULLFILENAME(fname,
-                       "%s/FPMresp%d.%s.fits",
-                       piaacmcparams.piaacmcconfdir,
-                       piaacmcparams.SCORINGMASKTYPE,
-                       piaacmcparams.fnamedescr_conf);
+    SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME, "%s/FPMresp%d.%s.fits",
+                   piaacmcparams.piaacmcconfdir, piaacmcparams.SCORINGMASKTYPE,
+                   piaacmcparams.fnamedescr_conf);
 
     FUNC_CHECK_RETURN(load_fits(fname, "FPMresp", 1, &IDfpmresp));
 
     piaacmcparams.vsize =
-        data.core.image[IDfpmresp].md[0].size[0]; // number of eval pts x2
+        dcimg[IDfpmresp].md[0].size[0]; // number of eval pts x2
     // make an array that holds the resulting light for evaluation point given the FPM solution, for each wavelenth
     //ID =
     FUNC_CHECK_RETURN(create_2Dimage_ID("imvect1",
@@ -198,9 +243,9 @@ errno_t exec_optimize_fpm_zones()
 
     // allocate arrays for fast routine
     // define convenient array variables
-    piaacmcparams.fpmresp_array = data.core.image[IDfpmresp].array.D;
+    piaacmcparams.fpmresp_array = dcimg[IDfpmresp].array.D;
     piaacmcparams.zonez_array =
-        data.core.image[piaacmcopticaldesign.zonezID].array.D;
+        dcimg[piaacmcopticaldesign.zonezID].array.D;
     // allocate derivative of phase against thickness array
     piaacmcparams.dphadz_array =
         (double *) malloc(sizeof(double) * piaacmcopticaldesign.nblambda);
@@ -221,55 +266,24 @@ errno_t exec_optimize_fpm_zones()
     piaacmcparams.outtmp_array = (double *) malloc(
                                      sizeof(double) *
                                      (piaacmcparams.vsize * piaacmcopticaldesign.nblambda +
-                                      data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0]));
+                                      dcimg[piaacmcopticaldesign.zonezID].md[0].size[0]));
 
     // do the fast optimization using the results of mode 11
     piaacmcparams.computePSF_FAST_FPMresp = 1;
 
     // set current state for statistical tracking
-    //data.core.image[IDstatus].array.UI16[0] = 3;
+    //dcimg[IDstatus].array.UI16[0] = 3;
 
     // read the contrast normalization factor into CnormFactor
-    WRITE_FULLFILENAME(fname,
-                       "%s/CnormFactor.txt",
-                       piaacmcparams.piaacmcconfdir);
-    fp = fopen(fname, "r");
-    {
-        int fscanfcnt;
-
-        fscanfcnt = fscanf(fp, "%lf", &piaacmcparams.CnormFactor);
-        if(fscanfcnt == EOF)
-        {
-            if(ferror(fp))
-            {
-                perror("fscanf");
-            }
-            else
-            {
-                fprintf(stderr,
-                        "Error: fscanf reached end of file, no matching "
-                        "characters, no matching failure\n");
-            }
-            FUNC_RETURN_FAILURE("Call to fscanf failed");
-        }
-        else if(fscanfcnt != 1)
-        {
-            fprintf(stderr,
-                    "Error: fscanf successfully matched and assigned %i input "
-                    "items, 1 expected\n",
-                    fscanfcnt);
-            FUNC_RETURN_FAILURE("Call to fscanf failed");
-        }
-    }
-    //ret = fscanf(fp, "%lf", &piaacmcparams.CnormFactor);
-    fclose(fp);
+    WRITE_FULLFILENAME(fname, "%s/CnormFactor.txt", piaacmcparams.piaacmcconfdir);
+    FUNC_CHECK_RETURN(read_cnorm_factor(fname, &piaacmcparams.CnormFactor));
     // for each zone, add a random offset in range +- MODampl
     // this randomizes the starting point for each zone
-    // data.core.image[piaacmcopticaldesign.zonezID].array.D[k] is set in PIAACMCsimul_run()
-    for(long k = 0; k < data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+    // dcimg[piaacmcopticaldesign.zonezID].array.D[k] is set in PIAACMCsimul_run()
+    for(long k = 0; k < dcimg[piaacmcopticaldesign.zonezID].md[0].size[0];
             k++)
     {
-        data.core.image[piaacmcopticaldesign.zonezID].array.D[k] +=
+        dcimg[piaacmcopticaldesign.zonezID].array.D[k] +=
             piaacmcparams.MODampl * (1.0 - 2.0 * ran1());
     }
 
@@ -277,7 +291,7 @@ errno_t exec_optimize_fpm_zones()
     // uses abstract specification of optimization parameters called paramval, ...
     piaacmcparams.linopt_number_param = 0;
     for(long mz = 0;
-            mz < data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+            mz < dcimg[piaacmcopticaldesign.zonezID].md[0].size[0];
             mz++)
     {
         // parameter type
@@ -285,7 +299,7 @@ errno_t exec_optimize_fpm_zones()
             _DATATYPE_DOUBLE;
         // value: sag of each zone
         piaacmcparams.linopt_paramval[piaacmcparams.linopt_number_param] =
-            &data.core.image[piaacmcopticaldesign.zonezID].array.D[mz];
+            &dcimg[piaacmcopticaldesign.zonezID].array.D[mz];
         // derivative step size
         piaacmcparams.linopt_paramdelta[piaacmcparams.linopt_number_param] =
             3.0e-9;
@@ -304,7 +318,7 @@ errno_t exec_optimize_fpm_zones()
         1; // for fast execution using analytic derivatives
 
     // set current state for statistical tracking
-    //data.core.image[IDstatus].array.UI16[0] = 4;
+    //dcimg[IDstatus].array.UI16[0] = 4;
     // Now on to the actual optimization, after exit from the switch statement
     // I hope you have a lot of time...
 

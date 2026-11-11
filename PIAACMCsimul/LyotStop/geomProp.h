@@ -1,18 +1,22 @@
 #ifndef PIAACMCSIMUL_LYOTSTOP_GEOMPROP_H
 #define PIAACMCSIMUL_LYOTSTOP_GEOMPROP_H
 
-errno_t CLIADDCMD_PIAACMCsimul__LyotStop__PIAACMCsimul_geomProp();
+#include "milk_runnable.h"
 
-errno_t PIAACMCsimul_geomProp(const char *__restrict__ IDin_name,
-                              const char *__restrict__ IDsag_name,
-                              const char *__restrict__ IDout_name,
-                              const char *__restrict__ IDoutcnt_name,
-                              double   drindex,
-                              double   pscale,
-                              double   zprop,
-                              double   krad,
-                              double   kstep,
-                              double   rlim,
-                              imageID *outID);
+extern const MILK_RUNNABLE runnable_piaacmc_geomprop;
 
-#endif
+/* Propagate 2D pupil intensity geometrically using local surface sag slopes. */
+errno_t PIAACMCsimul_geomProp(
+    const char *restrict IDin_name,
+    const char *restrict IDsag_name,
+    const char *restrict IDout_name,
+    const char *restrict IDoutcnt_name,
+    double               drindex,
+    double               pscale,
+    double               zprop,
+    double               krad,
+    double               kstep,
+    double               rlim,
+    imageID             *outID);
+
+#endif /* PIAACMCSIMUL_LYOTSTOP_GEOMPROP_H */

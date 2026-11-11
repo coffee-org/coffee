@@ -12,7 +12,7 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_arith/COREMOD_arith.h"
@@ -101,7 +101,7 @@ errno_t PIAACMCsimul_computePSF(
     uint32_t size = piaacmcopticaldesign.size;
 
     // load an error if it exists
-    imageID IDopderrC = image_ID("OPDerrC", data.core.image, data.core.NB_MAX_IMAGE);
+    imageID IDopderrC = image_ID("OPDerrC", dcimg, dcnimg);
     long    nbOPDerr  = 0;
     if(IDopderrC == -1)
     {
@@ -110,11 +110,11 @@ errno_t PIAACMCsimul_computePSF(
 
     if(IDopderrC != -1)
     {
-        uint8_t naxis = data.core.image[IDopderrC].md[0].naxis;
+        uint8_t naxis = dcimg[IDopderrC].md[0].naxis;
         if(naxis == 2)
         {
             nbOPDerr =
-                data.core.image[IDopderrC].md[0].size[2]; // number of error arrays
+                dcimg[IDopderrC].md[0].size[2]; // number of error arrays
         }
         printf("INCLUDING %ld OPD ERROR MODES\n", nbOPDerr);
         fflush(stdout);
@@ -128,7 +128,7 @@ errno_t PIAACMCsimul_computePSF(
     /// ### Create scoring mask if it doesn't exist
     /// The scoring mask is the array of evaluation points on the focal plane
     {
-        if(image_ID("scoringmask", data.core.image, data.core.NB_MAX_IMAGE) == -1)
+        if(image_ID("scoringmask", dcimg, dcnimg) == -1)
         {
             printf("CREATING SCORING MASK\n");
             printf("FOCAL PLANE SCALE = %f l/d per pix\n", focscale);
@@ -154,19 +154,19 @@ errno_t PIAACMCsimul_computePSF(
                         if((r > scoringIWA) && (r < scoringOWAhr) &&
                                 (x > scoringIWAx) && ((ii + jj) % 2 == 0))
                         {
-                            data.core.image[IDsm].array.F[jj * size + ii] = 1.0;
+                            dcimg[IDsm].array.F[jj * size + ii] = 1.0;
                         }
                         // pick every other row and column between scoringOWAhr and scoringOWA
                         if((r > scoringOWAhr) && (r < scoringOWA) &&
                                 (x > scoringIWAx) && (ii % 2 == 0) && (jj % 2 == 0))
                         {
-                            data.core.image[IDsm].array.F[jj * size + ii] = 1.0;
+                            dcimg[IDsm].array.F[jj * size + ii] = 1.0;
                         }
                         // draw a single radial line of points out to IWA = 70 (every other point)
                         if((x > scoringOWA) && (fabs(y) < scoringIWA * 0.25) &&
                                 (r < 70.0) && ((ii + jj) % 2 == 0)) // single line
                         {
-                            data.core.image[IDsm].array.F[jj * size + ii] = 1.0;
+                            dcimg[IDsm].array.F[jj * size + ii] = 1.0;
                         }
                     }
             }
@@ -182,7 +182,7 @@ errno_t PIAACMCsimul_computePSF(
                         if((r > scoringIWA) && (r < scoringOWAhr) &&
                                 (x > scoringIWAx) && (ii % 2 == 0) && (jj % 2 == 0))
                         {
-                            data.core.image[IDsm].array.F[jj * size + ii] = 1.0;
+                            dcimg[IDsm].array.F[jj * size + ii] = 1.0;
                         }
                     }
             }
@@ -225,7 +225,7 @@ errno_t PIAACMCsimul_computePSF(
             piaacmcparams.dphadz_array,
             piaacmcparams.outtmp_array,
             piaacmcparams.vsize,
-            data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0],
+            dcimg[piaacmcopticaldesign.zonezID].md[0].size[0],
             piaacmcopticalsystem.nblambda,
             NULL);
 
@@ -239,7 +239,7 @@ errno_t PIAACMCsimul_computePSF(
 
         {
             imageID ID = image_ID(
-                             "imvect", data.core.image, data.core.NB_MAX_IMAGE); /// - Use \c imvect for storage if it exists, or create it
+                             "imvect", dcimg, dcnimg); /// - Use \c imvect for storage if it exists, or create it
             if(ID == -1)
             {
                 create_2Dimage_ID("imvect",
@@ -254,7 +254,7 @@ errno_t PIAACMCsimul_computePSF(
                     ii < piaacmcparams.vsize * piaacmcopticalsystem.nblambda;
                     ii++) // for each wavelength
             {
-                data.core.image[ID].array.F[ii] = piaacmcparams.outtmp_array[ii];
+                dcimg[ID].array.F[ii] = piaacmcparams.outtmp_array[ii];
                 // square to give intensity
                 double tmpv = piaacmcparams.outtmp_array[ii] *
                               piaacmcparams.outtmp_array[ii];
@@ -556,8 +556,8 @@ errno_t PIAACMCsimul_computePSF(
                 // "opderr" is a standard name read by PIAACMCsimul_init
                 for(uint64_t ii = 0; ii < size * size; ii++)
                 {
-                    data.core.image[IDopderr].array.F[ii] =
-                        data.core.image[IDopderrC]
+                    dcimg[IDopderr].array.F[ii] =
+                        dcimg[IDopderrC]
                         .array.F[size * size * OPDmode + ii];
                 }
 
@@ -602,23 +602,21 @@ errno_t PIAACMCsimul_computePSF(
                 PIAACMCsimul_update_fnamedescr();
 
                 char fname[STRINGMAXLEN_FULLFILENAME];
-                WRITE_FULLFILENAME(fname,
-                                   "%s/psfi0_exsrc%03d_sm%d.%s.fits",
-                                   piaacmcparams.piaacmcconfdir,
-                                   sourcesize,
-                                   piaacmcparams.SCORINGMASKTYPE,
-                                   piaacmcparams.fnamedescr);
+                SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME,
+                               "%s/psfi0_exsrc%03d_sm%d.%s.fits", piaacmcparams.piaacmcconfdir,
+                               sourcesize, piaacmcparams.SCORINGMASKTYPE,
+                               piaacmcparams.fnamedescr);
 
                 save_fits("psfi0ext", fname);
             }
 
             // get the number of elements in a single-PSF vector
             {
-                imageID ID     = image_ID("imvectp00", data.core.image, data.core.NB_MAX_IMAGE);
-                long    nbelem = data.core.image[ID].md[0].nelement;
+                imageID ID     = image_ID("imvectp00", dcimg, dcnimg);
+                long    nbelem = dcimg[ID].md[0].nelement;
 
                 // make big vector to collect the complex amplitudes of all the above PSFs
-                ID = image_ID("imvect", data.core.image, data.core.NB_MAX_IMAGE);
+                ID = image_ID("imvect", dcimg, dcnimg);
                 if(ID != -1)
                 {
                     delete_image_ID("imvect", DELETE_IMAGE_ERRMODE_WARNING);
@@ -647,14 +645,14 @@ errno_t PIAACMCsimul_computePSF(
                     {
                         char imname[STRINGMAXLEN_IMGNAME];
                         WRITE_IMAGENAME(imname, "imvectp%02ld", imindex);
-                        imageID ID1 = image_ID(imname, data.core.image, data.core.NB_MAX_IMAGE);
+                        imageID ID1 = image_ID(imname, dcimg, dcnimg);
                         for(long kl = 0; kl < piaacmcopticaldesign.nblambda;
                                 kl++)
                             for(long ii = 0; ii < offset; ii++)
                             {
-                                data.core.image[ID].array.F[kl * offset1 +
+                                dcimg[ID].array.F[kl * offset1 +
                                                        imindex * offset + ii] =
-                                                           data.core.image[ID1].array.F[kl * offset + ii] *
+                                                           dcimg[ID1].array.F[kl * offset + ii] *
                                                            normcoeff;
                             }
                         delete_image_ID(imname, DELETE_IMAGE_ERRMODE_ERROR);
@@ -669,11 +667,11 @@ errno_t PIAACMCsimul_computePSF(
 
             double peakcontrast = 0.0;
             {
-                imageID ID = image_ID("imvect", data.core.image, data.core.NB_MAX_IMAGE);
-                for(uint64_t ii = 0; ii < data.core.image[ID].md[0].nelement; ii++)
+                imageID ID = image_ID("imvect", dcimg, dcnimg);
+                for(uint64_t ii = 0; ii < dcimg[ID].md[0].nelement; ii++)
                 {
                     double tmpv =
-                        data.core.image[ID].array.F[ii] * data.core.image[ID].array.F[ii];
+                        dcimg[ID].array.F[ii] * dcimg[ID].array.F[ii];
                     value += tmpv;
                     if(tmpv > peakcontrast)
                     {
@@ -697,12 +695,10 @@ errno_t PIAACMCsimul_computePSF(
                 PIAACMCsimul_update_fnamedescr();
 
                 char fname[STRINGMAXLEN_FULLFILENAME];
-                WRITE_FULLFILENAME(fname,
-                                   "%s/flux_exsrc%03d_sm%d.%s.txt",
-                                   piaacmcparams.piaacmcconfdir,
-                                   sourcesize,
-                                   piaacmcparams.SCORINGMASKTYPE,
-                                   piaacmcparams.fnamedescr);
+                SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME,
+                               "%s/flux_exsrc%03d_sm%d.%s.txt", piaacmcparams.piaacmcconfdir,
+                               sourcesize, piaacmcparams.SCORINGMASKTYPE,
+                               piaacmcparams.fnamedescr);
 
                 FILE *fpflux = fopen(fname, "w");
                 for(long elem = 0; elem < piaacmcopticalsystem.NBelem; elem++)
@@ -781,12 +777,10 @@ errno_t PIAACMCsimul_computePSF(
                 PIAACMCsimul_update_fnamedescr();
 
                 char fname[STRINGMAXLEN_FULLFILENAME];
-                WRITE_FULLFILENAME(fname,
-                                   "%s/contrast_exsrc%03d_sm%d.%s.txt",
-                                   piaacmcparams.piaacmcconfdir,
-                                   sourcesize,
-                                   piaacmcparams.SCORINGMASKTYPE,
-                                   piaacmcparams.fnamedescr);
+                SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME,
+                               "%s/contrast_exsrc%03d_sm%d.%s.txt", piaacmcparams.piaacmcconfdir,
+                               sourcesize, piaacmcparams.SCORINGMASKTYPE,
+                               piaacmcparams.fnamedescr);
 
                 FILE *fp = fopen(fname, "w");
                 fprintf(fp, "%g", avContrast);
@@ -822,11 +816,9 @@ errno_t PIAACMCsimul_computePSF(
             {
                 PIAACMCsimul_update_fnamedescr();
                 char fname[STRINGMAXLEN_FULLFILENAME];
-                WRITE_FULLFILENAME(fname,
-                                   "%s/psfi0_ptsrc_sm%d.%s.fits",
-                                   piaacmcparams.piaacmcconfdir,
-                                   piaacmcparams.SCORINGMASKTYPE,
-                                   piaacmcparams.fnamedescr);
+                SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME, "%s/psfi0_ptsrc_sm%d.%s.fits",
+                               piaacmcparams.piaacmcconfdir, piaacmcparams.SCORINGMASKTYPE,
+                               piaacmcparams.fnamedescr);
 
                 FUNC_CHECK_RETURN(save_fits("psfi0", fname));
             }
@@ -864,15 +856,15 @@ errno_t PIAACMCsimul_computePSF(
                 double value = 0.0;
                 peakcontrast = 0.0;
                 {
-                    imageID ID = image_ID("imvect", data.core.image, data.core.NB_MAX_IMAGE);
-                    for(uint64_t ii = 0; ii < data.core.image[ID].md[0].nelement;
+                    imageID ID = image_ID("imvect", dcimg, dcnimg);
+                    for(uint64_t ii = 0; ii < dcimg[ID].md[0].nelement;
                             ii += 2)
                     {
                         // intensity as Re^2 + Im^2
-                        double tmpv = data.core.image[ID].array.F[ii] *
-                                      data.core.image[ID].array.F[ii] +
-                                      data.core.image[ID].array.F[ii + 1] *
-                                      data.core.image[ID].array.F[ii + 1];
+                        double tmpv = dcimg[ID].array.F[ii] *
+                                      dcimg[ID].array.F[ii] +
+                                      dcimg[ID].array.F[ii + 1] *
+                                      dcimg[ID].array.F[ii + 1];
                         value += tmpv;
                         if(tmpv > peakcontrast)
                         {
@@ -899,11 +891,9 @@ errno_t PIAACMCsimul_computePSF(
                     PIAACMCsimul_update_fnamedescr();
 
                     char fname[STRINGMAXLEN_FULLFILENAME];
-                    WRITE_FULLFILENAME(fname,
-                                       "%s/flux_ptsrc_sm%d.%s.txt",
-                                       piaacmcparams.piaacmcconfdir,
-                                       piaacmcparams.SCORINGMASKTYPE,
-                                       piaacmcparams.fnamedescr);
+                    SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME,
+                                   "%s/flux_ptsrc_sm%d.%s.txt", piaacmcparams.piaacmcconfdir,
+                                   piaacmcparams.SCORINGMASKTYPE, piaacmcparams.fnamedescr);
 
                     FILE *fpflux = fopen(fname, "w");
                     if(fpflux == NULL)
@@ -977,14 +967,14 @@ errno_t PIAACMCsimul_computePSF(
 
                 if((variable_ID("PIAACMC_NOFPM")) != -1)
                 {
-                    imageID ID                   = image_ID("psfc0", data.core.image, data.core.NB_MAX_IMAGE);
+                    imageID ID                   = image_ID("psfc0", dcimg, dcnimg);
                     piaacmcopticaldesign.peakPSF = 0.0;
                     for(uint64_t ii = 0; ii < size * size; ii++)
                     {
-                        double val = data.core.image[ID].array.CF[ii].re *
-                                     data.core.image[ID].array.CF[ii].re +
-                                     data.core.image[ID].array.CF[ii].im *
-                                     data.core.image[ID].array.CF[ii].im;
+                        double val = dcimg[ID].array.CF[ii].re *
+                                     dcimg[ID].array.CF[ii].re +
+                                     dcimg[ID].array.CF[ii].im *
+                                     dcimg[ID].array.CF[ii].im;
                         if(val > piaacmcopticaldesign.peakPSF)
                         {
                             piaacmcopticaldesign.peakPSF = val;
@@ -1055,11 +1045,9 @@ errno_t PIAACMCsimul_computePSF(
                 {
                     PIAACMCsimul_update_fnamedescr();
                     char fname[STRINGMAXLEN_FULLFILENAME];
-                    WRITE_FULLFILENAME(fname,
-                                       "%s/contrast_ptsrc_sm%d.%s.txt",
-                                       piaacmcparams.piaacmcconfdir,
-                                       piaacmcparams.SCORINGMASKTYPE,
-                                       piaacmcparams.fnamedescr);
+                    SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME,
+                                   "%s/contrast_ptsrc_sm%d.%s.txt", piaacmcparams.piaacmcconfdir,
+                                   piaacmcparams.SCORINGMASKTYPE, piaacmcparams.fnamedescr);
 
                     printf("saving contrast value [%g] -> %s\n",
                            avContrast,

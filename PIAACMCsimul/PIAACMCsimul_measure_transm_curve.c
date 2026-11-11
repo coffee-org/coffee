@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
@@ -49,15 +49,15 @@ errno_t PIAACMCsimul_measure_transm_curve()
 
     if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
     {
-        centobs0 = data.core.variable[IDv].value.f;
+        centobs0 = coffee_dcvar_f(IDv);
     }
     if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
     {
-        centobs1 = data.core.variable[IDv].value.f;
+        centobs1 = coffee_dcvar_f(IDv);
     }
     if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
-        fpmradld = data.core.variable[IDv].value.f;
+        fpmradld = coffee_dcvar_f(IDv);
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
@@ -65,7 +65,7 @@ errno_t PIAACMCsimul_measure_transm_curve()
     if((IDv = variable_ID("PIAACMC_fpmtype")) != -1)
     {
         piaacmcparams.PIAACMC_fpmtype =
-            (int)(data.core.variable[IDv].value.f + 0.1);
+            (int)(coffee_dcvar_f(IDv) + 0.1);
     }
 
     piaacmcparams.FORCE_CREATE_fpmza = 1;
@@ -112,11 +112,9 @@ errno_t PIAACMCsimul_measure_transm_curve()
 
     char fnametransm[STRINGMAXLEN_FULLFILENAME];
     PIAACMCsimul_update_fnamedescr();
-    WRITE_FULLFILENAME(fnametransm,
-                       "%s/transmCurve_sm%d.%s.txt",
-                       piaacmcparams.piaacmcconfdir,
-                       piaacmcparams.SCORINGMASKTYPE,
-                       piaacmcparams.fnamedescr);
+    SNPRINTF_CHECK(fnametransm, STRINGMAXLEN_FULLFILENAME, "%s/transmCurve_sm%d.%s.txt",
+                   piaacmcparams.piaacmcconfdir, piaacmcparams.SCORINGMASKTYPE,
+                   piaacmcparams.fnamedescr);
 
     FILE *fpt;
     fpt = fopen(fnametransm, "w");
@@ -138,13 +136,13 @@ errno_t PIAACMCsimul_measure_transm_curve()
                           0,
                           NULL));
 
-        imageID ID = image_ID("psfi0", data.core.image, data.core.NB_MAX_IMAGE);
+        imageID ID = image_ID("psfi0", dcimg, dcnimg);
         //            sprintf(fname, "psfi0transm_%04.1f.fits", xld);
         //           save_fits("psfi0", fname);
         printf("ID = %ld\n", ID);
-        uint32_t xsize = data.core.image[ID].md[0].size[0];
-        uint32_t ysize = data.core.image[ID].md[0].size[1];
-        uint32_t zsize = data.core.image[ID].md[0].size[2];
+        uint32_t xsize = dcimg[ID].md[0].size[0];
+        uint32_t ysize = dcimg[ID].md[0].size[1];
+        uint32_t zsize = dcimg[ID].md[0].size[2];
         printf("image size = %u %u %u\n", xsize, ysize, zsize);
         val = 0.0;
 
@@ -160,8 +158,8 @@ errno_t PIAACMCsimul_measure_transm_curve()
                     if((dx * dx + dy * dy) < 30.0 * 30.0)
                     {
                         val +=
-                            data.core.image[ID]
-                            .array.F[kk * xsize * ysize + jj * ysize + ii];
+                            dcimg[ID]
+                            .array.F[kk * xsize * ysize + jj * xsize + ii];
                     }
                 }
         }

@@ -14,7 +14,7 @@
 #include <gsl/gsl_vector.h>
 
 // milk includes
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "PIAACMCsimul.h"
@@ -30,7 +30,7 @@ errno_t f_evalmask(const gsl_vector *v, void *params, double *outval)
 
     (void) p;
 
-    for(k = 0; k < data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0]; k++)
+    for(k = 0; k < dcimg[piaacmcopticaldesign.zonezID].md[0].size[0]; k++)
     {
         piaacmcparams.zonez_array[k] = gsl_vector_get(v, k);
     }
@@ -42,7 +42,7 @@ errno_t f_evalmask(const gsl_vector *v, void *params, double *outval)
             piaacmcparams.dphadz_array,
             piaacmcparams.outtmp_array,
             piaacmcparams.vsize,
-            data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0],
+            dcimg[piaacmcopticaldesign.zonezID].md[0].size[0],
             piaacmcopticaldesign.nblambda,
             &value));
     value /= piaacmcparams.CnormFactor * piaacmcparams.SCORINGTOTAL *

@@ -14,7 +14,7 @@
 #include <string.h>
 
 // milk includes
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
@@ -47,18 +47,18 @@ errno_t optimizeLyotStop_offaxis_min(const char *__restrict__ IDincohc_name)
     DEBUG_TRACE_FSTART();
     DEBUG_TRACEPOINT("FARG %s", IDincohc_name);
 
-    imageID IDincohc = image_ID(IDincohc_name, data.core.image, data.core.NB_MAX_IMAGE);
+    imageID IDincohc = image_ID(IDincohc_name, dcimg, dcnimg);
     if(IDincohc == -1)
     {
         FUNC_RETURN_FAILURE("Image %s not found in memory", IDincohc_name);
     }
 
-    uint32_t xsize  = data.core.image[IDincohc].md[0].size[0];
-    uint32_t ysize  = data.core.image[IDincohc].md[0].size[1];
+    uint32_t xsize  = dcimg[IDincohc].md[0].size[0];
+    uint32_t ysize  = dcimg[IDincohc].md[0].size[1];
     uint64_t xysize = xsize;
     xysize *= ysize;
 
-    uint32_t NBz = data.core.image[IDincohc].md[0].size[2];
+    uint32_t NBz = dcimg[IDincohc].md[0].size[2];
 
     imageID IDindex;
     FUNC_CHECK_RETURN(create_2Dimage_ID("oals_index", xsize, ysize, &IDindex));
@@ -69,20 +69,20 @@ errno_t optimizeLyotStop_offaxis_min(const char *__restrict__ IDincohc_name)
     DEBUG_TRACEPOINT("scanning for minimum");
     for(uint64_t ii = 0; ii < xysize; ii++)
     {
-        float    minv     = data.core.image[IDincohc].array.F[ii];
+        float    minv     = dcimg[IDincohc].array.F[ii];
         uint32_t minindex = 0;
 
         for(uint32_t kk = 1; kk < NBz; kk++)
         {
-            float tmpv = data.core.image[IDincohc].array.F[xysize * kk + ii];
+            float tmpv = dcimg[IDincohc].array.F[xysize * kk + ii];
             if(tmpv < minv)
             {
                 minv     = tmpv;
                 minindex = kk;
             }
         }
-        data.core.image[IDminflux].array.F[ii] = minv;
-        data.core.image[IDindex].array.F[ii]   = (float) minindex;
+        dcimg[IDminflux].array.F[ii] = minv;
+        dcimg[IDindex].array.F[ii]   = (float) minindex;
     }
 
     DEBUG_TRACEPOINT("Saving minimum map to filesystem");
@@ -121,15 +121,15 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     // load some more cli variables
     if((IDv = variable_ID("PIAACMC_centobs0")) != -1)
     {
-        centobs0 = data.core.variable[IDv].value.f;
+        centobs0 = coffee_dcvar_f(IDv);
     }
     if((IDv = variable_ID("PIAACMC_centobs1")) != -1)
     {
-        centobs1 = data.core.variable[IDv].value.f;
+        centobs1 = coffee_dcvar_f(IDv);
     }
     if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
-        fpmradld = data.core.variable[IDv].value.f;
+        fpmradld = coffee_dcvar_f(IDv);
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
@@ -154,14 +154,14 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
     long NBpropstep = 150;
     if((IDv = variable_ID("PIAACMC_nbpropstep")) != -1)
     {
-        NBpropstep = (long) data.core.variable[IDv].value.f + 0.01;
+        NBpropstep = (long) coffee_dcvar_f(IDv) + 0.01;
     }
 
     /// - <- **PIAACMC_lstransm** : desired Lyot stop transmission
     double lstransm = 0.85;
     if((IDv = variable_ID("PIAACMC_lstransm")) != -1)
     {
-        lstransm = (double) data.core.variable[IDv].value.f;
+        lstransm = (double) coffee_dcvar_f(IDv);
     }
     printf("lstransm  = %f\n", lstransm);
 
@@ -237,10 +237,10 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
                       "iproptmp",
                       NULL));
     // complex amplitude at elem0, only used to determine image size
-    IDa = image_ID(imnamea, data.core.image, data.core.NB_MAX_IMAGE);
+    IDa = image_ID(imnamea, dcimg, dcnimg);
 
-    uint32_t xsize  = data.core.image[IDa].md[0].size[0];
-    uint32_t ysize  = data.core.image[IDa].md[0].size[1];
+    uint32_t xsize  = dcimg[IDa].md[0].size[0];
+    uint32_t ysize  = dcimg[IDa].md[0].size[1];
     uint64_t xysize = xsize;
     xysize *= ysize;
 
@@ -324,8 +324,8 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
                     for(long k = 0; k < NBpropstep; k++)
                     {
                         // k is indexing z-direction. adding to IDc
-                        data.core.image[IDc].array.F[xysize * k + ii] +=
-                            data.core.image[ID1].array.F[xysize * k + ii];
+                        dcimg[IDc].array.F[xysize * k + ii] +=
+                            dcimg[ID1].array.F[xysize * k + ii];
                     }
                 }
                 FUNC_CHECK_RETURN(
@@ -338,7 +338,7 @@ errno_t exec_optimize_lyot_stops_shapes_positions()
         {
             for(long k = 0; k < NBpropstep; k++)
             {
-                data.core.image[IDc].array.F[k * xsize * ysize + ii] /= cnt;
+                dcimg[IDc].array.F[k * xsize * ysize + ii] /= cnt;
             }
         }
 

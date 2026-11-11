@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -88,8 +88,8 @@ errno_t init_geomPIAA_rad(const char *__restrict__ IDapofit_name)
 
     // CREATE OUTPUT AMPLITUDE APODIZATION PROFILE AND ITS CUMUL
 
-    imageID IDcoeff = image_ID(IDapofit_name, data.core.image, data.core.NB_MAX_IMAGE);
-    nbcoeff         = data.core.image[IDcoeff].md->size[0];
+    imageID IDcoeff = image_ID(IDapofit_name, dcimg, dcnimg);
+    nbcoeff         = dcimg[IDcoeff].md->size[0];
     printf("%ld coefficients\n", nbcoeff);
 
     total = 0.0;
@@ -112,7 +112,7 @@ errno_t init_geomPIAA_rad(const char *__restrict__ IDapofit_name)
         // reconstruct apodization profile from cosine coefficients
         for(long k = 0; k < nbcoeff; k++)
         {
-            pup1[ii] += data.core.image[IDcoeff].array.F[k] *
+            pup1[ii] += dcimg[IDcoeff].array.F[k] *
                         cos(r1 * k * M_PI / ApoFitCosFact);
         }
 

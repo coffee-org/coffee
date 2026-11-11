@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "OptSystProp/OptSystProp.h"
@@ -43,11 +43,11 @@ errno_t PIAACMCsimul_achromFPMsol_eval(
     //	double evalcosp, evalsinp, evalre, evalim, evalre1, evalim1, evalpha;
     //	double evalv1;
 
-    // axis 0: eval pts (ii)   size = data.core.image[IDfpmresp].md[0].size[0] -> vsize
-    // axis 1: zones (mz)      size = data.core.image[piaacmc[0].zonezID].md[0].size[0]+1 = nbz+1
+    // axis 0: eval pts (ii)   size = dcimg[IDfpmresp].md[0].size[0] -> vsize
+    // axis 1: zones (mz)      size = dcimg[piaacmc[0].zonezID].md[0].size[0]+1 = nbz+1
     // axis 2: lambda (k)      size = piaacmc[0].nblambda -> nbl
     //
-    // indexing :  k*(data.core.image[piaacmc[0].zonezID].md[0].size[0]+1)*vsize + mz*vsize + ii
+    // indexing :  k*(dcimg[piaacmc[0].zonezID].md[0].size[0]+1)*vsize + mz*vsize + ii
 
 #ifdef PIAASIMUL_LOGFUNC1
     PIAACMCsimul_logFunctionCall("PIAACMCsimul.fcall.log",

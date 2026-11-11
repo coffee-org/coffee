@@ -1,31 +1,28 @@
 /**
- * @file    PIAAACMCsimul_rings2sectors.c
- * @brief   PIAA-type coronagraph design, rings to sectors
- *
- * Can design both APLCMC and PIAACMC coronagraphs
- *
+ * @file    rings2sectors.c
+ * @brief   Expand circular ring FPM sags onto azimuthal sector zones
  */
 
-#include "CLIcore.h"
+#include <stdio.h>
+
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_memory/COREMOD_memory.h"
+#include "rings2sectors.h"
 
-#include "PIAACMCsimul/PIAACMCsimul.h"
-
-// Local variables pointers
 static char *inimname;
 static char *secfname;
 static char *outimname;
 
-static CLICMDARGDEF farg[] =
+static CLICMDARGDEF ring2sect_farg[] =
 {
     {
         CLIARG_IMG,
         ".inimname",
         "input image: circular mask design",
         "imin",
-        CLIARG_VISIBLE_DEFAULT,
+        (FPFLAG_DEFAULT_INPUT | FPFLAG_PRIMARY_CLI_INPUT),
         (void **) &inimname,
         NULL
     },
@@ -34,7 +31,7 @@ static CLICMDARGDEF farg[] =
         ".secfname",
         "text file specifying which zones belong to which rings",
         "sec.txt",
-        CLIARG_VISIBLE_DEFAULT,
+        (FPFLAG_DEFAULT_INPUT | FPFLAG_PRIMARY_CLI_INPUT),
         (void **) &secfname,
         NULL
     },
@@ -43,55 +40,62 @@ static CLICMDARGDEF farg[] =
         ".outimname",
         "output sector mask design",
         "outim",
-        CLIARG_VISIBLE_DEFAULT,
+        (FPFLAG_DEFAULT_INPUT | FPFLAG_PRIMARY_CLI_INPUT),
         (void **) &outimname,
         NULL
     }
 };
 
-static CLICMDDATA CLIcmddata =
-{
-    "ring2sect", "turn ring fpm design into sectors", CLICMD_FIELDS_DEFAULTS
-};
-
-// detailed help
+MILK_RUNNABLE_RT_DEFINE(ring2sect);
 
 /**
- * @brief Rings to sectors
+ * rings2sectors - Map 1D ring sag solution onto 1D sector zone sag array
+ * @IDin_name:  Input circular ring mask sag image name.
+ * @sectfname:  ASCII mapping file listing (zone_index, ring_index) pairs.
+ * @IDout_name: Output sector mask sag image name.
+ * @outID:      Optional output imageID pointer.
  *
- * @param[in] IDin_name	input image: circular mask design
- * @param[in] sectfname	text file specifying which zones belong to which rings
- * @param[out] IDout_name	output sector mask design
- *
+ * Return: RETURN_SUCCESS on completion, error code otherwise.
  */
-errno_t rings2sectors(const char *IDin_name,
-                      const char *sectfname,
-                      const char *IDout_name,
-                      imageID    *outID)
+errno_t rings2sectors(
+    const char *IDin_name,
+    const char *sectfname,
+    const char *IDout_name,
+    imageID    *outID)
 {
     DEBUG_TRACE_FSTART();
 
-    imageID IDin, IDout;
-    FILE   *fp;
-    long    nbring, nbzone;
-    long    tmpl1, tmpl2;
-    long    zone;
-    long    arrayring[5000];
-
-    IDin   = image_ID(IDin_name, data.core.image, data.core.NB_MAX_IMAGE);
-    nbring = data.core.image[IDin].md[0].size[0];
-
-    nbzone = 0;
-    nbring = 0;
-    fp     = fopen(sectfname, "r");
-    while(fscanf(fp, "%ld %ld\n", &tmpl1, &tmpl2) == 2)
+    imageID IDin = image_ID(IDin_name, dcimg, dcnimg);
+    if (IDin == -1)
     {
-        arrayring[tmpl1] = tmpl2;
-        if(tmpl2 > nbring)
+        PRINT_ERROR("Image \"%s\" not found", IDin_name);
+        return RETURN_FAILURE;
+    }
+
+    FILE *fp = fopen(sectfname, "r");
+    if (fp == NULL)
+    {
+        PRINT_ERROR("Cannot open sector file \"%s\"", sectfname);
+        return RETURN_FAILURE;
+    }
+
+    long arrayring[5000] = { 0 };
+    long nbzone          = 0;
+    long nbring          = 0;
+    long tmpl1           = 0;
+    long tmpl2           = 0;
+
+    while (fscanf(fp, "%ld %ld\n", &tmpl1, &tmpl2) == 2)
+    {
+        if (tmpl1 >= 0 && tmpl1 < 5000)
+        {
+            arrayring[tmpl1] = tmpl2;
+        }
+        if (tmpl2 > nbring)
         {
             nbring = tmpl2;
         }
-        if(tmpl1 > nbzone)
+        if (tmpl1 > nbzone)
         {
             nbzone = tmpl1;
         }
@@ -100,15 +104,17 @@ errno_t rings2sectors(const char *IDin_name,
     nbring++;
     nbzone++;
 
+    imageID IDout = -1;
     FUNC_CHECK_RETURN(create_2Dimage_ID_double(IDout_name, nbzone, 1, &IDout));
 
-    for(zone = 0; zone < nbzone; zone++)
-        data.core.image[IDout].array.D[zone] =
-            data.core.image[IDin].array.D[arrayring[zone]];
+    for (long zone = 0; zone < nbzone; zone++)
+    {
+        dcimg[IDout].array.D[zone] = dcimg[IDin].array.D[arrayring[zone]];
+    }
 
     printf("%ld zones in %ld rings\n", nbzone, nbring);
 
-    if(outID != NULL)
+    if (outID != NULL)
     {
         *outID = IDout;
     }
@@ -117,26 +123,23 @@ errno_t rings2sectors(const char *IDin_name,
     return RETURN_SUCCESS;
 }
 
-static errno_t compute_function()
+/**
+ * cli_rings2sectors - CLI wrapper invoking rings2sectors
+ *
+ * Return: errno_t status code from rings2sectors.
+ */
+static errno_t cli_rings2sectors(void)
 {
-    DEBUG_TRACE_FSTART();
-
-    INSERT_STD_PROCINFO_COMPUTEFUNC_START
-
-    rings2sectors(inimname, secfname, outimname, NULL);
-
-    INSERT_STD_PROCINFO_COMPUTEFUNC_END
-
-    DEBUG_TRACE_FEXIT();
-    return RETURN_SUCCESS;
+    return rings2sectors(inimname, secfname, outimname, NULL);
 }
 
-INSERT_STD_CLIfunction
-
-// Register function in CLI
-errno_t
-CLIADDCMD_PIAACMCsimul__ring2sectors()
+const MILK_RUNNABLE runnable_piaacmc_ring2sect =
 {
-    INSERT_STD_CLIREGISTERFUNC
-    return RETURN_SUCCESS;
-}
+    .kind     = MILK_RUNNABLE_CLI,
+    .app      = { .cmdkey = "ring2sect", .description = "turn ring fpm design into sectors" },
+    .srcfile  = __FILE__,
+    .farg     = ring2sect_farg,
+    .nbarg    = (int) (sizeof(ring2sect_farg) / sizeof(ring2sect_farg[0])),
+    .cli_func = cli_rings2sectors,
+    .rt       = &ring2sect_rt,
+};

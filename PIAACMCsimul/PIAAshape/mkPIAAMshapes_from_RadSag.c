@@ -12,7 +12,7 @@
 #include <omp.h>
 #endif
 
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
@@ -181,11 +181,11 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname,
                     }
                     double val =
                         (1.0 - alpha) * z0array[k - 1] + alpha * z0array[k];
-                    data.core.image[ID_PIAAM0].array.F[jj * size + ii] = val;
+                    dcimg[ID_PIAAM0].array.F[jj * size + ii] = val;
                 }
                 else
                 {
-                    data.core.image[ID_PIAAM0].array.F[jj * size + ii] = 0.0;
+                    dcimg[ID_PIAAM0].array.F[jj * size + ii] = 0.0;
                 }
 
                 if(r < r1limfact * beamrad)
@@ -204,12 +204,12 @@ errno_t mkPIAAMshapes_from_RadSag(const char *__restrict__ piaa1Dsagfname,
                     }
                     double val =
                         (1.0 - alpha) * z1array[k - 1] + alpha * z1array[k];
-                    data.core.image[ID_PIAAM1].array.F[jj * size + ii] =
+                    dcimg[ID_PIAAM1].array.F[jj * size + ii] =
                         -val; //-piaacmc[0].PIAAsep);
                 }
                 else
                 {
-                    data.core.image[ID_PIAAM1].array.F[jj * size + ii] = 0.0;
+                    dcimg[ID_PIAAM1].array.F[jj * size + ii] = 0.0;
                 }
             }
         }

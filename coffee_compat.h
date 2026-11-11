@@ -1,119 +1,138 @@
 /**
  * @file    coffee_compat.h
- * @brief   Backward-compatibility shims for legacy
- *          coffee code
+ * @brief   Backward-compatibility shims for coffee optical modules
  *
- * Provides stubs for removed functions and extern
- * declarations for functions missing headers.
- *
- * Include this header AFTER CLIcore.h in every
- * coffee .c file that uses the old API.
+ * Provides thin inline shims for removed semaphore creation calls and
+ * OpticsMaterials naming aliases when building against modern milk.
  */
 
 #ifndef COFFEE_COMPAT_H
 #define COFFEE_COMPAT_H
 
-#include "CLIcore.h"
+#include <string.h>
+
+#include "milk_runnable.h"
 #include "COREMOD_memory/COREMOD_memory.h"
+#include "OpticsMaterials/OpticsMaterials.h"
 
-
-/* ============================================
- * COREMOD_MEMORY_image_set_createsem:
- * Removed — semaphores are now created
- * automatically by ImageStreamIO.
- * Stub to no-op.
- * ============================================ */
-
-static inline imageID
-COREMOD_MEMORY_image_set_createsem(
+/**
+ * COREMOD_MEMORY_image_set_createsem - Legacy no-op semaphore initializer
+ * @IDname: Image stream name (unused)
+ * @NBsem:  Requested semaphore count (unused)
+ *
+ * Semaphores are created automatically by ImageStreamIO on stream creation.
+ *
+ * Return: 0
+ */
+static inline imageID COREMOD_MEMORY_image_set_createsem(
     const char *IDname __attribute__((unused)),
-    long        NBsem  __attribute__((unused)))
+    long        NBsem __attribute__((unused)))
 {
     return 0;
 }
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846264338328
+#endif
 
-/* ============================================
- * waitforsemID:
- * Exists in stream_sem.c but has no header.
- * Provide declaration.
- * ============================================ */
+#define COFFEE_MATCODE_CSTPHA 98
 
-extern void *waitforsemID(void *ID);
-
-
-/* ============================================
- * OpticsMaterials shims:
- * Maps legacy camelCase OpticsMaterials_* to
- * current OPTICSMATERIALS_* API.
- * ============================================ */
-
-#include "OpticsMaterials/OpticsMaterials.h"
-
-static inline double OpticsMaterials_n(int material, double lambda)
+/**
+ * OpticsMaterials_n - Compute refractive index at wavelength
+ * @material: Material identifier code
+ * @lambda:   Wavelength in meters
+ *
+ * Return: Refractive index n(lambda).
+ */
+static inline double OpticsMaterials_n(
+    int    material,
+    double lambda)
 {
+    if (material == COFFEE_MATCODE_CSTPHA)
+    {
+        return 1.0 + lambda * 1.0e6;
+    }
     return OPTICSMATERIALS_n(material, lambda);
 }
 
-static inline int OpticsMaterials_code(const char *name)
+/**
+ * OpticsMaterials_code - Resolve material identifier code from string name
+ * @name: Material name string
+ *
+ * Return: Numeric material code, or -1 if unknown.
+ */
+static inline int OpticsMaterials_code(
+    const char *name)
 {
+    if (name != NULL && strcmp(name, "CstPha") == 0)
+    {
+        return COFFEE_MATCODE_CSTPHA;
+    }
     return OPTICSMATERIALS_code(name);
 }
 
-static inline const char *OpticsMaterials_name(int code)
+/**
+ * OpticsMaterials_name - Resolve material string name from identifier code
+ * @code: Numeric material code
+ *
+ * Return: Material name string, or NULL if unknown.
+ */
+static inline const char *OpticsMaterials_name(
+    int code)
 {
+    if (code == COFFEE_MATCODE_CSTPHA)
+    {
+        return "CstPha";
+    }
     return OPTICSMATERIALS_name(code);
 }
 
-static inline double OpticsMaterials_pha_lambda(int material, double z, double lambda)
+/**
+ * OpticsMaterials_pha_lambda - Compute optical phase shift across thickness
+ * @material: Material identifier code
+ * @z:        Physical thickness in meters
+ * @lambda:   Wavelength in meters
+ *
+ * Return: Phase shift in radians.
+ */
+static inline double OpticsMaterials_pha_lambda(
+    int    material,
+    double z,
+    double lambda)
 {
+    if (material == COFFEE_MATCODE_CSTPHA)
+    {
+        return 2.0 * M_PI * z * 1.0e6;
+    }
     return OPTICSMATERIALS_pha_lambda(material, z, lambda);
 }
 
-
-/* ============================================
- * INSERT_STD_CLIfunction:
- * Compatibility macro for legacy CLI function
- * argument array parsing and execution.
- * ============================================ */
-
-extern errno_t CLI_checkarg_array(CLICMDARGDEF fpscliarg[], int nbarg);
-extern void *get_farg_ptr(char *tag, long *fpsi);
-
-#ifndef STD_FARG_LINKfunction
-#define STD_FARG_LINKfunction                                                  \
-    for (int argi = 0; argi < (int) (sizeof(farg) / sizeof(CLICMDARGDEF));     \
-         argi++)                                                               \
-    {                                                                          \
-        long  fpsi           = -1;                                             \
-        void *ptr            = get_farg_ptr(farg[argi].fpstag, &fpsi);         \
-        *(farg[argi].valptr) = ptr;                                            \
-        if (farg[argi].indexptr != NULL)                                       \
-        {                                                                      \
-            *(farg[argi].indexptr) = fpsi;                                     \
-        }                                                                      \
+/**
+ * coffee_dcvar_f - Read numeric CLI variable as double regardless of union tag
+ * @id: Variable table index from variable_ID()
+ *
+ * In milk's @calc evaluator, integer literals create type 1 (long, value.l)
+ * while floating-point literals create type 0 (double, value.f). This helper
+ * safely reads either numeric representation as double.
+ *
+ * Return: Numeric value of variable, or 0.0 if @id < 0 or non-numeric.
+ */
+static inline double coffee_dcvar_f(
+    variableID id)
+{
+    if (id < 0)
+    {
+        return 0.0;
     }
-#endif
-
-#ifndef INSERT_STD_CLIfunction
-#define INSERT_STD_CLIfunction                                                 \
-    static errno_t CLIfunction(void)                                           \
-    {                                                                          \
-        errno_t retval = CLI_checkarg_array(farg, CLIcmddata.nbarg);           \
-        if (retval == RETURN_SUCCESS)                                          \
-        {                                                                      \
-            STD_FARG_LINKfunction return compute_function();                   \
-        }                                                                      \
-        if (retval == RETURN_CLICHECKARGARRAY_HELP)                            \
-        {                                                                      \
-            return RETURN_SUCCESS;                                             \
-        }                                                                      \
-        if (retval == RETURN_CLICHECKARGARRAY_FUNCPARAMSET)                    \
-        {                                                                      \
-            return RETURN_SUCCESS;                                             \
-        }                                                                      \
-        return retval;                                                         \
+    if (dcvar[id].type == 1)
+    {
+        return (double) dcvar[id].value.l;
     }
-#endif
+    if (dcvar[id].type == 0)
+    {
+        return dcvar[id].value.f;
+    }
+    return 0.0;
+}
 
 #endif /* COFFEE_COMPAT_H */

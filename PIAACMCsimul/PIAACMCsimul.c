@@ -1,8 +1,9 @@
 /**
- * @file    PIAAACMCsimul.c
- * @brief   PIAA-type coronagraph design
+ * @file    PIAACMCsimul.c
+ * @brief   PIAA-type coronagraph design module descriptor and global state
  *
- * Can design both APLCMC and PIAACMC coronagraphs
+ * Supports design and Fresnel/polychromatic simulation of both APLCMC and
+ * PIAACMC coronagraphs.
  */
 
 #define _GNU_SOURCE
@@ -10,12 +11,13 @@
 #define MODULE_SHORTNAME_DEFAULT "coffeepiaacmcsim"
 #define MODULE_DESCRIPTION       "PIAACMC simulation"
 
-#include "CLIcore.h"
+#include <stdlib.h>
+
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "OptSystProp/OptSystProp.h"
 #include "PIAACMCsimul.h"
-
 #include "PIAACMCsimul_run.h"
 
 #include "FocalPlaneMask/FPM_process.h"
@@ -25,101 +27,70 @@
 
 #include "LyotStop/geomProp.h"
 
-#ifdef HAVE_LIBGOMP
-#include <omp.h>
-#define OMP_NELEMENT_LIMIT 1000000
-#endif
-
-// static int INITSTATUS_PIAACMCsimul = 0;
-
-/// optical system description
-//OPTSYST *optsyst;
-
-//OPTPIAACMCDESIGN *piaacmcoptdesign;
-
-PIAACMCSIMUL_PARAMS piaacmcparams;
-OPTPIAACMCDESIGN    piaacmcopticaldesign;
-OPTSYST             piaacmcopticalsystem;
-
-MODULE_DEPS("milkinfo", "milkOpticsMaterials", "milklinoptimtools", "milkimagebasic", "milkimagefilter", "milkWFpropagate");
-
-/** @name MODULE INITIALIZATION
- * Registers CLI commands
-*/
-
-static errno_t init_module_CLI()
+PIAACMCSIMUL_PARAMS piaacmcparams =
 {
+    .optsystinit       = 0,
+    .LAMBDASTART       = 0.5e-6,
+    .LAMBDAEND         = 0.605e-6,
+    .focmMode          = -1,
+    .FPMSCALEFACTOR    = 0.9,
+    .CnormFactor       = 1.0,
+    .SCORINGTOTAL      = 1.0,
+    .MODampl           = 1.0e-6,
+    .PIAACMC_save      = 1,
+    .WRITE_OK          = 1,
+};
 
-    CLIADDCMD_PIAACMCsimul__ring2sectors();
+OPTPIAACMCDESIGN piaacmcopticaldesign;
+OPTSYST          piaacmcopticalsystem;
 
-    CLIADDCMD_PIAACMCsimul__run();
+static int piaacmc_atexit_registered = 0;
 
-    CLIADDCMD_PIAACMCsimul__FPMresp_rmzones();
+MODULE_DEPS(
+    "milkinfo",
+    "milklinoptimtools",
+    "milkimagebasic",
+    "milkimagefilter",
+    "milkimagegen",
+    "milkfft",
+    "milkstatistic",
+    "milkZernikePolyn",
+    "milkOpticsMaterials",
+    "milkWFpropagate",
+    "coffeeOptSystProp",
+    "coffeecoronagraphs");
 
-    CLIADDCMD_PIAACMCsimul__FPMresp_resample();
-
-    CLIADDCMD_PIAACMCsimul__FPM_process();
-
-    CLIADDCMD_PIAACMCsimul__LyotStop__PIAACMCsimul_geomProp();
-
-    piaacmcparams.optsystinit = 0;
-
-    // this makes 20% bandwidth, from 0.55/1.1 to 0.55*1.1
-    piaacmcparams.LAMBDASTART = 0.5e-6;
-    piaacmcparams.LAMBDAEND   = 0.605e-6;
-
-    piaacmcparams.FORCE_CREATE_Cmodes = 0;
-    piaacmcparams.CREATE_Cmodes       = 0;
-    piaacmcparams.FORCE_CREATE_Fmodes = 0;
-    piaacmcparams.CREATE_Fmodes       = 0;
-
-    piaacmcparams.FORCE_CREATE_fpmzmap = 0;
-    piaacmcparams.CREATE_fpmzmap       = 0;
-    piaacmcparams.FORCE_CREATE_fpmzt   = 0;
-    piaacmcparams.CREATE_fpmzt         = 0;
-
-    piaacmcparams.FORCE_CREATE_fpmza = 0;
-    piaacmcparams.CREATE_fpmza       = 0;
-
-    piaacmcparams.FORCE_MAKE_PIAA0shape = 0;
-    piaacmcparams.MAKE_PIAA0shape       = 0;
-    piaacmcparams.FORCE_MAKE_PIAA1shape = 0;
-    piaacmcparams.MAKE_PIAA1shape       = 0;
-
-    // if != -1, compute only impulse response to corresponding zone
-    piaacmcparams.focmMode           = -1;
-    piaacmcparams.PIAACMC_FPMsectors = 0;
-
-    piaacmcparams.FPMSCALEFACTOR    = 0.9;
-    piaacmcparams.PIAACMC_MASKRADLD = 0.0;
-
-    piaacmcparams.LOOPCNT = 0;
-
-    piaacmcparams.CnormFactor = 1.0;
-
-    piaacmcparams.computePSF_FAST_FPMresp = 0;
-    piaacmcparams.computePSF_ResolvedTarget =
-        0; // source size = 1e-{0.1*computePSF_ResolvedTarget}
-    piaacmcparams.computePSF_ResolvedTarget_mode =
-        0; // 0: source is simulated as 3 points, 1: source is simulated as 6 points
-    piaacmcparams.PIAACMC_FPM_FASTDERIVATIVES = 0;
-
-    piaacmcparams.SCORINGTOTAL    = 1.0;
-    piaacmcparams.MODampl         = 1.0e-6;
-    piaacmcparams.SCORINGMASKTYPE = 0;
-    piaacmcparams.PIAACMC_save    = 1;
-    //piaacmcparams.PIAACMC_MASKregcoeff = 1.0;
-    piaacmcparams.PIAACMC_fpmtype = 0;
-
-    piaacmcparams.WRITE_OK = 1;
-
-    piaacmcparams.LINOPT = 0;
-
-    // add atexit functions here
-    atexit(PIAACMCsimul_free);
-
+/**
+ * init_PIAACMCsimul - Initialize PIAACMCsimul module defaults and exit handler
+ *
+ * Return: RETURN_SUCCESS.
+ */
+errno_t init_PIAACMCsimul(void)
+{
+    if (!piaacmc_atexit_registered)
+    {
+        atexit(PIAACMCsimul_free);
+        piaacmc_atexit_registered = 1;
+    }
     return RETURN_SUCCESS;
 }
 
-MILK_MODULE(coffeePIAACMCsimul, init_module_CLI, _module_deps);
+/**
+ * libinit_PIAACMCsimul - Shared library constructor registering cleanup hook
+ */
+void __attribute__((constructor)) libinit_PIAACMCsimul(void)
+{
+    init_PIAACMCsimul();
+}
 
+static const MILK_RUNNABLE *const runnables[] =
+{
+    &runnable_piaacmc_ring2sect,
+    &runnable_piaacmc_run,
+    &runnable_piaacmc_fpmresprm,
+    &runnable_piaacmc_fpmresprs,
+    &runnable_piaacmc_fpmprocess,
+    &runnable_piaacmc_geomprop,
+};
+
+MILK_MODULE_RUNNABLES(coffeePIAACMCsimul, _module_deps, runnables);

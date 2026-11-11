@@ -1,11 +1,15 @@
 #ifndef PIAACMCSIMUL_FOCALPLANEMASK_FPM_PROCESS_H
 #define PIAACMCSIMUL_FOCALPLANEMASK_FPM_PROCESS_H
 
-errno_t CLIADDCMD_PIAACMCsimul__FPM_process();
+#include "milk_runnable.h"
 
-errno_t PIAACMC_FPM_process(const char *__restrict__ FPMsag_name,
-                            const char *__restrict__ zonescoord_name,
-                            long NBexp,
-                            const char *__restrict__ outname);
+extern const MILK_RUNNABLE runnable_piaacmc_fpmprocess;
 
-#endif
+/* Quantize continuous FPM zone sags into discrete lithographic etching levels. */
+errno_t PIAACMC_FPM_process(
+    const char *restrict FPMsag_name,
+    const char *restrict zonescoord_name,
+    long                 NBexp,
+    const char *restrict outname);
+
+#endif /* PIAACMCSIMUL_FOCALPLANEMASK_FPM_PROCESS_H */

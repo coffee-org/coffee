@@ -20,7 +20,7 @@
 #include <gsl/gsl_vector.h>
 
 // milk includes
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_arith/COREMOD_arith.h"
@@ -73,23 +73,23 @@ static double PIAACMCsimul_regularization_PIAAshapes_value()
     ID = piaacmcopticaldesign.piaa0CmodesID;
 
     // index of PIAA shapes reference image
-    IDref = image_ID("piaa0Cmref", data.core.image, data.core.NB_MAX_IMAGE);
+    IDref = image_ID("piaa0Cmref", dcimg, dcnimg);
     if(IDref == -1)
     {
         // error message if we get here?  ***************************************
         // if the reference image doesn't exist, create it
         create_2Dimage_ID(
             "piaa0Cmref",
-            data.core.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0],
+            dcimg[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0],
             1,
             &IDref);
 
         // initialize to zero shape
         for(uint32_t jj = 0;
-                jj < data.core.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
+                jj < dcimg[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
                 jj++)
         {
-            data.core.image[IDref].array.F[jj] = 0.0;
+            dcimg[IDref].array.F[jj] = 0.0;
         }
     }
 
@@ -98,7 +98,7 @@ static double PIAACMCsimul_regularization_PIAAshapes_value()
 
     // For each cosine mode set the optimization parameter = cosine mode modified by regularization
     for(uint32_t jj = 0;
-            jj < data.core.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
+            jj < dcimg[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
             jj++)
     {
         // compute square of C*(deviation from reference)*(mode index)^(alpha)
@@ -107,99 +107,99 @@ static double PIAACMCsimul_regularization_PIAAshapes_value()
 
         double tmp;
         tmp = piaacmcparams.linopt_piaa0C_regcoeff *
-              (data.core.image[ID].array.F[jj] - data.core.image[IDref].array.F[jj]) *
+              (dcimg[ID].array.F[jj] - dcimg[IDref].array.F[jj]) *
               pow(1.0 * jj, piaacmcparams.linopt_piaa0C_regcoeff_alpha);
         value += tmp * tmp;
     }
 
     // do the same for PIAA element 1
     ID    = piaacmcopticaldesign.piaa1CmodesID;
-    IDref = image_ID("piaa1Cmref", data.core.image, data.core.NB_MAX_IMAGE);
+    IDref = image_ID("piaa1Cmref", dcimg, dcnimg);
     if(IDref == -1)
     {
         create_2Dimage_ID(
             "piaa1Cmref",
-            data.core.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0],
+            dcimg[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0],
             1,
             &IDref);
 
         for(uint32_t jj = 0;
-                jj < data.core.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
+                jj < dcimg[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
                 jj++)
         {
-            data.core.image[IDref].array.F[jj] = 0.0;
+            dcimg[IDref].array.F[jj] = 0.0;
         }
     }
     for(uint32_t jj = 0;
-            jj < data.core.image[piaacmcopticaldesign.piaa1CmodesID].md[0].size[0];
+            jj < dcimg[piaacmcopticaldesign.piaa1CmodesID].md[0].size[0];
             jj++)
     {
         double tmp;
         tmp = piaacmcparams.linopt_piaa1C_regcoeff *
-              (data.core.image[ID].array.F[jj] - data.core.image[IDref].array.F[jj]) *
+              (dcimg[ID].array.F[jj] - dcimg[IDref].array.F[jj]) *
               pow(1.0 * jj, piaacmcparams.linopt_piaa1C_regcoeff_alpha);
         value += tmp * tmp;
     }
 
     // get spatial frequency of each mode in cycles/aperture
-    ID_CPAfreq = image_ID("cpamodesfreq", data.core.image, data.core.NB_MAX_IMAGE);
+    ID_CPAfreq = image_ID("cpamodesfreq", dcimg, dcnimg);
 
     // do the same for PIAA element 0 and 1 for the Fourier modes
     // this time use the actual spatial frequency rather than mode index as proxy for frequency
     ID    = piaacmcopticaldesign.piaa0FmodesID;
-    IDref = image_ID("piaa0Fmref", data.core.image, data.core.NB_MAX_IMAGE);
+    IDref = image_ID("piaa0Fmref", dcimg, dcnimg);
     if(IDref == -1)
     {
         create_2Dimage_ID(
             "piaa0Fmref",
-            data.core.image[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0],
+            dcimg[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0],
             1,
             &IDref);
 
         for(uint32_t jj = 0;
-                jj < data.core.image[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0];
+                jj < dcimg[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0];
                 jj++)
         {
-            data.core.image[IDref].array.F[jj] = 0.0;
+            dcimg[IDref].array.F[jj] = 0.0;
         }
     }
     for(uint32_t jj = 0;
-            jj < data.core.image[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0];
+            jj < dcimg[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0];
             jj++)
     {
         double tmp;
         tmp = piaacmcparams.linopt_piaa0F_regcoeff *
-              (data.core.image[ID].array.F[jj] - data.core.image[IDref].array.F[jj]) *
-              pow(1.0 * data.core.image[ID_CPAfreq].array.F[jj],
+              (dcimg[ID].array.F[jj] - dcimg[IDref].array.F[jj]) *
+              pow(1.0 * dcimg[ID_CPAfreq].array.F[jj],
                   piaacmcparams.linopt_piaa0F_regcoeff_alpha);
         value += tmp * tmp;
     }
 
     ID    = piaacmcopticaldesign.piaa1FmodesID;
-    IDref = image_ID("piaa1Fmref", data.core.image, data.core.NB_MAX_IMAGE);
+    IDref = image_ID("piaa1Fmref", dcimg, dcnimg);
     if(IDref == -1)
     {
         create_2Dimage_ID(
             "piaa1Fmref",
-            data.core.image[piaacmcopticaldesign.piaa1FmodesID].md[0].size[0],
+            dcimg[piaacmcopticaldesign.piaa1FmodesID].md[0].size[0],
             1,
             &IDref);
 
         for(uint32_t jj = 0;
-                jj < data.core.image[piaacmcopticaldesign.piaa1FmodesID].md[0].size[0];
+                jj < dcimg[piaacmcopticaldesign.piaa1FmodesID].md[0].size[0];
                 jj++)
         {
-            data.core.image[IDref].array.F[jj] = 0.0;
+            dcimg[IDref].array.F[jj] = 0.0;
         }
     }
     for(uint32_t jj = 0;
-            jj < data.core.image[piaacmcopticaldesign.piaa1FmodesID].md[0].size[0];
+            jj < dcimg[piaacmcopticaldesign.piaa1FmodesID].md[0].size[0];
             jj++)
     {
         double tmp;
         tmp = piaacmcparams.linopt_piaa1F_regcoeff *
-              (data.core.image[ID].array.F[jj] - data.core.image[IDref].array.F[jj]) *
-              pow(1.0 * data.core.image[ID_CPAfreq].array.F[jj],
+              (dcimg[ID].array.F[jj] - dcimg[IDref].array.F[jj]) *
+              pow(1.0 * dcimg[ID_CPAfreq].array.F[jj],
                   piaacmcparams.linopt_piaa1F_regcoeff_alpha);
         value += tmp * tmp;
     }
@@ -225,12 +225,12 @@ static double PIAACMCsimul_regularization_fpmsag_value()
     regvalue = 0.0;
     IDzonez  = piaacmcopticaldesign.zonezID;
 
-    for(long zoneindex = 0; zoneindex < data.core.image[IDzonez].md[0].size[0];
+    for(long zoneindex = 0; zoneindex < dcimg[IDzonez].md[0].size[0];
             zoneindex++)
     {
         // compute the square of (sag/coeff)^alpha
         double tmp;
-        tmp = pow(data.core.image[IDzonez].array.D[zoneindex] /
+        tmp = pow(dcimg[IDzonez].array.D[zoneindex] /
                   piaacmcopticaldesign.fpmsagreg_coeff,
                   piaacmcopticaldesign.fpmsagreg_alpha);
         regvalue += tmp * tmp;
@@ -256,118 +256,118 @@ static long PIAACMCsimul_regularization_PIAAshapes_add1Dvector(imageID ID1D,
     ID     = piaacmcopticaldesign.piaa0CmodesID;
     vindex = index0;
 
-    IDref = image_ID("piaa0Cmref", data.core.image, data.core.NB_MAX_IMAGE);
+    IDref = image_ID("piaa0Cmref", dcimg, dcnimg);
     if(IDref == -1)
     {
         create_2Dimage_ID(
             "piaa0Cmref",
-            data.core.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0],
+            dcimg[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0],
             1,
             &IDref);
 
         for(uint32_t ii = 0;
-                ii < data.core.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
+                ii < dcimg[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
                 ii++)
         {
-            data.core.image[IDref].array.F[ii] = 0.0;
+            dcimg[IDref].array.F[ii] = 0.0;
         }
     }
 
     for(uint32_t ii = 0;
-            ii < data.core.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
+            ii < dcimg[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
             ii++)
     {
-        data.core.image[ID1D].array.F[vindex] =
+        dcimg[ID1D].array.F[vindex] =
             piaacmcparams.linopt_piaa0C_regcoeff *
-            (data.core.image[ID].array.F[ii] - data.core.image[IDref].array.F[ii]) *
+            (dcimg[ID].array.F[ii] - dcimg[IDref].array.F[ii]) *
             pow(1.0 * ii, piaacmcparams.linopt_piaa0C_regcoeff_alpha);
         vindex++;
     }
 
     ID    = piaacmcopticaldesign.piaa1CmodesID;
-    IDref = image_ID("piaa1Cmref", data.core.image, data.core.NB_MAX_IMAGE);
+    IDref = image_ID("piaa1Cmref", dcimg, dcnimg);
     if(IDref == -1)
     {
         create_2Dimage_ID(
             "piaa1Cmref",
-            data.core.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0],
+            dcimg[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0],
             1,
             &IDref);
 
         for(uint32_t ii = 0;
-                ii < data.core.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
+                ii < dcimg[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
                 ii++)
         {
-            data.core.image[IDref].array.F[ii] = 0.0;
+            dcimg[IDref].array.F[ii] = 0.0;
         }
     }
     for(uint32_t ii = 0;
-            ii < data.core.image[piaacmcopticaldesign.piaa1CmodesID].md[0].size[0];
+            ii < dcimg[piaacmcopticaldesign.piaa1CmodesID].md[0].size[0];
             ii++)
     {
-        data.core.image[ID1D].array.F[vindex] =
+        dcimg[ID1D].array.F[vindex] =
             piaacmcparams.linopt_piaa1C_regcoeff *
-            (data.core.image[ID].array.F[ii] - data.core.image[IDref].array.F[ii]) *
+            (dcimg[ID].array.F[ii] - dcimg[IDref].array.F[ii]) *
             pow(1.0 * ii, piaacmcparams.linopt_piaa1C_regcoeff_alpha);
         vindex++;
     }
 
-    ID_CPAfreq = image_ID("cpamodesfreq", data.core.image, data.core.NB_MAX_IMAGE);
+    ID_CPAfreq = image_ID("cpamodesfreq", dcimg, dcnimg);
 
     ID    = piaacmcopticaldesign.piaa0FmodesID;
-    IDref = image_ID("piaa0Fmref", data.core.image, data.core.NB_MAX_IMAGE);
+    IDref = image_ID("piaa0Fmref", dcimg, dcnimg);
     if(IDref == -1)
     {
         create_2Dimage_ID(
             "piaa0Fmref",
-            data.core.image[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0],
+            dcimg[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0],
             1,
             &IDref);
 
         for(uint32_t ii = 0;
-                ii < data.core.image[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0];
+                ii < dcimg[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0];
                 ii++)
         {
-            data.core.image[IDref].array.F[ii] = 0.0;
+            dcimg[IDref].array.F[ii] = 0.0;
         }
     }
     for(uint32_t ii = 0;
-            ii < data.core.image[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0];
+            ii < dcimg[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0];
             ii++)
     {
-        data.core.image[ID1D].array.F[vindex] =
+        dcimg[ID1D].array.F[vindex] =
             piaacmcparams.linopt_piaa0F_regcoeff *
-            (data.core.image[ID].array.F[ii] - data.core.image[IDref].array.F[ii]) *
-            pow(1.0 * data.core.image[ID_CPAfreq].array.F[ii],
+            (dcimg[ID].array.F[ii] - dcimg[IDref].array.F[ii]) *
+            pow(1.0 * dcimg[ID_CPAfreq].array.F[ii],
                 piaacmcparams.linopt_piaa0F_regcoeff_alpha);
         vindex++;
     }
 
     ID    = piaacmcopticaldesign.piaa1FmodesID;
-    IDref = image_ID("piaa1Fmref", data.core.image, data.core.NB_MAX_IMAGE);
+    IDref = image_ID("piaa1Fmref", dcimg, dcnimg);
     if(IDref == -1)
     {
         create_2Dimage_ID(
             "piaa1Fmref",
-            data.core.image[piaacmcopticaldesign.piaa1FmodesID].md[0].size[0],
+            dcimg[piaacmcopticaldesign.piaa1FmodesID].md[0].size[0],
             1,
             &IDref);
 
         for(uint32_t ii = 0;
-                ii < data.core.image[piaacmcopticaldesign.piaa1FmodesID].md[0].size[0];
+                ii < dcimg[piaacmcopticaldesign.piaa1FmodesID].md[0].size[0];
                 ii++)
         {
-            data.core.image[IDref].array.F[ii] = 0.0;
+            dcimg[IDref].array.F[ii] = 0.0;
         }
     }
     for(uint32_t ii = 0;
-            ii < data.core.image[piaacmcopticaldesign.piaa1FmodesID].md[0].size[0];
+            ii < dcimg[piaacmcopticaldesign.piaa1FmodesID].md[0].size[0];
             ii++)
     {
-        data.core.image[ID1D].array.F[vindex] =
+        dcimg[ID1D].array.F[vindex] =
             piaacmcparams.linopt_piaa1F_regcoeff *
-            (data.core.image[ID].array.F[ii] - data.core.image[IDref].array.F[ii]) *
-            pow(1.0 * data.core.image[ID_CPAfreq].array.F[ii],
+            (dcimg[ID].array.F[ii] - dcimg[IDref].array.F[ii]) *
+            pow(1.0 * dcimg[ID_CPAfreq].array.F[ii],
                 piaacmcparams.linopt_piaa1F_regcoeff_alpha);
         vindex++;
     }
@@ -425,12 +425,12 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
         // - pixel 1    minor step
         // - pixel 2    source code file
         // - pixel 3    source code line number
-        IDstatus = image_ID("stat_PIAACMCsimulexec", data.core.image, data.core.NB_MAX_IMAGE);
+        IDstatus = image_ID("stat_PIAACMCsimulexec", dcimg, dcnimg);
         if(IDstatus == -1)
         {
             printf("Looking for stat_PIAACMCsimulexec\n");
             fflush(stdout);
-            IDstatus = read_sharedmem_image("stat_PIAACMCsimulexec", data.core.image, data.core.NB_MAX_IMAGE);
+            IDstatus = read_sharedmem_image("stat_PIAACMCsimulexec", dcimg, dcnimg);
             printf("ID for stat_PIAACMCsimulexec: %ld\n", IDstatus);
             fflush(stdout);
         }
@@ -467,7 +467,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
              STRINGMAXLEN_DIRNAME,
              "%s",
              confindex);
-    snprintf(data.core.SAVEDIR,
+    snprintf(dcsavedir,
              STRINGMAXLEN_DIRNAME,
              "%s",
              piaacmcparams.piaacmcconfdir);
@@ -479,14 +479,14 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
 
     // get variables from command line, possibly sets globals
     /*    if( (IDv = variable_ID("PIAACMC_centobs0")) != -1)
-            centobs0 = data.core.variable[IDv].value.f;
+            centobs0 = coffee_dcvar_f(IDv);
         if( (IDv = variable_ID("PIAACMC_centobs1")) != -1)
-            centobs1 = data.core.variable[IDv].value.f;
+            centobs1 = coffee_dcvar_f(IDv);
             */
     double fpmradld = 0.95;
     if((IDv = variable_ID("PIAACMC_fpmradld")) != -1)
     {
-        fpmradld = data.core.variable[IDv].value.f;
+        fpmradld = coffee_dcvar_f(IDv);
         printf("MASK RADIUS = %lf lambda/D\n", fpmradld);
     }
 
@@ -572,7 +572,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
     if(piaacmcparams.LINOPT == 1)  // linear optimization
     {
         // for state tracking and statistics
-        data.core.image[IDstatus].array.UI16[0] = 5;
+        dcimg[IDstatus].array.UI16[0] = 5;
 
         // Compute Reference on-axis performance contrast (valref)
         FUNC_CHECK_RETURN(makePIAAshapes());
@@ -595,7 +595,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
             // save the current configuration to the _linopt directory
             char dirname[STRINGMAXLEN_DIRNAME];
 
-            WRITE_DIRNAME(dirname, "%s_linopt", piaacmcparams.piaacmcconfdir);
+            SNPRINTF_CHECK(dirname, STRINGMAXLEN_DIRNAME, "%s_linopt", piaacmcparams.piaacmcconfdir);
 
             FUNC_CHECK_RETURN(PIAACMCsimul_savepiaacmcconf(dirname));
 
@@ -609,43 +609,40 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
             // these will be the "reference" shapes used to regularize PIAA shapes: the deviation from this reference will be kept small by the regularization
 
             EXECUTE_SYSTEM_COMMAND(
-                "cp -n %s/piaa0Cmodes.fits %s/piaa0Cmodes.ref.fits",
-                dirname,
-                dirname);
-            EXECUTE_SYSTEM_COMMAND(
-                "cp -n %s/piaa0Fmodes.fits %s/piaa0Fmodes.ref.fits",
-                dirname,
+                "cd \"%s\" && { test -f piaacmcparams.ref.conf || "
+                "cp piaacmcparams.conf piaacmcparams.ref.conf; }",
                 dirname);
 
-            EXECUTE_SYSTEM_COMMAND(
-                "cp -n %s/piaa1Cmodes.fits %s/piaa1Cmodes.ref.fits",
-                dirname,
-                dirname);
-            EXECUTE_SYSTEM_COMMAND(
-                "cp -n %s/piaa1Fmodes.fits %s/piaa1Fmodes.ref.fits",
-                dirname,
-                dirname);
+            if(piaacmcopticaldesign.PIAAmode == 1)
+            {
+                EXECUTE_SYSTEM_COMMAND(
+                    "cd \"%s\" && { test -f piaa0Cmodes.ref.fits || "
+                    "cp piaa0Cmodes.fits piaa0Cmodes.ref.fits; }",
+                    dirname);
+                EXECUTE_SYSTEM_COMMAND(
+                    "cd \"%s\" && { test -f piaa0Fmodes.ref.fits || "
+                    "cp piaa0Fmodes.fits piaa0Fmodes.ref.fits; }",
+                    dirname);
+                EXECUTE_SYSTEM_COMMAND(
+                    "cd \"%s\" && { test -f piaa1Cmodes.ref.fits || "
+                    "cp piaa1Cmodes.fits piaa1Cmodes.ref.fits; }",
+                    dirname);
+                EXECUTE_SYSTEM_COMMAND(
+                    "cd \"%s\" && { test -f piaa1Fmodes.ref.fits || "
+                    "cp piaa1Fmodes.fits piaa1Fmodes.ref.fits; }",
+                    dirname);
 
-            EXECUTE_SYSTEM_COMMAND(
-                "cp -n %s/piaacmcparams.conf %s/piaacmcparams.ref.conf",
-                dirname,
-                dirname);
-
-            // load PIAA reference shapes (used for regularization)
-
-            char fname[STRINGMAXLEN_FULLFILENAME];
-
-            WRITE_FULLFILENAME(fname, "%s/piaa0Cmodes.ref.fits", dirname);
-            FUNC_CHECK_RETURN(load_fits(fname, "piaa0Cmref", 1, NULL));
-
-            WRITE_FULLFILENAME(fname, "%s/piaa1Cmodes.ref.fits", dirname);
-            FUNC_CHECK_RETURN(load_fits(fname, "piaa1Cmref", 1, NULL));
-
-            WRITE_FULLFILENAME(fname, "%s/piaa0Fmodes.ref.fits", dirname);
-            FUNC_CHECK_RETURN(load_fits(fname, "piaa0Fmref", 1, NULL));
-
-            WRITE_FULLFILENAME(fname, "%s/piaa1Fmodes.ref.fits", dirname);
-            FUNC_CHECK_RETURN(load_fits(fname, "piaa1Fmref", 1, NULL));
+                // load PIAA reference shapes (used for regularization)
+                char fname[STRINGMAXLEN_FULLFILENAME];
+                WRITE_FULLFILENAME(fname, "%s/piaa0Cmodes.ref.fits", dirname);
+                FUNC_CHECK_RETURN(load_fits(fname, "piaa0Cmref", 1, NULL));
+                WRITE_FULLFILENAME(fname, "%s/piaa1Cmodes.ref.fits", dirname);
+                FUNC_CHECK_RETURN(load_fits(fname, "piaa1Cmref", 1, NULL));
+                WRITE_FULLFILENAME(fname, "%s/piaa0Fmodes.ref.fits", dirname);
+                FUNC_CHECK_RETURN(load_fits(fname, "piaa0Fmref", 1, NULL));
+                WRITE_FULLFILENAME(fname, "%s/piaa1Fmodes.ref.fits", dirname);
+                FUNC_CHECK_RETURN(load_fits(fname, "piaa1Fmref", 1, NULL));
+            }
         }
 
         // we have now saved the starting point of the optimization for future comparison
@@ -682,7 +679,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
         // regularization in valref.
 
         // for state tracking and statistics
-        data.core.image[IDstatus].array.UI16[0] = 6;
+        dcimg[IDstatus].array.UI16[0] = 6;
         printf("================================ Reference = %g\n", valref);
 
         // copy imvect to vecDHref "vector dark hole reference"
@@ -693,12 +690,12 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
         chname_image_ID(
             "imvect",
             "vecDHref"); // note: imvect was computed by PIAACMCsimul_computePSF called ~150 lines above
-        ID = image_ID("vecDHref", data.core.image, data.core.NB_MAX_IMAGE); // ID changed identity
-        //xsize = data.core.image[ID].md[0].size[0];
-        //ysize = data.core.image[ID].md[0].size[1];
+        ID = image_ID("vecDHref", dcimg, dcnimg); // ID changed identity
+        //xsize = dcimg[ID].md[0].size[0];
+        //ysize = dcimg[ID].md[0].size[1];
 
         // for state tracking and statistics
-        data.core.image[IDstatus].array.UI16[0] = 7;
+        dcimg[IDstatus].array.UI16[0] = 7;
 
         // now we will just determine the size of the size of the
         // optimization vectors that we will actually fill in later
@@ -711,7 +708,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
             save_fits("vecDHref", fname);
         }
         // get and copy size of vecDHref, 'cause we're manipulating size1Dvec
-        long size1Dvec  = data.core.image[ID].md[0].nelement;
+        long size1Dvec  = dcimg[ID].md[0].nelement;
         long size1Dvec0 = size1Dvec;
 
         // PIAA shapes regularization
@@ -721,20 +718,20 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
         {
             // there are 4 groups of PIAA shape parameters: 2 sets of cosine modes and 2 sets of Fourier modes
             size1Dvec +=
-                data.core.image[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
+                dcimg[piaacmcopticaldesign.piaa0CmodesID].md[0].size[0];
             size1Dvec +=
-                data.core.image[piaacmcopticaldesign.piaa1CmodesID].md[0].size[0];
+                dcimg[piaacmcopticaldesign.piaa1CmodesID].md[0].size[0];
             size1Dvec +=
-                data.core.image[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0];
+                dcimg[piaacmcopticaldesign.piaa0FmodesID].md[0].size[0];
             size1Dvec +=
-                data.core.image[piaacmcopticaldesign.piaa1FmodesID].md[0].size[0];
+                dcimg[piaacmcopticaldesign.piaa1FmodesID].md[0].size[0];
         }
 
         // The same approach is used for regularization of the focal plane mask sag values
         // the sag values are appended to the evaluation vector
         if(piaacmcparams.linopt_REGFPMSAG == 1)
         {
-            size1Dvec += data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+            size1Dvec += dcimg[piaacmcopticaldesign.zonezID].md[0].size[0];
         }
 
         // re-package vector into 1D array and add regularization terms
@@ -750,23 +747,23 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
             create_2Dimage_ID("vecDHref1D", size1Dvec, 1, &ID1Dref));
 
         // we first write 1.0 into the focal plane complex amplitudes in the vector
-        ID = image_ID("vecDHref", data.core.image, data.core.NB_MAX_IMAGE);
+        ID = image_ID("vecDHref", dcimg, dcnimg);
         {
             uint64_t ii;
-            for(ii = 0; ii < data.core.image[ID].md[0].nelement; ii++)
+            for(ii = 0; ii < dcimg[ID].md[0].nelement; ii++)
             {
                 // imbed vecDHref into the evaluation zone part of of the full parameter vector vecDHref1D
-                data.core.image[ID1Dref].array.F[ii] = data.core.image[ID].array.F[ii];
+                dcimg[ID1Dref].array.F[ii] = dcimg[ID].array.F[ii];
                 // sets the evaluation zone part of of the full parameter vector vecDHref1D to 1
                 // 1 means the evaluation zone is on
-                data.core.image[IDm].array.F[ii] = 1.0;
+                dcimg[IDm].array.F[ii] = 1.0;
             }
             // !!!!!! WARNING !!!!!!!
             // the state of ii at this point drives the code below and will evolve until the comment
             // that says we're done with ii
 
             // for state tracking and statistics
-            data.core.image[IDstatus].array.UI16[0] = 8;
+            dcimg[IDstatus].array.UI16[0] = 8;
 
             // Now actually fill in the regularized output vector.
             // If we are not regularizing, the output evaluation zone values are filled in by the
@@ -787,13 +784,13 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
             if(piaacmcparams.linopt_REGFPMSAG == 1)
             {
                 ID = piaacmcopticaldesign.zonezID;
-                for(uint32_t jj = 0; jj < data.core.image[ID].md[0].size[0]; jj++)
+                for(uint32_t jj = 0; jj < dcimg[ID].md[0].size[0]; jj++)
                 {
-                    data.core.image[ID1Dref].array.F[ii] =
-                        pow(data.core.image[ID].array.D[jj] /
+                    dcimg[ID1Dref].array.F[ii] =
+                        pow(dcimg[ID].array.D[jj] /
                             piaacmcopticaldesign.fpmsagreg_coeff,
                             piaacmcopticaldesign.fpmsagreg_alpha);
-                    data.core.image[IDm].array.F[ii] = 1.0;
+                    dcimg[IDm].array.F[ii] = 1.0;
                     ii++;
                 }
             }
@@ -828,7 +825,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
         int    iterOK                      = 1;
         long   iter                        = 0;
         double oldval                      = 1.0;
-        data.core.image[IDstatus].array.UI16[0] = 9;
+        dcimg[IDstatus].array.UI16[0] = 9;
 
         // while # of iterations < piaacmcparams.linopt_NBiter
         //  and the ojective changes by more than 2% after the second iteration
@@ -838,7 +835,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
             double bestgain = 0.0;
 
             // for state tracking and statistics
-            data.core.image[IDstatus].array.UI16[0] = 10;
+            dcimg[IDstatus].array.UI16[0] = 10;
             printf("Iteration %ld/%ld\n", iter, piaacmcparams.linopt_NBiter);
             fflush(stdout);
 
@@ -872,7 +869,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                 fclose(fp);
             }
             // for state tracking and statistics
-            data.core.image[IDstatus].array.UI16[0] = 11;
+            dcimg[IDstatus].array.UI16[0] = 11;
 
             printf(
                 "Compute local derivatives of output vector against input "
@@ -885,26 +882,26 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                 // this only happens in mode 13
                 // the fast derivative mode only works for focal plane mask optimization, for which derivatives against sag values can be comptuted by simple rotation of pre-computed vectors from mode 11
                 // for state tracking and statistics
-                data.core.image[IDstatus].array.UI16[0]        = 12;
+                dcimg[IDstatus].array.UI16[0]        = 12;
                 piaacmcopticalsystem.FOCMASKarray[0].mode = 1; // use 1-fpm
                 //				ID = create_2Dimage_ID("DHmodes2Dtest", size1Dvec, piaacmcparams.linopt_number_param);
 
                 printf("Computing %ld derivatives ",
-                       (long) data.core.image[piaacmcopticaldesign.zonezID]
+                       (long) dcimg[piaacmcopticaldesign.zonezID]
                        .md[0]
                        .size[0]);
                 fflush(stdout);
                 for(uint32_t mz = 0;
                         mz <
-                        data.core.image[piaacmcopticaldesign.zonezID].md[0].size[0];
+                        dcimg[piaacmcopticaldesign.zonezID].md[0].size[0];
                         mz++) // loop over mask zones
                 {
                     printf(" %ld", (long) mz);
                     // actually compute the derivative
                     // fpmresp_array is results from mode 11
                     // from mode 13 above:
-                    //      fpmresp_array = data.core.image[IDfpmresp].array.D;
-                    //      zonez_array = data.core.image[piaacmcopticaldesign.zonezID].array.D;
+                    //      fpmresp_array = dcimg[IDfpmresp].array.D;
+                    //      zonez_array = dcimg[piaacmcopticaldesign.zonezID].array.D;
                     // dphadz_array was computed in mode 13 shortly afterwards
                     // outtmp_array is output
                     FUNC_CHECK_RETURN(
@@ -915,13 +912,13 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                             piaacmcparams.dphadz_array,
                             piaacmcparams.outtmp_array,
                             piaacmcparams.vsize,
-                            data.core.image[piaacmcopticaldesign.zonezID]
+                            dcimg[piaacmcopticaldesign.zonezID]
                             .md[0]
                             .size[0],
                             piaacmcopticaldesign.nblambda));
                     for(long ii = 0; ii < size1Dvec0; ii++)
                     {
-                        data.core.image[IDmodes].array.F[mz * size1Dvec + ii] =
+                        dcimg[IDmodes].array.F[mz * size1Dvec + ii] =
                             piaacmcparams.outtmp_array[ii] *
                             piaacmcparams.linopt_paramdelta[mz];
                     }
@@ -932,14 +929,14 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                     ID = piaacmcopticaldesign.zonezID;
                     // following should be derivative of (sag/coeff)^alpha
                     // w.r.t. sag
-                    for(uint32_t mz = 0; mz < data.core.image[ID].md[0].size[0];
+                    for(uint32_t mz = 0; mz < dcimg[ID].md[0].size[0];
                             mz++)
                     {
-                        data.core.image[IDmodes]
+                        dcimg[IDmodes]
                         .array.F[mz * size1Dvec + (size1Dvec0 + mz)] =
                             (piaacmcopticaldesign.fpmsagreg_alpha /
                              piaacmcopticaldesign.fpmsagreg_coeff) *
-                            pow(data.core.image[ID].array.D[mz] /
+                            pow(dcimg[ID].array.D[mz] /
                                 piaacmcopticaldesign.fpmsagreg_coeff,
                                 piaacmcopticaldesign.fpmsagreg_alpha - 1.0) *
                             piaacmcparams.linopt_paramdelta[mz];
@@ -947,8 +944,8 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                 }
 
                 // TEST diagnostic
-                memcpy(data.core.image[IDmodes2D].array.F,
-                       data.core.image[IDmodes].array.F,
+                memcpy(dcimg[IDmodes2D].array.F,
+                       dcimg[IDmodes].array.F,
                        sizeof(float) * size1Dvec *
                        piaacmcparams.linopt_number_param);
 
@@ -956,7 +953,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                     save_fl_fits("DHmodes2D", "test_DHmodes2D.fits"));
 
                 // for state tracking and statistics
-                data.core.image[IDstatus].array.UI16[0] = 13;
+                dcimg[IDstatus].array.UI16[0] = 13;
 
                 printf("Done computing derivatives (FAST MODE)\n");
                 fflush(stdout);
@@ -966,7 +963,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                 // derivatives against PIAA shapes must be computed numerically
 
                 // for state tracking and statistics
-                data.core.image[IDstatus].array.UI16[0] = 14;
+                dcimg[IDstatus].array.UI16[0] = 14;
                 for(int i = 0; i < piaacmcparams.linopt_number_param; i++)
                 {
                     piaacmcopticalsystem.FOCMASKarray[0].mode = 1; // use 1-fpm
@@ -1005,7 +1002,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
 
                     //      sprintf(fname,"%s/imvect_%02ld.fits", piaacmcparams.piaacmcconfdir, i);
                     //       save_fits("imvect", fname);
-                    ID = image_ID("imvect", data.core.image, data.core.NB_MAX_IMAGE);
+                    ID = image_ID("imvect", dcimg, dcnimg);
 
                     {
                         char fname[STRINGMAXLEN_FULLFILENAME];
@@ -1020,7 +1017,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                                 piaacmcparams.linopt_NBiter,
                                 i,
                                 piaacmcparams.linopt_number_param,
-                                data.core.image[ID].md[0].nelement,
+                                dcimg[ID].md[0].nelement,
                                 size1Dvec,
                                 piaacmcparams.linopt_paramdelta[i],
                                 contrastval,
@@ -1036,10 +1033,10 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                     // fill in the evaluation point portion
                     {
                         uint64_t ii;
-                        for(ii = 0; ii < data.core.image[ID].md[0].nelement; ii++)
+                        for(ii = 0; ii < dcimg[ID].md[0].nelement; ii++)
                         {
-                            data.core.image[ID1D].array.F[ii] =
-                                data.core.image[ID].array.F[ii];
+                            dcimg[ID1D].array.F[ii] =
+                                dcimg[ID].array.F[ii];
                         }
 
                         if(piaacmcparams.linopt_REGPIAASHAPES == 1)
@@ -1071,13 +1068,13 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
 
                     // compute actual derivative as first difference from reference
                     // this is the starting derivative
-                    for(uint64_t ii = 0; ii < data.core.image[ID1D].md[0].nelement;
+                    for(uint64_t ii = 0; ii < dcimg[ID1D].md[0].nelement;
                             ii++)
                     {
-                        data.core.image[IDmodes]
-                        .array.F[i * data.core.image[ID1D].md[0].nelement + ii] =
-                            (data.core.image[ID1D].array.F[ii] -
-                             data.core.image[ID1Dref].array.F[ii]);
+                        dcimg[IDmodes]
+                        .array.F[i * dcimg[ID1D].md[0].nelement + ii] =
+                            (dcimg[ID1D].array.F[ii] -
+                             dcimg[ID1Dref].array.F[ii]);
                     }
 
                     //    printf("%3ld %g %g\n", i, val, valref);
@@ -1090,11 +1087,11 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                                           &ID));
 
                     for(uint64_t ii = 0;
-                            ii < data.core.image[IDmodes].md[0].nelement;
+                            ii < dcimg[IDmodes].md[0].nelement;
                             ii++)
                     {
-                        data.core.image[ID].array.F[ii] =
-                            data.core.image[IDmodes].array.F[ii];
+                        dcimg[ID].array.F[ii] =
+                            dcimg[IDmodes].array.F[ii];
                     }
 
                     {
@@ -1110,11 +1107,11 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                                         DELETE_IMAGE_ERRMODE_WARNING));
                 }
                 // for state tracking and statistics
-                data.core.image[IDstatus].array.UI16[0] = 15;
+                dcimg[IDstatus].array.UI16[0] = 15;
             }
 
             // for state tracking and statistics
-            data.core.image[IDstatus].array.UI16[0] = 16;
+            dcimg[IDstatus].array.UI16[0] = 16;
 
             {
                 // print the results to file for human tracking
@@ -1128,7 +1125,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                 fclose(fp);
             }
             // for state tracking and statistics
-            data.core.image[IDstatus].array.UI16[0] = 17;
+            dcimg[IDstatus].array.UI16[0] = 17;
 
             // first three arguments are names of the input arrays
             // vecDHref1D is the input data
@@ -1180,13 +1177,13 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
             fflush(stdout);
 
             // for state tracking and statistics
-            data.core.image[IDstatus].array.UI16[0] = 18;
+            dcimg[IDstatus].array.UI16[0] = 18;
 
             // initialize zero "optimal" vector optvec giving direction to move in the search for the min
             arith_image_cstmult("optcoeff0",
                                 0.0,
                                 "optvec"); // create optimal vector
-            imageID IDoptvec = image_ID("optvec", data.core.image, data.core.NB_MAX_IMAGE);
+            imageID IDoptvec = image_ID("optvec", dcimg, dcnimg);
             // initialize the objective value
             int initbestval = 0;
             bestval         = valref;
@@ -1199,7 +1196,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
             float scangainfact = 1.2;
             //alphascaninit = 0;
             // for state tracking and statistics
-            data.core.image[IDstatus].array.UI16[0] = 19;
+            dcimg[IDstatus].array.UI16[0] = 19;
             // alphareg controls linear combinations of the directions optcoeff0,1,2
             // alphareg = 0 => moving along optcoeff0
             // alphareg = 0.5 => moving along optcoeff1
@@ -1229,7 +1226,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                 // sum of acoeff0,1,2 = 1 at all values of alphareg.
 
                 // for state tracking and statistics
-                data.core.image[IDstatus].array.UI16[0] = 20;
+                dcimg[IDstatus].array.UI16[0] = 20;
 
                 // optcoeff0m = acoeff0*optcoeff0 etc.
                 arith_image_cstmult("optcoeff0", acoeff0, "optcoeff0m");
@@ -1260,9 +1257,9 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                     delete_image_ID("optcoeff01m",
                                     DELETE_IMAGE_ERRMODE_WARNING));
 
-                ID = image_ID("optcoeff", data.core.image, data.core.NB_MAX_IMAGE);
+                ID = image_ID("optcoeff", dcimg, dcnimg);
                 // for state tracking and statistics
-                data.core.image[IDstatus].array.UI16[0] = 21;
+                dcimg[IDstatus].array.UI16[0] = 21;
 
                 // do linear scan along the direction optcoeff from current parameter location
                 int linscanOK = 1;
@@ -1289,10 +1286,10 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                 while(linscanOK == 1)
                 {
                     // for state tracking and statistics
-                    data.core.image[IDstatus].array.UI16[0] = 22;
+                    dcimg[IDstatus].array.UI16[0] = 22;
 
                     // compute offsets
-                    ID = image_ID("optcoeff", data.core.image, data.core.NB_MAX_IMAGE); // direction vector
+                    ID = image_ID("optcoeff", dcimg, dcnimg); // direction vector
                     linoptlimflagarray[k] = 0;
                     // step each parameter by optcoeff
                     for(long i = 0; i < piaacmcparams.linopt_number_param;
@@ -1304,7 +1301,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                         // piaacmcparams.linopt_paramdelta to put our step in physical parameter units
                         // negative because we want to cancel the value from the delta PSF
                         piaacmcparams.linopt_paramdeltaval[i] =
-                            -scangain * data.core.image[ID].array.F[i] *
+                            -scangain * dcimg[ID].array.F[i] *
                             piaacmcparams.linopt_paramdelta[i];
                         if(piaacmcparams.linopt_paramdeltaval[i] <
                                 -piaacmcparams.linopt_parammaxstep
@@ -1401,7 +1398,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                     // store the current objective value for later comparison
                     double valold = contrastval;
                     // for state tracking and statistics
-                    data.core.image[IDstatus].array.UI16[0] = 23;
+                    dcimg[IDstatus].array.UI16[0] = 23;
 
                     // compute new state and compute assossiated evaluation metric
                     // using the modified global data object
@@ -1440,7 +1437,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                     // val is now our complete objective!! Yay!!
 
                     // for state tracking and statistics
-                    data.core.image[IDstatus].array.UI16[0] = 24;
+                    dcimg[IDstatus].array.UI16[0] = 24;
 
                     {
                         // print it for monitoring
@@ -1477,12 +1474,12 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                                 if(piaacmcparams.linopt_paramtype[i] ==
                                         _DATATYPE_FLOAT)
                                 {
-                                    data.core.image[IDoptvec].array.F[i] =
+                                    dcimg[IDoptvec].array.F[i] =
                                         *(piaacmcparams.linopt_paramvalf[i]);
                                 }
                                 else
                                 {
-                                    data.core.image[IDoptvec].array.F[i] = (float) * (
+                                    dcimg[IDoptvec].array.F[i] = (float) * (
                                                                           piaacmcparams.linopt_paramval[i]);
                                 }
                             bestval = contrastval;
@@ -1520,7 +1517,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                         }
                     }
                     // for state tracking and statistics
-                    data.core.image[IDstatus].array.UI16[0] = 25;
+                    dcimg[IDstatus].array.UI16[0] = 25;
 
                     // store the current position and value
                     //linoptgainarray[k] = scangain;
@@ -1563,7 +1560,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                     "optcoeff",
                     DELETE_IMAGE_ERRMODE_WARNING); // delete the current direction
                 // for state tracking and statistics
-                data.core.image[IDstatus].array.UI16[0] = 26;
+                dcimg[IDstatus].array.UI16[0] = 26;
             }
             // best solution after this linear linescan is stored in IDoptvec
             FUNC_CHECK_RETURN(
@@ -1590,12 +1587,12 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                 if(piaacmcparams.linopt_paramtype[i] == _DATATYPE_FLOAT)
                 {
                     *(piaacmcparams.linopt_paramvalf[i]) =
-                        data.core.image[IDoptvec].array.F[i];
+                        dcimg[IDoptvec].array.F[i];
                 }
                 else
                 {
                     *(piaacmcparams.linopt_paramval[i]) =
-                        (double) data.core.image[IDoptvec].array.F[i];
+                        (double) dcimg[IDoptvec].array.F[i];
                 }
             }
             //double valold = contrastval;
@@ -1632,24 +1629,24 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
 
             printf("gain: %lf -> val = %20g\n", bestgain, contrastval);
             // for state tracking and statistics
-            data.core.image[IDstatus].array.UI16[0] = 27;
+            dcimg[IDstatus].array.UI16[0] = 27;
 
             // update reference state evaluation vector of optimal results including evaluation zone values
             // and desired regularization terms
             // which sets up starting the next iteration at the best solution
 
-            ID1Dref = image_ID("vecDHref1D", data.core.image, data.core.NB_MAX_IMAGE);
-            ID      = image_ID("imvect", data.core.image, data.core.NB_MAX_IMAGE);
+            ID1Dref = image_ID("vecDHref1D", dcimg, dcnimg);
+            ID      = image_ID("imvect", dcimg, dcnimg);
             // first fill in evaluation zone (complex) values
             {
                 uint64_t ii;
-                for(ii = 0; ii < data.core.image[ID].md[0].nelement; ii++)
+                for(ii = 0; ii < dcimg[ID].md[0].nelement; ii++)
                 {
-                    data.core.image[ID1Dref].array.F[ii] =
-                        data.core.image[ID].array.F[ii];
+                    dcimg[ID1Dref].array.F[ii] =
+                        dcimg[ID].array.F[ii];
                 }
                 // for state tracking and statistics
-                data.core.image[IDstatus].array.UI16[0] = 28;
+                dcimg[IDstatus].array.UI16[0] = 28;
 
                 // now fill in the regularization terms if desired
                 // same code as before.
@@ -1663,11 +1660,11 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                 if(piaacmcparams.linopt_REGFPMSAG == 1)
                 {
                     ID = piaacmcopticaldesign.zonezID;
-                    for(uint32_t jj = 0; jj < data.core.image[ID].md[0].size[0];
+                    for(uint32_t jj = 0; jj < dcimg[ID].md[0].size[0];
                             jj++)
                     {
-                        data.core.image[ID1Dref].array.F[ii] =
-                            pow(data.core.image[ID].array.D[jj] /
+                        dcimg[ID1Dref].array.F[ii] =
+                            pow(dcimg[ID].array.D[jj] /
                                 piaacmcopticaldesign.fpmsagreg_coeff,
                                 piaacmcopticaldesign.fpmsagreg_alpha);
                         ii++;
@@ -1678,7 +1675,7 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
             FUNC_CHECK_RETURN(
                 delete_image_ID("imvect", DELETE_IMAGE_ERRMODE_WARNING));
             // for state tracking and statistics
-            data.core.image[IDstatus].array.UI16[0] = 29;
+            dcimg[IDstatus].array.UI16[0] = 29;
 
             {
                 // print out current best value for tracking
@@ -1712,51 +1709,37 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
                     0) // in the idealized PIAACMC case
             {
                 piaacmcopticaldesign.fpmaskamptransm =
-                    data.core.image[piaacmcopticaldesign.zoneaID].array.D
+                    dcimg[piaacmcopticaldesign.zoneaID].array.D
                     [0]; // required to ensure that the new optimal focal plane mask transmission is written to disk
             }
 
             // for state tracking and statistics
-            data.core.image[IDstatus].array.UI16[0] = 30;
+            dcimg[IDstatus].array.UI16[0] = 30;
 
             {
                 // tracking diagnostics giving behavior of the modes by iteration
                 char dirname[STRINGMAXLEN_DIRNAME];
-                WRITE_DIRNAME(dirname,
-                              "%s_linopt",
-                              piaacmcparams.piaacmcconfdir);
+                SNPRINTF_CHECK(dirname, STRINGMAXLEN_DIRNAME, "%s_linopt",
+                               piaacmcparams.piaacmcconfdir);
 
                 PIAACMCsimul_savepiaacmcconf(dirname); // staging area
                 EXECUTE_SYSTEM_COMMAND("rsync -au --progress %s/* ./%s/",
                                        dirname,
                                        piaacmcparams.piaacmcconfdir);
 
-                EXECUTE_SYSTEM_COMMAND(
-                    "cp %s/piaa0Cmodes.fits %s/piaa0Cmodes.%04ld.fits",
-                    dirname,
-                    dirname,
-                    iter);
-                EXECUTE_SYSTEM_COMMAND(
-                    "cp %s/piaa0Fmodes.fits %s/piaa0Fmodes.%04ld.fits",
-                    dirname,
-                    dirname,
-                    iter);
-
-                EXECUTE_SYSTEM_COMMAND(
-                    "cp %s/piaa1Cmodes.fits %s/piaa1Cmodes.%04ld.fits",
-                    dirname,
-                    dirname,
-                    iter);
-                EXECUTE_SYSTEM_COMMAND(
-                    "cp %s/piaa1Fmodes.fits %s/piaa1Fmodes.%04ld.fits",
-                    dirname,
-                    dirname,
-                    iter);
-                EXECUTE_SYSTEM_COMMAND(
-                    "cp %s/piaacmcparams.conf %s/piaacmcparams.%04ld.conf",
-                    dirname,
-                    dirname,
-                    iter);
+                if(piaacmcopticaldesign.PIAAmode == 1)
+                {
+                    EXECUTE_SYSTEM_COMMAND("cp %s/piaa0Cmodes.fits %s/piaa0Cmodes.%04ld.fits",
+                                           dirname, dirname, iter);
+                    EXECUTE_SYSTEM_COMMAND("cp %s/piaa0Fmodes.fits %s/piaa0Fmodes.%04ld.fits",
+                                           dirname, dirname, iter);
+                    EXECUTE_SYSTEM_COMMAND("cp %s/piaa1Cmodes.fits %s/piaa1Cmodes.%04ld.fits",
+                                           dirname, dirname, iter);
+                    EXECUTE_SYSTEM_COMMAND("cp %s/piaa1Fmodes.fits %s/piaa1Fmodes.%04ld.fits",
+                                           dirname, dirname, iter);
+                }
+                EXECUTE_SYSTEM_COMMAND("cp %s/piaacmcparams.conf %s/piaacmcparams.%04ld.conf",
+                                       dirname, dirname, iter);
             }
 
             if(file_exists(stopfile) == 1)
@@ -1793,11 +1776,11 @@ errno_t PIAACMCsimul_exec(const char *confindex, long mode)
             printf("END OF LOOP ITERATION\n");
             fflush(stdout);
             // for state tracking and statistics
-            data.core.image[IDstatus].array.UI16[0] = 31;
+            dcimg[IDstatus].array.UI16[0] = 31;
         }
         printf(" ============ END OF OPTIMIZATION LOOP ======= \n");
         // for state tracking and statistics
-        data.core.image[IDstatus].array.UI16[0] = 32;
+        dcimg[IDstatus].array.UI16[0] = 32;
     } // end of if (piaacmcparams.LINOPT==1): done with the linear optimization
 
     piaacmcparams.LINOPT = 0;

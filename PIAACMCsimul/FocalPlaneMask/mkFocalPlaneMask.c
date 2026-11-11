@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
@@ -65,7 +65,7 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
     size2        = size * size;
     int nblambda = piaacmcopticalsystem.nblambda;
 
-    imageID IDz = image_ID(IDzonemap_name, data.core.image, data.core.NB_MAX_IMAGE);
+    imageID IDz = image_ID(IDzonemap_name, dcimg, dcnimg);
 
     imageID ID;
     FUNC_CHECK_RETURN(create_3DCimage_ID(ID_name, size, size, nblambda, &ID));
@@ -178,14 +178,14 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
 
             // print material thickness
             tarray[piaacmcopticaldesign.focmNBzone * k + zi] =
-                data.core.image[piaacmcopticaldesign.zonezID].array.D[zi];
+                dcimg[piaacmcopticaldesign.zonezID].array.D[zi];
             //printf("     thickness = %8.4g m\n", tarray[piaacmcopticaldesign.focmNBzone*k+zi]);
             //fflush(stdout);
 
             //printf("     (ID = %3ld  zi = %3ld -> pix = %4ld/%4ld)\n", piaacmcopticaldesign.zoneaID, zi, piaacmcopticaldesign.focmNBzone*k+zi, piaacmcopticaldesign.focmNBzone*nblambda);
             //fflush(stdout);
             aarray[piaacmcopticaldesign.focmNBzone * k + zi] =
-                data.core.image[piaacmcopticaldesign.zoneaID].array.D[zi];
+                dcimg[piaacmcopticaldesign.zoneaID].array.D[zi];
             //printf("     amp = %8.4f\n", aarray[piaacmcopticaldesign.focmNBzone*k+zi]);
             //fflush(stdout);
 
@@ -254,9 +254,9 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                 piaacmcopticaldesign.fpmRad);
             printf("Zone 0 amplitude [%ld]: %lf\n",
                    piaacmcopticaldesign.zoneaID,
-                   data.core.image[piaacmcopticaldesign.zoneaID].array.D[0]);
+                   dcimg[piaacmcopticaldesign.zoneaID].array.D[0]);
             printf("Zone 0 thickness: %g\n",
-                   data.core.image[piaacmcopticaldesign.zonezID].array.D[0]);
+                   dcimg[piaacmcopticaldesign.zonezID].array.D[0]);
             printf("Number of zones: %ld\n", piaacmcopticaldesign.focmNBzone);
             printf("piaacmcopticaldesign.fpmRad = %g m\n",
                    piaacmcopticaldesign.fpmRad);
@@ -305,7 +305,7 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                         }
                     }
 
-                    data.core.image[IDzone].array.F[k * size2 + jj * size + ii] = 0;
+                    dcimg[IDzone].array.F[k * size2 + jj * size + ii] = 0;
 
                     if(r <
                             1.1 * piaacmcopticaldesign.fpmRad) //     fine sampling
@@ -423,12 +423,12 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                                     }
 
                                     // Zone number
-                                    zi = (long)(data.core.image[IDz].array.UI16
+                                    zi = (long)(dcimg[IDz].array.UI16
                                                 [jj1 * piaacmcopticaldesign
                                                      .fpmarraysize +
                                                      ii1]);
                                     if(zi - 1 >
-                                            data.core.image[piaacmcopticaldesign.zonezID]
+                                            dcimg[piaacmcopticaldesign.zonezID]
                                             .md[0]
                                             .size[0] -
                                             1)
@@ -439,18 +439,16 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                                             "%ld "
                                             "%ld   %ld\n",
                                             (int) zi,
-                                            data.core.image[piaacmcopticaldesign
+                                            dcimg[piaacmcopticaldesign
                                                        .zonezID]
                                             .md[0]
                                             .name,
-                                            (long) data.core
-                                            .image[piaacmcopticaldesign
-                                                   .zonezID]
+                                            (long) dcimg[piaacmcopticaldesign
+                                                         .zonezID]
                                             .md[0]
                                             .size[0],
-                                            (long) data.core
-                                            .image[piaacmcopticaldesign
-                                                   .zonezID]
+                                            (long) dcimg[piaacmcopticaldesign
+                                                         .zonezID]
                                             .md[0]
                                             .size[1],
                                             (long) jj1,
@@ -460,10 +458,10 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                                     }
                                     if(zi > 0)
                                     {
-                                        t = data.core.image[piaacmcopticaldesign
+                                        t = dcimg[piaacmcopticaldesign
                                                        .zonezID]
                                             .array.D[zi - 1]; // thickness
-                                        a = data.core.image[piaacmcopticaldesign
+                                        a = dcimg[piaacmcopticaldesign
                                                        .zoneaID]
                                             .array
                                             .D[zi -
@@ -514,39 +512,39 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
                             }
                         }
 
-                        data.core.image[ID].array.CF[k * size2 + jj * size + ii].re =
+                        dcimg[ID].array.CF[k * size2 + jj * size + ii].re =
                             retmp / (NBsubPix * NBsubPix);
-                        data.core.image[ID].array.CF[k * size2 + jj * size + ii].im =
+                        dcimg[ID].array.CF[k * size2 + jj * size + ii].im =
                             imtmp / (NBsubPix * NBsubPix);
-                        data.core.image[IDsag].array.F[k * size2 + jj * size + ii] =
+                        dcimg[IDsag].array.F[k * size2 + jj * size + ii] =
                             ttmp / (NBsubPix * NBsubPix);
-                        data.core.image[IDzone].array.F[k * size2 + jj * size + ii] =
+                        dcimg[IDzone].array.F[k * size2 + jj * size + ii] =
                             zonetmp / (NBsubPix * NBsubPix);
                     }
                     else // coarse sampling, outside zones
                     {
                         if(FPMmode == 1)  // make 1-fpm
                         {
-                            data.core.image[ID]
+                            dcimg[ID]
                             .array.CF[k * size2 + jj * size + ii]
                             .re = 1.0 - amp * cospha;
-                            data.core.image[ID]
+                            dcimg[ID]
                             .array.CF[k * size2 + jj * size + ii]
                             .im = -amp * sinpha;
                         }
                         else // single zone
                         {
-                            data.core.image[ID]
+                            dcimg[ID]
                             .array.CF[k * size2 + jj * size + ii]
                             .re = 0.0;
-                            data.core.image[ID]
+                            dcimg[ID]
                             .array.CF[k * size2 + jj * size + ii]
                             .im = 0.0;
                         }
 
-                        data.core.image[IDsag].array.F[k * size2 + jj * size + ii] =
+                        dcimg[IDsag].array.F[k * size2 + jj * size + ii] =
                             t;
-                        data.core.image[IDzone].array.F[k * size2 + jj * size + ii] =
+                        dcimg[IDzone].array.F[k * size2 + jj * size + ii] =
                             0.0;
                     }
                 }
@@ -567,17 +565,13 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
 
         char fname[STRINGMAXLEN_FULLFILENAME];
 
-        WRITE_FULLFILENAME(fname,
-                           "%s/fpm_sagmap2D.%s.fits.gz",
-                           piaacmcparams.piaacmcconfdir,
-                           piaacmcparams.fnamedescr);
+        SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME, "%s/fpm_sagmap2D.%s.fits.gz",
+                       piaacmcparams.piaacmcconfdir, piaacmcparams.fnamedescr);
         FUNC_CHECK_RETURN(save_fits("fpmsag", fname));
 
         /* save zones */
-        WRITE_FULLFILENAME(fname,
-                           "%s/fpm_zonemap2D.%s.fits.gz",
-                           piaacmcparams.piaacmcconfdir,
-                           piaacmcparams.fnamedescr);
+        SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME, "%s/fpm_zonemap2D.%s.fits.gz",
+                       piaacmcparams.piaacmcconfdir, piaacmcparams.fnamedescr);
         FUNC_CHECK_RETURN(save_fits("fpmzone", fname));
 
         /* save mask transmission */
@@ -589,11 +583,11 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
             for(uint32_t ii = 0; ii < size; ii++)
                 for(uint32_t jj = 0; jj < size; jj++)
                 {
-                    data.core.image[IDm].array.CF[k * size2 + jj * size + ii].re =
+                    dcimg[IDm].array.CF[k * size2 + jj * size + ii].re =
                         1.0 -
-                        data.core.image[ID].array.CF[k * size2 + jj * size + ii].re;
-                    data.core.image[IDm].array.CF[k * size2 + jj * size + ii].im =
-                        -data.core.image[ID].array.CF[k * size2 + jj * size + ii].im;
+                        dcimg[ID].array.CF[k * size2 + jj * size + ii].re;
+                    dcimg[IDm].array.CF[k * size2 + jj * size + ii].im =
+                        -dcimg[ID].array.CF[k * size2 + jj * size + ii].im;
                     // [re,im] = 1-fpm  -> fpm = [(1.0-re), -im]
                 }
 
@@ -601,16 +595,12 @@ errno_t mkFocalPlaneMask(const char *IDzonemap_name,
         FUNC_CHECK_RETURN(
             delete_image_ID("fpmCA", DELETE_IMAGE_ERRMODE_WARNING));
 
-        WRITE_FULLFILENAME(fname,
-                           "%s/fpm_CAampmap2D.%s.fits.gz",
-                           piaacmcparams.piaacmcconfdir,
-                           piaacmcparams.fnamedescr);
+        SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME, "%s/fpm_CAampmap2D.%s.fits.gz",
+                       piaacmcparams.piaacmcconfdir, piaacmcparams.fnamedescr);
         FUNC_CHECK_RETURN(save_fits("tfpma", fname));
 
-        WRITE_FULLFILENAME(fname,
-                           "%s/fpm_CAphamap2D.%s.fits.gz",
-                           piaacmcparams.piaacmcconfdir,
-                           piaacmcparams.fnamedescr);
+        SNPRINTF_CHECK(fname, STRINGMAXLEN_FULLFILENAME, "%s/fpm_CAphamap2D.%s.fits.gz",
+                       piaacmcparams.piaacmcconfdir, piaacmcparams.fnamedescr);
         FUNC_CHECK_RETURN(save_fits("tfpmp", fname));
 
         FUNC_CHECK_RETURN(

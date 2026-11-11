@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
@@ -19,8 +19,8 @@
 #include "image_filter/image_filter.h"
 
 #include "OptSystProp/OptSystProp.h"
-
 #include "PIAACMCsimul.h"
+#include "geomProp.h"
 
 // Local variables pointers
 static char   *inintensity_imname;
@@ -34,12 +34,14 @@ static double *kradval;
 static double *kstepval;
 static double *rlimval;
 
-static CLICMDARGDEF farg[] = {{
+static CLICMDARGDEF geomprop_farg[] =
+{
+    {
         CLIARG_IMG,
         ".inintim",
         "input intensity image",
         "pupin",
-        CLIARG_VISIBLE_DEFAULT,
+        (FPFLAG_DEFAULT_INPUT | FPFLAG_PRIMARY_CLI_INPUT),
         (void **) &inintensity_imname,
         NULL
     },
@@ -48,7 +50,7 @@ static CLICMDARGDEF farg[] = {{
         ".insagim",
         "input 2D sag image",
         "piaa0z",
-        CLIARG_VISIBLE_DEFAULT,
+        (FPFLAG_DEFAULT_INPUT | FPFLAG_PRIMARY_CLI_INPUT),
         (void **) &sag2D_imname,
         NULL
     },
@@ -57,7 +59,7 @@ static CLICMDARGDEF farg[] = {{
         ".outintim",
         "output intensity image",
         "pupout",
-        CLIARG_VISIBLE_DEFAULT,
+        (FPFLAG_DEFAULT_INPUT | FPFLAG_PRIMARY_CLI_INPUT),
         (void **) &outintensity_imname,
         NULL
     },
@@ -66,7 +68,7 @@ static CLICMDARGDEF farg[] = {{
         ".outcntim",
         "output intensity image",
         "cntout",
-        CLIARG_VISIBLE_DEFAULT,
+        (FPFLAG_DEFAULT_INPUT | FPFLAG_PRIMARY_CLI_INPUT),
         (void **) &outcnt_imname,
         NULL
     },
@@ -75,7 +77,7 @@ static CLICMDARGDEF farg[] = {{
         ".drindex",
         "delta refractive index",
         "2.0",
-        CLIARG_VISIBLE_DEFAULT,
+        (FPFLAG_DEFAULT_INPUT | FPFLAG_PRIMARY_CLI_INPUT),
         (void **) &drindexval,
         NULL
     },
@@ -84,7 +86,7 @@ static CLICMDARGDEF farg[] = {{
         ".pscale",
         "pixel scale",
         "0.00011",
-        CLIARG_VISIBLE_DEFAULT,
+        (FPFLAG_DEFAULT_INPUT | FPFLAG_PRIMARY_CLI_INPUT),
         (void **) &pscaleval,
         NULL
     },
@@ -93,7 +95,7 @@ static CLICMDARGDEF farg[] = {{
         ".zprop",
         "propagation dist",
         "2.302606",
-        CLIARG_VISIBLE_DEFAULT,
+        (FPFLAG_DEFAULT_INPUT | FPFLAG_PRIMARY_CLI_INPUT),
         (void **) &zpropval,
         NULL
     },
@@ -102,7 +104,7 @@ static CLICMDARGDEF farg[] = {{
         ".krad",
         "kernel radius",
         "3.0",
-        CLIARG_VISIBLE_DEFAULT,
+        (FPFLAG_DEFAULT_INPUT | FPFLAG_PRIMARY_CLI_INPUT),
         (void **) &kradval,
         NULL
     },
@@ -111,7 +113,7 @@ static CLICMDARGDEF farg[] = {{
         ".kstep",
         "kernel step",
         "0.5",
-        CLIARG_VISIBLE_DEFAULT,
+        (FPFLAG_DEFAULT_INPUT | FPFLAG_PRIMARY_CLI_INPUT),
         (void **) &kstepval,
         NULL
     },
@@ -120,69 +122,70 @@ static CLICMDARGDEF farg[] = {{
         ".rlim",
         "clear aperture",
         "200.0",
-        CLIARG_VISIBLE_DEFAULT,
+        (FPFLAG_DEFAULT_INPUT | FPFLAG_PRIMARY_CLI_INPUT),
         (void **) &rlimval,
         NULL
     }
 };
 
-static CLICMDDATA CLIcmddata = {"piaacmcgeomprop",
-                                "Geometric propagation from surface",
-                                CLICMD_FIELDS_DEFAULTS
-                               };
+MILK_RUNNABLE_RT_DEFINE(geomprop);
 
 // detailed help
 
 /**
- * @brief Lyot stops positions from zmin to zmax relative to current, working back (light goes from 0 to zmax)
+ * PIAACMCsimul_geomProp - Propagate 2D intensity geometrically from surface sag slopes
+ * @IDin_name:     Input 2D intensity image name.
+ * @IDsag_name:    Input 2D surface sag image name [m].
+ * @IDout_name:    Output 2D propagated intensity image name.
+ * @IDoutcnt_name: Output 2D ray-count image name.
+ * @drindex:       Effective refractive index delta (2.0 for reflective mirror).
+ * @pscale:        Pupil pixel scale [m/pix].
+ * @zprop:         Propagation distance [m].
+ * @krad:          Cosine-tapered slope estimation kernel radius [pix].
+ * @kstep:         Ray launch grid step in input pupil [pix].
+ * @rlim:          Clear aperture radius around array center [pix].
+ * @outID:         Optional output imageID pointer.
  *
- * @param[in]	IDin_name		image : Input 2D intensity
- * @param[in]	IDsag_name	    image : 2D sag
- * @param[out]  IDout_name		image : 2D propagated intensity
- * @param[out]  IDoutcnt_name	image : 2D rays counter
- * @param[in]   drindex         float : refractive index (2 for mirror)
- * @param[in]	pscale			float : pixel scale [m]
- * @param[in]   zprop          	float : propagation distance [m]
- * @param[in]	krad			float : kernel radius used to evaluate slope [pixel]
- * @param[in]	kstep			float : step size in input pupil [pixel]
- * @param[in]	rlim			float : clear aperture radius (don't compute outside this value) [pixel]
- * @param[out]  outID           output ID
-*/
-errno_t PIAACMCsimul_geomProp(const char *__restrict__ IDin_name,
-                              const char *__restrict__ IDsag_name,
-                              const char *__restrict__ IDout_name,
-                              const char *__restrict__ IDoutcnt_name,
-                              double   drindex,
-                              double   pscale,
-                              double   zprop,
-                              double   krad,
-                              double   kstep,
-                              double   rlim,
-                              imageID *outID)
+ * Return: RETURN_SUCCESS on completion, error code otherwise.
+ */
+errno_t PIAACMCsimul_geomProp(
+    const char *restrict IDin_name,
+    const char *restrict IDsag_name,
+    const char *restrict IDout_name,
+    const char *restrict IDoutcnt_name,
+    double               drindex,
+    double               pscale,
+    double               zprop,
+    double               krad,
+    double               kstep,
+    double               rlim,
+    imageID             *outID)
 {
     DEBUG_TRACE_FSTART();
 
-    imageID  IDin  = image_ID(IDin_name, data.core.image, data.core.NB_MAX_IMAGE);
-    uint32_t xsize = data.core.image[IDin].md[0].size[0];
-    uint32_t ysize = data.core.image[IDin].md[0].size[1];
-
-    imageID IDsag = image_ID(IDsag_name, data.core.image, data.core.NB_MAX_IMAGE);
+    imageID  IDin  = image_ID(IDin_name, dcimg, dcnimg);
+    uint32_t xsize = dcimg[IDin].md[0].size[0];
+    uint32_t ysize = dcimg[IDin].md[0].size[1];
+    imageID  IDsag = image_ID(IDsag_name, dcimg, dcnimg);
 
     imageID IDout;
     FUNC_CHECK_RETURN(create_2Dimage_ID(IDout_name, xsize, ysize, &IDout));
 
     imageID IDoutcnt;
-    FUNC_CHECK_RETURN(
-        create_2Dimage_ID(IDoutcnt_name, xsize, ysize, &IDoutcnt));
+    FUNC_CHECK_RETURN(create_2Dimage_ID(IDoutcnt_name, xsize, ysize, &IDoutcnt));
 
     printf("kstep = %f\n", kstep);
 
-    for(float x = 0.5 * xsize - rlim; x < 0.5 * xsize + rlim; x += kstep)
-        for(float y = 0.5 * ysize - rlim; y < 0.5 * ysize + rlim; y += kstep)
+    for (float x = 0.5f * (float) xsize - (float) rlim;
+            x < 0.5f * (float) xsize + (float) rlim;
+            x += (float) kstep)
+    {
+        for (float y = 0.5f * (float) ysize - (float) rlim;
+                y < 0.5f * (float) ysize + (float) rlim;
+                y += (float) kstep)
         {
-            long ii0 = (long)(x + 0.5);
-            long jj0 = (long)(y + 0.5);
-
+            long   ii0    = (long) (x + 0.5f);
+            long   jj0    = (long) (y + 0.5f);
             double sumvx  = 0.0;
             double sumvy  = 0.0;
             double sumvx0 = 0.0;
@@ -190,93 +193,70 @@ errno_t PIAACMCsimul_geomProp(const char *__restrict__ IDin_name,
             double sumv   = 0.0;
             double sumc   = 0.0;
 
-            long iimin, iimax, jjmin, jjmax;
-            iimin = ii0 - ((long) krad + 1);
-            iimax = ii0 + ((long) krad + 2);
-            jjmin = jj0 - ((long) krad + 1);
-            jjmax = jj0 + ((long) krad + 2);
+            long iimin = ii0 - ((long) krad + 1);
+            long iimax = ii0 + ((long) krad + 2);
+            long jjmin = jj0 - ((long) krad + 1);
+            long jjmax = jj0 + ((long) krad + 2);
 
-            if(iimin < 0)
+            if (iimin < 0 || iimax > (long) xsize - 1 || jjmin < 0 || jjmax > (long) ysize - 1)
             {
-                PRINT_ERROR("iimin = %ld < 0  ii0 = %ld", iimin, ii0);
-                abort();
-            }
-            if(iimax > xsize - 1)
-            {
-                PRINT_ERROR("iimax = %ld > %ld  ii0 = %ld",
-                            iimax,
-                            (long)(xsize - 1),
-                            ii0);
+                PRINT_ERROR("Ray kernel out of bounds at (%ld, %ld)", ii0, jj0);
                 abort();
             }
 
-            if(jjmin < 0)
+            for (long ii = iimin; ii < iimax; ii++)
             {
-                PRINT_ERROR("jjmin = %ld < 0  jj0 = %ld", jjmin, jj0);
-                abort();
-            }
-            if(jjmax > ysize - 1)
-            {
-                PRINT_ERROR("jjmax = %ld > %ld  jj0 = %ld",
-                            jjmax,
-                            (long)(ysize - 1),
-                            jj0);
-                abort();
-            }
-
-            for(long ii = iimin; ii < iimax; ii++)
-                for(long jj = jjmin; jj < jjmax; jj++)
+                for (long jj = jjmin; jj < jjmax; jj++)
                 {
-                    float dx = 1.0 * ii - x;
-                    float dy = 1.0 * jj - y;
-
-                    float dr = sqrt(dx * dx + dy * dy) / krad;
-                    if(dr > 1.0)
+                    float dx = (float) ii - x;
+                    float dy = (float) jj - y;
+                    float dr = sqrtf(dx * dx + dy * dy) / (float) krad;
+                    if (dr > 1.0f)
                     {
-                        dr = 1.0;
+                        dr = 1.0f;
                     }
-                    float coeff = 0.5 + 0.5 * cos(dr * M_PI);
+                    float coeff = 0.5f + 0.5f * cosf(dr * (float) M_PI);
+                    float sagv  = dcimg[IDsag].array.F[jj * xsize + ii];
 
-                    sumv += coeff * data.core.image[IDsag].array.F[jj * xsize + ii];
-                    sumvx +=
-                        coeff * dx * data.core.image[IDsag].array.F[jj * xsize + ii];
-                    sumvy +=
-                        coeff * dy * data.core.image[IDsag].array.F[jj * xsize + ii];
+                    sumv += coeff * sagv;
+                    sumvx += coeff * dx * sagv;
+                    sumvy += coeff * dy * sagv;
                     sumvx0 += coeff * dx;
                     sumvy0 += coeff * dy;
                     sumc += coeff;
                 }
+            }
 
-            // local slopes [unitless]
-            float slx =
-                ((sumvx / sumc) - (sumvx0 * (sumv / sumc) / sumc)) / pscale;
-            float sly =
-                ((sumvy / sumc) - (sumvy0 * (sumv / sumc) / sumc)) / pscale;
+            float slx = (float) (((sumvx / sumc) - (sumvx0 * (sumv / sumc) / sumc)) / pscale);
+            float sly = (float) (((sumvy / sumc) - (sumvy0 * (sumv / sumc) / sumc)) / pscale);
+            float dii = (float) ((slx * zprop * drindex) / pscale);
+            float djj = (float) ((sly * zprop * drindex) / pscale);
 
-            // displacements [pix]
-            float dii = (slx * zprop * drindex) / pscale;
-            float djj = (sly * zprop * drindex) / pscale;
+            long ii1 = (long) (x + dii + 0.5f);
+            long jj1 = (long) (y + djj + 0.5f);
 
-            long ii1 = (long)(x + dii + 0.5);
-            long jj1 = (long)(y + djj + 0.5);
-
-            if((ii1 > 0) && (ii1 < xsize) && (jj1 > 0) && (jj1 < ysize))
+            if ((ii1 > 0) && (ii1 < (long) xsize) && (jj1 > 0) && (jj1 < (long) ysize))
             {
-                data.core.image[IDout].array.F[jj1 * xsize + ii1] +=
-                    data.core.image[IDin].array.F[jj0 * xsize + ii0];
-                data.core.image[IDoutcnt].array.F[jj1 * xsize + ii1] += 1.0;
+                dcimg[IDout].array.F[jj1 * xsize + ii1] +=
+                    dcimg[IDin].array.F[jj0 * xsize + ii0];
+                dcimg[IDoutcnt].array.F[jj1 * xsize + ii1] += 1.0f;
             }
         }
+    }
 
-    for(uint32_t ii1 = 0; ii1 < xsize; ii1++)
-        for(uint32_t jj1 = 0; jj1 < ysize; jj1++)
+    for (uint32_t ii1 = 0; ii1 < xsize; ii1++)
+    {
+        for (uint32_t jj1 = 0; jj1 < ysize; jj1++)
         {
-            if(data.core.image[IDoutcnt].array.F[jj1 * xsize + ii1] > 0.1)
-                data.core.image[IDout].array.F[jj1 * xsize + ii1] /=
-                    data.core.image[IDoutcnt].array.F[jj1 * xsize + ii1];
+            if (dcimg[IDoutcnt].array.F[jj1 * xsize + ii1] > 0.1f)
+            {
+                dcimg[IDout].array.F[jj1 * xsize + ii1] /=
+                    dcimg[IDoutcnt].array.F[jj1 * xsize + ii1];
+            }
         }
+    }
 
-    if(outID != NULL)
+    if (outID != NULL)
     {
         *outID = IDout;
     }
@@ -285,36 +265,37 @@ errno_t PIAACMCsimul_geomProp(const char *__restrict__ IDin_name,
     return RETURN_SUCCESS;
 }
 
-static errno_t compute_function()
+/**
+ * cli_geomprop - CLI wrapper invoking PIAACMCsimul_geomProp
+ *
+ * Return: errno_t status code from PIAACMCsimul_geomProp.
+ */
+static errno_t cli_geomprop(void)
 {
-    DEBUG_TRACE_FSTART();
-
-    INSERT_STD_PROCINFO_COMPUTEFUNC_START
-
-    PIAACMCsimul_geomProp(inintensity_imname,
-                          sag2D_imname,
-                          outintensity_imname,
-                          outcnt_imname,
-                          *drindexval,
-                          *pscaleval,
-                          *zpropval,
-                          *kradval,
-                          *kstepval,
-                          *rlimval,
-                          NULL);
-
-    INSERT_STD_PROCINFO_COMPUTEFUNC_END
-
-    DEBUG_TRACE_FEXIT();
-    return RETURN_SUCCESS;
+    return PIAACMCsimul_geomProp(
+        inintensity_imname,
+        sag2D_imname,
+        outintensity_imname,
+        outcnt_imname,
+        *drindexval,
+        *pscaleval,
+        *zpropval,
+        *kradval,
+        *kstepval,
+        *rlimval,
+        NULL);
 }
 
-INSERT_STD_CLIfunction
-
-// Register function in CLI
-errno_t
-CLIADDCMD_PIAACMCsimul__LyotStop__PIAACMCsimul_geomProp()
+const MILK_RUNNABLE runnable_piaacmc_geomprop =
 {
-    INSERT_STD_CLIREGISTERFUNC
-    return RETURN_SUCCESS;
-}
+    .kind     = MILK_RUNNABLE_CLI,
+    .app      = {
+        .cmdkey      = "piaacmcgeomprop",
+        .description = "Geometric propagation from surface"
+    },
+    .srcfile  = __FILE__,
+    .farg     = geomprop_farg,
+    .nbarg    = (int) (sizeof(geomprop_farg) / sizeof(geomprop_farg[0])),
+    .cli_func = cli_geomprop,
+    .rt       = &geomprop_rt,
+};

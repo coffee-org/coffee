@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
@@ -58,9 +58,9 @@ errno_t makePIAAshapes()
         // - if refractive optics, piaar0zsag missing
         //
         if((piaacmcparams.FORCE_MAKE_PIAA0shape == 1) ||
-                (image_ID("piaam0z", data.core.image, data.core.NB_MAX_IMAGE) == -1) ||
+                (image_ID("piaam0z", dcimg, dcnimg) == -1) ||
                 ((piaacmcopticaldesign.PIAAmaterial_code != 0) &&
-                 (image_ID("piaar0zsag", data.core.image, data.core.NB_MAX_IMAGE) == -1)))
+                 (image_ID("piaar0zsag", dcimg, dcnimg) == -1)))
         {
             piaacmcparams.MAKE_PIAA0shape = 1;
         }
@@ -68,9 +68,9 @@ errno_t makePIAAshapes()
         piaacmcparams.MAKE_PIAA1shape = 0;
 
         if((piaacmcparams.FORCE_MAKE_PIAA1shape == 1) ||
-                (image_ID("piaam1z", data.core.image, data.core.NB_MAX_IMAGE) == -1) ||
+                (image_ID("piaam1z", dcimg, dcnimg) == -1) ||
                 ((piaacmcopticaldesign.PIAAmaterial_code != 0) &&
-                 (image_ID("piaar1zsag", data.core.image, data.core.NB_MAX_IMAGE) == -1)))
+                 (image_ID("piaar1zsag", dcimg, dcnimg) == -1)))
         {
             piaacmcparams.MAKE_PIAA1shape = 1;
         }
@@ -97,7 +97,7 @@ errno_t makePIAAshapes()
                                            "piaa0Fz",
                                            &ID1);
 
-            imageID ID = image_ID("piaam0z", data.core.image, data.core.NB_MAX_IMAGE);
+            imageID ID = image_ID("piaam0z", dcimg, dcnimg);
             if(ID == -1)
             {
                 FUNC_CHECK_RETURN(create_2Dimage_ID("piaam0z",
@@ -106,34 +106,34 @@ errno_t makePIAAshapes()
                                                     &ID));
             }
 
-            uint32_t size0 = data.core.image[ID0].md[0].size[0];
-            uint32_t size1 = data.core.image[ID1].md[0].size[0];
+            uint32_t size0 = dcimg[ID0].md[0].size[0];
+            uint32_t size1 = dcimg[ID1].md[0].size[0];
             for(long ii = 0;
                     ii < piaacmcopticaldesign.size * piaacmcopticaldesign.size;
                     ii++)
             {
-                data.core.image[ID].array.F[ii] = 0.0;
+                dcimg[ID].array.F[ii] = 0.0;
             }
 
             for(uint32_t ii = 0; ii < size0; ii++)
                 for(uint32_t jj = 0; jj < size0; jj++)
                 {
-                    data.core.image[ID]
+                    dcimg[ID]
                     .array
                     .F[(jj + (piaacmcopticaldesign.size - size0) / 2) *
                                                                  piaacmcopticaldesign.size +
                                                                  (ii + (piaacmcopticaldesign.size - size0) / 2)] +=
-                           data.core.image[ID0].array.F[jj * size0 + ii];
+                           dcimg[ID0].array.F[jj * size0 + ii];
                 }
             for(uint32_t ii = 0; ii < size1; ii++)
                 for(uint32_t jj = 0; jj < size1; jj++)
                 {
-                    data.core.image[ID]
+                    dcimg[ID]
                     .array
                     .F[(jj + (piaacmcopticaldesign.size - size1) / 2) *
                                                                  piaacmcopticaldesign.size +
                                                                  (ii + (piaacmcopticaldesign.size - size1) / 2)] +=
-                           data.core.image[ID1].array.F[jj * size1 + ii];
+                           dcimg[ID1].array.F[jj * size1 + ii];
                 }
 
             DEBUG_TRACEPOINT("piaacmcparams.PIAACMC_save %d",
@@ -181,7 +181,7 @@ errno_t makePIAAshapes()
             {
                 // refractive PIAA
                 // if piaar0zsag does not exist or is wrong size, create it
-                imageID IDpiaar0zsag = image_ID("piaar0zsag", data.core.image, data.core.NB_MAX_IMAGE);
+                imageID IDpiaar0zsag = image_ID("piaar0zsag", dcimg, dcnimg);
                 int     mkpiaar0zsag = 0;
                 if(IDpiaar0zsag == -1)
                 {
@@ -189,11 +189,11 @@ errno_t makePIAAshapes()
                 }
                 else
                 {
-                    if((data.core.image[IDpiaar0zsag].md[0].size[0] !=
+                    if((dcimg[IDpiaar0zsag].md[0].size[0] !=
                             piaacmcopticaldesign.size) ||
-                            (data.core.image[IDpiaar0zsag].md[0].size[1] !=
+                            (dcimg[IDpiaar0zsag].md[0].size[1] !=
                              piaacmcopticaldesign
-                             .size)) //||(data.core.image[IDpiaar0zsag].md[0].size[2] != design[index].nblambda))
+                             .size)) //||(dcimg[IDpiaar0zsag].md[0].size[2] != design[index].nblambda))
                     {
                         FUNC_CHECK_RETURN(
                             delete_image_ID("piaar0zsag",
@@ -242,7 +242,7 @@ errno_t makePIAAshapes()
                             sag2opd_coeff,
                             sag2opd_coeff / sag2opd_coeff0);
                     //                for(ii=0; ii<size*size; ii++)
-                    //                  data.core.image[IDpiaar0zsag].array.F[k*size*size+ii] = data.core.image[IDpiaam0z].array.F[ii] * sag2opd_coeff/sag2opd_coeff0; //sag2opd_coeff * data.core.image[IDpiaam0z].array.F[ii] / sag2opd_coeff0;
+                    //                  dcimg[IDpiaar0zsag].array.F[k*size*size+ii] = dcimg[IDpiaam0z].array.F[ii] * sag2opd_coeff/sag2opd_coeff0; //sag2opd_coeff * dcimg[IDpiaam0z].array.F[ii] / sag2opd_coeff0;
                 }
                 fclose(fpri);
 
@@ -250,8 +250,8 @@ errno_t makePIAAshapes()
                         ii < piaacmcopticaldesign.size * piaacmcopticaldesign.size;
                         ii++)
                 {
-                    data.core.image[IDpiaar0zsag].array.F[ii] =
-                        data.core.image[IDpiaam0z].array.F[ii] / sag2opd_coeff0;
+                    dcimg[IDpiaar0zsag].array.F[ii] =
+                        dcimg[IDpiaam0z].array.F[ii] / sag2opd_coeff0;
                 }
 
                 {
@@ -282,7 +282,7 @@ errno_t makePIAAshapes()
                                            "piaa1Fz",
                                            &ID1);
 
-            imageID ID = image_ID("piaam1z", data.core.image, data.core.NB_MAX_IMAGE);
+            imageID ID = image_ID("piaam1z", dcimg, dcnimg);
             if(ID == -1)
             {
                 create_2Dimage_ID("piaam1z",
@@ -294,29 +294,29 @@ errno_t makePIAAshapes()
                     ii < piaacmcopticaldesign.size * piaacmcopticaldesign.size;
                     ii++)
             {
-                data.core.image[ID].array.F[ii] = 0.0;
+                dcimg[ID].array.F[ii] = 0.0;
             }
-            uint32_t size0 = data.core.image[ID0].md[0].size[0];
-            uint32_t size1 = data.core.image[ID1].md[0].size[0];
+            uint32_t size0 = dcimg[ID0].md[0].size[0];
+            uint32_t size1 = dcimg[ID1].md[0].size[0];
             for(uint32_t ii = 0; ii < size0; ii++)
                 for(uint32_t jj = 0; jj < size0; jj++)
                 {
-                    data.core.image[ID]
+                    dcimg[ID]
                     .array
                     .F[(jj + (piaacmcopticaldesign.size - size0) / 2) *
                                                                  piaacmcopticaldesign.size +
                                                                  (ii + (piaacmcopticaldesign.size - size0) / 2)] +=
-                           data.core.image[ID0].array.F[jj * size0 + ii];
+                           dcimg[ID0].array.F[jj * size0 + ii];
                 }
             for(uint32_t ii = 0; ii < size1; ii++)
                 for(uint32_t jj = 0; jj < size1; jj++)
                 {
-                    data.core.image[ID]
+                    dcimg[ID]
                     .array
                     .F[(jj + (piaacmcopticaldesign.size - size1) / 2) *
                                                                  piaacmcopticaldesign.size +
                                                                  (ii + (piaacmcopticaldesign.size - size1) / 2)] +=
-                           data.core.image[ID1].array.F[jj * size1 + ii];
+                           dcimg[ID1].array.F[jj * size1 + ii];
                 }
 
             if(piaacmcparams.PIAACMC_save == 1)
@@ -350,7 +350,7 @@ errno_t makePIAAshapes()
             {
 
                 // if piaar1zsag does not exist or is wrong size, create it
-                imageID IDpiaar1zsag = image_ID("piaar1zsag", data.core.image, data.core.NB_MAX_IMAGE);
+                imageID IDpiaar1zsag = image_ID("piaar1zsag", dcimg, dcnimg);
                 int     mkpiaar1zsag = 0;
                 if(IDpiaar1zsag == -1)
                 {
@@ -358,11 +358,11 @@ errno_t makePIAAshapes()
                 }
                 else
                 {
-                    if((data.core.image[IDpiaar1zsag].md[0].size[0] !=
+                    if((dcimg[IDpiaar1zsag].md[0].size[0] !=
                             piaacmcopticaldesign.size) ||
-                            (data.core.image[IDpiaar1zsag].md[0].size[1] !=
+                            (dcimg[IDpiaar1zsag].md[0].size[1] !=
                              piaacmcopticaldesign
-                             .size)) //||(data.core.image[IDpiaar1zsag].md[0].size[2] != design[index].nblambda))
+                             .size)) //||(dcimg[IDpiaar1zsag].md[0].size[2] != design[index].nblambda))
                     {
                         FUNC_CHECK_RETURN(
                             delete_image_ID("piaar1zsag",
@@ -412,7 +412,7 @@ errno_t makePIAAshapes()
                             sag2opd_coeff,
                             sag2opd_coeff / sag2opd_coeff0);
                     // for(ii=0; ii<size*size; ii++)
-                    //    data.core.image[IDpiaar1zsag].array.F[k*size*size+ii] = sag2opd_coeff * data.core.image[IDpiaam1z].array.F[ii] / sag2opd_coeff0;
+                    //    dcimg[IDpiaar1zsag].array.F[k*size*size+ii] = sag2opd_coeff * dcimg[IDpiaam1z].array.F[ii] / sag2opd_coeff0;
                 }
                 fclose(fpri);
 
@@ -420,8 +420,8 @@ errno_t makePIAAshapes()
                         ii < piaacmcopticaldesign.size * piaacmcopticaldesign.size;
                         ii++)
                 {
-                    data.core.image[IDpiaar1zsag].array.F[ii] =
-                        data.core.image[IDpiaam1z].array.F[ii] / sag2opd_coeff0;
+                    dcimg[IDpiaar1zsag].array.F[ii] =
+                        dcimg[IDpiaam1z].array.F[ii] / sag2opd_coeff0;
                 }
 
                 {

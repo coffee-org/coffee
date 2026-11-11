@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 // milk includes
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_iofits/COREMOD_iofits.h"
@@ -61,19 +61,19 @@ errno_t mkLyotMask(const char *__restrict__ IDincoh_name,
 
     //filter_size = (long)(sigma * 2.0);
 
-    printf("IDincoh_name : %s   %ld\n", IDincoh_name, image_ID(IDincoh_name, data.core.image, data.core.NB_MAX_IMAGE));
-    printf("IDmc_name    : %s   %ld\n", IDmc_name, image_ID(IDmc_name, data.core.image, data.core.NB_MAX_IMAGE));
-    printf("IDzone_name  : %s   %ld\n", IDzone_name, image_ID(IDzone_name, data.core.image, data.core.NB_MAX_IMAGE));
+    printf("IDincoh_name : %s   %ld\n", IDincoh_name, image_ID(IDincoh_name, dcimg, dcnimg));
+    printf("IDmc_name    : %s   %ld\n", IDmc_name, image_ID(IDmc_name, dcimg, dcnimg));
+    printf("IDzone_name  : %s   %ld\n", IDzone_name, image_ID(IDzone_name, dcimg, dcnimg));
 
     //IDincoh = gauss_filter(IDincoh_name, "incohg", sigma, filter_size);
-    IDincoh = image_ID(IDincoh_name, data.core.image, data.core.NB_MAX_IMAGE);
+    IDincoh = image_ID(IDincoh_name, dcimg, dcnimg);
 
-    IDmc = image_ID(IDmc_name, data.core.image, data.core.NB_MAX_IMAGE);
+    IDmc = image_ID(IDmc_name, dcimg, dcnimg);
     //	IDmc = gauss_filter(IDmc_name, "mcg", sigma, filter_size);
 
-    IDzone          = image_ID(IDzone_name, data.core.image, data.core.NB_MAX_IMAGE);
-    uint32_t xsize  = data.core.image[IDmc].md[0].size[0];
-    uint32_t ysize  = data.core.image[IDmc].md[0].size[1];
+    IDzone          = image_ID(IDzone_name, dcimg, dcnimg);
+    uint32_t xsize  = dcimg[IDmc].md[0].size[0];
+    uint32_t ysize  = dcimg[IDmc].md[0].size[1];
     uint64_t xysize = xsize;
     xysize *= ysize;
 
@@ -84,11 +84,11 @@ errno_t mkLyotMask(const char *__restrict__ IDincoh_name,
         double val = 0.0;
         for(uint64_t ii = 0; ii < xysize; ii++)
         {
-            val += data.core.image[IDmc].array.F[ii];
+            val += dcimg[IDmc].array.F[ii];
         }
         for(uint64_t ii = 0; ii < xysize; ii++)
         {
-            data.core.image[IDmc].array.F[ii] /= val;
+            dcimg[IDmc].array.F[ii] /= val;
         }
     }
 
@@ -96,11 +96,11 @@ errno_t mkLyotMask(const char *__restrict__ IDincoh_name,
         double val = 0.0;
         for(uint64_t ii = 0; ii < xysize; ii++)
         {
-            val += data.core.image[IDincoh].array.F[ii];
+            val += dcimg[IDincoh].array.F[ii];
         }
         for(uint64_t ii = 0; ii < xysize; ii++)
         {
-            data.core.image[IDincoh].array.F[ii] /= val;
+            dcimg[IDincoh].array.F[ii] /= val;
         }
     }
 
@@ -113,18 +113,18 @@ errno_t mkLyotMask(const char *__restrict__ IDincoh_name,
 
         for(uint64_t ii = 0; ii < xysize; ii++)
         {
-            if((data.core.image[IDzone].array.F[ii] > -1) &&
-                    (data.core.image[IDincoh].array.F[ii] /
-                     data.core.image[IDmc].array.F[ii] >
+            if((dcimg[IDzone].array.F[ii] > -1) &&
+                    (dcimg[IDincoh].array.F[ii] /
+                     dcimg[IDmc].array.F[ii] >
                      rsl))
             {
-                val += data.core.image[IDincoh].array.F[ii];
-                val1 += data.core.image[IDmc].array.F[ii];
-                data.core.image[IDout].array.F[ii] = 1.0;
+                val += dcimg[IDincoh].array.F[ii];
+                val1 += dcimg[IDmc].array.F[ii];
+                dcimg[IDout].array.F[ii] = 1.0;
             }
             else
             {
-                data.core.image[IDout].array.F[ii] = 0.0;
+                dcimg[IDout].array.F[ii] = 0.0;
             }
         }
         printf("rsl = %f  ->  %f %f   (%f)\n", rsl, val, val1, throughput);
@@ -155,14 +155,14 @@ errno_t mkLyotMask(const char *__restrict__ IDincoh_name,
 
             for(uint64_t ii = 0; ii < xysize; ii++)
             {
-                if((data.core.image[IDzone].array.F[ii] > -1) &&
-                        (data.core.image[IDincoh].array.F[ii] /
-                         data.core.image[IDmc].array.F[ii] >
+                if((dcimg[IDzone].array.F[ii] > -1) &&
+                        (dcimg[IDincoh].array.F[ii] /
+                         dcimg[IDmc].array.F[ii] >
                          rsl) &&
-                        (data.core.image[IDmc].array.F[ii] < v))
+                        (dcimg[IDmc].array.F[ii] < v))
                 {
-                    val += data.core.image[IDincoh].array.F[ii];
-                    val1 += data.core.image[IDmc].array.F[ii];
+                    val += dcimg[IDincoh].array.F[ii];
+                    val1 += dcimg[IDmc].array.F[ii];
                 }
             }
 
@@ -188,16 +188,16 @@ errno_t mkLyotMask(const char *__restrict__ IDincoh_name,
 
     for(uint64_t ii = 0; ii < xysize; ii++)
     {
-        if((data.core.image[IDzone].array.F[ii] > -1) &&
-                (data.core.image[IDincoh].array.F[ii] / data.core.image[IDmc].array.F[ii] >
+        if((dcimg[IDzone].array.F[ii] > -1) &&
+                (dcimg[IDincoh].array.F[ii] / dcimg[IDmc].array.F[ii] >
                  rsl_best) &&
-                (data.core.image[IDmc].array.F[ii] < v_best))
+                (dcimg[IDmc].array.F[ii] < v_best))
         {
-            data.core.image[IDout].array.F[ii] = 1.0;
+            dcimg[IDout].array.F[ii] = 1.0;
         }
         else
         {
-            data.core.image[IDout].array.F[ii] = 0.0;
+            dcimg[IDout].array.F[ii] = 0.0;
         }
     }
 
@@ -206,8 +206,8 @@ errno_t mkLyotMask(const char *__restrict__ IDincoh_name,
         FUNC_CHECK_RETURN(create_2Dimage_ID("postLMim", xsize, ysize, &ID1));
         for(uint64_t ii = 0; ii < xysize; ii++)
         {
-            data.core.image[ID1].array.F[ii] =
-                data.core.image[IDmc].array.F[ii] * data.core.image[IDout].array.F[ii];
+            dcimg[ID1].array.F[ii] =
+                dcimg[IDmc].array.F[ii] * dcimg[IDout].array.F[ii];
         }
 
         FUNC_CHECK_RETURN(save_fits("postLMim", "postLMim.fits"));

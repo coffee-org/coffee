@@ -5,7 +5,7 @@
  *
  */
 
-#include "CLIcore.h"
+#include "milk_runnable.h"
 #include "coffee_compat.h"
 
 #include "COREMOD_memory/COREMOD_memory.h"
@@ -32,9 +32,9 @@ errno_t OptSystProp_propagateCube(OPTSYST    *optsyst,
 
     DEBUG_TRACEPOINT("propagating by %lf m", zprop);
 
-    imageID  IDin_amp = image_ID(IDin_amp_name, data.core.image, data.core.NB_MAX_IMAGE);
-    imageID  IDin_pha = image_ID(IDin_pha_name, data.core.image, data.core.NB_MAX_IMAGE);
-    uint32_t size     = data.core.image[IDin_amp].md[0].size[0];
+    imageID  IDin_amp = image_ID(IDin_amp_name, dcimg, dcnimg);
+    imageID  IDin_pha = image_ID(IDin_pha_name, dcimg, dcnimg);
+    uint32_t size     = dcimg[IDin_amp].md[0].size[0];
     uint64_t size2    = size * size;
 
     imageID IDc_in;
@@ -51,7 +51,7 @@ errno_t OptSystProp_propagateCube(OPTSYST    *optsyst,
     imsizearray[1] = size;
     imsizearray[2] = optsyst[index].nblambda;
 
-    imageID IDout_amp = image_ID(IDout_amp_name, data.core.image, data.core.NB_MAX_IMAGE);
+    imageID IDout_amp = image_ID(IDout_amp_name, dcimg, dcnimg);
     if(IDout_amp == -1)
     {
         FUNC_CHECK_RETURN(create_image_ID(IDout_amp_name,
@@ -64,7 +64,7 @@ errno_t OptSystProp_propagateCube(OPTSYST    *optsyst,
                                           &IDout_amp));
     }
 
-    imageID IDout_pha = image_ID(IDout_pha_name, data.core.image, data.core.NB_MAX_IMAGE);
+    imageID IDout_pha = image_ID(IDout_pha_name, dcimg, dcnimg);
     if(IDout_pha == -1)
     {
         FUNC_CHECK_RETURN(create_image_ID(IDout_pha_name,
@@ -78,8 +78,8 @@ errno_t OptSystProp_propagateCube(OPTSYST    *optsyst,
     }
     free(imsizearray);
 
-    data.core.image[IDout_amp].md[0].write = 1;
-    data.core.image[IDout_pha].md[0].write = 1;
+    dcimg[IDout_amp].md[0].write = 1;
+    dcimg[IDout_pha].md[0].write = 1;
 
     for(int kl = 0; kl < optsyst[index].nblambda; kl++)
     {
@@ -92,10 +92,10 @@ errno_t OptSystProp_propagateCube(OPTSYST    *optsyst,
         // convert from amp/phase to Re/Im
         for(uint64_t ii = 0; ii < size2; ii++)
         {
-            double amp = data.core.image[IDin_amp].array.F[kl * size2 + ii];
-            double pha = data.core.image[IDin_pha].array.F[kl * size2 + ii];
-            data.core.image[IDc_in].array.CF[ii].re = amp * cos(pha);
-            data.core.image[IDc_in].array.CF[ii].im = amp * sin(pha);
+            double amp = dcimg[IDin_amp].array.F[kl * size2 + ii];
+            double pha = dcimg[IDin_pha].array.F[kl * size2 + ii];
+            dcimg[IDc_in].array.CF[ii].re = amp * cos(pha);
+            dcimg[IDc_in].array.CF[ii].im = amp * sin(pha);
         }
         // do the actual propagation
         FUNC_CHECK_RETURN(
@@ -105,27 +105,27 @@ errno_t OptSystProp_propagateCube(OPTSYST    *optsyst,
                                         zprop,
                                         optsyst[index].lambdaarray[kl]));
 
-        IDc_out = image_ID("tmppropCout", data.core.image, data.core.NB_MAX_IMAGE);
+        IDc_out = image_ID("tmppropCout", dcimg, dcnimg);
         // convert back from Re/Im to amp/phase
         for(uint64_t ii = 0; ii < size2; ii++)
         {
-            double re  = data.core.image[IDc_out].array.CF[ii].re;
-            double im  = data.core.image[IDc_out].array.CF[ii].im;
+            double re  = dcimg[IDc_out].array.CF[ii].re;
+            double im  = dcimg[IDc_out].array.CF[ii].im;
             double amp = sqrt(re * re + im * im);
             double pha = atan2(im, re);
-            data.core.image[IDout_amp].array.F[kl * size2 + ii] = amp;
-            data.core.image[IDout_pha].array.F[kl * size2 + ii] = pha;
+            dcimg[IDout_amp].array.F[kl * size2 + ii] = amp;
+            dcimg[IDout_pha].array.F[kl * size2 + ii] = pha;
         }
 
         FUNC_CHECK_RETURN(
             delete_image_ID("tmppropCout", DELETE_IMAGE_ERRMODE_WARNING));
     }
 
-    data.core.image[IDout_amp].md[0].cnt0++;
-    data.core.image[IDout_pha].md[0].cnt0++;
+    dcimg[IDout_amp].md[0].cnt0++;
+    dcimg[IDout_pha].md[0].cnt0++;
 
-    data.core.image[IDout_amp].md[0].write = 0;
-    data.core.image[IDout_pha].md[0].write = 0;
+    dcimg[IDout_amp].md[0].write = 0;
+    dcimg[IDout_pha].md[0].write = 0;
 
     DEBUG_TRACE_FEXIT();
     return RETURN_SUCCESS;
