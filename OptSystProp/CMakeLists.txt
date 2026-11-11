@@ -10,6 +10,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(SOURCEFILES
     OptSystProp.c
+    OptSystProp_elements.c
     OptSystProp_propagateCube.c
     OptSystProp_run.c
 )

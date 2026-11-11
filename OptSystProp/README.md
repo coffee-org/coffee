@@ -41,9 +41,11 @@ Declared in `OptSystProp/OptSystProp.h`:
 | File | Description |
 |------|-------------|
 | `OptSystProp.h` | Public `OPTSYST`, `DM_SIM`, `ASPHSURFM`, `ASPHSURFR`, `FOCMASK` structs & API |
+| `OptSystProp_internal.h` | Internal optical element application context & helper declarations |
 | `OptSystProp.c` | `MILK_MODULE_RUNNABLES` registration and module initialization |
+| `OptSystProp_elements.c` | Amplitude mask, mirror/refractive OPD cubes, and zoomed FPM DFT |
 | `OptSystProp_propagateCube.c` | Multi-wavelength complex cube Fresnel propagation wrapper |
-| `OptSystProp_run.c` | Sequential element application, zoomed FPM DFT, and PSF evaluation |
+| `OptSystProp_run.c` | Sequential multi-element Fresnel propagation and final PSF orchestrator |
 
 ---
 
