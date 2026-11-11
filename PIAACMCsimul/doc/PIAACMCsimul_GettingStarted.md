@@ -1,109 +1,114 @@
 # Getting Started {#page_PIAACMCsimul_GettingStarted}
 
-*Source: PIAACMCsimul_GettingStarted.md in PIAACMCsimul/doc*
+*Source: `PIAACMCsimul_GettingStarted.md` in `PIAACMCsimul/doc`*
 
+---
 
-## 1. Copy scripts to local directory
+## 1. Environment Setup
 
-Create symbolic link to CLI in system or user path:
+Ensure `<milk-install-prefix>/bin` is on your `PATH`:
 
-	sudo ln -s /<srcdir>/bin/coffee /usr/local/bin/coffee
+```bash
+export PATH="<milk-install-prefix>/bin:$PATH"
+coffee-piaacmc --help
+```
 
-Create symbolic link to syncscripts into work directory:
+No manual script copying (`syncscripts`) or `tmux` installation is required.
 
-	cd <workdir>
-	ln -s /<srcdir>/src/PIAACMCsimul/scripts/syncscripts .
-
-Import and setup scripts in work directory (run from <workdir>):
-
-	./syncscripts
-
-Examples can be loaded in `./examples/` with:
-
-	./syncscripts -x
-
-
-***
-
-
+---
 
 ## 2. Configuration Setup
 
+### 2.1. Unified `coffee-piaacmc` CLI (Recommended)
 
-### 2.1. Setup from main script pre-defined configurations
+Create a clean working directory and initialize one of the built-in examples (`0..7`) or `SPEED`
+presets:
 
-Print help for top level script:
+```bash
+mkdir work_piaacmc && cd work_piaacmc
+coffee-piaacmc init --example 1
+```
 
-	./runPIAACMCdesign -h
+This creates the input pupil `pup_<size>.fits`, `./conf/conf_*.txt`, and a commented single-file
+configuration `piaacmc.conf`. Inspect, modify, or validate parameters at any time:
 
-The quickest way to get started is to setup and modify one of the example design scripts provided:
+```bash
+coffee-piaacmc config show
+coffee-piaacmc config set mlambdaB=10 nblambda=8 NBthreads=4
+coffee-piaacmc config check
+```
 
-	./runPIAACMCdesign -e 0
+For an APLC/APLCMC design (no PIAA optics), pass `--aplc` during `init` or set `PIAAmode=0`:
 
-This will configure all necessary files for a specific configuration. You can view parameters with :
+```bash
+coffee-piaacmc init --example 6 --aplc
+```
 
-	./runPIAACMCdesign -l
+### 2.2. Legacy `coffee-runPIAACMCdesign` Script
 
-If optimizing in APLC mode (no PIAA optics, type (after the -e command above):
+All legacy flags remain supported and stay synchronized with `piaacmc.conf`:
 
-	./runPIAACMCdesign -a
+```bash
+coffee-runPIAACMCdesign -e 1 -l
+coffee-runPIAACMCdesign -a    # optional: switch to APLCMC mode
+```
 
+---
 
-### 2.2. Setup from example script
+## 3. Running the Design
 
-If examples are loaded, one of the `example/setup_XXXX` script can be copied in the working directory and executed to setup the corresponding configuration
+### Monochromatic Idealized Design (Steps `000`–`017`)
 
+```bash
+coffee-piaacmc run --mono
+# or stop at an intermediate step (e.g., step 5):
+coffee-piaacmc run --to-step 5
+```
 
-***
+### Polychromatic Multi-Zone FPM Design (`step100` + `step101`)
 
+```bash
+coffee-piaacmc run --poly --jobs 4 --search-time 600
+```
 
+This automatically:
+1. Completes any remaining monochromatic steps (`000`–`017`).
+2. Calibrates unocculted flux normalization (`CnormFactor.txt`).
+3. Computes the polychromatic FPM zone response matrix (`FPMresp1.*.fits`) in parallel across
+   `--jobs` background worker processes (logs in `log/step100_thread*.log`).
+4. Runs analytical-derivative + SVD multi-zone sag optimization (Mode `13`) for `--search-time`
+   seconds.
 
-## 3. Full Design
+---
 
-Design is done with the "-m" option. This command will execute all design steps from 0 to #step-1:
+## 4. Monitoring & Controlling Optimization
 
-	./runPIAACMCdesign -m <#step>
+Track live optimization progress with:
 
-To run the full polychromatic design process:
+```bash
+coffee-piaacmc status
+tail -f piaacmcconf_i000/linoptval.txt
+tail -f piaacmcconf_i000/mode13*.opt.txt
+```
 
-	./runPIAACMCdesign -m 200
+To request a clean early exit from Mode `13` after the current inner line-search completes:
 
-Note that this may take a long time to run ... (days ?). The polychromatic design will:
+```bash
+touch piaacmcconf_i000/stoploop13.txt
+```
 
-- Construct response to focal plane mask zones if it does not already exist. This step runs in tmux sessions, and will write a FPMresp...fits file
-- Execute a search for best solution.
+---
 
+## 5. Evaluating Performance & Quantizing Masks
 
-***
+```bash
+# Compute polychromatic on-axis PSF cube -> psfi0.fits
+coffee-piaacmc eval --psf
 
+# Full evaluation: level 0 (contrast + off-axis transmission), level 1 (stellar size),
+# or level 2 (stellar size + pointing jitter)
+coffee-piaacmc eval --level 0
 
-## 4. Focal plane optimization
-
-In the focal plane optimization mode, the search status appears in files:
-
-	tail -f piaacmcconf_i000/linoptval.txt
-	tail -f piaacmcconf_i000/mode13*.opt.txt
-
-
-
-In the search mode, the code runs for a pre-determined amount of time. You can track progress in file `timeused.txt`. The first number is the search time elapsed, and the second number is the amount of total search time. To change / shorten the search time :
-
-	cat "3600" > searchtime.txt  # sets total search time to 1hr
-
-You can also stop the search at anytime by:
-
-	touch piaacmcconf_i000/stoploop13.txt
-
-
-***
-
-
-## 5. Inspecting results
-
-Modes 300 and 400-402 are used to evaluate solution performance:
-
-	./runPIAACMCdesign -m 300
-             #         300  : compute polychromatic on-axis PSF -> psfi0.fits
-             #         400  : evaluation, level 0 (on-axis PSF)
-             #         401  : evaluation, level 1 (level0 + extended source with OPD errors)
-             #         402  : evaluation, level 2 (level 1 + transmission curve)
+# Quantize optimal continuous FPM sags (.best.fits) to 2^4 = 16 lithographic levels
+coffee-piaacmc quantize 4
+```

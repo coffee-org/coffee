@@ -99,7 +99,8 @@ To run the full polychromatic design process:
 
 Note that this may take a long time to run ... (days ?). The polychromatic design will:
 
-- Construct response to focal plane mask zones if it does not already exist. This step runs in tmux sessions, and will write a FPMresp...fits file
+- Construct response to focal plane mask zones if it does not already exist
+  (parallel worker logs in `log/step100_thread*.log`, merged into `FPMresp...fits`)
 - Execute a search for best solution.
 
 
@@ -536,7 +537,7 @@ This command will run for a few hrs if the number of focal plane mask zones is l
 
 The complex amplitude response of each mask zone is computed. Several sub-processes are launched, each computing a subset of the total number of zones.
 
-You can follow the progress of each subprocess in the corresponding tmux sessions: the tmux session names are PID followed by FPMt<index>n<NBindex>
+You can follow the progress of each worker subprocess in `log/step100_thread<index>.log`.
 
 As each subprocess computes zone responses, they are stored in FITS files FPMresp..._thread<index>.fits.tmp you can open/view these files to follow progress - each zone appears as a line, and files should fill from the bottom to the top when all threads complete, the files are merged into a single FPMresp file.
 
@@ -591,7 +592,7 @@ Mode		 Description
 
 12           Search for best mask solution using FPMresp, random search
 
-13           Optimize PIAA optics shapes and focal plane mask transmission (idealized PIAACMC)
+13           Optimize multi-zone physical FPM sags in polychromatic light using FPMresp
 
 40           Optimize PIAA optics shapes and focal plane mask transmission (idealized PIAACMC)
 
@@ -601,7 +602,7 @@ Mode		 Description
 
 101          Transmission as a function of angular separation
 
-200          Make focal plane mask OPD map
+302          Export physical focal plane mask 2D OPD and sag maps (fpmOPD.fits)
 ------------ ---------------------------------------------------------------------------------------------------------------------
 
 
@@ -899,7 +900,7 @@ Each search proceeds as follows :
 		- compute SVD of Jacobian matrix to identify vectors of steepest descent
 		- for each alphareg = 0, 0.25, 0.5, 0.75, 1.0:
 			- do a linescan descent along the vector identified by SVD, with the alphareg regularization coefficient
-			- the best value is stored as `bestval` and the corresponding parameters into `data.image[IDoptvec].array.F[i]`
+			- the best value is stored as `bestval` and the corresponding parameters into `dcimg[IDoptvec].array.F[i]`
 			- store best values in `PIAACMCSIMUL_VAL`, and reference value in `PIAACMCSIMUL_VALREF`
 
 

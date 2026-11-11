@@ -1,53 +1,118 @@
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+# coffee — Coronagraph Optimization For Fast Exoplanets Exploration
 
-Latest Version (off main branch): [![latesttag](https://img.shields.io/github/tag/coffee-org/coffee.svg)](https://github.com/coffee-org/coffee/tree/main)
+[![License: GPL v3][gpl-badge]][gpl-url]
 
-| Branch    | Build   | Docker Deployment    | Travis-CI    | Activity   |
-|-------------|-------------|-------------|-------------|-------------|
-**main**|[![CMake badge](https://github.com/coffee-org/coffee/actions/workflows/cmake.yml/badge.svg?branch=main)](https://github.com/coffee-org/coffee/actions/workflows/cmake.yml)|[![CMake badge](https://github.com/coffee-org/coffee/actions/workflows/docker-image.yml/badge.svg?branch=main)](https://github.com/coffee-org/coffee/actions/workflows/docker-image.yml)|[![Build Status](https://www.travis-ci.com/coffee-org/coffee.svg?branch=main)](https://www.travis-ci.com/coffee-org/coffee)|![lastcommit](https://img.shields.io/github/last-commit/coffee-org/coffee/main.svg)|
-**dev**|[![CMake badge](https://github.com/coffee-org/coffee/actions/workflows/cmake.yml/badge.svg?branch=dev)](https://github.com/coffee-org/coffee/actions/workflows/cmake.yml)|[![CMake badge](https://github.com/coffee-org/coffee/actions/workflows/docker-image.yml/badge.svg?branch=dev)](https://github.com/coffee-org/coffee/actions/workflows/docker-image.yml)|[![Build Status dev](https://www.travis-ci.com/coffee-org/coffee.svg?branch=dev)](https://www.travis-ci.com/coffee-org/coffee)|![lastcommit](https://img.shields.io/github/last-commit/coffee-org/coffee/dev.svg)|
+`coffee` is a high-performance optical propagation, coronagraph design, and extreme-AO simulation
+plugin suite for the `milk` (`feat/bash-engine`) real-time framework.
 
+[gpl-badge]: https://img.shields.io/badge/License-GPL%20v3-blue.svg
+[gpl-url]: http://www.gnu.org/licenses/gpl-3.0
 
-Code metrics (dev branch) :
-[![CodeScene Code Health](https://codescene.io/projects/14781/status-badges/code-health)](https://codescene.io/projects/14781)
-[![CodeScene System Mastery](https://codescene.io/projects/14781/status-badges/system-mastery)](https://codescene.io/projects/14781)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/99d33a7efa834015a907f64b71560505)](https://www.codacy.com/gh/coffee-org/coffee/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=coffee-org/coffee&amp;utm_campaign=Badge_Grade)
-[![CodeFactor](https://www.codefactor.io/repository/github/coffee-org/coffee/badge)](https://www.codefactor.io/repository/github/coffee-org/coffee)
+---
 
+## Modular Architecture
 
+| Module | Library | CLI Prefix | Purpose |
+|---|---|---|---|
+| `OptSystProp/` | `libcoffeeOptSystProp.so` | — (C API) | Fresnel beam propagation engine |
+| `coronagraphs/` | `libcoffeecoronagraphs.so` | `coro.` | 2D prolate & APLC/PIAA scans |
+| `PIAACMCsimul/` | `libcoffeePIAACMCsimul.so` | `coffeepiaacmcsim.` | PIAACMC/APLCMC design suite |
+| `AOsystSim/` | `libcoffeeAOsystSim.so` | `aosystsim.` | Pyramid WFS, DM & AO simulation |
 
+Upstream `milk` optical plugins required by `coffee`:
+- `OpticsMaterials` (`libmilkOpticsMaterials.so`): Refractive index and dispersion lookup (`SiO2`,
+  `CaF2`, `Mirror`, gases, resists).
+- `WFpropagate` (`libmilkWFpropagate.so`): Angular-spectrum and Fresnel wavefront propagation.
 
-# coffee
-Coronagraph Optimization For Fast Exoplanets Exploration
+---
 
+## Building and Installing
 
-## Installing coffee
+### Prerequisites (Ubuntu / Debian)
 
-Install pre-requisite packages as needed. For example, under Ubuntu :
+```bash
+sudo apt install build-essential cmake pkg-config libcfitsio-dev \
+    libgsl-dev libfftw3-dev libreadline-dev libncurses-dev
+```
 
-	sudo apt install git make dpkg-dev libc6-dev cmake pkg-config python3-dev libcfitsio-dev pybind11-dev python3-pybind11 libgsl-dev libfftw3-dev libncurses-dev libbison-dev libfl-dev libreadline-dev pkg-config gcc-10 g++-10
+### Out-of-Tree Build Against Installed `milk` (`feat/bash-engine`)
 
+Ensure `milk` (`feat/bash-engine`), `OpticsMaterials`, and `WFpropagate` are built and installed
+to `<milk-install-prefix>`, then build and install `coffee`:
 
-Coffee is a milk plugin. To install coffee, follow the milk installation steps, adding extra coffee plugins.
-To compile and install executable in local directory :
+```bash
+cmake -S . -B _build \
+    -DMILK_ROOT=<milk-install-prefix> \
+    -DCMAKE_INSTALL_PREFIX=<milk-install-prefix>
+make -C _build -j$(nproc) install
+```
 
-    git clone https://github.com/milk-org/milk.git
-    cd milk
-    ./fetch_coffee_dev.sh
-    MILK_PYTHON="OFF" ./compile.sh
-    cd _build
-    sudo make install
+### In-Tree Build Inside `milk`
 
-## Run coffee
+When symlinked or fetched under `<milk-src>/plugins/coffee-src/`:
 
-Executable is located in subdirectory of path specified as argument to compile.sh script:
+```bash
+make -C <milk-src>/_build -j$(nproc) install
+```
 
-    ./local/milk-1.01.02/bin/coffee
+---
 
-## Tutorial
+## Interactive CLI Usage (`milk-cli` Bash Engine)
 
-Milk tutorial:
+Add `<milk-install-prefix>/bin` to `PATH` and launch `coffee`:
 
-    ./local/milk-1.01.02/bin/milk-tutorial
+```bash
+export PATH="<milk-install-prefix>/bin:$PATH"
+coffee
+```
 
-Coffee tutorial to be done
+`coffee` preloads `coffeeOptSystProp`, `coffeecoronagraphs`, `coffeePIAACMCsimul`, and
+`coffeeAOsystSim` into the `milk-cli` Bash engine:
+
+```bash
+# List loaded modules and commands inside milk-cli
+@help
+@help coffeepiaacmcsim
+@help coro
+@help aosystsim
+
+# Inspect command arguments
+coffeepiaacmcsim.run -h
+coro.cormk2Dprolate -h
+
+# Set numeric CLI variables via @calc and load/save FITS images
+@calc "PIAACMC_size = 1024"
+@calc "PIAACMC_lambda = 550.0"
+iofits.loadfits "pup_1024.fits" pupin 2
+exit
+```
+
+---
+
+## PIAACMC & APLCMC Design Quickstart
+
+Use the unified `coffee-piaacmc` CLI in a clean working directory:
+
+```bash
+mkdir my_coronagraph && cd my_coronagraph
+
+# 1. Initialize workspace from built-in example (e.g., WFIRST/Roman 1024 mirror PIAACMC)
+coffee-piaacmc init --example 1
+
+# 2. Inspect or customize parameters in piaacmc.conf
+coffee-piaacmc config show
+coffee-piaacmc config set mlambdaB=10 nblambda=8 NBthreads=4
+
+# 3. Run monochromatic design (steps 000..017)
+coffee-piaacmc run --mono
+
+# 4. Run polychromatic multi-zone FPM calibration + sag optimization
+coffee-piaacmc run --poly --jobs 4 --search-time 600
+
+# 5. Evaluate polychromatic contrast and off-axis transmission
+coffee-piaacmc eval --level 0
+coffee-piaacmc status
+```
+
+See [PIAACMCsimul/README.md](PIAACMCsimul/README.md) and
+[coronagraphs/README.md](coronagraphs/README.md) for complete reference documentation.

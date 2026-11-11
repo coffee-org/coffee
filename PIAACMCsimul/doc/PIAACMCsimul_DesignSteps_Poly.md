@@ -1,35 +1,50 @@
-# Design steps: Polychromatic design {#page_PIAACMCsimul_DesignSteps_Poly}
+# Design Steps: Polychromatic Design {#page_PIAACMCsimul_DesignSteps_Poly}
 
-## Compute complex amplitude response of each focal plane mask zone
+---
 
-~~~
-./run optsingle 200
-~~~
+## 1. Polychromatic FPM Zone Response Calibration (`step100` / Mode `11`)
 
-This command will run for a few hrs if the number of focal plane mask zones is large.
+```bash
+coffee-piaacmc run --poly --jobs 4 --search-time 600
+# or via legacy runner:
+COFFEE_JOBS=4 COFFEE_SEARCHTIME=600 coffee-runPIAACMCdesign -m 200
+```
 
-The complex amplitude response of each mask zone is computed. Several sub-processes are launched, each computing a subset of the total number of zones.
+In `step100` (`exec_multizone_fpm_calib.c`), the focal plane mask is partitioned into concentric
+hexagonal rings (`NBrings`) and angular sectors (`FPMsectors`). The complex electric-field response
+of every mask zone across all `nblambda` wavelengths on the focal-plane scoring pixels is computed:
 
-You can follow the progress of each subprocess in the corresponding tmux sessions: the tmux session names are PID followed by FPMt<index>n<NBindex>
+- `NBthreads` (`--jobs` / `COFFEE_JOBS`) background worker processes are launched in parallel
+  without requiring `tmux`.
+- Each worker logs progress to `log/step100_thread<idx>.log` and writes partial zone responses to
+  `FPMresp..._thread<idx>.fits.tmp`, atomically renaming to `.fits` upon completion.
+- The coordinator process merges all partial zone responses into `FPMresp1.*.fits` and subtracts
+  zone contributions from the unocculted field to isolate light passing outside the physical mask.
+- If `FPMresp1.*.fits` already exists on disk, `step100` is automatically skipped on subsequent
+  optimization passes.
 
-As each subprocess computes zone responses, they are stored in FITS files FPMresp..._thread<index>.fits.tmp you can open/view these files to follow progress - each zone appears as a line, and files should fill from the bottom to the top when all threads complete, the files are merged into a single FPMresp file.
+---
 
-## Search for optimal solution
+## 2. Multi-Zone Sag Optimization (`step101` / Mode `13`)
 
-Once the FPMresp... file is created, it is used by the search algorithm to quickly evaluate focal plane mask designs.
+Once `FPMresp1.*.fits` is available, `exec_optimize_fpm_zones.c` evaluates polychromatic focal-plane
+electric fields and exact analytical derivatives with respect to zone sags in milliseconds:
 
-The search algorithm proceeds as two nested loops (outer loop steps 1-4, inner loop steps 2-4):
+1. **Outer Loop (Multi-Start Perturbation)**: Selects a starting zone-sag vector (zero sag, random
+   perturbation, or neighborhood of the current `.best.fits` solution).
+2. **Inner Loop (Analytical Jacobian + Multi-Alpha SVD Line Search)**:
+   - Evaluates analytical derivatives around the current sag vector via
+     `PIAACMCsimul_achromFPMsol_eval_zonezderivative`.
+   - Computes an SVD pseudo-inverse search direction across multiple regularization weights
+     ($\alpha_{\text{reg}} \in \{0, 0.25, 0.5, 0.75, 1.0\}$) including explicit FPM sag
+     regularization (`fpmregsag_coeff`, `fpmregsag_alpha`).
+   - Performs a line-scan along each search direction and records improved solutions into
+     `fpm_zonez.*.best.fits` and `mode13.*.bestval.txt`.
+   - Repeats until convergence (or 50 inner steps), then draws a new outer-loop starting point until
+     `searchtime` (`--search-time` / `COFFEE_SEARCHTIME`) expires.
 
-1. OUTER LOOP START ITERATION: starting point is chosen, either randomly or close to the best solution.
-2. INNER LOOP START ITERATION: Derivatives around the current point.
-3. For each predefined regularization coefficient :
-	a. An SVD-based inversion used to define a search direction
-	b. The solution is evaluated along the search direction, and the best point along this line is recorded
-4. The best solution encountered in the above step is recorded. If it is a significant improvement over the last step 3 iteration, goto step 2, if not, go to step 1. If the inner loop (steps 2-3) has been running for more than 50 iterations, go to step 1.
+To stop Mode `13` cleanly after the active inner loop finishes:
 
-
-In the C code, this optimization corresponds to execution mode 13. To stop the loop, create file "stoploop13.txt" in the working optimization directory:
-
-	touch piaacmcconf_i000/stoploop13.txt
-
-Note that this command will stop the loop on entering step 1, so the inner loop (steps 2-4) will still keep running until the solution stops improving.
+```bash
+touch piaacmcconf_i000/stoploop13.txt
+```
